@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 const inter = Inter({ subsets: ["latin"] });
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "HaemoLogix - Real-Time Blood Donation Platform",
