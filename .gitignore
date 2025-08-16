@@ -1,0 +1,42 @@
+# Dependency directories
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js build output
+.next/
+
+# Production build output
+out/
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Miscellaneous
+*.log
+*.lock
+
+/lib/generated/prisma

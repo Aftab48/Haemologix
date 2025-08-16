@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Decision {
+  APPROVED
+  REJECTED
+}
+
+enum UrgencyLevel {
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model DonorRegistration {
+  id                       String   @id @default(uuid())
+
+  // Personal Information
+  firstName                String
+  lastName                 String
+  email                    String   @unique
+  phone                    String
+  dateOfBirth              DateTime
+  gender                   String
+  address                  String
+  emergencyContact         String
+  emergencyPhone           String
+
+  // Physical Requirements
+  weight                   String
+  height                   String
+  bmi                      String
+
+  // Medical History
+  lastDonation             DateTime?
+  donationCount            String?
+  neverDonated             Boolean  @default(false)
+  recentVaccinations       Boolean  @default(false)
+  vaccinationDetails       String?
+  medicalConditions        String?
+  medications              String?
+
+  // Health Screening
+  hivTest                  String
+  hepatitisBTest           String
+  hepatitisCTest           String
+  syphilisTest             String
+  malariaTest              String
+  hemoglobin               String
+  bloodGroup               String
+  plateletCount            String
+  wbcCount                 String
+
+  // Documents (store URLs or file paths)
+  bloodTestReport          String?
+  idProof                  String?
+  medicalCertificate       String?
+
+  // Consent
+  dataProcessingConsent    Boolean  @default(false)
+  medicalScreeningConsent  Boolean  @default(false)
+  termsAccepted            Boolean  @default(false)
+
+   // Approval tracking
+  status                      ApprovalStatus @default(PENDING)
+  approvals Approval[] @relation("DonorApprovals")
+
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  latitude   String?
+  longitude  String?
+
+}
+
+
+model HospitalRegistration {
+  id                          String   @id @default(uuid())
+  
+  // Legal & Regulatory Requirements
+  bloodBankLicense            String
+  licenseExpiryDate           DateTime?
+  sbtcNoc                     Boolean
+  nocNumber                   String
+  nocExpiryDate               DateTime?
+  nbtcCompliance              Boolean
+  nacoCompliance              Boolean
+
+  // Infrastructure Verification
+  hospitalName                String
+  hospitalAddress             String
+  city                        String
+  state                       String
+  pincode                     String
+  operationalStatus           String
+  coldStorageFacility         Boolean
+  temperatureStandards        Boolean
+  testingLabsOnsite           Boolean
+  affiliatedLabs              String
+  qualifiedMedicalOfficer     Boolean
+  certifiedTechnicians        String
+  contactEmail                String
+  contactPhone                String
+
+  // Operational Criteria
+  inventoryReporting          Boolean
+  realTimeUpdates             Boolean
+  emergencyResponseCommitment Boolean
+  responseTimeMinutes         String
+  dataHandlingCommitment      Boolean
+  confidentialityAgreement    Boolean
+
+  // Documentation (stored as file paths or URLs)
+  bloodBankLicenseDoc         String?
+  hospitalRegistrationCert    String?
+  authorizedRepIdProof        String?
+  contactDetails24x7          String
+  mouAcceptance               Boolean
+
+  // Representative Details
+  repName                     String
+  repDesignation              String
+  repIdNumber                 String
+  repEmail                    String
+  repPhone                    String
+
+  // Consent
+  termsAccepted               Boolean
+  dataProcessingConsent       Boolean
+  networkParticipationAgreement Boolean
+
+  // Approval tracking
+  status      ApprovalStatus @default(PENDING)
+  approvals Approval[] @relation("HospitalApprovals")
+
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  latitude                    String?
+  longitude                   String?
+
+  alerts    Alert[]
+}
+
+model Admin {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  password    String
+  approvals   Approval[]
+}
+
+model Approval {
+  id          String   @id @default(uuid())
+  approvedBy  String
+  admin       Admin    @relation(fields: [approvedBy], references: [id])
+  approvedAt  DateTime @default(now())
+  decision    Decision
+  remarks     String?
+  status      ApprovalStatus   @default(PENDING)
+
+  // Polymorphic relation
+  hospitalId String?
+  hospital   HospitalRegistration? @relation("HospitalApprovals", fields: [hospitalId], references: [id])
+  donorId     String?
+  donor      DonorRegistration? @relation("DonorApprovals", fields: [donorId], references: [id])
+}
+
+model Alert {
+  id           String       @id @default(uuid())
+  bloodType    String
+  latitude     String
+  longitude    String
+  urgency      UrgencyLevel
+  unitsNeeded  String
+  searchRadius String
+  description  String?
+  hospitalId   String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  hospital     HospitalRegistration?  @relation(fields: [hospitalId], references: [id])
+}
