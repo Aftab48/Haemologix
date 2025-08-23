@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import PasskeyModal from "@/components/PasskeyModal";
 import { stats, features, steps, CarouselData } from "@/constants";
+import { getCurrentUser } from "@/lib/actions/user.actions";
 
 const HomePage = () => {
   const [activeFeature, setActiveFeature] = useState(0);
@@ -25,7 +26,6 @@ const HomePage = () => {
   const isAdmin = searchParams.get("admin") === "true";
 
   const router = useRouter();
-  const { isSignedIn } = useUser();
 
   const handleClick = (path: string) => {
     if (!isSignedIn) {
@@ -35,10 +35,51 @@ const HomePage = () => {
     }
   };
 
+  const { user, isSignedIn } = useUser();
+  const [role, setRole] = useState<UserRole>(null);
+  const [dbUser, setDbUser] = useState<any>(null);
+  const userId = user?.id;
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!isSignedIn) return;
+
+      const email = user?.primaryEmailAddress?.emailAddress;
+      if (!email) return;
+
+      try {
+        const res = await getCurrentUser(email);
+        console.log("[Dashboard] server action response:", res); // <--- log raw response
+        setDbUser(res);
+      } catch (err) {
+        console.error("[Dashboard] error calling getCurrentUser:", err);
+      }
+    };
+
+    fetchUser();
+  }, [isSignedIn, user]);
+
+  useEffect(() => {
+    if (dbUser) {
+      setRole(dbUser.role);
+    }
+  }, [dbUser]);
+
+  let dashboardMessage = "";
+  let dashboardPath = "/";
+  if (role === "DONOR") {
+    dashboardPath = `/donor/${userId}`;
+    dashboardMessage = "Donor Dashboard";
+  }
+  if (role === "HOSPITAL") {
+    dashboardPath = `/hospital/${userId}`;
+    dashboardMessage = "Hospital Dashboard";
+  }
+
   return (
     <div className="min-h-screen bg-red-900">
       {/* Header */}
-      <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 borde`r border-yellow-600/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center bg-transparent">
+      <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-yellow-600/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center bg-transparent">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-px rounded bg-transparent">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-300">
@@ -75,11 +116,13 @@ const HomePage = () => {
                   Sign In
                 </Button>
               </SignInButton>
-              <SignUpButton>
-                <Button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
-                  Sign Up
-                </Button>
-              </SignUpButton>
+              <div className="hidden lg:block">
+                <SignUpButton>
+                  <Button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
+                    Sign Up
+                  </Button>
+                </SignUpButton>
+              </div>
             </SignedOut>
             <SignedIn>
               <UserButton />
@@ -105,33 +148,52 @@ const HomePage = () => {
             Our platform uses geolocation matching and real-time notifications
             to mobilize donors when every second counts.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button
-              size="lg"
-              onClick={() => handleClick("/donor/register")}
-              className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)]"
-            >
-              <Heart className="w-5 h-5 mr-2" />
-              Become a Donor
-            </Button>
 
-            <Button
-              size="lg"
-              onClick={() => handleClick("/hospital/register")}
-              className="hover:bg-yellow-600 text-lg px-8 py-3 bg-transparent text-slate-300 border-slate-300 border border-dashed"
-            >
-              <Activity className="w-5 h-5 mr-2" />
-              Hospital Registration
-            </Button>
+          <div className="mb-12">
+            {/* 👇 Show if NOT signed in */}
+            {(!isSignedIn || !role) && (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  onClick={() => handleClick("/donor/register")}
+                  className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)]"
+                >
+                  <Heart className="w-5 h-5 mr-2" />
+                  Become a Donor
+                </Button>
 
-            <Button
-              size="lg"
-              onClick={() => handleClick("/?admin=true")}
-              className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
-            >
-              <Shield className="w-5 h-5 mr-2" />
-              Admin Dashboard
-            </Button>
+                <Button
+                  size="lg"
+                  onClick={() => handleClick("/hospital/register")}
+                  className="hover:bg-yellow-600 text-lg px-8 py-3 bg-transparent text-slate-300 border-slate-300 border border-dashed"
+                >
+                  <Activity className="w-5 h-5 mr-2" />
+                  Hospital Registration
+                </Button>
+
+                <Button
+                  size="lg"
+                  onClick={() => handleClick("/?admin=true")}
+                  className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                >
+                  <Shield className="w-5 h-5 mr-2" />
+                  Admin Dashboard
+                </Button>
+              </div>
+            )}
+
+            {/* 👇 Show if signed in */}
+            {isSignedIn && role && (
+              <div className="flex justify-center">
+                <Button
+                  size="lg"
+                  onClick={() => handleClick(dashboardPath)}
+                  className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                >
+                  {dashboardMessage}
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Stats */}
@@ -493,26 +555,43 @@ const HomePage = () => {
             Join thousands of donors and healthcare providers making a
             difference every day.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/donor/register">
-              <Button
-                size="lg"
-                variant="secondary"
-                className="text-lg px-8 py-3 bg-slate-300 text-[rgba(199,134,5,1)]"
-              >
-                Register as Donor
-              </Button>
-            </Link>
-            <Link href="/hospital/register">
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-lg px-8 py-3 hover:bg-yellow-600 hover:text-slate-300 bg-transparent border-[rgba(191,122,8,1)] text-slate-300"
-              >
-                Register Hospital
-              </Button>
-            </Link>
-          </div>
+
+          <>
+            {(!isSignedIn || !role) && (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/donor/register">
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="text-lg px-8 py-3 bg-slate-300 text-[rgba(199,134,5,1)]"
+                  >
+                    Register as Donor
+                  </Button>
+                </Link>
+                <Link href="/hospital/register">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="text-lg px-8 py-3 hover:bg-yellow-600 hover:text-slate-300 bg-transparent border-[rgba(191,122,8,1)] text-slate-300"
+                  >
+                    Register Hospital
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+            {isSignedIn && role && (
+              <div className="flex justify-center">
+                <Button
+                  size="lg"
+                  onClick={() => handleClick(dashboardPath)}
+                  className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                >
+                  {dashboardMessage}
+                </Button>
+              </div>
+            )}
+          </>
         </div>
       </section>
 

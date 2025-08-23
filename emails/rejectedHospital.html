@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hospital Application Rejected</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #7f1d1d, #7f1d1d 50%, #ca8a04 100%);
+        color: white;
+        text-align: center;
+        padding: 25px 15px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .content {
+        padding: 25px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .content h2 {
+        color: #7f1d1d;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888888;
+        padding: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>❌ Application Rejected</h1>
+      </div>
+      <div class="content">
+        <h2>Dear {{hospitalName}},</h2>
+        <p>
+          Thank you for applying to join the
+          <strong>HaemoLogix hospital network</strong>. After carefully
+          reviewing your application, we regret to inform you that your
+          registration has been <strong>rejected</strong> at this time.
+        </p>
+        <p>
+          This decision may be due to incomplete or unverifiable information
+          provided during the application process. You may re-apply with
+          corrected details if applicable.
+        </p>
+        <p>
+          If you believe this was an error, please contact our support team for
+          clarification.
+        </p>
+      </div>
+      <div class="footer">
+        © 2025 HaemoLogix — Connecting Life, One Drop at a Time
+      </div>
+    </div>
+  </body>
+</html>

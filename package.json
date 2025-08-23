@@ -53,6 +53,7 @@
     "next": "15.2.4",
     "next-themes": "latest",
     "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.5",
     "react": "^18.3.1",
     "react-day-picker": "9.8.0",
     "react-dom": "^18.0.0",
@@ -62,12 +63,14 @@
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "twilio": "^5.8.0",
     "vaul": "^0.9.6",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@prisma/client": "^6.14.0",
     "@types/node": "^22",
+    "@types/nodemailer": "^7.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "postcss": "^8.5",

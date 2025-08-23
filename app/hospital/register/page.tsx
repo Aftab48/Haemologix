@@ -34,10 +34,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import {
-  checkIfUserApplied,
-  markUserAsApplied,
+  checkIfHospitalApplied,
+  markHospitalAsApplied,
 } from "@/lib/actions/user.actions";
 import { useRouter } from "next/navigation";
+import { sendHospitalConfirmationEmail } from "@/lib/actions/mails.actions";
+import { createHospital } from "@/lib/actions/hospital.actions";
+import { sendHospitalRegistrationSMS } from "@/lib/actions/sms.actions";
 
 const initialFormData: HospitalData = {
   bloodBankLicense: "",
@@ -87,7 +90,7 @@ export default function HospitalRegistration() {
 
   useEffect(() => {
     const verify = async () => {
-      const alreadyApplied = await checkIfUserApplied();
+      const alreadyApplied = await checkIfHospitalApplied();
       if (alreadyApplied) {
         router.push("/waitlist");
       }
@@ -315,16 +318,26 @@ export default function HospitalRegistration() {
   const handleSubmit = async () => {
     if (validateStep(currentStep)) {
       try {
-        await markUserAsApplied();
+        await markHospitalAsApplied();
+        await createHospital(formData);
+        await sendHospitalConfirmationEmail(
+          formData.contactEmail,
+          formData.hospitalName
+        );
+        await sendHospitalRegistrationSMS(
+          formData.contactPhone,
+          formData.hospitalName
+        );
         console.log("Form submitted:", formData);
+
         setIsSubmitted(true);
       } catch (err) {
-        console.error("Error marking user as applied:", err);
+        console.error("Error marking hospital as applied:", err);
       }
     }
   };
 
-  const handleFileUpload = (field: keyof DonorData, file: File | null) => {
+  const handleFileUpload = (field: keyof HospitalData, file: File | null) => {
     updateFormData(field, file ? file.name : null);
   };
 
@@ -1018,15 +1031,13 @@ export default function HospitalRegistration() {
                     type="number"
                     value={formData.certifiedTechnicians}
                     onChange={(e) =>
-                      updateFormData(
-                        "certifiedTechnicians",
-                        Number.parseInt(e.target.value) || 0
-                      )
+                      updateFormData("certifiedTechnicians", e.target.value)
                     }
                     className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
                     placeholder="Number of certified blood bank technicians"
                     min="1"
                   />
+
                   {errors.certifiedTechnicians && (
                     <p className="text-red-400 text-sm">
                       {errors.certifiedTechnicians}

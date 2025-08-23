@@ -25,11 +25,13 @@ import { Progress } from "@/components/ui/progress";
 import { Upload, CheckCircle, ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import {
-  checkIfUserApplied,
-  markUserAsApplied,
+  checkIfDonorApplied,
+  markDonorAsApplied,
 } from "@/lib/actions/user.actions";
 import { useRouter } from "next/navigation";
 import { submitDonorRegistration } from "@/lib/actions/donor.actions";
+import { sendDonorRegistrationEmail } from "@/lib/actions/mails.actions";
+import { sendDonorRegistrationSMS } from "@/lib/actions/sms.actions";
 
 const initialFormData: DonorData = {
   firstName: "",
@@ -73,7 +75,7 @@ export default function DonorRegistration() {
 
   useEffect(() => {
     const verify = async () => {
-      const alreadyApplied = await checkIfUserApplied();
+      const alreadyApplied = await checkIfDonorApplied();
       if (alreadyApplied) {
         router.push("/waitlist");
       }
@@ -232,12 +234,16 @@ export default function DonorRegistration() {
   const handleSubmit = async () => {
     if (validateStep(currentStep)) {
       try {
-        await markUserAsApplied();
+        await markDonorAsApplied();
         await submitDonorRegistration(formData);
+
+        await sendDonorRegistrationEmail(formData.email, formData.firstName);
+
+        await sendDonorRegistrationSMS(formData.phone, formData.firstName);
         console.log("Form submitted:", formData);
         setIsSubmitted(true);
       } catch (err) {
-        console.error("Error marking user as applied:", err);
+        console.error("Error marking donor as applied:", err);
       }
     }
   };

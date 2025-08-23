@@ -108,3 +108,89 @@ interface OpenCageResponse {
     };
   }[];
 }
+
+type UserRole = "DONOR" | "HOSPITAL" | null;
+
+interface BloodAlert {
+  bloodType: BloodType;
+  urgency: Urgency;
+  unitsNeeded: string;
+  radius: Radius;
+  description: string;
+}
+
+type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-" | null;
+type Urgency = "CRITICAL" | "HIGH" | "MEDIUM" | null;
+type Radius = "5" | "10" | "15" | "20" | null;
+
+interface CreateAlertInput {
+  bloodType: BloodType;
+  urgency: Urgency;
+  unitsNeeded: string;
+  radius: Radius;
+  description?: string;
+  hospitalId: string;
+  latitude?: string;
+  longitude?: string;
+}
+
+interface InventoryProps {
+  bloodType: BloodType;
+  currentQuantity: number;
+  minimumQuantity: number;
+  status: Urgency;
+  hospitalId: string;
+}
+
+interface Alerts {
+  id: string;
+  bloodType: BloodType;
+  urgency: Urgency;
+  unitsNeeded: string;
+  radius: Radius;
+  description?: string;
+  hospitalId: string;
+  latitude?: string;
+  longitude?: string;
+  responses?: number;
+  confirmed?: number;
+  status?: Status;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+type Status = "Active" | "Closed" | null;
+
+interface DonorUI {
+  id: string;
+  donorName: string;
+  lastDonation: string;
+  bloodType: string;
+  distance: string;
+  eta: string;
+  status: "Pending" | "Confirmed";
+  phone?: string;
+}
+
+interface InventoryItem {
+  type: string;
+  current: number;
+  minimum: number;
+}
+
+type DonorUser = {
+  role: "DONOR";
+  user: DonorData;
+};
+
+type HospitalUser = {
+  role: "HOSPITAL";
+  user: HospitalData;
+};
+
+type NoUser = {
+  role: null;
+  user: null;
+};
+
+type CurrentUserResponse = DonorUser | HospitalUser | NoUser;

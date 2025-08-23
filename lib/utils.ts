@@ -9,69 +9,159 @@ export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));
 
 export const convertFileToUrl = (file: File) => URL.createObjectURL(file);
 
-// FORMAT DATE TIME
-export const formatDateTime = (dateString: Date | string) => {
-  const dateTimeOptions: Intl.DateTimeFormatOptions = {
-    // weekday: "short", // abbreviated weekday name (e.g., 'Mon')
-    month: "short", // abbreviated month name (e.g., 'Oct')
-    day: "numeric", // numeric day of the month (e.g., '25')
-    year: "numeric", // numeric year (e.g., '2023')
-    hour: "numeric", // numeric hour (e.g., '8')
-    minute: "numeric", // numeric minute (e.g., '30')
-    hour12: true, // use 12-hour clock (true) or 24-hour clock (false)
-  };
-
-  const dateDayOptions: Intl.DateTimeFormatOptions = {
-    weekday: "short", // abbreviated weekday name (e.g., 'Mon')
-    year: "numeric", // numeric year (e.g., '2023')
-    month: "2-digit", // abbreviated month name (e.g., 'Oct')
-    day: "2-digit", // numeric day of the month (e.g., '25')
-  };
-
-  const dateOptions: Intl.DateTimeFormatOptions = {
-    month: "short", // abbreviated month name (e.g., 'Oct')
-    year: "numeric", // numeric year (e.g., '2023')
-    day: "numeric", // numeric day of the month (e.g., '25')
-  };
-
-  const timeOptions: Intl.DateTimeFormatOptions = {
-    hour: "numeric", // numeric hour (e.g., '8')
-    minute: "numeric", // numeric minute (e.g., '30')
-    hour12: true, // use 12-hour clock (true) or 24-hour clock (false)
-  };
-
-  const formattedDateTime: string = new Date(dateString).toLocaleString(
-    "en-US",
-    dateTimeOptions
-  );
-
-  const formattedDateDay: string = new Date(dateString).toLocaleString(
-    "en-US",
-    dateDayOptions
-  );
-
-  const formattedDate: string = new Date(dateString).toLocaleString(
-    "en-US",
-    dateOptions
-  );
-
-  const formattedTime: string = new Date(dateString).toLocaleString(
-    "en-US",
-    timeOptions
-  );
-
-  return {
-    dateTime: formattedDateTime,
-    dateDay: formattedDateDay,
-    dateOnly: formattedDate,
-    timeOnly: formattedTime,
-  };
-};
-
 export function encryptKey(passkey: string) {
   return btoa(passkey);
 }
 
 export function decryptKey(passkey: string) {
   return atob(passkey);
+}
+
+export function formatLastActivity(
+  date: string | Date | null,
+  includeTime = true
+): string {
+  if (!date) return "N/A";
+
+  const parsedDate = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(parsedDate.getTime())) return "N/A"; // invalid date check
+
+  const day = parsedDate.getDate();
+  const month = parsedDate.toLocaleString("en-US", { month: "long" });
+  const year = parsedDate.getFullYear();
+
+  // Add ordinal suffix
+  const suffix =
+    day % 10 === 1 && day !== 11
+      ? "st"
+      : day % 10 === 2 && day !== 12
+      ? "nd"
+      : day % 10 === 3 && day !== 13
+      ? "rd"
+      : "th";
+
+  if (includeTime) {
+    const time = parsedDate.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    return `${day}${suffix} ${month} ${year} at ${time}`;
+  }
+
+  return `${day}${suffix} ${month} ${year}`;
+}
+
+// utils/dateUtils.ts (optional helper file)
+export const calculateNextEligible = (
+  lastDonation: string | undefined | null
+) => {
+  if (!lastDonation) {
+    // Never donated → eligible immediately
+    return "Eligible Now";
+    // or return formatLastActivity(new Date(), false); // today's date
+  }
+
+  const donationDate = new Date(lastDonation);
+  if (isNaN(donationDate.getTime())) return "Eligible Now";
+
+  const nextEligible = new Date(donationDate);
+  nextEligible.setDate(donationDate.getDate() + 90);
+
+  return formatLastActivity(nextEligible, false);
+};
+
+export const getEligibilityProgress = (lastDonation?: string | null) => {
+  if (!lastDonation || lastDonation === "N/A") return 100;
+
+  const donationDate = new Date(lastDonation);
+  if (isNaN(donationDate.getTime())) return 100;
+
+  const now = new Date();
+  const nextEligible = new Date(donationDate);
+  nextEligible.setDate(donationDate.getDate() + 90);
+
+  const total = 90 * 24 * 60 * 60 * 1000; // 90 days in ms
+  const elapsed = now.getTime() - donationDate.getTime();
+
+  return Math.min(100, Math.max(0, (elapsed / total) * 100));
+};
+
+export type BloodTypeFormat =
+  | "O+"
+  | "O-"
+  | "A+"
+  | "A-"
+  | "B+"
+  | "B-"
+  | "AB+"
+  | "AB-";
+
+const ALL_BLOOD_TYPES: BloodTypeFormat[] = [
+  "O-",
+  "O+",
+  "A-",
+  "A+",
+  "B-",
+  "B+",
+  "AB-",
+  "AB+",
+];
+
+/**
+ * Check if a donor blood type is compatible with a recipient blood type.
+ */
+export function isCompatible(
+  donor: BloodTypeFormat,
+  recipient: BloodTypeFormat
+): boolean {
+  const parseType = (blood: BloodTypeFormat) => {
+    const abo = blood.replace(/[+-]/, ""); // "O", "A", "B", "AB"
+    const rh = blood.includes("+") ? "+" : "-";
+    return { abo, rh };
+  };
+
+  const { abo: donorABO, rh: donorRh } = parseType(donor);
+  const { abo: recipientABO, rh: recipientRh } = parseType(recipient);
+
+  // ABO compatibility
+  let aboCompatible = false;
+  switch (donorABO) {
+    case "O":
+      aboCompatible = true; // O can donate to anyone
+      break;
+    case "A":
+      aboCompatible = recipientABO === "A" || recipientABO === "AB";
+      break;
+    case "B":
+      aboCompatible = recipientABO === "B" || recipientABO === "AB";
+      break;
+    case "AB":
+      aboCompatible = recipientABO === "AB";
+      break;
+  }
+
+  // Rh compatibility
+  let rhCompatible = donorRh === "-" || recipientRh === "+";
+  // "-" donates to both, "+" only to "+"
+
+  return aboCompatible && rhCompatible;
+}
+
+/**
+ * Get all blood types a given donor can donate to.
+ */
+export function getCompatibleRecipients(
+  donor: BloodTypeFormat
+): BloodTypeFormat[] {
+  return ALL_BLOOD_TYPES.filter((recipient) => isCompatible(donor, recipient));
+}
+
+/**
+ * Get all blood types that can donate to a given recipient.
+ */
+export function getCompatibleDonors(
+  recipient: BloodTypeFormat
+): BloodTypeFormat[] {
+  return ALL_BLOOD_TYPES.filter((donor) => isCompatible(donor, recipient));
 }

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 
-import { fetchAllDonors, fetchDonorById } from "@/lib/actions/donor.actions";
+import { fetchAllDonors } from "@/lib/actions/donor.actions";
 import {
   fetchAllHospitals,
   fetchHospitalById,
@@ -39,14 +39,44 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ApprovalStatus } from "@prisma/client";
+import { useUser } from "@clerk/nextjs";
+import { formatLastActivity } from "@/lib/utils";
+import { UserModal } from "@/components/UserModal";
+import { updateUserStatus } from "@/lib/actions/user.actions";
+import {
+  sendApplicationApprovedEmail,
+  sendApplicationRejectedEmail,
+  sendHospitalApprovedEmail,
+  sendHospitalRejectionEmail,
+} from "@/lib/actions/mails.actions";
+import {
+  sendApplicationApprovedSMS,
+  sendApplicationRejectedSMS,
+  sendHospitalApprovedSMS,
+  sendHospitalRejectedSMS,
+} from "@/lib/actions/sms.actions";
 
 export default function AdminDashboard() {
-  const user = {
-    id: "151206",
-    name: "Aftab",
-    email: "mdalam4884@gmail.com",
-    role: "Admin",
-  };
+  const { user } = useUser();
+  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState({
+    id: "",
+    name: "",
+    email: "",
+    role: "",
+  });
+
+  useEffect(() => {
+    if (user) {
+      setCurrentUser({
+        id: user.id,
+        name: user.fullName || "",
+        email: user.primaryEmailAddress?.emailAddress || "",
+        role: "admin",
+      });
+    }
+  }, [user]);
+
   const [systemStats, setSystemStats] = useState({
     totalUsers: 25847,
     activeDonors: 18234,
@@ -57,6 +87,7 @@ export default function AdminDashboard() {
     systemUptime: 99.9,
     criticalAlerts: 5,
   });
+
   const [recentActivity, setRecentActivity] = useState([
     {
       id: 1,
@@ -97,7 +128,11 @@ export default function AdminDashboard() {
     lastActivity: string;
     bloodType?: string; // donors only
     totalDonations?: string; // donors only
-    totalAlerts?: number;
+    totalAlerts?: number; // hospital only
+    bloodBankLicense?: string; // hospital only
+    address?: string; // hospital only
+    responseTimeMinutes?: string; // hospital only
+    phone: string;
   };
 
   const [users, setUsers] = useState<NormalizedUser[]>([]);
@@ -116,6 +151,7 @@ export default function AdminDashboard() {
         totalDonations: d.donationCount ?? "0",
         status: d.status,
         lastActivity: d.lastDonation ? d.lastDonation.toISOString() : "N/A",
+        phone: d.phone,
       }));
 
       const formattedHospitals: NormalizedUser[] = hospitals.map((h) => ({
@@ -126,25 +162,19 @@ export default function AdminDashboard() {
         totalAlerts: h._count.alerts ?? "0",
         status: h.status,
         lastActivity: "N/A", // placeholder
+        bloodBankLicense: h.bloodBankLicense,
+        address: h.hospitalAddress,
+        responseTimeMinutes: h.responseTimeMinutes,
+        phone: h.contactPhone,
       }));
 
       setUsers([...formattedDonors, ...formattedHospitals]);
     };
 
     fetchData();
+
+    setLoading(false);
   }, []);
-
-  function formatLastActivity(date: string | Date | null): string {
-    if (!date) return "N/A";
-
-    const parsedDate = typeof date === "string" ? new Date(date) : date;
-    if (isNaN(parsedDate.getTime())) return "N/A"; // invalid date check
-
-    return parsedDate.toLocaleString("en-IN", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  }
 
   type HospitalType = Awaited<ReturnType<typeof fetchAllHospitals>>[number];
 
@@ -164,14 +194,26 @@ export default function AdminDashboard() {
     "all"
   ); // always defined
 
+  const [statusFilter, setStatusFilter] = useState<ApprovalStatus | "ALL">(
+    "ALL"
+  );
   // Filtered users
   const filteredUsers = users.filter((user) => {
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    const matchesStatus =
+      statusFilter === "ALL" || user.status === statusFilter;
     const matchesSearch =
       user.name.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase());
-    return matchesRole && matchesSearch;
+
+    return matchesRole && matchesStatus && matchesSearch;
   });
+
+  const [selectedUser, setSelectedUser] = useState<NormalizedUser | null>(null);
+
+  const handleViewClick = (user: NormalizedUser) => {
+    setSelectedUser(user);
+  };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -204,12 +246,12 @@ export default function AdminDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Active":
-      case "Verified":
-        return <Badge className="bg-green-600 text-white">{status}</Badge>;
-      case "Pending":
-        return <Badge className="bg-yellow-600 text-white">{status}</Badge>;
-      case "Suspended":
-        return <Badge className="bg-red-600 text-white">{status}</Badge>;
+      case "APPROVED":
+        return <Badge variant="active">{status}</Badge>;
+      case "PENDING":
+        return <Badge variant="pending">{status}</Badge>;
+      case "REJECTED":
+        return <Badge variant="rejected">{status}</Badge>;
       default:
         return (
           <Badge
@@ -229,6 +271,39 @@ export default function AdminDashboard() {
       </div>
     );
   }
+
+  const handleApprove = async (user: any) => {
+    setUsers((prev) =>
+      prev.map((u) => (u.id === user.id ? { ...u, status: "APPROVED" } : u))
+    );
+    const role = user.role.toLowerCase();
+    await updateUserStatus(user.id, role, "APPROVED");
+    console.log(user.phone);
+
+    if (role === "donor") {
+      await sendApplicationApprovedEmail(user.email, user.name);
+      await sendApplicationApprovedSMS(user.phone, user.name);
+    } else if (role === "hospital") {
+      await sendHospitalApprovedEmail(user.email, user.name);
+      await sendHospitalApprovedSMS(user.phone, user.name);
+    }
+  };
+
+  const handleReject = async (user: any) => {
+    setUsers((prev) =>
+      prev.map((u) => (u.id === user.id ? { ...u, status: "REJECTED" } : u))
+    );
+    await updateUserStatus(user.id, user.role, "REJECTED");
+    if (user.role === "DONOR") {
+      await sendApplicationRejectedEmail(user.email, user.name);
+      await sendApplicationRejectedSMS(user.phone, user.name);
+    } else if (user.role === "HOSPITAL") {
+      await sendHospitalRejectionEmail(user.email, user.name);
+      await sendHospitalRejectedSMS(user.phone, user.name);
+    }
+  };
+
+  if (loading) return <p>Loading Data...</p>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-900 to-yellow-600 flex flex-col relative overflow-hidden">
@@ -251,7 +326,7 @@ export default function AdminDashboard() {
                   System Administration
                 </h1>
                 <p className="text-sm text-gray-200">
-                  BloodConnect Management Portal
+                  Haemologix Management Portal
                 </p>
               </div>
             </div>
@@ -557,7 +632,7 @@ export default function AdminDashboard() {
                           </td>
                           <td className="p-4">{getStatusBadge(user.status)}</td>
                           <td className="p-4 text-sm text-gray-300">
-                            {formatLastActivity(user.lastActivity)}
+                            {formatLastActivity(user.lastActivity, false)}
                           </td>
 
                           <td className="p-4 text-sm text-gray-300">
@@ -568,28 +643,49 @@ export default function AdminDashboard() {
                             )}
                           </td>
                           <td className="p-4">
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 items-center">
                               <Button
                                 variant="outline"
                                 size="sm"
                                 className="border-white/20 hover:bg-white/20 text-slate-700"
+                                onClick={() => handleViewClick(user)}
                               >
                                 View
                               </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-white/20 hover:bg-white/20 text-slate-700"
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600 bg-transparent border-red-600 hover:bg-red-600/20"
-                              >
-                                Suspend
-                              </Button>
+
+                              {user.status === "PENDING" ? (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    className="bg-green-600 hover:bg-green-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-green-500/50"
+                                    onClick={() => handleApprove(user)}
+                                  >
+                                    <CheckCircle className="w-2 h-2 mr-1" />
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="bg-transparent hover:bg-red-600/20 border-red-950 text-red-950"
+                                    onClick={() => handleReject(user)}
+                                  >
+                                    <XCircle className="w-2 h-2 mr-1" />
+                                    Reject
+                                  </Button>
+                                </>
+                              ) : (
+                                <span
+                                  className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                    user.status === "APPROVED"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {user.status === "APPROVED"
+                                    ? "User Approved ✅"
+                                    : "User Rejected ❌"}
+                                </span>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -607,112 +703,130 @@ export default function AdminDashboard() {
               <h2 className="text-2xl font-bold text-white">
                 Hospital Verification
               </h2>
-              <Button
-                variant="outline"
-                className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+              <Select
+                value={statusFilter}
+                onValueChange={(value) =>
+                  setStatusFilter(value as ApprovalStatus | "ALL")
+                }
               >
-                <Filter className="w-4 h-4 mr-2" />
-                Filter by Status
-              </Button>
+                <SelectTrigger className="w-32 bg-white/5 border-white/20 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 text-white border-gray-700">
+                  <SelectItem className="cursor-pointer" value="ALL">
+                    All
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="PENDING">
+                    Pending
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="APPROVED">
+                    Approved
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="REJECTED">
+                    Rejected
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-4">
-              {hospitals.map((hospital) => (
-                <Card
-                  key={hospital.id}
-                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-white">
-                            {hospital.hospitalName}
-                          </h3>
-                          {getStatusBadge(hospital.status)}
-                          <Badge
-                            variant="outline"
-                            className="bg-white/5 border-white/20 text-white"
-                          >
-                            {Math.random() < 0.5 ? "Government" : "Private"}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-300 mb-4">
-                          <div>
-                            <span className="font-medium text-white">
-                              Email:
-                            </span>{" "}
-                            {hospital.contactEmail}
+              {filteredUsers
+                .filter((user) => user.role === "hospital")
+                .map((hospital) => (
+                  <Card
+                    key={hospital.id}
+                    className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-semibold text-white">
+                              {hospital.name}
+                            </h3>
+                            {getStatusBadge(hospital.status)}
+                            <Badge
+                              variant="outline"
+                              className="bg-white/5 border-white/20 text-white"
+                            >
+                              {Math.random() < 0.5 ? "Government" : "Private"}
+                            </Badge>
                           </div>
-                          <div>
-                            <span className="font-medium text-white">
-                              License:
-                            </span>{" "}
-                            {hospital.bloodBankLicense}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-300 mb-4">
+                            <div>
+                              <span className="font-medium text-white">
+                                Email:
+                              </span>{" "}
+                              {hospital.email}
+                            </div>
+                            <div>
+                              <span className="font-medium text-white">
+                                License:
+                              </span>{" "}
+                              {hospital.bloodBankLicense}
+                            </div>
+                            <div>
+                              <span className="font-medium text-white">
+                                Location:
+                              </span>{" "}
+                              {hospital.address}
+                            </div>
+                            <div>
+                              <span className="font-medium text-white">
+                                Response Time:
+                              </span>{" "}
+                              {hospital.responseTimeMinutes} minutes
+                            </div>
                           </div>
-                          <div>
-                            <span className="font-medium text-white">
-                              Location:
-                            </span>{" "}
-                            {hospital.hospitalAddress}
+                          <div className="flex gap-2 items-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-white/20 hover:bg-white/20 text-slate-700"
+                              onClick={() => handleViewClick(hospital)}
+                            >
+                              View
+                            </Button>
+
+                            {hospital.status === "PENDING" ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  className="bg-green-600 hover:bg-green-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-green-500/50"
+                                  onClick={() => handleApprove(hospital)}
+                                >
+                                  <CheckCircle className="w-2 h-2 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="bg-transparent hover:bg-red-600/20 border-red-950 text-red-950"
+                                  onClick={() => handleReject(hospital)}
+                                >
+                                  <XCircle className="w-2 h-2 mr-1" />
+                                  Reject
+                                </Button>
+                              </>
+                            ) : (
+                              <span
+                                className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                  hospital.status === "APPROVED"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
+                              >
+                                {hospital.status === "APPROVED"
+                                  ? "User Approved ✅"
+                                  : "User Rejected ❌"}
+                              </span>
+                            )}
                           </div>
-                          <div>
-                            <span className="font-medium text-white">
-                              Response Time:
-                            </span>{" "}
-                            {hospital.responseTimeMinutes} minutes
-                          </div>
-                        </div>
-                        <div className="flex gap-3">
-                          {hospital.status === ApprovalStatus.PENDING ? (
-                            <>
-                              <Button
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-green-500/50"
-                              >
-                                <CheckCircle className="w-4 h-4 mr-2" />
-                                Approve
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="bg-transparent hover:bg-red-600/20 border-red-950 text-red-950"
-                              >
-                                <XCircle className="w-4 h-4 mr-2" />
-                                Reject
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-white/20 hover:bg-white/20 text-slate-900"
-                              >
-                                View Details
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-white/20 hover:bg-white/20 text-slate-900"
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="bg-transparent hover:bg-red-600/20 text-red-950 border-red-950"
-                              >
-                                Suspend
-                              </Button>
-                            </>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))}
             </div>
           </TabsContent>
 
@@ -847,6 +961,13 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+      {selectedUser && (
+        <UserModal
+          userId={selectedUser.id}
+          userType={selectedUser.role === "hospital" ? "hospital" : "donor"}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
     </div>
   );
 }
