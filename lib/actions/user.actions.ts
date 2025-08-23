@@ -17,6 +17,7 @@ export async function markDonorAsApplied() {
   await clerk.users.updateUser(user.id, {
     publicMetadata: { hasAppliedDonor: true },
   });
+  return { ok: true };
 }
 
 export async function markHospitalAsApplied() {
@@ -27,6 +28,7 @@ export async function markHospitalAsApplied() {
   await clerk.users.updateUser(user.id, {
     publicMetadata: { hasAppliedHospital: true },
   });
+  return { ok: true };
 }
 
 /**
