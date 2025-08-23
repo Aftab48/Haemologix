@@ -314,7 +314,10 @@ export default function HospitalDashboard() {
         donor.id === targetId ? { ...donor, status: "Confirmed" } : donor
       )
     );
+
+    // Show confirmation message for 5 seconds
     setJustConfirmed(targetId);
+    setTimeout(() => setJustConfirmed(null), 3000);
   };
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -871,7 +874,12 @@ export default function HospitalDashboard() {
                           </td>
                           <td className="p-4">
                             <div className="flex gap-2">
-                              {response.status === "Pending" ? (
+                              {justConfirmed === response.id ? (
+                                <p className="text-green-700 font-medium">
+                                  Thank you for confirming, the donor has been
+                                  notified.
+                                </p>
+                              ) : response.status === "Pending" ? (
                                 <>
                                   <Button
                                     size="sm"
@@ -888,11 +896,6 @@ export default function HospitalDashboard() {
                                     Contact
                                   </Button>
                                 </>
-                              ) : justConfirmed === response.id ? (
-                                <p className="text-green-700 font-medium">
-                                  Thank you for confirming, the donor has been
-                                  notified.
-                                </p>
                               ) : (
                                 <Button
                                   variant="outline"
