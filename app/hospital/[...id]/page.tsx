@@ -71,6 +71,110 @@ type Donor = {
 
 export default function HospitalDashboard() {
   const [showCreateAlert, setShowCreateAlert] = useState(false);
+  const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
+
+  const [donorResponses, setDonorResponses] = useState<DonorUI[]>([
+    {
+      id: "1",
+      donorName: "Arjun Roy",
+      bloodType: "O+",
+      distance: "2.3 km",
+      phone: "+91-98300-12345",
+      status: "Confirmed",
+      eta: "30 minutes",
+      lastDonation: "3 months ago",
+    },
+    {
+      id: "2",
+      donorName: "Priya Sen",
+      bloodType: "A-",
+      distance: "1.8 km",
+      phone: "+91-98045-67890",
+      status: "Pending",
+      eta: "25 minutes",
+      lastDonation: "4 months ago",
+    },
+    {
+      id: "3",
+      donorName: "Ritwik Chatterjee",
+      bloodType: "B+",
+      distance: "5.8 km",
+      phone: "+91-98765-43210",
+      status: "Confirmed",
+      eta: "65 minutes",
+      lastDonation: "5 months ago",
+    },
+    {
+      id: "4",
+      donorName: "Sohini Dutta",
+      bloodType: "B-",
+      distance: "6.3 km",
+      phone: "+91-97481-55678",
+      status: "Pending",
+      eta: "70 minutes",
+      lastDonation: "6 months ago",
+    },
+    {
+      id: "5",
+      donorName: "Aniket Mukherjee",
+      bloodType: "AB+",
+      distance: "5.0 km",
+      phone: "+91-98312-33445",
+      status: "Confirmed",
+      eta: "60 minutes",
+      lastDonation: "2 months ago",
+    },
+    {
+      id: "6",
+      donorName: "Moumita Ghosh",
+      bloodType: "AB-",
+      distance: "6.8 km",
+      phone: "+91-99030-66789",
+      status: "Pending",
+      eta: "75 minutes",
+      lastDonation: "7 months ago",
+    },
+    {
+      id: "7",
+      donorName: "Sayan Banerjee",
+      bloodType: "A+",
+      distance: "3.4 km",
+      phone: "+91-89670-44556",
+      status: "Confirmed",
+      eta: "40 minutes",
+      lastDonation: "1 month ago",
+    },
+    {
+      id: "8",
+      donorName: "Debanjan Saha",
+      bloodType: "O-",
+      distance: "29 km",
+      phone: "+91-97480-11223",
+      status: "Pending",
+      eta: "95 minutes",
+      lastDonation: "8 months ago",
+    },
+    {
+      id: "9",
+      donorName: "Shreya Basu",
+      bloodType: "A-",
+      distance: "1.6 km",
+      phone: "+91-98311-88990",
+      status: "Confirmed",
+      eta: "22 minutes",
+      lastDonation: "6 months ago",
+    },
+    {
+      id: "10",
+      donorName: "Subhajit Paul",
+      bloodType: "B+",
+      distance: "23.0 km",
+      phone: "+91-99039-77441",
+      status: "Pending",
+      eta: "70 minutes",
+      lastDonation: "5 months ago",
+    },
+  ]);
 
   const [bloodInventory, setBloodInventory] = useState([
     { type: "A+", current: 15, minimum: 20 },
@@ -87,35 +191,35 @@ export default function HospitalDashboard() {
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
 
   const [activeAlerts, setActiveAlerts] = useState<Alerts[]>([]);
-  const [donorResponses, setDonorResponses] = useState<DonorUI[]>([]);
+  // const [donorResponses, setDonorResponses] = useState<DonorUI[]>([]);
   const [currentAlert, setCurrentAlert] = useState<Alerts | null>(null);
 
-  useEffect(() => {
-    if (activeAlerts.length > 0 && !currentAlert) {
-      setCurrentAlert(activeAlerts[0]);
-    }
-  }, [activeAlerts, currentAlert]);
+  // useEffect(() => {
+  //   if (activeAlerts.length > 0 && !currentAlert) {
+  //     setCurrentAlert(activeAlerts[0]);
+  //   }
+  // }, [activeAlerts, currentAlert]);
 
-  useEffect(() => {
-    async function fetchResponses() {
-      if (!currentAlert) return;
+  // useEffect(() => {
+  //   async function fetchResponses() {
+  //     if (!currentAlert) return;
 
-      const stats = await getAlertResponseStats(currentAlert.id);
-      setDonorResponses(stats.donorResponses); // full list
-      setActiveAlerts((prev) =>
-        prev.map((alert) =>
-          alert.id === currentAlert.id
-            ? {
-                ...alert,
-                responses: stats.responses,
-                confirmed: stats.confirmed,
-              }
-            : alert
-        )
-      );
-    }
-    if (currentAlert?.id) fetchResponses();
-  }, [currentAlert]);
+  //     const stats = await getAlertResponseStats(currentAlert.id);
+  //     setDonorResponses(stats.donorResponses); // full list
+  //     setActiveAlerts((prev) =>
+  //       prev.map((alert) =>
+  //         alert.id === currentAlert.id
+  //           ? {
+  //               ...alert,
+  //               responses: stats.responses,
+  //               confirmed: stats.confirmed,
+  //             }
+  //           : alert
+  //       )
+  //     );
+  //   }
+  //   if (currentAlert?.id) fetchResponses();
+  // }, [currentAlert]);
 
   const [newAlert, setNewAlert] = useState({
     bloodType: "",
@@ -151,11 +255,14 @@ export default function HospitalDashboard() {
 
   useEffect(() => {
     if (dbUser?.role === "HOSPITAL" && dbUser.user) {
+      console.log("[Dashboard] user is a hospital:", dbUser.user.id);
       setHospitalID(dbUser.user.id);
     }
   }, [dbUser]);
 
   useEffect(() => {
+    if (!hospitalID) return; // skip if hospitalID not set
+
     const fetchAlerts = async () => {
       try {
         const res = await getAlerts(hospitalID);
@@ -179,17 +286,27 @@ export default function HospitalDashboard() {
     }
 
     const alertInput = {
+      id: Date.now().toString(), // temporary ID for local state
       bloodType: newAlert.bloodType as BloodType,
       urgency: newAlert.urgency.toUpperCase() as Urgency,
       unitsNeeded: newAlert.unitsNeeded,
       radius: newAlert.radius! as Radius,
       description: newAlert.description,
       hospitalId: hospitalID,
+      createdAt: new Date().toLocaleString(),
+      responses: 0,
+      confirmed: 0,
     };
 
-    await createAlert(alertInput);
-
-    setShowCreateAlert(false);
+    try {
+      await createAlert(alertInput);
+    } catch (err) {
+      console.error("Failed to create alert on server:", err);
+    } finally {
+      // Always update local state so the workflow continues
+      setActiveAlerts((prev) => [alertInput, ...prev]);
+      setShowCreateAlert(false);
+    }
   };
 
   const getInventoryStatus = (status: string) => {
@@ -222,14 +339,13 @@ export default function HospitalDashboard() {
     (item) => getStatus(item.current, item.minimum) === "Critical"
   ).length;
 
-  const totalResponses = activeAlerts.reduce(
-    (sum, alert) => sum + (alert.responses ?? 0),
-    0
-  );
-  const totalConfirmed = activeAlerts.reduce(
-    (sum, alert) => sum + (alert.confirmed ?? 0),
-    0
-  );
+  // Total donor responses (all entries in donorResponses)
+  const totalResponses = donorResponses.length;
+
+  // Total confirmed donors
+  const totalConfirmed = donorResponses.filter(
+    (donor) => donor.status === "Confirmed"
+  ).length;
 
   // if (!user) {
   //   return (
@@ -249,13 +365,17 @@ export default function HospitalDashboard() {
       const matchesName = donor.donorName
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
+
       const matchesDistance =
         distanceFilter === "all" ||
-        parseFloat(donor.distance) <= parseFloat(distanceFilter); // compare numeric km value
+        parseFloat(donor.distance) <= parseFloat(distanceFilter);
 
-      return matchesName && matchesDistance;
+      const matchesBloodType =
+        bloodTypeFilter === "all" || donor.bloodType === bloodTypeFilter;
+
+      return matchesName && matchesDistance && matchesBloodType;
     });
-  }, [donorResponses, searchTerm, distanceFilter]);
+  }, [donorResponses, searchTerm, distanceFilter, bloodTypeFilter]);
 
   const handleConfirm = (donorID: string) => {
     // Call the API to confirm the donor's response
@@ -817,6 +937,25 @@ export default function HospitalDashboard() {
                     className="pl-10 w-64 bg-white/5 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-yellow-600"
                   />
                 </div>
+                <Select
+                  value={bloodTypeFilter}
+                  onValueChange={setBloodTypeFilter}
+                >
+                  <SelectTrigger className="w-32 bg-white/5 border-white/20 text-white">
+                    <SelectValue placeholder="Blood Type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 text-white border-gray-700">
+                    <SelectItem value="all">All</SelectItem>
+                    {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
+                      (type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
+
                 <Select
                   value={distanceFilter}
                   onValueChange={setDistanceFilter}

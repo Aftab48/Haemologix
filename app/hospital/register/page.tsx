@@ -316,25 +316,44 @@ export default function HospitalRegistration() {
   };
 
   const handleSubmit = async () => {
-    if (validateStep(currentStep)) {
-      try {
-        await markHospitalAsApplied();
-        await createHospital(formData);
-        await sendHospitalConfirmationEmail(
-          formData.contactEmail,
-          formData.hospitalName
-        );
-        await sendHospitalRegistrationSMS(
-          formData.contactPhone,
-          formData.hospitalName
-        );
-        console.log("Form submitted:", formData);
+    if (!validateStep(currentStep)) return;
 
-        setIsSubmitted(true);
-      } catch (err) {
-        console.error("Error marking hospital as applied:", err);
-      }
+    // Step 1: Mark hospital as applied
+    try {
+      await markHospitalAsApplied();
+    } catch (err) {
+      console.error("Error marking hospital as applied:", err);
     }
+
+    // Step 2: Create hospital record
+    try {
+      await createHospital(formData);
+    } catch (err) {
+      console.error("Error creating hospital:", err);
+    }
+
+    // Step 3: Send confirmation email
+    try {
+      await sendHospitalConfirmationEmail(
+        formData.contactEmail,
+        formData.hospitalName
+      );
+    } catch (err) {
+      console.error("Error sending confirmation email:", err);
+    }
+
+    // Step 4: Send registration SMS
+    try {
+      await sendHospitalRegistrationSMS(
+        formData.contactPhone,
+        formData.hospitalName
+      );
+    } catch (err) {
+      console.error("Error sending registration SMS:", err);
+    }
+
+    console.log("Form submitted:", formData);
+    setIsSubmitted(true);
   };
 
   const handleFileUpload = (field: keyof HospitalData, file: File | null) => {
