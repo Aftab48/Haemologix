@@ -9,15 +9,26 @@ import { db } from "@/db";
 /**
  * Mark the logged-in user as having applied
  */
+("use server");
 export async function markDonorAsApplied() {
-  const user = await currentUser();
-  if (!user) throw new Error("Not authenticated");
+  try {
+    const user = await currentUser();
+    if (!user) throw new Error("Not authenticated");
 
-  const clerk = await getClerkClient();
-  await clerk.users.updateUser(user.id, {
-    publicMetadata: { hasAppliedDonor: true },
-  });
-  return { ok: true };
+    const clerk = await getClerkClient();
+    await clerk.users.updateUser(user.id, {
+      publicMetadata: { hasAppliedDonor: true },
+    });
+
+    return { ok: true, userId: user.id };
+  } catch (err: any) {
+    // Log digest if available, but don’t block workflow
+    console.error("Server Action Error Digest:", err.digest ?? "N/A");
+    console.error("Full error object:", err);
+
+    // Return a safe fallback so the UI can continue
+    return { ok: false, error: err.message ?? "Unknown error" };
+  }
 }
 
 export async function markHospitalAsApplied() {

@@ -232,20 +232,38 @@ export default function DonorRegistration() {
   };
 
   const handleSubmit = async () => {
-    if (validateStep(currentStep)) {
-      try {
-        await markDonorAsApplied();
-        await submitDonorRegistration(formData);
+    if (!validateStep(currentStep)) return;
 
-        await sendDonorRegistrationEmail(formData.email, formData.firstName);
-
-        await sendDonorRegistrationSMS(formData.phone, formData.firstName);
-        console.log("Form submitted:", formData);
-        setIsSubmitted(true);
-      } catch (err) {
-        console.error("Error marking donor as applied:", err);
-      }
+    // Step 1: Mark donor as applied
+    try {
+      await markDonorAsApplied();
+    } catch (err) {
+      console.error("Error marking donor as applied:", err);
     }
+
+    // Step 2: Submit donor registration
+    try {
+      await submitDonorRegistration(formData);
+    } catch (err) {
+      console.error("Error submitting donor registration:", err);
+    }
+
+    // Step 3: Send registration email
+    try {
+      await sendDonorRegistrationEmail(formData.email, formData.firstName);
+    } catch (err) {
+      console.error("Error sending registration email:", err);
+    }
+
+    // Step 4: Send registration SMS
+    // try {
+    //   await sendDonorRegistrationSMS(formData.phone, formData.firstName);
+    // } catch (err) {
+    //   console.error("Error sending registration SMS:", err);
+    // }
+
+    console.log("Form submitted:", formData);
+    setIsSubmitted(true);
   };
 
   const handleFileUpload = (field: keyof DonorData, file: File | null) => {
