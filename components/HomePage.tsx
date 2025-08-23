@@ -580,7 +580,7 @@ const HomePage = () => {
               </div>
             )}
 
-            {isSignedIn && role && (
+            {isSignedIn && role && dbUser?.status === "APPROVED" && (
               <div className="flex justify-center">
                 <Button
                   size="lg"
