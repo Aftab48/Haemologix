@@ -9,7 +9,7 @@ import { db } from "@/db";
 /**
  * Mark the logged-in user as having applied
  */
-("use server");
+
 export async function markDonorAsApplied() {
   try {
     const user = await currentUser();
