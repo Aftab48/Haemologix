@@ -50,12 +50,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
-import {
-  createAlert,
-  getAlertResponseStats,
-  getAlerts,
-} from "@/lib/actions/alerts.actions";
-import { getCurrentUser } from "@/lib/actions/user.actions";
+
 import { formatLastActivity } from "@/lib/utils";
 
 type Donor = {
@@ -70,7 +65,7 @@ type Donor = {
   lastDonation: string;
 };
 
-export default function HospitalDashboard() {
+export default function BloodbankDashboard() {
   const [showCreateAlert, setShowCreateAlert] = useState(false);
   const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
 
@@ -178,14 +173,16 @@ export default function HospitalDashboard() {
   ]);
 
   const [bloodInventory, setBloodInventory] = useState([
-    { type: "A+", current: 15, minimum: 20 },
-    { type: "A-", current: 8, minimum: 10 },
-    { type: "B+", current: 25, minimum: 15 },
-    { type: "B-", current: 5, minimum: 8 },
-    { type: "AB+", current: 12, minimum: 10 },
-    { type: "AB-", current: 3, minimum: 5 },
-    { type: "O+", current: 8, minimum: 25 },
-    { type: "O-", current: 6, minimum: 15 },
+    { type: "A+", current: 120, minimum: 150 },
+    { type: "A-", current: 25, minimum: 40 },
+    { type: "B+", current: 100, minimum: 130 },
+    { type: "B-", current: 20, minimum: 35 },
+    { type: "AB+", current: 15, minimum: 25 },
+    { type: "AB-", current: 5, minimum: 10 },
+    { type: "O+", current: 150, minimum: 200 },
+    { type: "O-", current: 30, minimum: 50 },
+    { type: "Plasma", current: 300, minimum: 400 },
+    { type: "Platelets", current: 40, minimum: 60 },
   ]);
 
   const [isInvModalOpen, setIsInvModalOpen] = useState(false);
@@ -193,7 +190,61 @@ export default function HospitalDashboard() {
 
   type AlertWithType = Alerts & { type?: AlertType | string };
 
-  const [activeAlerts, setActiveAlerts] = useState<AlertWithType[]>([]);
+  const [activeAlerts, setActiveAlerts] = useState<AlertWithType[]>([
+    {
+      id: "mock-plasma-1",
+      type: "Plasma",
+      bloodType: null,
+      urgency: "CRITICAL",
+      unitsNeeded: "3",
+      radius: "10",
+      description: "Urgent plasma required for surgery",
+      hospitalId: "mock-hospital",
+      createdAt: formatLastActivity(new Date(), false),
+      responses: 0,
+      confirmed: 0,
+    },
+    {
+      id: "mock-plasma-2",
+      type: "Plasma",
+      bloodType: null,
+      urgency: "CRITICAL",
+      unitsNeeded: "2",
+      radius: "15",
+      description: "Plasma donation needed for patient recovery",
+      hospitalId: "mock-hospital",
+      createdAt: formatLastActivity(new Date(), false),
+      responses: 0,
+      confirmed: 0,
+    },
+    {
+      id: "1",
+      bloodType: "O+",
+      urgency: "CRITICAL",
+      unitsNeeded: "3",
+      description:
+        "Emergency surgery patient needs immediate blood transfusion",
+      createdAt: "15 minutes ago",
+      hospitalId: "mock-hospital",
+      radius: "15",
+      responses: 12,
+      confirmed: 3,
+      status: "Active",
+    },
+    {
+      id: "2",
+      bloodType: "A-",
+      urgency: "HIGH",
+      unitsNeeded: "2",
+      hospitalId: "mock-hospital",
+      radius: "20",
+      description: "Accident victim requires blood for surgery",
+      createdAt: "1 hour ago",
+      responses: 8,
+      confirmed: 2,
+      status: "Active",
+    },
+  ]);
   // const [donorResponses, setDonorResponses] = useState<DonorUI[]>([]);
   const [currentAlert, setCurrentAlert] = useState<AlertWithType | null>(null);
 
@@ -252,6 +303,33 @@ export default function HospitalDashboard() {
       responses: 0,
       confirmed: 0,
     },
+    {
+      id: "1",
+      bloodType: "O+",
+      urgency: "CRITICAL",
+      unitsNeeded: "3",
+      description:
+        "Emergency surgery patient needs immediate blood transfusion",
+      createdAt: "15 minutes ago",
+      hospitalId: "mock-hospital",
+      radius: "15",
+      responses: 12,
+      confirmed: 3,
+      status: "Active",
+    },
+    {
+      id: "2",
+      bloodType: "A-",
+      urgency: "HIGH",
+      unitsNeeded: "2",
+      hospitalId: "mock-hospital",
+      radius: "20",
+      description: "Accident victim requires blood for surgery",
+      createdAt: "1 hour ago",
+      responses: 8,
+      confirmed: 2,
+      status: "Active",
+    },
   ];
 
   const [newAlert, setNewAlert] = useState({
@@ -270,44 +348,44 @@ export default function HospitalDashboard() {
 
   const { user: loggedInUser } = useUser();
   const [hospitalID, setHospitalID] = useState("");
-  useEffect(() => {
-    const fetchUser = async () => {
-      const email = loggedInUser?.primaryEmailAddress?.emailAddress;
-      if (!email) return;
+  //   useEffect(() => {
+  //     const fetchUser = async () => {
+  //       const email = loggedInUser?.primaryEmailAddress?.emailAddress;
+  //       if (!email) return;
 
-      try {
-        const res = await getCurrentUser(email);
-        console.log("[Dashboard] server action response:", res);
-        setDbUser(res);
-      } catch (err) {
-        console.error("[Dashboard] error calling getCurrentUser:", err);
-      }
-    };
+  //       try {
+  //         const res = await getCurrentUser(email);
+  //         console.log("[Dashboard] server action response:", res);
+  //         setDbUser(res);
+  //       } catch (err) {
+  //         console.error("[Dashboard] error calling getCurrentUser:", err);
+  //       }
+  //     };
 
-    fetchUser();
-  }, [loggedInUser]);
+  //     fetchUser();
+  //   }, [loggedInUser]);
 
-  useEffect(() => {
-    if (dbUser?.role === "HOSPITAL" && dbUser.user) {
-      console.log("[Dashboard] user is a hospital:", dbUser.user.id);
-      setHospitalID(dbUser.user.id);
-    }
-  }, [dbUser]);
+  //   useEffect(() => {
+  //     if (dbUser?.role === "HOSPITAL" && dbUser.user) {
+  //       console.log("[Dashboard] user is a hospital:", dbUser.user.id);
+  //       setHospitalID(dbUser.user.id);
+  //     }
+  //   }, [dbUser]);
 
-  useEffect(() => {
-    if (!hospitalID) return; // skip if hospitalID not set
+  //   useEffect(() => {
+  //     if (!hospitalID) return; // skip if hospitalID not set
 
-    const fetchAlerts = async () => {
-      try {
-        const res = await getAlerts(hospitalID);
-        setActiveAlerts([...mockPlasmaAlerts, ...res]);
-      } catch (err) {
-        console.error("Error loading alerts:", err);
-      }
-    };
+  //     const fetchAlerts = async () => {
+  //       try {
+  //         const res = await getAlerts(hospitalID);
+  //         setActiveAlerts([...mockPlasmaAlerts, ...res]);
+  //       } catch (err) {
+  //         console.error("Error loading alerts:", err);
+  //       }
+  //     };
 
-    fetchAlerts();
-  }, [hospitalID]);
+  //     fetchAlerts();
+  //   }, [hospitalID]);
 
   const handleCreateAlert = async () => {
     if (
@@ -470,7 +548,7 @@ export default function HospitalDashboard() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-white">
-                  Hospital Dashboard
+                  Blood Bank Dashboard
                 </h1>
                 <p className="text-sm text-gray-200">{user?.hospitalName}</p>
               </div>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Shield, Activity } from "lucide-react";
+import { Heart, Shield, Activity, Droplet, Droplets } from "lucide-react";
 import Link from "next/link";
 import {
   SignedIn,
@@ -152,33 +152,44 @@ const HomePage = () => {
           <div className="mb-12">
             {/* 👇 Show if NOT signed in */}
             {(!isSignedIn || !role) && (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  size="lg"
-                  onClick={() => handleClick("/donor/register")}
-                  className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)]"
-                >
-                  <Heart className="w-5 h-5 mr-2" />
-                  Become a Donor
-                </Button>
+              <div className="flex flex-wrap justify-center gap-4">
+                <div className="grid grid-cols-2 gap-4 justify-center">
+                  <Button
+                    size="lg"
+                    onClick={() => handleClick("/donor/register")}
+                    className="hover:bg-zinc-50 text-lg px-8 py-3 w-64 bg-slate-300 text-[rgba(154,117,31,1)]"
+                  >
+                    <Heart className="w-5 h-5 mr-2" />
+                    Become a Donor
+                  </Button>
 
-                <Button
-                  size="lg"
-                  onClick={() => handleClick("/hospital/register")}
-                  className="hover:bg-yellow-600 text-lg px-8 py-3 bg-transparent text-slate-300 border-slate-300 border border-dashed"
-                >
-                  <Activity className="w-5 h-5 mr-2" />
-                  Hospital Registration
-                </Button>
+                  <Button
+                    size="lg"
+                    onClick={() => handleClick("/hospital/register")}
+                    className="hover:bg-yellow-600 text-lg px-8 py-3 w-64 bg-transparent text-slate-300 border-slate-300 border border-dashed"
+                  >
+                    <Activity className="w-5 h-5 mr-2" />
+                    Hospital Registration
+                  </Button>
 
-                <Button
-                  size="lg"
-                  onClick={() => handleClick("/?admin=true")}
-                  className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
-                >
-                  <Shield className="w-5 h-5 mr-2" />
-                  Admin Dashboard
-                </Button>
+                  <Button
+                    size="lg"
+                    onClick={() => handleClick("/bloodbank/register")}
+                    className="hover:bg-yellow-600 text-lg px-8 py-3 w-64 bg-transparent text-slate-300 border-slate-300 border border-dashed"
+                  >
+                    <Droplets className="w-8 h-8 mr-2" />
+                    Blood Bank Registration
+                  </Button>
+
+                  <Button
+                    size="lg"
+                    onClick={() => handleClick("/?admin=true")}
+                    className="hover:bg-zinc-50 text-lg px-8 py-3 w-64 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                  >
+                    <Shield className="w-5 h-5 mr-2" />
+                    Admin Dashboard
+                  </Button>
+                </div>
               </div>
             )}
 

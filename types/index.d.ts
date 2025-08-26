@@ -100,6 +100,59 @@ interface HospitalData {
   networkParticipationAgreement: boolean;
 }
 
+interface BloodBankData {
+  // Legal & Regulatory Requirements
+  bloodBankLicense: string;
+  licenseExpiryDate: string;
+  sbtcNoc: boolean;
+  nocNumber: string;
+  nocExpiryDate: string;
+  nbtcCompliance: boolean;
+  nacoCompliance: boolean;
+
+  // Infrastructure Verification
+  bloodBankName: string;
+  bloodBankAddress: string;
+  city: string;
+  state: string;
+  pincode: string;
+  operationalStatus: string;
+  coldStorageFacility: boolean;
+  temperatureStandards: boolean;
+  testingLabsOnsite: boolean;
+  affiliatedLabs: string;
+  qualifiedMedicalOfficer: boolean;
+  certifiedTechnicians: string;
+  contactEmail: string;
+  contactPhone: string;
+
+  // Operational Criteria
+  inventoryReporting: boolean;
+  realTimeUpdates: boolean;
+  emergencyResponseCommitment: boolean;
+  responseTimeMinutes: string;
+  dataHandlingCommitment: boolean;
+  confidentialityAgreement: boolean;
+
+  // Documentation
+  bloodBankLicenseDoc: string | null;
+  authorizedRepIdProof: string | null;
+  contactDetails24x7: string;
+  mouAcceptance: boolean;
+
+  // Representative Details
+  repName: string;
+  repDesignation: string;
+  repIdNumber: string;
+  repEmail: string;
+  repPhone: string;
+
+  // Consent
+  termsAccepted: boolean;
+  dataProcessingConsent: boolean;
+  networkParticipationAgreement: boolean;
+}
+
 interface OpenCageResponse {
   results: {
     geometry: {
@@ -122,6 +175,7 @@ interface BloodAlert {
 type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-" | null;
 type Urgency = "CRITICAL" | "HIGH" | "MEDIUM" | null;
 type Radius = "5" | "10" | "15" | "20" | null;
+type AlertType = "Blood" | "Plasma" | null;
 
 interface CreateAlertInput {
   bloodType: BloodType;

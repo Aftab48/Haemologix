@@ -111,24 +111,51 @@ const ALL_BLOOD_TYPES: BloodTypeFormat[] = [
 /**
  * Check if a donor blood type is compatible with a recipient blood type.
  */
-export function isCompatible(
-  donor: BloodTypeFormat,
-  recipient: BloodTypeFormat
-): boolean {
-  const parseType = (blood: BloodTypeFormat) => {
-    const abo = blood.replace(/[+-]/, ""); // "O", "A", "B", "AB"
-    const rh = blood.includes("+") ? "+" : "-";
+export function isCompatible(donor: string, recipient: string): boolean {
+  // Handle non-blood cases early
+  if (!donor || !recipient) return false;
+
+  // Plasma: universally compatible
+  if (
+    recipient.toLowerCase() === "plasma" ||
+    donor.toLowerCase() === "plasma"
+  ) {
+    return true;
+  }
+
+  // Helper to safely parse ABO + Rh
+  const parseType = (blood: string) => {
+    // Ensure string looks like valid ABO group
+    const validGroups = ["O", "A", "B", "AB"];
+    const abo = validGroups.find((g) => blood.startsWith(g));
+    if (!abo) return undefined;
+
+    const rh = blood.includes("+")
+      ? "+"
+      : blood.includes("-")
+      ? "-"
+      : undefined;
+    if (!rh) return undefined;
+
     return { abo, rh };
   };
 
-  const { abo: donorABO, rh: donorRh } = parseType(donor);
-  const { abo: recipientABO, rh: recipientRh } = parseType(recipient);
+  const donorParsed = parseType(donor);
+  const recipientParsed = parseType(recipient);
+
+  if (!donorParsed || !recipientParsed) {
+    console.warn("Invalid blood type passed:", { donor, recipient });
+    return false;
+  }
+
+  const { abo: donorABO, rh: donorRh } = donorParsed;
+  const { abo: recipientABO, rh: recipientRh } = recipientParsed;
 
   // ABO compatibility
   let aboCompatible = false;
   switch (donorABO) {
     case "O":
-      aboCompatible = true; // O can donate to anyone
+      aboCompatible = true; // O donates to anyone
       break;
     case "A":
       aboCompatible = recipientABO === "A" || recipientABO === "AB";
@@ -141,9 +168,8 @@ export function isCompatible(
       break;
   }
 
-  // Rh compatibility
-  let rhCompatible = donorRh === "-" || recipientRh === "+";
-  // "-" donates to both, "+" only to "+"
+  // Rh compatibility: "-" can donate to both, "+" only to "+"
+  const rhCompatible = donorRh === "-" || recipientRh === "+";
 
   return aboCompatible && rhCompatible;
 }
