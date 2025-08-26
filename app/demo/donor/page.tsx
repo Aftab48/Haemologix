@@ -36,6 +36,14 @@ import {
   getEligibilityProgress,
   isCompatible,
 } from "@/lib/utils";
+import { format } from "path";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function DonorDashboard() {
   //const [dbUser, setDbUser] = useState<any>(null);
@@ -82,6 +90,10 @@ export default function DonorDashboard() {
   //   fetchUser();
   // }, [loggedInUser]);
 
+  const [alertFilter, setAlertFilter] = useState<
+    "All" | "Blood" | "Platelets" | "Plasma"
+  >("All");
+
   const [activeAlerts, setActiveAlerts] = useState([
     {
       id: 1,
@@ -125,30 +137,31 @@ export default function DonorDashboard() {
     },
     {
       id: 4,
-      hospitalName: "Community Hospital",
-      bloodType: "B+",
+      hospitalName: "Regional Blood Bank",
+      bloodType: "Platelets",
       urgency: "Critical",
-      distance: "3.5 km",
-      timePosted: "30 minutes ago",
-      unitsNeeded: 5,
-      description: "Severe trauma patient needs urgent blood transfusion",
-      location: "Eastside",
-      contactPhone: "+1-555-0234",
+      distance: "4 km",
+      timePosted: "10 hours ago",
+      unitsNeeded: 3,
+      description: "Urgent platelets required for surgery",
+      location: "Regional Blood Bank",
+      contactPhone: "+1-555-0000",
       responded: false,
     },
     {
       id: 5,
-      hospitalName: "Downtown Medical Center",
-      bloodType: "AB+",
-      urgency: "High",
-      distance: "5.1 km",
-      timePosted: "45 minutes ago",
+      hospitalName: "Green Valley Clinic",
+      bloodType: "Platelets",
+      urgency: "Critical",
+      distance: "9 km",
+      timePosted: "7 hours ago",
       unitsNeeded: 2,
-      description: "Blood needed for cancer patient treatment",
-      location: "Central Business District",
-      contactPhone: "+1-555-0567",
+      description: "Urgent platelets needed for patient recovery",
+      location: "Green Valley Clinic",
+      contactPhone: "+1-555-0001",
       responded: false,
     },
+
     {
       id: 6,
       hospitalName: "Green Valley Clinic",
@@ -216,6 +229,32 @@ export default function DonorDashboard() {
         "Emergency plasma needed in ICU for dengue shock syndrome patient",
       location: "Northside Industrial Area",
       contactPhone: "+1-555-0345",
+      responded: false,
+    },
+    {
+      id: 11,
+      hospitalName: "Amri Hospital",
+      bloodType: "Platelets",
+      urgency: "Low",
+      distance: "8 km",
+      timePosted: "15 ago",
+      unitsNeeded: 2,
+      description: "Urgent platelets needed for patient recovery",
+      location: "Amri Hospital",
+      contactPhone: "+1-555-0001",
+      responded: false,
+    },
+    {
+      id: 12,
+      hospitalName: "Apollo City Hospital",
+      bloodType: "Platelets",
+      urgency: "High",
+      distance: "2 km",
+      timePosted: "30 mins ago",
+      unitsNeeded: 2,
+      description: "Urgent platelets needed for patient recovery",
+      location: "Apollo City Hospital",
+      contactPhone: "+1-555-0001",
       responded: false,
     },
   ]);
@@ -346,7 +385,6 @@ export default function DonorDashboard() {
     livesSaved: 36,
     eligibilityStatus: "Eligible",
   });
-  const router = useRouter();
 
   const [buttonResponse, setButtonResponse] = useState<
     "accept" | "decline" | null
@@ -374,6 +412,13 @@ export default function DonorDashboard() {
         return "bg-gray-600 text-white border-gray-700";
     }
   };
+
+  const filteredAlerts = activeAlerts.filter((alert) => {
+    if (alertFilter === "All") return true;
+    if (alertFilter === "Blood")
+      return !["Platelets", "Plasma"].includes(alert.bloodType);
+    return alert.bloodType.toLowerCase() === alertFilter.toLowerCase();
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-900 to-yellow-600 flex flex-col relative overflow-hidden">
@@ -604,18 +649,42 @@ export default function DonorDashboard() {
 
           {/* Active Alerts Tab */}
           <TabsContent value="alerts" className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
+              {/* Heading on the far left */}
               <h2 className="text-2xl font-bold text-white">
                 Emergency Blood Requests
               </h2>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-              >
-                <MapPin className="w-4 h-4 mr-2" />
-                Update Location
-              </Button>
+
+              {/* Right side controls: Filter + Location */}
+              <div className="flex items-center gap-3">
+                <Select
+                  value={alertFilter}
+                  onValueChange={(value) =>
+                    setAlertFilter(
+                      value as "All" | "Blood" | "Platelets" | "Plasma"
+                    )
+                  }
+                >
+                  <SelectTrigger className="w-32 bg-white/5 border-white/20 text-white">
+                    <SelectValue placeholder="Filter Type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 text-white border-gray-700">
+                    <SelectItem value="All">All</SelectItem>
+                    <SelectItem value="Blood">Blood</SelectItem>
+                    <SelectItem value="Platelets">Platelets</SelectItem>
+                    <SelectItem value="Plasma">Plasma</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Update Location
+                </Button>
+              </div>
             </div>
 
             {!isAvailable ? (
@@ -646,7 +715,7 @@ export default function DonorDashboard() {
               </Card>
             ) : (
               <div className="space-y-4">
-                {activeAlerts.map((alert) => (
+                {filteredAlerts.map((alert) => (
                   <Card
                     key={alert.id}
                     className="border-l-4 border-l-red-500 bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg"
@@ -665,7 +734,9 @@ export default function DonorDashboard() {
                               variant="outline"
                               className="bg-white/20 text-white border-white/30"
                             >
-                              Blood Type: {alert.bloodType}
+                              {["Platelets", "Plasma"].includes(alert.bloodType)
+                                ? alert.bloodType
+                                : `Blood Type: ${alert.bloodType}`}
                             </Badge>
                           </div>
                           <p className="text-gray-200 mb-3">
@@ -748,6 +819,10 @@ export default function DonorDashboard() {
                           {alert.bloodType?.toLowerCase() === "plasma" ? (
                             <p className="text-green-500 text-sm font-medium">
                               ✅ Plasma donations are universally accepted.
+                            </p>
+                          ) : alert.bloodType?.toLowerCase() === "platelets" ? (
+                            <p className="text-green-500 text-sm font-medium">
+                              ✅ Platelet donations are universally accepted.
                             </p>
                           ) : (
                             !isCompatible(

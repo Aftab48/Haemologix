@@ -115,10 +115,12 @@ export function isCompatible(donor: string, recipient: string): boolean {
   // Handle non-blood cases early
   if (!donor || !recipient) return false;
 
-  // Plasma: universally compatible
+  // Plasma and Platelets: universally compatible
   if (
     recipient.toLowerCase() === "plasma" ||
-    donor.toLowerCase() === "plasma"
+    donor.toLowerCase() === "plasma" ||
+    recipient.toLowerCase() === "platelets" ||
+    donor.toLowerCase() === "platelets"
   ) {
     return true;
   }

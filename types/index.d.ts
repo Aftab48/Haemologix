@@ -175,7 +175,7 @@ interface BloodAlert {
 type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-" | null;
 type Urgency = "CRITICAL" | "HIGH" | "MEDIUM" | null;
 type Radius = "5" | "10" | "15" | "20" | null;
-type AlertType = "Blood" | "Plasma" | null;
+type AlertType = "Blood" | "Plasma" | "Platelets" | null;
 
 interface CreateAlertInput {
   bloodType: BloodType;
@@ -214,8 +214,10 @@ interface Alerts {
 }
 
 type Status = "Active" | "Closed" | null;
+type donationType = "Blood" | "Plasma" | "Platelets" | null;
 
 interface DonorUI {
+  type: donationType;
   id: string;
   donorName: string;
   lastDonation: string;
