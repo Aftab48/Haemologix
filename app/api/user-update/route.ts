@@ -4,10 +4,10 @@ import { updateUserStatus } from "@/lib/actions/user.actions";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const userId = "371e7b56-c11a-4cbf-8300-757526221233";
+  const userId = "0075bc2f-5200-46dc-a7f6-aa63b26d4fc3";
 
   try {
-    const user = await db.hospitalRegistration.findUnique({
+    const user = await db.donorRegistration.findUnique({
       where: { id: userId },
     });
 
@@ -15,7 +15,7 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    await updateUserStatus(userId, "hospital", "PENDING");
+    await updateUserStatus(userId, "donor", "PENDING");
 
     return NextResponse.json({
       success: true,

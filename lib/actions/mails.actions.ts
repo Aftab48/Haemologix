@@ -3,10 +3,16 @@ import fs from "fs";
 import path from "path";
 import { transporter } from "@/lib/mail";
 
-// load static HTML file from /emails
-function loadEmailTemplate(filename: string) {
-  const filePath = path.join(process.cwd(), "emails", filename);
-  return fs.readFileSync(filePath, "utf8");
+// Load static HTML file from /public/emails
+async function loadEmailTemplate(filename: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"; // fallback for local dev
+  const res = await fetch(`${baseUrl}/emails/${filename}`);
+
+  if (!res.ok) {
+    throw new Error(`Failed to load email template: ${filename}`);
+  }
+
+  return await res.text();
 }
 
 function applyTemplate(html: string, data: Record<string, string>) {
@@ -14,7 +20,7 @@ function applyTemplate(html: string, data: Record<string, string>) {
 }
 
 export async function sendDonorRegistrationEmail(to: string, name: string) {
-  let html = loadEmailTemplate("donorConfirmation.html");
+  let html = await loadEmailTemplate("donorConfirmation.html");
   html = applyTemplate(html, { name });
 
   try {
@@ -34,7 +40,7 @@ export async function sendDonorRegistrationEmail(to: string, name: string) {
 }
 
 export async function sendApplicationApprovedEmail(to: string, name: string) {
-  let html = loadEmailTemplate("approvedDonor.html");
+  let html = await loadEmailTemplate("approvedDonor.html");
   html = applyTemplate(html, { name });
 
   try {
@@ -65,7 +71,7 @@ export async function sendApplicationApprovedEmail(to: string, name: string) {
 }
 
 export async function sendApplicationRejectedEmail(to: string, name: string) {
-  let html = loadEmailTemplate("rejectedDonor.html");
+  let html = await loadEmailTemplate("rejectedDonor.html");
   html = applyTemplate(html, { name });
 
   try {
@@ -88,7 +94,7 @@ export async function sendHospitalConfirmationEmail(
   to: string,
   hospitalName: string
 ) {
-  let html = loadEmailTemplate("hospitalConfirmation.html");
+  let html = await loadEmailTemplate("hospitalConfirmation.html");
   html = applyTemplate(html, { hospitalName });
 
   try {
@@ -111,7 +117,7 @@ export async function sendHospitalApprovedEmail(
   to: string,
   hospitalName: string
 ) {
-  let html = loadEmailTemplate("approvedHospital.html");
+  let html = await loadEmailTemplate("approvedHospital.html");
   html = applyTemplate(html, { hospitalName });
 
   try {
@@ -134,7 +140,7 @@ export async function sendHospitalRejectionEmail(
   to: string,
   hospitalName: string
 ) {
-  let html = loadEmailTemplate("rejectedHospital.html");
+  let html = await loadEmailTemplate("rejectedHospital.html");
   html = applyTemplate(html, { hospitalName });
 
   try {
@@ -157,7 +163,7 @@ export async function sendUrgentBloodRequestEmail(
   to: string,
   bloodType: string
 ) {
-  let html = loadEmailTemplate("alert.html");
+  let html = await loadEmailTemplate("alert.html");
   html = applyTemplate(html, { bloodType });
 
   try {
