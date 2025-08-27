@@ -195,13 +195,22 @@ const HomePage = () => {
 
             {/* 👇 Show if signed in */}
             {isSignedIn && role && (
-              <div className="flex justify-center">
+              <div className="flex gap-4 justify-center">
                 <Button
                   size="lg"
                   onClick={() => handleClick(dashboardPath)}
                   className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
                 >
+                  <Activity className="w-5 h-5 mr-2" />
                   {dashboardMessage}
+                </Button>
+                <Button
+                  size="lg"
+                  onClick={() => handleClick("/?admin=true")}
+                  className="hover:bg-zinc-50 text-lg px-8 py-3 w-64 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                >
+                  <Shield className="w-5 h-5 mr-2" />
+                  Admin Dashboard
                 </Button>
               </div>
             )}

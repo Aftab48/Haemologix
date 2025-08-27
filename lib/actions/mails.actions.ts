@@ -47,9 +47,20 @@ export async function sendApplicationApprovedEmail(to: string, name: string) {
 
     console.log("Email sent:", info.messageId);
     return { success: true };
-  } catch (err) {
-    console.error("Email send error:", err);
-    throw new Error("Failed to send application approved email");
+  } catch (err: any) {
+    console.error("❌ Email send error:", {
+      message: err.message,
+      code: err.code,
+      response: err.response,
+      command: err.command,
+    });
+
+    // Re-throw with more details for Vercel logs
+    throw new Error(
+      `MAIL_ERROR: ${err.message} | code: ${err.code || "N/A"} | response: ${
+        err.response || "N/A"
+      } | command: ${err.command || "N/A"}`
+    );
   }
 }
 

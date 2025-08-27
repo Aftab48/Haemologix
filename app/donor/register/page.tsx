@@ -255,12 +255,12 @@ export default function DonorRegistration() {
       console.error("Error sending registration email:", err);
     }
 
-    // Step 4: Send registration SMS
-    // try {
-    //   await sendDonorRegistrationSMS(formData.phone, formData.firstName);
-    // } catch (err) {
-    //   console.error("Error sending registration SMS:", err);
-    // }
+    //Step 4: Send registration SMS
+    try {
+      await sendDonorRegistrationSMS(formData.phone, formData.firstName);
+    } catch (err) {
+      console.error("Error sending registration SMS:", err);
+    }
 
     console.log("Form submitted:", formData);
     setIsSubmitted(true);
@@ -656,6 +656,7 @@ export default function DonorRegistration() {
                 {/* Never Donated Checkbox */}
                 <div className="flex items-center gap-2">
                   <input
+                    className="accent-red-600 cursor-pointer"
                     type="checkbox"
                     id="neverDonated"
                     checked={formData.neverDonated || false}
