@@ -18,6 +18,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import PasskeyModal from "@/components/PasskeyModal";
 import { stats, features, steps, CarouselData } from "@/constants";
 import { getCurrentUser } from "@/lib/actions/user.actions";
+import Image from "next/image";
 
 const HomePage = () => {
   const [activeFeature, setActiveFeature] = useState(0);
@@ -80,10 +81,16 @@ const HomePage = () => {
     <div className="min-h-screen bg-red-900">
       {/* Header */}
       <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-yellow-600/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center bg-transparent">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-px rounded bg-transparent">
+        <div className="container mx-auto px-2 md:px-4 py-2 md:py-4 flex items-center justify-between gap-px rounded bg-transparent">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-300">
-              <Heart className="w-6 h-6 text-[rgba(127,29,29,1)]" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-slate-300">
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={48}
+                height={48}
+                className="rounded-full"
+              />
             </div>
             <Link href={"/"} className="text-xl font-bold text-slate-300">
               {"HaemoLogix"}
@@ -91,16 +98,16 @@ const HomePage = () => {
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="#features"
+              href="/#features"
               className="hover:text-yellow-600 transition-colors text-slate-300"
             >
               Features
             </Link>
             <Link
-              href="#how-it-works"
+              href="/impact"
               className="hover:text-yellow-600 transition-colors text-slate-300"
             >
-              How It Works
+              Impact
             </Link>
             <Link
               href="/contact"
@@ -153,7 +160,7 @@ const HomePage = () => {
             {/* 👇 Show if NOT signed in */}
             {(!isSignedIn || !role) && (
               <div className="flex flex-wrap justify-center gap-4">
-                <div className="grid grid-cols-2 gap-4 justify-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-center">
                   <Button
                     size="lg"
                     onClick={() => handleClick("/donor/register")}
@@ -195,7 +202,7 @@ const HomePage = () => {
 
             {/* 👇 Show if signed in */}
             {isSignedIn && role && (
-              <div className="flex gap-4 justify-center">
+              <div className=" gap-4 flex flex-col md:flex-row justify-center">
                 <Button
                   size="lg"
                   onClick={() => handleClick(dashboardPath)}
@@ -207,7 +214,7 @@ const HomePage = () => {
                 <Button
                   size="lg"
                   onClick={() => handleClick("/?admin=true")}
-                  className="hover:bg-zinc-50 text-lg px-8 py-3 w-64 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                  className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
                 >
                   <Shield className="w-5 h-5 mr-2" />
                   Admin Dashboard
@@ -252,12 +259,12 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div className="w-full">
+          <div className="w-full px-2 md:px-0">
             <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto mb-8">
               {features.map((feature, index) => (
                 <Card
                   key={index}
-                  className={`cursor-pointer transition-all duration-300 h-32 backdrop-blur-md bg-slate-300/30 border border-slate-300/40 shadow-lg hover:shadow-yellow-600/50 hover:shadow-2xl hover:border-yellow-600/60 ${
+                  className={`cursor-pointer transition-all duration-300 h-full backdrop-blur-md bg-slate-300/30 border border-slate-300/40 shadow-lg hover:shadow-yellow-600/50 hover:shadow-2xl hover:border-yellow-600/60 ${
                     activeFeature === index
                       ? "border-red-500 shadow-lg bg-slate-300/40"
                       : ""
@@ -266,7 +273,7 @@ const HomePage = () => {
                 >
                   <CardContent className="p-4 h-full flex flex-col">
                     <div className="flex items-start gap-3 flex-1">
-                      <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 backdrop-blur-sm bg-slate-400/60 text-gray-800">
+                      <div className="w-6 h-6 md:w-10 md:h-10 rounded-lg flex items-center justify-center flex-shrink-0 backdrop-blur-sm bg-slate-400/60 text-gray-800">
                         <feature.icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
@@ -304,7 +311,7 @@ const HomePage = () => {
           <div className="relative max-w-6xl mx-auto">
             {/* Animated connector lines */}
             <svg
-              className="absolute inset-0 w-full h-full pointer-events-none"
+              className="absolute hidden md:block inset-0 w-full h-full pointer-events-none"
               style={{ zIndex: 1 }}
             >
               <defs>
@@ -634,7 +641,7 @@ const HomePage = () => {
               <div className="flex items-center gap-2 mb-4">
                 <Heart className="w-6 h-6 text-slate-300" />
                 <span className="text-xl font-bold text-slate-300">
-                  BloodConnect
+                  Haemologix
                 </span>
               </div>
               <p className="text-gray-400">
@@ -704,7 +711,7 @@ const HomePage = () => {
           </div>
           <div className="border-t border-slate-300 mt-8 pt-8 text-center text-gray-400">
             <p>
-              &copy; 2024 BloodConnect. All rights reserved. Built for saving
+              &copy; 2024 Haemologix. All rights reserved. Built for saving
               lives.
             </p>
           </div>

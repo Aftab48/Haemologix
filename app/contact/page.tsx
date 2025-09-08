@@ -16,6 +16,7 @@ import {
   SignUpButton,
   UserButton,
 } from "@clerk/nextjs";
+import Image from "next/image";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -34,58 +35,63 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-red-900">
       {/* Header */}
-      <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-yellow-600/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center bg-transparent">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between gap-px rounded bg-transparent">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-300">
-              <Heart className="w-6 h-6 text-[rgba(127,29,29,1)]" />
-            </div>
-            <span className="text-xl font-bold text-slate-300">
-              {"HaemoLogix"}
-            </span>
-          </div>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link
-              href="/"
-              className="hover:text-yellow-600 transition-colors text-slate-300"
-            >
-              Home
-            </Link>
-            <Link
-              href="/#features"
-              className="hover:text-yellow-600 transition-colors text-slate-300"
-            >
-              Features
-            </Link>
-            <Link
-              href="/#how-it-works"
-              className="hover:text-yellow-600 transition-colors text-slate-300"
-            >
-              How It Works
-            </Link>
-            <Link href="/contact" className="text-yellow-600 font-semibold">
-              Contact
-            </Link>
-          </nav>
-          <div className="flex items-center gap-1 md:gap-3">
-            <SignedOut>
-              <SignInButton>
-                <button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
-                  Sign In
-                </button>
-              </SignInButton>
-              <SignUpButton>
-                <button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
-                  Sign Up
-                </button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </div>
-        </div>
-      </header>
+           <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-yellow-600/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center bg-transparent">
+             <div className="container mx-auto px-2 md:px-4 py-2 md:py-4 flex items-center justify-between gap-px rounded bg-transparent">
+               <div className="flex items-center gap-2">
+                 <div className="w-12 h-12 rounded-full flex items-center justify-center bg-slate-300">
+                   <Image
+                     src="/logo.png"
+                     alt="Logo"
+                     width={48}
+                     height={48}
+                     className="rounded-full"
+                   />
+                 </div>
+                 <Link href={"/"} className="text-xl font-bold text-slate-300">
+                   {"HaemoLogix"}
+                 </Link>
+               </div>
+               <nav className="hidden md:flex items-center gap-6">
+                 <Link
+                   href="/#features"
+                   className="hover:text-yellow-600 transition-colors text-slate-300"
+                 >
+                   Features
+                 </Link>
+                 <Link
+                   href="/impact"
+                   className="hover:text-yellow-600 transition-colors text-slate-300"
+                 >
+                   Impact
+                 </Link>
+                 <Link
+                   href="/contact"
+                   className="hover:text-yellow-600 transition-colors text-slate-300"
+                 >
+                   Contact
+                 </Link>
+               </nav>
+               <div className="flex items-center gap-1 md:gap-3">
+                 <SignedOut>
+                   <SignInButton>
+                     <Button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
+                       Sign In
+                     </Button>
+                   </SignInButton>
+                   <div className="hidden lg:block">
+                     <SignUpButton>
+                       <Button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
+                         Sign Up
+                       </Button>
+                     </SignUpButton>
+                   </div>
+                 </SignedOut>
+                 <SignedIn>
+                   <UserButton />
+                 </SignedIn>
+               </div>
+             </div>
+           </header>
 
       {/* Contact Section */}
       <section className="py-20 px-4 bg-gradient-to-br from-red-900 via-red-900 to-yellow-600">

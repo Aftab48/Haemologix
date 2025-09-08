@@ -57,6 +57,7 @@ import {
 } from "@/lib/actions/alerts.actions";
 import { getCurrentUser } from "@/lib/actions/user.actions";
 import { formatLastActivity } from "@/lib/utils";
+import Image from "next/image";
 
 type Donor = {
   id: number;
@@ -74,9 +75,10 @@ export default function HospitalDashboard() {
   const [showCreateAlert, setShowCreateAlert] = useState(false);
   const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
 
-  const [donorResponses, setDonorResponses] = useState<DonorUI[]>([
+  const [donorResponses, setDonorResponses] = useState<Donor[]>([
     {
-      id: "1",
+      id: 1,
+      alertId: 1,
       donorName: "Arjun Roy",
       bloodType: "O+",
       distance: "2.3 km",
@@ -86,7 +88,8 @@ export default function HospitalDashboard() {
       lastDonation: "3 months ago",
     },
     {
-      id: "2",
+      id: 2,
+      alertId: 1,
       donorName: "Priya Sen",
       bloodType: "A-",
       distance: "1.8 km",
@@ -96,9 +99,10 @@ export default function HospitalDashboard() {
       lastDonation: "4 months ago",
     },
     {
-      id: "3",
+      id: 3,
+      alertId: 2,
       donorName: "Ritwik Chatterjee",
-      bloodType: "B+",
+      bloodType: "O+",
       distance: "5.8 km",
       phone: "+91-98765-43210",
       status: "Confirmed",
@@ -106,9 +110,10 @@ export default function HospitalDashboard() {
       lastDonation: "5 months ago",
     },
     {
-      id: "4",
+      id: 4,
+      alertId: 2,
       donorName: "Sohini Dutta",
-      bloodType: "B-",
+      bloodType: "O+",
       distance: "6.3 km",
       phone: "+91-97481-55678",
       status: "Pending",
@@ -116,9 +121,10 @@ export default function HospitalDashboard() {
       lastDonation: "6 months ago",
     },
     {
-      id: "5",
+      id: 5,
+      alertId: 3,
       donorName: "Aniket Mukherjee",
-      bloodType: "AB+",
+      bloodType: "O+",
       distance: "5.0 km",
       phone: "+91-98312-33445",
       status: "Confirmed",
@@ -126,19 +132,22 @@ export default function HospitalDashboard() {
       lastDonation: "2 months ago",
     },
     {
-      id: "6",
+      id: 6,
+      alertId: 3,
       donorName: "Moumita Ghosh",
-      bloodType: "AB-",
+      bloodType: "A-",
       distance: "6.8 km",
       phone: "+91-99030-66789",
       status: "Pending",
       eta: "75 minutes",
       lastDonation: "7 months ago",
     },
+
     {
-      id: "7",
+      id: 7,
+      alertId: 4,
       donorName: "Sayan Banerjee",
-      bloodType: "A+",
+      bloodType: "A-",
       distance: "3.4 km",
       phone: "+91-89670-44556",
       status: "Confirmed",
@@ -146,9 +155,10 @@ export default function HospitalDashboard() {
       lastDonation: "1 month ago",
     },
     {
-      id: "8",
+      id: 8,
+      alertId: 4,
       donorName: "Debanjan Saha",
-      bloodType: "O-",
+      bloodType: "A-",
       distance: "29 km",
       phone: "+91-97480-11223",
       status: "Pending",
@@ -156,7 +166,8 @@ export default function HospitalDashboard() {
       lastDonation: "8 months ago",
     },
     {
-      id: "9",
+      id: 9,
+      alertId: 5,
       donorName: "Shreya Basu",
       bloodType: "A-",
       distance: "1.6 km",
@@ -166,9 +177,10 @@ export default function HospitalDashboard() {
       lastDonation: "6 months ago",
     },
     {
-      id: "10",
+      id: 10,
+      alertId: 5,
       donorName: "Subhajit Paul",
-      bloodType: "B+",
+      bloodType: "A-",
       distance: "23.0 km",
       phone: "+91-99039-77441",
       status: "Pending",
@@ -392,7 +404,7 @@ export default function HospitalDashboard() {
   //   );
   // }
 
-  const [justConfirmed, setJustConfirmed] = useState<string | null>(null);
+  const [justConfirmed, setJustConfirmed] = useState<number | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [distanceFilter, setDistanceFilter] = useState("all");
@@ -414,7 +426,7 @@ export default function HospitalDashboard() {
     });
   }, [donorResponses, searchTerm, distanceFilter, bloodTypeFilter]);
 
-  const handleConfirm = (donorID: string) => {
+  const handleConfirm = (donorID: number) => {
     // Call the API to confirm the donor's response
     // confirmDonorResponse(donorID)
     //   .then(() => {
@@ -465,7 +477,13 @@ export default function HospitalDashboard() {
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center">
                 <Link href={"/"}>
-                  <Building className="w-6 h-6 text-white" />
+                  <Image
+                                       src="/logo.png"
+                                       alt="Logo"
+                                       width={48}
+                                       height={48}
+                                       className="rounded-full"
+                                     />
                 </Link>
               </div>
               <div>

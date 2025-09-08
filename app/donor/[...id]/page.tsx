@@ -37,6 +37,7 @@ import {
   getEligibilityProgress,
   isCompatible,
 } from "@/lib/utils";
+import Image from "next/image";
 
 export default function DonorDashboard() {
   const { user: loggedInUser } = useUser();
@@ -331,7 +332,13 @@ export default function DonorDashboard() {
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
                 <Link href={"/"}>
-                  <Heart className="w-6 h-6 text-white" />
+                 <Image
+                                      src="/logo.png"
+                                      alt="Logo"
+                                      width={48}
+                                      height={48}
+                                      className="rounded-full"
+                                    />
                 </Link>
               </div>
               <div>

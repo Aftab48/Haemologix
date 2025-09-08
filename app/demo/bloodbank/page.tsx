@@ -52,6 +52,7 @@ import { useRouter } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 
 import { formatLastActivity } from "@/lib/utils";
+import Image from "next/image";
 
 type Donor = {
   id: number;
@@ -650,7 +651,13 @@ export default function BloodbankDashboard() {
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center">
                 <Link href={"/"}>
-                  <Building className="w-6 h-6 text-white" />
+                  <Image
+                                       src="/logo.png"
+                                       alt="Logo"
+                                       width={48}
+                                       height={48}
+                                       className="rounded-full"
+                                     />
                 </Link>
               </div>
               <div>

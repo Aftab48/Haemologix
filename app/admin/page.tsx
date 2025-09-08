@@ -36,6 +36,8 @@ import {
   BarChart3,
   Globe,
   Clock,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
 import { ApprovalStatus } from "@prisma/client";
@@ -65,6 +67,7 @@ export default function AdminDashboard() {
     email: "",
     role: "",
   });
+  const [activeTab, setActiveTab] = useState("users");
 
   useEffect(() => {
     if (user) {
@@ -188,7 +191,11 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchHospitals();
   }, []);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "donor" | "hospital">(
     "all"
@@ -303,6 +310,13 @@ export default function AdminDashboard() {
     }
   };
 
+  const tabOptions = [
+    { value: "users", label: "User Management" },
+    { value: "hospitals", label: "Hospital Verification" },
+    { value: "analytics", label: "System Analytics" },
+    { value: "activity", label: "Activity Logs" },
+  ];
+
   if (loading) return <p>Loading Data...</p>;
 
   return (
@@ -330,7 +344,7 @@ export default function AdminDashboard() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="lg:flex items-center hidden gap-3">
               <Button
                 variant="outline"
                 size="sm"
@@ -507,39 +521,48 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/10 backdrop-blur-sm border border-white/20">
-            <TabsTrigger
-              value="users"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              User Management
-            </TabsTrigger>
-            <TabsTrigger
-              value="hospitals"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Hospital Verification
-            </TabsTrigger>
-            <TabsTrigger
-              value="analytics"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              System Analytics
-            </TabsTrigger>
-            <TabsTrigger
-              value="activity"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Activity Logs
-            </TabsTrigger>
+        <Tabs
+          defaultValue="users"
+          className="space-y-6"
+          value={activeTab}
+          onValueChange={setActiveTab}
+        >
+          <div className="lg:hidden mb-4">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full bg-white/10 text-white border border-white/20">
+                <SelectValue placeholder="Select Tab" />
+              </SelectTrigger>
+              <SelectContent>
+                {tabOptions.map((tab) => (
+                  <SelectItem key={tab.value} value={tab.value}>
+                    {tab.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <TabsList className="lg:grid w-full grid-cols-4 bg-white/10 backdrop-blur-sm border hidden border-white/20">
+            {tabOptions.map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className="
+                text-white text-center rounded-md
+                data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md
+                transition-all duration-300
+                first:rounded-l-lg last:rounded-r-lg
+              "
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           {/* User Management Tab */}
           <TabsContent value="users" className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col lg:flex-row gap-y-3 items-center justify-between">
               <h2 className="text-2xl font-bold text-white">User Management</h2>
-              <div className="flex gap-3">
+              <div className="flex flex-col lg:flex-row gap-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -549,30 +572,32 @@ export default function AdminDashboard() {
                     className="pl-10 w-64 bg-white/5 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-yellow-600"
                   />
                 </div>
-                <Select
-                  value={roleFilter}
-                  onValueChange={(value) => setRoleFilter(value as any)}
-                >
-                  <SelectTrigger className="w-32 bg-white/5 border-white/20 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 text-white border-gray-700">
-                    <SelectItem value="all">All Roles</SelectItem>
-                    <SelectItem value="donor">Donors</SelectItem>
-                    <SelectItem value="hospital">Hospitals</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
+                <div className="flex justify-between gap-2 w-full">
+                  <Select
+                    value={roleFilter}
+                    onValueChange={(value) => setRoleFilter(value as any)}
+                  >
+                    <SelectTrigger className="w-32 bg-white/5 border-white/20 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 text-white border-gray-700">
+                      <SelectItem value="all">All Roles</SelectItem>
+                      <SelectItem value="donor">Donors</SelectItem>
+                      <SelectItem value="hospital">Hospitals</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
               </div>
             </div>
 
-            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+            <Card className="bg-white/10 backdrop-blur-sm border hidden lg:block border-white/20 text-white">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -695,11 +720,101 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* PHONE */}
+            <div className="space-y-4 lg:hidden">
+              {filteredUsers.map((user) => (
+                <Card
+                  key={user.id}
+                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
+                >
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col gap-3">
+                      {/* Header: Name, Email, Role */}
+                      <div>
+                        <p className="text-lg font-semibold text-white">
+                          {user.name}
+                        </p>
+                        <p className="text-sm text-gray-300">{user.email}</p>
+                        {user.bloodType && (
+                          <Badge className="mt-1 bg-white/5 border-white/20 text-white">
+                            {user.bloodType}
+                          </Badge>
+                        )}
+                        <Badge className="capitalize bg-white/5 border-white/20 text-white ml-2">
+                          {user.role}
+                        </Badge>
+                      </div>
+
+                      {/* Info Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm text-gray-300">
+                        <div>Status: {getStatusBadge(user.status)}</div>
+                        <div>
+                          Last Activity:{" "}
+                          {formatLastActivity(user.lastActivity, false)}
+                        </div>
+                        <div>
+                          {user.role === "donor"
+                            ? `${user.totalDonations} donations`
+                            : `${user.totalAlerts} alerts`}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-white/20 hover:bg-white/20 text-slate-700"
+                          onClick={() => handleViewClick(user)}
+                        >
+                          View
+                        </Button>
+
+                        {user.status === "PENDING" ? (
+                          <>
+                            <Button
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-green-500/50"
+                              onClick={() => handleApprove(user)}
+                            >
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="bg-transparent hover:bg-red-600/20 border-red-950 text-red-950"
+                              onClick={() => handleReject(user)}
+                            >
+                              <XCircle className="w-3 h-3 mr-1" />
+                              Reject
+                            </Button>
+                          </>
+                        ) : (
+                          <span
+                            className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                              user.status === "APPROVED"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {user.status === "APPROVED"
+                              ? "User Approved ✅"
+                              : "User Rejected ❌"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </TabsContent>
 
           {/* Hospital Verification Tab */}
           <TabsContent value="hospitals" className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex gap-y-3 flex-col lg:flex-row items-center justify-between">
               <h2 className="text-2xl font-bold text-white">
                 Hospital Verification
               </h2>
@@ -709,7 +824,7 @@ export default function AdminDashboard() {
                   setStatusFilter(value as ApprovalStatus | "ALL")
                 }
               >
-                <SelectTrigger className="w-32 bg-white/5 border-white/20 text-white">
+                <SelectTrigger className="w-full lg:w-32 bg-white/5 border-white/20 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 text-white border-gray-700">
@@ -732,101 +847,138 @@ export default function AdminDashboard() {
             <div className="space-y-4">
               {filteredUsers
                 .filter((user) => user.role === "hospital")
-                .map((hospital) => (
-                  <Card
-                    key={hospital.id}
-                    className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-white">
-                              {hospital.name}
-                            </h3>
-                            {getStatusBadge(hospital.status)}
-                            <Badge
-                              variant="outline"
-                              className="bg-white/5 border-white/20 text-white"
-                            >
-                              {Math.random() < 0.5 ? "Government" : "Private"}
-                            </Badge>
-                          </div>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-300 mb-4">
-                            <div>
-                              <span className="font-medium text-white">
-                                Email:
-                              </span>{" "}
-                              {hospital.email}
-                            </div>
-                            <div>
-                              <span className="font-medium text-white">
-                                License:
-                              </span>{" "}
-                              {hospital.bloodBankLicense}
-                            </div>
-                            <div>
-                              <span className="font-medium text-white">
-                                Location:
-                              </span>{" "}
-                              {hospital.address}
-                            </div>
-                            <div>
-                              <span className="font-medium text-white">
-                                Response Time:
-                              </span>{" "}
-                              {hospital.responseTimeMinutes} minutes
-                            </div>
-                          </div>
-                          <div className="flex gap-2 items-center">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-white/20 hover:bg-white/20 text-slate-700"
-                              onClick={() => handleViewClick(hospital)}
-                            >
-                              View
-                            </Button>
+                .map((hospital) => {
+                  const isExpanded = expanded[hospital.id] || false;
 
-                            {hospital.status === "PENDING" ? (
-                              <>
-                                <Button
-                                  size="sm"
-                                  className="bg-green-600 hover:bg-green-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-green-500/50"
-                                  onClick={() => handleApprove(hospital)}
-                                >
-                                  <CheckCircle className="w-2 h-2 mr-1" />
-                                  Approve
-                                </Button>
-                                <Button
+                  return (
+                    <Card
+                      key={hospital.id}
+                      className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
+                    >
+                      <CardContent className="p-4 sm:p-6">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="flex-1">
+                            {/* Title & Badges */}
+                            <div className="flex flex-wrap items-center gap-2 mb-3 justify-between">
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-semibold text-white">
+                                  {hospital.name}
+                                </h3>
+                                {getStatusBadge(hospital.status)}
+                                <Badge
                                   variant="outline"
-                                  size="sm"
-                                  className="bg-transparent hover:bg-red-600/20 border-red-950 text-red-950"
-                                  onClick={() => handleReject(hospital)}
+                                  className="bg-white/5 border-white/20 text-white"
                                 >
-                                  <XCircle className="w-2 h-2 mr-1" />
-                                  Reject
-                                </Button>
-                              </>
-                            ) : (
-                              <span
-                                className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                                  hospital.status === "APPROVED"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
-                                }`}
+                                  {Math.random() < 0.5
+                                    ? "Government"
+                                    : "Private"}
+                                </Badge>
+                              </div>
+
+                              {/* Toggle for Mobile */}
+                              <button
+                                className="sm:hidden text-yellow-400 flex items-center text-sm"
+                                onClick={() => toggleExpand(hospital.id)}
                               >
-                                {hospital.status === "APPROVED"
-                                  ? "User Approved ✅"
-                                  : "User Rejected ❌"}
-                              </span>
-                            )}
+                                {isExpanded ? (
+                                  <>
+                                    Hide Details{" "}
+                                    <ChevronUp className="ml-1 w-4 h-4" />
+                                  </>
+                                ) : (
+                                  <>
+                                    Show Details{" "}
+                                    <ChevronDown className="ml-1 w-4 h-4" />
+                                  </>
+                                )}
+                              </button>
+                            </div>
+
+                            {/* Info Grid - Hidden on mobile unless expanded */}
+                            <div
+                              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm text-gray-300 mb-3 transition-all duration-300 overflow-hidden ${
+                                isExpanded
+                                  ? "max-h-96 opacity-100"
+                                  : "max-h-0 opacity-0 sm:max-h-none sm:opacity-100"
+                              }`}
+                            >
+                              <div>
+                                <span className="font-medium text-white">
+                                  Email:
+                                </span>{" "}
+                                {hospital.email}
+                              </div>
+                              <div>
+                                <span className="font-medium text-white">
+                                  License:
+                                </span>{" "}
+                                {hospital.bloodBankLicense}
+                              </div>
+                              <div>
+                                <span className="font-medium text-white">
+                                  Location:
+                                </span>{" "}
+                                {hospital.address}
+                              </div>
+                              <div>
+                                <span className="font-medium text-white">
+                                  Response Time:
+                                </span>{" "}
+                                {hospital.responseTimeMinutes} min
+                              </div>
+                            </div>
+
+                            {/* Buttons - Stack on mobile */}
+                            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-white/20 hover:bg-white/20 text-slate-700"
+                                onClick={() => handleViewClick(hospital)}
+                              >
+                                View
+                              </Button>
+
+                              {hospital.status === "PENDING" ? (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    className="bg-green-600 hover:bg-green-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-green-500/50"
+                                    onClick={() => handleApprove(hospital)}
+                                  >
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="bg-transparent hover:bg-red-600/20 border-red-950 text-red-950"
+                                    onClick={() => handleReject(hospital)}
+                                  >
+                                    <XCircle className="w-3 h-3 mr-1" />
+                                    Reject
+                                  </Button>
+                                </>
+                              ) : (
+                                <span
+                                  className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                    hospital.status === "APPROVED"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {hospital.status === "APPROVED"
+                                    ? "User Approved ✅"
+                                    : "User Rejected ❌"}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
             </div>
           </TabsContent>
 
@@ -900,7 +1052,7 @@ export default function AdminDashboard() {
 
           {/* Activity Logs Tab */}
           <TabsContent value="activity" className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col lg:flex-row gap-2 items-center justify-between">
               <h2 className="text-2xl font-bold text-white">
                 System Activity Logs
               </h2>

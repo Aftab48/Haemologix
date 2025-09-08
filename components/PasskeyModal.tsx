@@ -65,67 +65,77 @@ const PasskeyModal = () => {
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogContent className="shad-alert-dialog bg-gradient-to-br from-red-900 via-red-900 to-yellow-600 h-44 md:h-80">
+      <AlertDialogContent
+        className="
+    shad-alert-dialog 
+    bg-gradient-to-br from-red-900 via-red-900 to-yellow-600
+    w-[92%] max-w-sm           /* narrower on mobile */
+    max-h-[85vh] overflow-y-auto
+    rounded-lg p-3 sm:p-5      /* tighter padding on mobile */
+  "
+      >
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-start text-xl sm:text-2xl lg:text-3xl text-white justify-between">
+          <AlertDialogTitle className="flex items-start text-lg sm:text-2xl lg:text-3xl text-white justify-between">
             Admin Access Verification
             <X
-              size={30}
+              size={26} /* smaller close icon on mobile */
               onClick={() => closeModal()}
               className="cursor-pointer"
             />
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-[rgba(154,117,31,1)] text-sm sm:text-base lg:text-lg">
+          <AlertDialogDescription className="text-[rgba(154,117,31,1)] text-xs sm:text-base lg:text-lg">
             To access the admin page, please enter the passkey.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <div className="flex flex-col items-center justify-center h-full">
+
+        <div className="flex flex-col items-center justify-center gap-3 mt-2">
           <InputOTP
             maxLength={6}
             value={passkey}
             onChange={(value) => setPasskey(value)}
           >
-            <InputOTPGroup className="shad-otp">
+            <InputOTPGroup className="shad-otp flex">
               <InputOTPSlot
-                className="text-white shad-otp-slot w-14 h-14 text-xl"
                 index={0}
+                className="w-10 h-10 text-base sm:w-12 sm:h-12 sm:text-lg md:w-14 md:h-14 md:text-xl text-white shad-otp-slot"
               />
               <InputOTPSlot
-                className="text-white shad-otp-slot w-14 h-14 text-xl"
                 index={1}
+                className="w-10 h-10 text-base sm:w-12 sm:h-12 sm:text-lg md:w-14 md:h-14 md:text-xl text-white shad-otp-slot"
               />
               <InputOTPSlot
-                className="text-white shad-otp-slot w-14 h-14 text-xl"
                 index={2}
+                className="w-10 h-10 text-base sm:w-12 sm:h-12 sm:text-lg md:w-14 md:h-14 md:text-xl text-white shad-otp-slot"
               />
             </InputOTPGroup>
             <InputOTPSeparator />
-            <InputOTPGroup className="shad-otp">
+            <InputOTPGroup className="shad-otp flex">
               <InputOTPSlot
-                className="text-white shad-otp-slot w-14 h-14 text-xl"
                 index={3}
+                className="w-10 h-10 text-base sm:w-12 sm:h-12 sm:text-lg md:w-14 md:h-14 md:text-xl text-white shad-otp-slot"
               />
               <InputOTPSlot
-                className="text-white shad-otp-slot w-14 h-14 text-xl"
                 index={4}
+                className="w-10 h-10 text-base sm:w-12 sm:h-12 sm:text-lg md:w-14 md:h-14 md:text-xl text-white shad-otp-slot"
               />
               <InputOTPSlot
-                className="text-white shad-otp-slot w-14 h-14 text-xl"
                 index={5}
+                className="w-10 h-10 text-base sm:w-12 sm:h-12 sm:text-lg md:w-14 md:h-14 md:text-xl text-white shad-otp-slot"
               />
             </InputOTPGroup>
           </InputOTP>
 
           {error && (
-            <p className="shad-error text-14-regular mt-4 flex justify-center">
+            <p className="shad-error text-xs sm:text-sm mt-3 flex justify-center text-red-200">
               {error}
             </p>
           )}
         </div>
-        <AlertDialogFooter>
+
+        <AlertDialogFooter className="mt-3">
           <AlertDialogAction
             onClick={(e) => validatePasskey(e)}
-            className="shad-primary-btn w-full hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+            className="shad-primary-btn w-full hover:bg-zinc-50 text-base sm:text-lg px-4 py-2 sm:px-6 sm:py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
           >
             Submit
           </AlertDialogAction>

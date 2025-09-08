@@ -34,9 +34,32 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
 
 export default function ImpactAndProspects() {
   const [activeTab, setActiveTab] = useState("current-impact");
+
+  const TAB_ITEMS = [
+    { value: "current-impact", label: "Current Impact" },
+    { value: "social-transformation", label: "Social Impact" },
+    { value: "technology-roadmap", label: "Technology Roadmap" },
+    { value: "partnerships", label: "Partnerships" },
+    { value: "challenges", label: "Challenges & Solutions" },
+  ];
 
   const currentImpact = {
     livesSaved: 12456,
@@ -237,42 +260,83 @@ export default function ImpactAndProspects() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-900 to-yellow-600 flex flex-col relative overflow-hidden">
+      <img
+        src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
+        className="w-full h-full object-cover absolute mix-blend-overlay"
+      />
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-yellow-600/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center bg-transparent">
+        <div className="container mx-auto px-2 md:px-4 py-2 md:py-4 flex items-center justify-between gap-px rounded bg-transparent">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
-              <Heart className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-slate-300">
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={48}
+                height={48}
+                className="rounded-full"
+              />
             </div>
-            <span className="text-xl font-bold text-gray-900">
-              BloodConnect Impact
-            </span>
+            <Link href={"/"} className="text-xl font-bold text-slate-300">
+              {"HaemoLogix"}
+            </Link>
           </div>
-          <nav className="flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="/"
-              className="text-gray-600 hover:text-red-600 transition-colors"
+              href="/#features"
+              className="hover:text-yellow-600 transition-colors text-slate-300"
             >
-              Home
+              Features
+            </Link>
+            <Link
+              href="/impact"
+              className="hover:text-yellow-600 transition-colors text-slate-300"
+            >
+              Impact
+            </Link>
+            <Link
+              href="/contact"
+              className="hover:text-yellow-600 transition-colors text-slate-300"
+            >
+              Contact
             </Link>
           </nav>
+          <div className="flex items-center gap-1 md:gap-3">
+            <SignedOut>
+              <SignInButton>
+                <Button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
+                  Sign In
+                </Button>
+              </SignInButton>
+              <div className="hidden lg:block">
+                <SignUpButton>
+                  <Button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
+                    Sign Up
+                  </Button>
+                </SignUpButton>
+              </div>
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
+          </div>
         </div>
       </header>
 
       {/* Hero Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto text-center">
-          <Badge className="mb-4 bg-green-100 text-green-800 hover:bg-green-100">
+          <Badge className="mb-4 hover:bg-red-100 text-[rgba(127,29,29,1)] bg-[rgba(204,165,165,1)]">
             🌟 Transforming Emergency Healthcare
           </Badge>
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+          <h1 className="text-5xl md:text-6xl font-bold text-black mb-6 leading-tight">
             Impact & Future
-            <span className="text-red-600 block">Prospects</span>
+            <span className="text-red-500 block">Prospects</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Discover how BloodConnect is revolutionizing emergency blood
-            donation and our vision for the future of healthcare technology.
+          <p className="text-xl text-white mb-8 max-w-3xl mx-auto leading-relaxed">
+            Discover how ect is revolutionizing emergency blood donation and our
+            vision for the future of healthcare technology.
           </p>
         </div>
       </section>
@@ -281,80 +345,112 @@ export default function ImpactAndProspects() {
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="space-y-8"
+          className="space-y-4"
         >
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="current-impact">Current Impact</TabsTrigger>
-            <TabsTrigger value="social-transformation">
-              Social Impact
-            </TabsTrigger>
-            <TabsTrigger value="technology-roadmap">
-              Technology Roadmap
-            </TabsTrigger>
-            <TabsTrigger value="partnerships">Partnerships</TabsTrigger>
-            <TabsTrigger value="challenges">Challenges & Solutions</TabsTrigger>
-          </TabsList>
+          {/* Mobile: dropdown */}
+          <div className="lg:hidden">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger
+                className="
+              w-full
+              bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg
+              text-white
+            "
+                aria-label="Select section"
+              >
+                <SelectValue placeholder="Select section" />
+              </SelectTrigger>
+              <SelectContent className="z-50">
+                {TAB_ITEMS.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
+          {/* Desktop: normal tabs */}
+          <TabsList
+            className="
+          hidden lg:grid lg:grid-cols-5 w-full
+          bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg
+        "
+          >
+            {TAB_ITEMS.map((t, i) => (
+              <TabsTrigger
+                key={t.value}
+                value={t.value}
+                className="
+              w-full text-center text-white transition-all duration-300
+              data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md
+              first:rounded-l-md last:rounded-r-md
+            "
+              >
+                {t.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
           {/* Current Impact Tab */}
           <TabsContent value="current-impact" className="space-y-8">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mt-10 mb-12">
+              <h2 className="text-4xl font-bold text-white mb-4">
                 Measurable Impact Today
               </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Real numbers showing how BloodConnect is already saving lives
-                and transforming emergency healthcare
+              <p className="text-xl text-white max-w-2xl mx-auto">
+                Real numbers showing how Haemologix is already saving lives and
+                transforming emergency healthcare
               </p>
             </div>
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-              <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-red-50 to-red-100">
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 text-center">
                 <CardContent className="p-8">
                   <Heart className="w-12 h-12 text-red-600 mx-auto mb-4" />
-                  <div className="text-4xl font-bold text-gray-900 mb-2">
+                  <div className="text-4xl font-bold text-white mb-2">
                     {currentImpact.livesSaved.toLocaleString()}
                   </div>
-                  <div className="text-gray-600">Lives Saved</div>
+                  <div className="text-white">Lives Saved</div>
                   <div className="text-sm text-green-600 mt-2">
                     ↑ 23% this month
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100">
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 text-center">
                 <CardContent className="p-8">
                   <Users className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                  <div className="text-4xl font-bold text-gray-900 mb-2">
+                  <div className="text-4xl font-bold text-white mb-2">
                     {currentImpact.donationsEnabled.toLocaleString()}
                   </div>
-                  <div className="text-gray-600">Donations Enabled</div>
+                  <div className="text-white">Donations Enabled</div>
                   <div className="text-sm text-green-600 mt-2">
                     ↑ 18% this month
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100">
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 text-center">
                 <CardContent className="p-8">
                   <Clock className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                  <div className="text-4xl font-bold text-gray-900 mb-2">
+                  <div className="text-4xl font-bold text-white mb-2">
                     {currentImpact.averageResponseTime}m
                   </div>
-                  <div className="text-gray-600">Avg Response Time</div>
+                  <div className="text-white">Avg Response Time</div>
                   <div className="text-sm text-green-600 mt-2">
                     ↓ 75% improvement
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="text-center border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100">
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 text-center">
                 <CardContent className="p-8">
                   <Target className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-                  <div className="text-4xl font-bold text-gray-900 mb-2">
+                  <div className="text-4xl font-bold text-white mb-2">
                     {currentImpact.successRate}%
                   </div>
-                  <div className="text-gray-600">Success Rate</div>
+                  <div className="text-white">Success Rate</div>
                   <div className="text-sm text-green-600 mt-2">
                     ↑ 12% this quarter
                   </div>
@@ -364,13 +460,13 @@ export default function ImpactAndProspects() {
 
             {/* Geographic Impact */}
             <div className="grid md:grid-cols-2 gap-8">
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 ">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Globe className="w-5 h-5" />
                     Geographic Reach
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-white">
                     Platform coverage and expansion metrics
                   </CardDescription>
                 </CardHeader>
@@ -409,13 +505,13 @@ export default function ImpactAndProspects() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5" />
                     Economic Impact
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-white">
                     Cost savings and efficiency improvements
                   </CardDescription>
                 </CardHeader>
@@ -456,51 +552,60 @@ export default function ImpactAndProspects() {
 
           {/* Social Transformation Tab */}
           <TabsContent value="social-transformation" className="space-y-8">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mt-10 mb-12">
+              <h2 className="text-4xl font-bold text-white mb-4">
                 Transforming Emergency Healthcare
               </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                How BloodConnect is revolutionizing the way we respond to
-                medical emergencies
+              <p className="text-xl text-white max-w-2xl mx-auto">
+                How Haemologix is revolutionizing the way we respond to medical
+                emergencies
               </p>
             </div>
 
-            <div className="space-y-8">
+            <div className="grid gap-8 md:grid-cols-2">
               {socialImpact.map((impact, index) => (
-                <Card key={index} className="border-l-4 border-l-red-500">
-                  <CardContent className="p-8">
-                    <div className="flex items-start gap-6">
-                      <div className="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <impact.icon className="w-8 h-8 text-red-600" />
+                <Card
+                  key={index}
+                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col"
+                >
+                  <CardContent className="p-6 flex flex-col justify-between h-full">
+                    {/* Header: Icon + Title */}
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center">
+                        <impact.icon className="w-7 h-7 text-red-600" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                          {impact.metric}
-                        </h3>
-                        <div className="grid md:grid-cols-3 gap-6">
-                          <div className="text-center">
-                            <div className="text-sm text-gray-600 mb-2">
-                              Before BloodConnect
-                            </div>
-                            <div className="text-lg font-semibold text-red-600">
-                              {impact.before}
-                            </div>
-                          </div>
-                          <div className="text-center">
-                            <ArrowRight className="w-6 h-6 text-gray-400 mx-auto mb-2" />
-                            <Badge className="bg-green-100 text-green-800 text-lg px-4 py-2">
-                              {impact.improvement}
-                            </Badge>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-sm text-gray-600 mb-2">
-                              With BloodConnect
-                            </div>
-                            <div className="text-lg font-semibold text-green-600">
-                              {impact.after}
-                            </div>
-                          </div>
+                      <h3 className="text-xl font-semibold text-white">
+                        {impact.metric}
+                      </h3>
+                    </div>
+
+                    {/* Content Grid */}
+                    <div className="grid grid-cols-3 items-center text-center gap-4">
+                      {/* Before */}
+                      <div>
+                        <div className="text-sm text-gray-300 mb-1">
+                          Before Haemologix
+                        </div>
+                        <div className="text-lg font-semibold text-red-500">
+                          {impact.before}
+                        </div>
+                      </div>
+
+                      {/* Improvement */}
+                      <div className="flex flex-col items-center">
+                        <ArrowRight className="w-6 h-6 text-gray-400 mb-2" />
+                        <Badge className="bg-green-100 text-green-800 text-sm px-3 py-1">
+                          {impact.improvement}
+                        </Badge>
+                      </div>
+
+                      {/* After */}
+                      <div>
+                        <div className="text-sm text-gray-300 mb-1">
+                          With Haemologix
+                        </div>
+                        <div className="text-lg font-semibold text-green-500">
+                          {impact.after}
                         </div>
                       </div>
                     </div>
@@ -510,7 +615,7 @@ export default function ImpactAndProspects() {
             </div>
 
             {/* Success Stories */}
-            <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-0">
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col">
               <CardHeader>
                 <CardTitle className="text-center text-2xl">
                   Success Stories
@@ -526,9 +631,9 @@ export default function ImpactAndProspects() {
                     <h4 className="font-semibold mb-2">
                       Emergency Surgery Success
                     </h4>
-                    <p className="text-sm text-gray-600">
-                      "BloodConnect helped us find 3 O- donors in 12 minutes for
-                      a critical surgery. The patient made a full recovery."
+                    <p className="text-sm text-white">
+                      "Haemologix helped us find 3 O- donors in 12 minutes for a
+                      critical surgery. The patient made a full recovery."
                     </p>
                     <p className="text-xs text-gray-500 mt-2">
                       - Dr. Sarah Chen, City General Hospital
@@ -537,7 +642,7 @@ export default function ImpactAndProspects() {
                   <div className="text-center">
                     <Heart className="w-8 h-8 text-red-500 mx-auto mb-3" />
                     <h4 className="font-semibold mb-2">Rural Area Coverage</h4>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-white">
                       "For the first time, our rural hospital can quickly
                       mobilize donors from nearby towns. It's been
                       life-changing."
@@ -549,10 +654,9 @@ export default function ImpactAndProspects() {
                   <div className="text-center">
                     <Users className="w-8 h-8 text-blue-500 mx-auto mb-3" />
                     <h4 className="font-semibold mb-2">Community Engagement</h4>
-                    <p className="text-sm text-gray-600">
-                      "I've donated 8 times this year through BloodConnect
-                      alerts. It feels great to help save lives in my
-                      community."
+                    <p className="text-sm text-white">
+                      "I've donated 8 times this year through Haemologix alerts.
+                      It feels great to help save lives in my community."
                     </p>
                     <p className="text-xs text-gray-500 mt-2">
                       - John M., Regular Donor
@@ -565,11 +669,11 @@ export default function ImpactAndProspects() {
 
           {/* Technology Roadmap Tab */}
           <TabsContent value="technology-roadmap" className="space-y-8">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mt-10 mb-12">
+              <h2 className="text-4xl font-bold text-white mb-4">
                 Technology Evolution
               </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              <p className="text-xl text-white max-w-2xl mx-auto">
                 Our roadmap for advancing blood donation technology and
                 expanding global impact
               </p>
@@ -578,7 +682,10 @@ export default function ImpactAndProspects() {
             {/* Future Goals */}
             <div className="grid md:grid-cols-2 gap-6 mb-12">
               {futureGoals.map((goal, index) => (
-                <Card key={index} className="border-l-4 border-l-blue-500">
+                <Card
+                  key={index}
+                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -591,10 +698,10 @@ export default function ImpactAndProspects() {
                             {goal.timeline}
                           </Badge>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        <h3 className="text-lg font-semibold text-white mb-2">
                           {goal.title}
                         </h3>
-                        <p className="text-gray-600 mb-4">{goal.description}</p>
+                        <p className="text-white mb-4">{goal.description}</p>
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
                             <span>Target: {goal.target}</span>
@@ -610,7 +717,7 @@ export default function ImpactAndProspects() {
             </div>
 
             {/* Technology Roadmap Timeline */}
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Rocket className="w-5 h-5" />
@@ -685,11 +792,11 @@ export default function ImpactAndProspects() {
 
           {/* Partnerships Tab */}
           <TabsContent value="partnerships" className="space-y-8">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mt-10 mb-12">
+              <h2 className="text-4xl font-bold text-white mb-4">
                 Strategic Partnerships
               </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              <p className="text-xl text-white max-w-2xl mx-auto">
                 Collaborating with leading organizations to maximize impact and
                 drive innovation
               </p>
@@ -697,24 +804,31 @@ export default function ImpactAndProspects() {
 
             <div className="grid md:grid-cols-2 gap-8">
               {partnerships.map((partnership, index) => (
-                <Card key={index} className="border-l-4 border-l-purple-500">
+                <Card
+                  key={index}
+                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
                         <partnership.icon className="w-6 h-6 text-purple-600" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        <h3 className="text-lg font-semibold text-white mb-2">
                           {partnership.type} Partners
                         </h3>
                         <div className="flex flex-wrap gap-2 mb-4">
                           {partnership.partners.map((partner, partnerIndex) => (
-                            <Badge key={partnerIndex} variant="outline">
+                            <Badge
+                              key={partnerIndex}
+                              variant="outline"
+                              className="text-white"
+                            >
                               {partner}
                             </Badge>
                           ))}
                         </div>
-                        <p className="text-gray-600">{partnership.impact}</p>
+                        <p className="text-white">{partnership.impact}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -723,7 +837,7 @@ export default function ImpactAndProspects() {
             </div>
 
             {/* Partnership Benefits */}
-            <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-0">
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col">
               <CardHeader>
                 <CardTitle className="text-center">
                   Partnership Benefits
@@ -737,7 +851,7 @@ export default function ImpactAndProspects() {
                   <div className="text-center">
                     <Network className="w-8 h-8 text-blue-600 mx-auto mb-3" />
                     <h4 className="font-semibold mb-2">Global Reach</h4>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-white">
                       Access to international networks and best practices from
                       leading healthcare organizations
                     </p>
@@ -745,7 +859,7 @@ export default function ImpactAndProspects() {
                   <div className="text-center">
                     <Lightbulb className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
                     <h4 className="font-semibold mb-2">Innovation</h4>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-white">
                       Cutting-edge technology and research capabilities through
                       academic and tech partnerships
                     </p>
@@ -753,7 +867,7 @@ export default function ImpactAndProspects() {
                   <div className="text-center">
                     <Shield className="w-8 h-8 text-green-600 mx-auto mb-3" />
                     <h4 className="font-semibold mb-2">Trust & Credibility</h4>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-white">
                       Enhanced credibility and trust through associations with
                       respected healthcare institutions
                     </p>
@@ -765,11 +879,11 @@ export default function ImpactAndProspects() {
 
           {/* Challenges & Solutions Tab */}
           <TabsContent value="challenges" className="space-y-8">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mt-10 mb-12">
+              <h2 className="text-4xl font-bold text-white mb-4">
                 Challenges & Solutions
               </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              <p className="text-xl text-white max-w-2xl mx-auto">
                 Addressing key challenges in scaling emergency blood donation
                 technology
               </p>
@@ -777,7 +891,10 @@ export default function ImpactAndProspects() {
 
             <div className="space-y-6">
               {challenges.map((item, index) => (
-                <Card key={index} className="border-l-4 border-l-orange-500">
+                <Card
+                  key={index}
+                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -785,7 +902,7 @@ export default function ImpactAndProspects() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
-                          <h3 className="text-lg font-semibold text-gray-900">
+                          <h3 className="text-lg font-semibold text-white">
                             {item.challenge}
                           </h3>
                           <Badge
@@ -800,7 +917,7 @@ export default function ImpactAndProspects() {
                             {item.priority} Priority
                           </Badge>
                         </div>
-                        <p className="text-gray-600 mb-4">{item.description}</p>
+                        <p className="text-white mb-4">{item.description}</p>
                         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                           <h4 className="font-medium text-green-800 mb-2">
                             Our Solution:
@@ -815,7 +932,7 @@ export default function ImpactAndProspects() {
             </div>
 
             {/* Future Outlook */}
-            <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-0">
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col">
               <CardHeader>
                 <CardTitle className="text-center text-2xl">
                   Future Outlook
@@ -830,7 +947,7 @@ export default function ImpactAndProspects() {
                     <h4 className="font-semibold text-lg mb-4">
                       2025-2027: Expansion Phase
                     </h4>
-                    <ul className="space-y-2 text-gray-600">
+                    <ul className="space-y-2 text-white">
                       <li className="flex items-center gap-2">
                         <CheckCircle className="w-4 h-4 text-green-500" />
                         Global platform covering 50+ countries
@@ -853,7 +970,7 @@ export default function ImpactAndProspects() {
                     <h4 className="font-semibold text-lg mb-4">
                       2028-2030: Innovation Phase
                     </h4>
-                    <ul className="space-y-2 text-gray-600">
+                    <ul className="space-y-2 text-white">
                       <li className="flex items-center gap-2">
                         <CheckCircle className="w-4 h-4 text-blue-500" />
                         IoT-enabled blood monitoring systems
@@ -879,7 +996,7 @@ export default function ImpactAndProspects() {
         </Tabs>
 
         {/* Call to Action */}
-        <Card className="mt-16 bg-gradient-to-r from-red-600 to-red-700 text-white border-0">
+        <Card className="bg-white/10 mt-16 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 text-center">
           <CardContent className="p-12 text-center">
             <h2 className="text-3xl font-bold mb-4">Join the Revolution</h2>
             <p className="text-xl mb-8 opacity-90">
