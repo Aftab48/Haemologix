@@ -2,6 +2,7 @@
 
 import { db } from "@/db";
 import { getCoordinatesFromAddress } from "../geocoding";
+import { generatePresignedUrl, uploadDonorFile } from "./awsupload.actions";
 
 export async function submitDonorRegistration(formData: DonorData) {
   try {
@@ -9,7 +10,6 @@ export async function submitDonorRegistration(formData: DonorData) {
     let longitude: string | null = null;
 
     try {
-      // Try fetching coordinates
       const coords = await getCoordinatesFromAddress(formData.address);
       latitude = coords.latitude;
       longitude = coords.longitude;
@@ -20,6 +20,7 @@ export async function submitDonorRegistration(formData: DonorData) {
       );
     }
 
+    // 1️⃣ Create donor first (no files yet)
     const newDonor = await db.donorRegistration.create({
       data: {
         firstName: formData.firstName,
@@ -55,13 +56,28 @@ export async function submitDonorRegistration(formData: DonorData) {
         dataProcessingConsent: formData.dataProcessingConsent,
         medicalScreeningConsent: formData.medicalScreeningConsent,
         termsAccepted: formData.termsAccepted,
-
         latitude,
         longitude,
       },
     });
+    
+    const fileFields: (keyof DonorData)[] = [
+      "bloodTestReport",
+      "idProof",
+      "medicalCertificate",
+    ];
 
-    return newDonor;
+    await Promise.all(
+      fileFields.map(async (field) => {
+        const file = formData[field] as unknown as File | null;
+        if (file) {
+          await uploadDonorFile(field as any, file, newDonor.id);
+        }
+      })
+    );
+
+
+    return { success: true, donorId: newDonor.id };
   } catch (error) {
     console.error("Error creating donor:", error);
     return { success: false, error: "Failed to create donor" };
@@ -83,7 +99,23 @@ export async function fetchDonorById(donorId: string) {
     const donor = await db.donorRegistration.findUnique({
       where: { id: donorId },
     });
-    return donor;
+    if (!donor) return null;
+
+    // Generate presigned URLs for file fields
+    const bloodTestReportUrl = await generatePresignedUrl(
+      donor.bloodTestReport
+    );
+    const idProofUrl = await generatePresignedUrl(donor.idProof);
+    const medicalCertificateUrl = await generatePresignedUrl(
+      donor.medicalCertificate
+    );
+
+    return {
+      ...donor,
+      bloodTestReport: bloodTestReportUrl,
+      idProof: idProofUrl,
+      medicalCertificate: medicalCertificateUrl,
+    };
   } catch (error) {
     console.error("Error fetching donor by ID:", error);
     return null;

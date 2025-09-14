@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { profileTabsConfig } from "@/configs/profileTabs";
 import { formatLastActivity } from "@/lib/utils";
+import Image from "next/image";
 
 interface ProfileTabsProps {
   userType: "donor" | "hospital";
@@ -58,28 +59,49 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
             >
               <p className="text-xs text-gray-500">{field.label}</p>
               <p className="text-sm font-semibold text-gray-800 mt-1">
-                {field.type === "boolean" ? (
-                  value ? (
-                    "✅ Yes"
-                  ) : (
-                    "❌ No"
-                  )
-                ) : field.type === "file" ? (
-                  value !== "N/A" ? (
-                    <a
-                      href={value}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 underline"
-                    >
-                      View Document
-                    </a>
-                  ) : (
-                    "Not Uploaded"
-                  )
-                ) : (
-                  value || "N/A"
-                )}
+                {field.type === "boolean"
+                  ? value
+                    ? "✅ Yes"
+                    : "❌ No"
+                  : field.type === "file"
+                  ? value !== "N/A"
+                    ? (() => {
+                        const fileUrl: string = value;
+                        const extension = fileUrl
+                          .split(".")
+                          .pop()
+                          ?.toLowerCase();
+
+                        if (
+                          extension === "jpg" ||
+                          extension === "jpeg" ||
+                          extension === "png"
+                        ) {
+                          return (
+                            <img
+                              src={fileUrl}
+                              alt={field.label}
+                              
+                              className="rounded-md w-64 h-64 border"
+                            />
+                          );
+                        } else if (extension === "pdf") {
+                          return (
+                            <a
+                              href={fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 underline"
+                            >
+                              View PDF
+                            </a>
+                          );
+                        } else {
+                          return "Not Uploaded";
+                        }
+                      })()
+                    : "Not Uploaded"
+                  : value || "N/A"}
               </p>
             </div>
           );

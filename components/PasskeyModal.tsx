@@ -103,25 +103,19 @@ const PasskeyModal = () => {
                 index={1}
                 className="w-10 h-10 text-base sm:w-12 sm:h-12 sm:text-lg md:w-14 md:h-14 md:text-xl text-white shad-otp-slot"
               />
-              <InputOTPSlot
-                index={2}
-                className="w-10 h-10 text-base sm:w-12 sm:h-12 sm:text-lg md:w-14 md:h-14 md:text-xl text-white shad-otp-slot"
-              />
+              
             </InputOTPGroup>
             <InputOTPSeparator />
             <InputOTPGroup className="shad-otp flex">
               <InputOTPSlot
+                index={2}
+                className="w-10 h-10 text-base sm:w-12 sm:h-12 sm:text-lg md:w-14 md:h-14 md:text-xl text-white shad-otp-slot"
+              />
+              <InputOTPSlot
                 index={3}
                 className="w-10 h-10 text-base sm:w-12 sm:h-12 sm:text-lg md:w-14 md:h-14 md:text-xl text-white shad-otp-slot"
               />
-              <InputOTPSlot
-                index={4}
-                className="w-10 h-10 text-base sm:w-12 sm:h-12 sm:text-lg md:w-14 md:h-14 md:text-xl text-white shad-otp-slot"
-              />
-              <InputOTPSlot
-                index={5}
-                className="w-10 h-10 text-base sm:w-12 sm:h-12 sm:text-lg md:w-14 md:h-14 md:text-xl text-white shad-otp-slot"
-              />
+              
             </InputOTPGroup>
           </InputOTP>
 

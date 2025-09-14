@@ -436,19 +436,12 @@ export default function HospitalDashboard() {
 
   const [justConfirmed, setJustConfirmed] = useState<string | null>(null);
   const handleConfirm = (donorID: string) => {
-    // Call the API to confirm the donor's response
-    // confirmDonorResponse(donorID)
-    //   .then(() => {
-    //     // Update local state to reflect the confirmed status
-    //     setDonorResponses((prev) =>
-    //       prev.map((donor) =>
-    //         donor.id === donorID ? { ...donor, confirmed: true } : donor
-    //       )
-    //     );
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error confirming donor response:", error);
-    //   });
+    setDonorResponses((prev) =>
+      prev.map((donor) =>
+        donor.id === donorID ? { ...donor, status: "Confirmed" } : donor
+      )
+    );
+    setJustConfirmed(donorID);
   };
 
   const [searchTerm, setSearchTerm] = useState("");

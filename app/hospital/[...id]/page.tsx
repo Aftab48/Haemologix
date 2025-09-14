@@ -75,10 +75,10 @@ export default function HospitalDashboard() {
   const [showCreateAlert, setShowCreateAlert] = useState(false);
   const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
 
-  const [donorResponses, setDonorResponses] = useState<Donor[]>([
+  const [donorResponses, setDonorResponses] = useState<DonorUI[]>([
     {
-      id: 1,
-      alertId: 1,
+      id: "1",
+      type: "Blood",
       donorName: "Arjun Roy",
       bloodType: "O+",
       distance: "2.3 km",
@@ -88,8 +88,8 @@ export default function HospitalDashboard() {
       lastDonation: "3 months ago",
     },
     {
-      id: 2,
-      alertId: 1,
+      id: "2",
+      type: "Blood",
       donorName: "Priya Sen",
       bloodType: "A-",
       distance: "1.8 km",
@@ -99,10 +99,10 @@ export default function HospitalDashboard() {
       lastDonation: "4 months ago",
     },
     {
-      id: 3,
-      alertId: 2,
+      id: "3",
+      type: "Blood",
       donorName: "Ritwik Chatterjee",
-      bloodType: "O+",
+      bloodType: "B+",
       distance: "5.8 km",
       phone: "+91-98765-43210",
       status: "Confirmed",
@@ -110,10 +110,10 @@ export default function HospitalDashboard() {
       lastDonation: "5 months ago",
     },
     {
-      id: 4,
-      alertId: 2,
+      id: "4",
       donorName: "Sohini Dutta",
-      bloodType: "O+",
+      bloodType: "B-",
+      type: "Blood",
       distance: "6.3 km",
       phone: "+91-97481-55678",
       status: "Pending",
@@ -121,10 +121,10 @@ export default function HospitalDashboard() {
       lastDonation: "6 months ago",
     },
     {
-      id: 5,
-      alertId: 3,
+      id: "5",
+      type: "Blood",
       donorName: "Aniket Mukherjee",
-      bloodType: "O+",
+      bloodType: "AB+",
       distance: "5.0 km",
       phone: "+91-98312-33445",
       status: "Confirmed",
@@ -132,22 +132,21 @@ export default function HospitalDashboard() {
       lastDonation: "2 months ago",
     },
     {
-      id: 6,
-      alertId: 3,
+      id: "6",
+      type: "Blood",
       donorName: "Moumita Ghosh",
-      bloodType: "A-",
+      bloodType: "AB-",
       distance: "6.8 km",
       phone: "+91-99030-66789",
       status: "Pending",
       eta: "75 minutes",
       lastDonation: "7 months ago",
     },
-
     {
-      id: 7,
-      alertId: 4,
+      id: "7",
       donorName: "Sayan Banerjee",
-      bloodType: "A-",
+      bloodType: "A+",
+      type: "Blood",
       distance: "3.4 km",
       phone: "+91-89670-44556",
       status: "Confirmed",
@@ -155,10 +154,10 @@ export default function HospitalDashboard() {
       lastDonation: "1 month ago",
     },
     {
-      id: 8,
-      alertId: 4,
+      id: "8",
+      type: "Blood",
       donorName: "Debanjan Saha",
-      bloodType: "A-",
+      bloodType: "O-",
       distance: "29 km",
       phone: "+91-97480-11223",
       status: "Pending",
@@ -166,8 +165,8 @@ export default function HospitalDashboard() {
       lastDonation: "8 months ago",
     },
     {
-      id: 9,
-      alertId: 5,
+      id: "9",
+      type: "Blood",
       donorName: "Shreya Basu",
       bloodType: "A-",
       distance: "1.6 km",
@@ -177,15 +176,59 @@ export default function HospitalDashboard() {
       lastDonation: "6 months ago",
     },
     {
-      id: 10,
-      alertId: 5,
+      id: "10",
+      type: "Blood",
       donorName: "Subhajit Paul",
-      bloodType: "A-",
+      bloodType: "B+",
       distance: "23.0 km",
       phone: "+91-99039-77441",
       status: "Pending",
       eta: "70 minutes",
       lastDonation: "5 months ago",
+    },
+    {
+      id: "11",
+      type: "Plasma",
+      donorName: "Ananya Roy",
+      bloodType: "-",
+      distance: "12.0 km",
+      phone: "+91-98765-43210",
+      status: "Pending",
+      eta: "40 minutes",
+      lastDonation: "2 months ago",
+    },
+    {
+      id: "12",
+      type: "Plasma",
+      donorName: "Rahul Sharma",
+      bloodType: "-",
+      distance: "8.5 km",
+      phone: "+91-91234-56789",
+      status: "Confirmed",
+      eta: "30 minutes",
+      lastDonation: "1 month ago",
+    },
+    {
+      id: "13",
+      type: "Platelets",
+      donorName: "Priya Singh",
+      bloodType: "-",
+      distance: "15.0 km",
+      phone: "+91-99887-66554",
+      status: "Pending",
+      eta: "50 minutes",
+      lastDonation: "3 months ago",
+    },
+    {
+      id: "14",
+      type: "Platelets",
+      donorName: "Amit Verma",
+      bloodType: "-",
+      distance: "6.0 km",
+      phone: "+91-91122-33445",
+      status: "Confirmed",
+      eta: "25 minutes",
+      lastDonation: "2 weeks ago",
     },
   ]);
 
@@ -404,7 +447,7 @@ export default function HospitalDashboard() {
   //   );
   // }
 
-  const [justConfirmed, setJustConfirmed] = useState<number | null>(null);
+  const [justConfirmed, setJustConfirmed] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [distanceFilter, setDistanceFilter] = useState("all");
@@ -426,21 +469,15 @@ export default function HospitalDashboard() {
     });
   }, [donorResponses, searchTerm, distanceFilter, bloodTypeFilter]);
 
-  const handleConfirm = (donorID: number) => {
-    // Call the API to confirm the donor's response
-    // confirmDonorResponse(donorID)
-    //   .then(() => {
-    //     // Update local state to reflect the confirmed status
-    //     setDonorResponses((prev) =>
-    //       prev.map((donor) =>
-    //         donor.id === donorID ? { ...donor, confirmed: true } : donor
-    //       )
-    //     );
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error confirming donor response:", error);
-    //   });
+  const handleConfirm = (donorID: string) => {
+    setDonorResponses((prev) =>
+      prev.map((donor) =>
+        donor.id === donorID ? { ...donor, status: "Confirmed" } : donor
+      )
+    );
+    setJustConfirmed(donorID);
   };
+
 
   const handleUpdateInventory = () => {
     setEditingItem(bloodInventory[0]); // default first one

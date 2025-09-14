@@ -87,6 +87,7 @@ export default function DonorRegistration() {
   const [formData, setFormData] = useState<DonorData>(initialFormData);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [uploading, setUploading] = useState(false);
 
   const totalSteps = 6;
   const progress = ((currentStep - 1) / totalSteps) * 100;
@@ -203,6 +204,7 @@ export default function DonorRegistration() {
         if (!formData.bloodTestReport)
           newErrors.bloodTestReport = "Blood test report is required";
         if (!formData.idProof) newErrors.idProof = "ID proof is required";
+        if (!formData.medicalCertificate) newErrors.medicalCertificate = "Medical certificate is required";
         break;
 
       case 6:
@@ -222,9 +224,9 @@ export default function DonorRegistration() {
   };
 
   const nextStep = () => {
-    if (validateStep(currentStep)) {
+    
       setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
-    }
+    
   };
 
   const prevStep = () => {
@@ -234,41 +236,30 @@ export default function DonorRegistration() {
   const handleSubmit = async () => {
     if (!validateStep(currentStep)) return;
 
-    // Step 1: Mark donor as applied
     try {
+      // Step 1: Submit donor registration (includes file uploads now)
+      const result = await submitDonorRegistration(formData);
+
+      if (!result.success) {
+        console.error("Donor registration failed:", result.error);
+        return;
+      }
+      // Step 2: Mark donor as applied
       await markDonorAsApplied();
-    } catch (err) {
-      console.error("Error marking donor as applied:", err);
-    }
 
-    // Step 2: Submit donor registration
-    try {
-      await submitDonorRegistration(formData);
-    } catch (err) {
-      console.error("Error submitting donor registration:", err);
-    }
-
-    // Step 3: Send registration email
-    try {
+      // Step 3: Send registration email
       await sendDonorRegistrationEmail(formData.email, formData.firstName);
-    } catch (err) {
-      console.error("Error sending registration email:", err);
-    }
 
-    //Step 4: Send registration SMS
-    try {
+      // Step 4: Send registration SMS
       await sendDonorRegistrationSMS(formData.phone, formData.firstName);
+
+      console.log("Form submitted:", formData);
+      setIsSubmitted(true);
     } catch (err) {
-      console.error("Error sending registration SMS:", err);
+      console.error("Error in submission flow:", err);
     }
-
-    console.log("Form submitted:", formData);
-    setIsSubmitted(true);
   };
 
-  const handleFileUpload = (field: keyof DonorData, file: File | null) => {
-    updateFormData(field, file ? file.name : null);
-  };
 
   if (isSubmitted) {
     return (
@@ -1037,7 +1028,7 @@ export default function DonorRegistration() {
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
                       onChange={(e) =>
-                        handleFileUpload(
+                        updateFormData(
                           "bloodTestReport",
                           e.target.files?.[0] || null
                         )
@@ -1056,7 +1047,7 @@ export default function DonorRegistration() {
                     </Button>
                     {formData.bloodTestReport && (
                       <p className="text-green-400 text-sm mt-2">
-                        ✓ {formData.bloodTestReport}
+                        ✓ {formData.bloodTestReport.name}
                       </p>
                     )}
                   </div>
@@ -1079,7 +1070,10 @@ export default function DonorRegistration() {
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
                       onChange={(e) =>
-                        handleFileUpload("idProof", e.target.files?.[0] || null)
+                        updateFormData(
+                          "idProof",
+                          e.target.files?.[0] || null
+                        )
                       }
                       className="hidden"
                       id="identity"
@@ -1095,12 +1089,56 @@ export default function DonorRegistration() {
                     </Button>
                     {formData.idProof && (
                       <p className="text-green-400 text-sm mt-2">
-                        ✓ {formData.idProof}
+                        ✓ {formData.idProof.name}
                       </p>
                     )}
                   </div>
                   {errors.idProof && (
                     <p className="text-red-400 text-sm">{errors.idProof}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white">Medical Certificate *</Label>
+                  <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-white/40 transition-colors">
+                    <Upload className="w-8 h-8 text-white/60 mx-auto mb-2" />
+                    <p className="text-white/80 mb-2">
+                      Upload Medical Certificate
+                    </p>
+                    <p className="text-xs text-white/60">
+                      Aadhar, Passport, License
+                    </p>
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) =>
+                        updateFormData(
+                          "medicalCertificate",
+                          e.target.files?.[0] || null
+                        )
+                      }
+                      className="hidden"
+                      id="medical"
+                    />
+                    <Button
+                      variant="outline"
+                      className="mt-3 border-white/30 text-white hover:bg-white/20 bg-transparent"
+                      onClick={() =>
+                        document.getElementById("medical")?.click()
+                      }
+                    >
+                      Choose File
+                    </Button>
+                    {formData.medicalCertificate && (
+                      <p className="text-green-400 text-sm mt-2">
+                        ✓ {formData.medicalCertificate.name}
+                      </p>
+                    )}
+                  </div>
+                  {errors.medicalCertificate && (
+                    <p className="text-red-400 text-sm">
+                      {errors.medicalCertificate}
+                    </p>
                   )}
                 </div>
               </div>

@@ -36,9 +36,9 @@ interface DonorData {
   wbcCount: string;
 
   // Documents
-  bloodTestReport: string | null;
-  idProof: string | null;
-  medicalCertificate: string | null;
+  bloodTestReport: File | null;
+  idProof: File | null;
+  medicalCertificate: File | null;
 
   // Consent
   dataProcessingConsent: boolean;
@@ -250,3 +250,7 @@ type NoUser = {
 };
 
 type CurrentUserResponse = DonorUser | HospitalUser | NoUser;
+
+type DonorFileField = "bloodTestReport" | "idProof" | "medicalCertificate";
+
+type HospitalFileField = "bloodBankLicenseDoc" | "hospitalRegistrationCert" | "authorizedRepIdProof";

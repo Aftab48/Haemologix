@@ -2,6 +2,7 @@
 
 import { db } from "@/db";
 import { getCoordinatesFromAddress } from "../geocoding";
+import { generatePresignedUrl, uploadHospitalFile } from "./awsupload.actions";
 
 export async function createHospital(hospitalData: HospitalData) {
   try {
@@ -21,6 +22,7 @@ export async function createHospital(hospitalData: HospitalData) {
         geoError
       );
     }
+    // Create hospital record
     const newHospital = await db.hospitalRegistration.create({
       data: {
         bloodBankLicense: hospitalData.bloodBankLicense,
@@ -68,10 +70,27 @@ export async function createHospital(hospitalData: HospitalData) {
         dataProcessingConsent: hospitalData.dataProcessingConsent,
         networkParticipationAgreement:
           hospitalData.networkParticipationAgreement,
+        latitude,
+        longitude,
       },
     });
 
-    return newHospital;
+     const fileFields: (keyof HospitalData)[] = [
+       "bloodBankLicenseDoc",
+       "hospitalRegistrationCert",
+       "authorizedRepIdProof",
+     ];
+
+    await Promise.all(
+      fileFields.map(async (field) => {
+        const file = hospitalData[field] as unknown as File | null;
+        if (file) {
+          await uploadHospitalFile(field as any, file, newHospital.id);
+        }
+      })
+    );
+
+    return { success: true, hospitalId: newHospital.id };
   } catch (error) {
     console.error("Error creating hospital:", error);
     return { success: false, error: "Failed to create hospital" };
@@ -98,7 +117,24 @@ export async function fetchHospitalById(hospitalId: string) {
     const hospital = await db.hospitalRegistration.findUnique({
       where: { id: hospitalId },
     });
-    return hospital;
+    if (!hospital) return null;
+    // Generate presigned URLs for file fields
+    const bloodBankLicenseDocUrl = await generatePresignedUrl(
+      hospital.bloodBankLicenseDoc
+    );
+    const hospitalRegistrationCertUrl = await generatePresignedUrl(
+      hospital.hospitalRegistrationCert
+    );
+    const authorizedRepIdProofUrl = await generatePresignedUrl(
+      hospital.authorizedRepIdProof
+    );
+
+    return {
+      ...hospital,
+      bloodBankLicenseDoc: bloodBankLicenseDocUrl,
+      hospitalRegistrationCert: hospitalRegistrationCertUrl,
+      authorizedRepIdProof: authorizedRepIdProofUrl,
+    };
   } catch (error) {
     console.error("Error fetching hospital by ID:", error);
     return null;

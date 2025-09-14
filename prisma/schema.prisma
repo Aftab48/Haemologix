@@ -175,3 +175,10 @@ enum ResponseStatus {
   CONFIRMED
   DECLINED
 }
+
+
+model Document {
+  id        Int      @id @default(autoincrement())
+  fileUrl   String
+  createdAt DateTime @default(now())
+}
