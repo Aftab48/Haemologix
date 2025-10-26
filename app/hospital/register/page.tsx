@@ -41,6 +41,7 @@ import { useRouter } from "next/navigation";
 import { sendHospitalConfirmationEmail } from "@/lib/actions/mails.actions";
 import { createHospital } from "@/lib/actions/hospital.actions";
 import { sendHospitalRegistrationSMS } from "@/lib/actions/sms.actions";
+import GradientBackground from "@/components/GradientBackground";
 
 const initialFormData: HospitalData = {
   bloodBankLicense: "",
@@ -362,14 +363,14 @@ export default function HospitalRegistration() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-900 to-yellow-600 flex items-center justify-center p-4 relative overflow-hidden">
+      <GradientBackground className="flex items-center justify-center p-4">
         <img
           src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
-          className="w-full h-full object-cover absolute mix-blend-overlay"
+          className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
           alt="Background"
         />
 
-        <Card className="w-full max-w-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white relative z-10">
+        <Card className="w-full max-w-2xl glass-morphism border border-accent/30 text-white relative z-10">
           <CardContent className="p-12 text-center">
             <div className="mb-8">
               <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -423,7 +424,7 @@ export default function HospitalRegistration() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/waitlist">
-                <Button className="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-3">
+                <Button className="gradient-ruby hover:opacity-90 text-white px-8 py-3 shadow-lg hover:shadow-primary/50">
                   Go to Hospital Dashboard
                 </Button>
               </Link>
@@ -438,15 +439,15 @@ export default function HospitalRegistration() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </GradientBackground>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-900 to-yellow-600 p-4 relative overflow-hidden">
+    <GradientBackground className="p-4">
       <img
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
-        className="w-full h-full object-cover absolute mix-blend-overlay"
+        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
         alt="Background"
       />
 
@@ -469,7 +470,7 @@ export default function HospitalRegistration() {
         </div>
 
         {/* Progress Indicator */}
-        <Card className="mb-8 bg-white/10 backdrop-blur-sm border border-white/20">
+        <Card className="mb-8 glass-morphism border border-white/20">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-white font-medium">
@@ -558,7 +559,7 @@ export default function HospitalRegistration() {
         </Card>
 
         {/* Eligibility Criteria Display
-        <Card className="mb-8 bg-white/10 backdrop-blur-sm border border-white/20">
+        <Card className="mb-8 glass-morphism border border-white/20">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="w-6 h-6 text-yellow-400" />
@@ -575,7 +576,7 @@ export default function HospitalRegistration() {
         </Card> */}
 
         {/* Form Content */}
-        <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+        <Card className="glass-morphism border border-accent/30 card-hover text-white">
           <CardHeader>
             <CardTitle className="text-white">
               {currentStep === 1 && "Legal & Regulatory Requirements"}
@@ -1673,7 +1674,7 @@ export default function HospitalRegistration() {
 
               <Button
                 onClick={currentStep === totalSteps ? handleSubmit : nextStep}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                className="gradient-ruby hover:opacity-90 text-white shadow-lg hover:shadow-primary/50 transition-all duration-300"
               >
                 {currentStep === totalSteps
                   ? "Submit Registration"
@@ -1686,6 +1687,6 @@ export default function HospitalRegistration() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </GradientBackground>
   );
 }

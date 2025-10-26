@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,9 +19,14 @@ import PasskeyModal from "@/components/PasskeyModal";
 import { stats, features, steps, CarouselData } from "@/constants";
 import { getCurrentUser } from "@/lib/actions/user.actions";
 import Image from "next/image";
+import { gsap, slideInUp, fadeIn, staggerIn, scrollReveal } from "@/lib/gsap-utils";
 
 const HomePage = () => {
   const [activeFeature, setActiveFeature] = useState(0);
+  const heroRef = useRef<HTMLElement | null>(null);
+  const statsRef = useRef<HTMLDivElement | null>(null);
+  const featuresRef = useRef<HTMLElement | null>(null);
+  const stepsRef = useRef<HTMLElement | null>(null);
 
   const searchParams = useSearchParams();
   const isAdmin = searchParams.get("admin") === "true";
@@ -66,6 +71,38 @@ const HomePage = () => {
     }
   }, [dbUser]);
 
+  // GSAP animations on mount
+  useEffect(() => {
+    if (heroRef.current) {
+      gsap.from(heroRef.current, {
+        opacity: 0,
+        y: 50,
+        duration: 1,
+        ease: 'power3.out',
+      });
+    }
+
+    if (statsRef.current) {
+      const statCards = statsRef.current.querySelectorAll('.stat-card');
+      // Set initial visible state first
+      gsap.set(statCards, { opacity: 1, scale: 1 });
+      
+      // Then animate from the initial state
+      gsap.from(statCards, {
+        scale: 0.8,
+        opacity: 0,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: 'back.out(1.7)',
+        scrollTrigger: {
+          trigger: statsRef.current,
+          start: 'top 80%',
+          once: true, // Only animate once
+        },
+      });
+    }
+  }, []);
+
   let dashboardMessage = "";
   let dashboardPath = "/";
   if (role === "DONOR") {
@@ -78,12 +115,33 @@ const HomePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-red-900">
+    <div className="min-h-screen relative" style={{
+      background: `
+        radial-gradient(at 15% 20%, #9B2226 0px, transparent 50%),
+        radial-gradient(at 85% 10%, #94D2BD 0px, transparent 45%),
+        radial-gradient(at 60% 80%, #E9D8A6 0px, transparent 50%),
+        radial-gradient(at 30% 60%, #9B2226 0px, transparent 40%),
+        radial-gradient(at 75% 45%, #94D2BD 0px, transparent 35%),
+        radial-gradient(at 10% 85%, #E9D8A6 0px, transparent 45%),
+        radial-gradient(at 90% 75%, #9B2226 0px, transparent 38%),
+        radial-gradient(at 45% 25%, #94D2BD 0px, transparent 42%),
+        linear-gradient(135deg, #E9D8A6 0%, #94D2BD 50%, #9B2226 100%)
+      `
+    }}>
+      {/* Noise Overlay */}
+      <div 
+        className="fixed inset-0 opacity-60 mix-blend-overlay pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '180px 180px'
+        }}
+      />
       {/* Header */}
-      <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-yellow-600/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center bg-transparent">
+      <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-mist-green/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center glass-morphism">
         <div className="container mx-auto px-2 md:px-4 py-2 md:py-4 flex items-center justify-between gap-px rounded bg-transparent">
           <div className="flex items-center gap-2">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-slate-300">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primary/10 border-2 border-primary animate-glow">
               <Image
                 src="/logo.png"
                 alt="Logo"
@@ -92,26 +150,26 @@ const HomePage = () => {
                 className="rounded-full"
               />
             </div>
-            <Link href={"/"} className="text-xl font-bold text-slate-300">
+            <Link href={"/"} className="text-xl font-outfit font-bold text-primary">
               {"HaemoLogix"}
             </Link>
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <Link
               href="/#features"
-              className="hover:text-yellow-600 transition-colors text-slate-300"
+              className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
             >
               Features
             </Link>
             <Link
               href="/impact"
-              className="hover:text-yellow-600 transition-colors text-slate-300"
+              className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
             >
               Impact
             </Link>
             <Link
               href="/contact"
-              className="hover:text-yellow-600 transition-colors text-slate-300"
+              className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
             >
               Contact
             </Link>
@@ -119,13 +177,13 @@ const HomePage = () => {
           <div className="flex items-center gap-1 md:gap-3">
             <SignedOut>
               <SignInButton>
-                <Button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
+                <Button className="gradient-oxygen hover:opacity-90 text-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer transition-all">
                   Sign In
                 </Button>
               </SignInButton>
               <div className="hidden lg:block">
                 <SignUpButton>
-                  <Button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
+                  <Button className="gradient-ruby hover:opacity-90 text-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer transition-all">
                     Sign Up
                   </Button>
                 </SignUpButton>
@@ -141,16 +199,18 @@ const HomePage = () => {
       {isAdmin && <PasskeyModal />}
 
       {/* Hero Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-red-900 via-red-900 to-yellow-600">
-        <div className="container mx-auto text-center">
-          <Badge className="mb-4 hover:bg-red-100 text-[rgba(127,29,29,1)] bg-[rgba(204,165,165,1)]">
+      <section ref={heroRef} className="py-20 px-4 bg-transparent relative overflow-hidden z-10">
+        <div className="absolute inset-0 bg-white/5 backdrop-blur-[2px]"></div>
+        <div className="absolute inset-0 oxygen-flow opacity-10"></div>
+        <div className="container mx-auto text-center relative z-10">
+          <Badge className="mb-4 animate-pulse-red bg-primary/20 text-primary border-primary hover:bg-primary/30 transition-colors">
             🚨 Emergency Blood Donation Platform
           </Badge>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight text-[rgba(154,117,31,1)]">
+          <h1 className="text-5xl md:text-6xl font-outfit font-bold mb-6 leading-tight text-primary animate-fade-in">
             Save Lives with
-            <span className="block text-slate-300">Real-Time Blood Alerts</span>
+            <span className="block text-secondary mt-2">Real-Time Blood Alerts</span>
           </h1>
-          <p className="text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-[rgba(159,119,31,1)]">
+          <p className="text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-text-dark font-dm-sans animate-slide-in-up">
             Connect hospitals in critical need with eligible donors instantly.
             Our platform uses geolocation matching and real-time notifications
             to mobilize donors when every second counts.
@@ -164,7 +224,7 @@ const HomePage = () => {
                   <Button
                     size="lg"
                     onClick={() => handleClick("/donor/register")}
-                    className="hover:bg-zinc-50 text-lg px-8 py-3 w-64 bg-slate-300 text-[rgba(154,117,31,1)]"
+                    className="gradient-ruby hover:opacity-90 text-lg px-8 py-3 w-64 text-white shadow-lg hover:shadow-primary/50 transition-all duration-300"
                   >
                     <Heart className="w-5 h-5 mr-2" />
                     Become a Donor
@@ -173,7 +233,7 @@ const HomePage = () => {
                   <Button
                     size="lg"
                     onClick={() => handleClick("/hospital/register")}
-                    className="hover:bg-yellow-600 text-lg px-8 py-3 w-64 bg-transparent text-slate-300 border-slate-300 border border-dashed"
+                    className="bg-transparent hover:bg-secondary/10 text-lg px-8 py-3 w-64 text-secondary border-secondary border-2 transition-all duration-300"
                   >
                     <Activity className="w-5 h-5 mr-2" />
                     Hospital Registration
@@ -182,7 +242,7 @@ const HomePage = () => {
                   <Button
                     size="lg"
                     onClick={() => handleClick("/bloodbank/register")}
-                    className="hover:bg-yellow-600 text-lg px-8 py-3 w-64 bg-transparent text-slate-300 border-slate-300 border border-dashed"
+                    className="bg-transparent hover:bg-accent/20 text-lg px-8 py-3 w-64 text-text-dark border-accent border-2 transition-all duration-300"
                   >
                     <Droplets className="w-8 h-8 mr-2" />
                     Blood Bank Registration
@@ -191,7 +251,7 @@ const HomePage = () => {
                   <Button
                     size="lg"
                     onClick={() => handleClick("/?admin=true")}
-                    className="hover:bg-zinc-50 text-lg px-8 py-3 w-64 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                    className="gradient-oxygen hover:opacity-90 text-lg px-8 py-3 w-64 text-white shadow-lg hover:shadow-secondary/50 transition-all duration-300"
                   >
                     <Shield className="w-5 h-5 mr-2" />
                     Admin Dashboard
@@ -206,7 +266,7 @@ const HomePage = () => {
                 <Button
                   size="lg"
                   onClick={() => handleClick(dashboardPath)}
-                  className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                  className="gradient-ruby hover:opacity-90 text-lg px-8 py-3 text-white shadow-lg hover:shadow-primary/50 transition-all duration-300"
                 >
                   <Activity className="w-5 h-5 mr-2" />
                   {dashboardMessage}
@@ -214,7 +274,7 @@ const HomePage = () => {
                 <Button
                   size="lg"
                   onClick={() => handleClick("/?admin=true")}
-                  className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                  className="gradient-oxygen hover:opacity-90 text-lg px-8 py-3 text-white shadow-lg hover:shadow-secondary/50 transition-all duration-300"
                 >
                   <Shield className="w-5 h-5 mr-2" />
                   Admin Dashboard
@@ -224,18 +284,18 @@ const HomePage = () => {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div ref={statsRef} className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto relative z-20">
             {stats.map((stat, index) => (
               <Card
                 key={index}
-                className="border-0 shadow-lg bg-white/60 backdrop-blur-sm"
+                className="stat-card border-2 border-accent/40 shadow-xl glass-morphism card-hover bg-white/30 backdrop-blur-md hover:bg-white/40 hover:shadow-primary/50"
               >
                 <CardContent className="p-6 text-center">
-                  <stat.icon className="w-8 h-8 mx-auto mb-2 text-[rgba(127,29,29,1)]" />
-                  <div className="text-2xl font-bold text-[rgba(154,117,31,1)]">
+                  <stat.icon className="w-8 h-8 mx-auto mb-2 text-primary drop-shadow-lg" />
+                  <div className="text-2xl font-outfit font-bold text-secondary drop-shadow-md">
                     {stat.value}
                   </div>
-                  <div className="text-sm text-gray-600">{stat.label}</div>
+                  <div className="text-sm font-dm-sans text-text-dark font-semibold">{stat.label}</div>
                 </CardContent>
               </Card>
             ))}
@@ -246,14 +306,15 @@ const HomePage = () => {
       {/* Features Section */}
       <section
         id="features"
-        className="bg-gradient-to-tr from-red-900 via-red-900 to-yellow-600"
+        ref={featuresRef}
+        className="py-20 px-4 bg-white/5 backdrop-blur-[2px] relative z-10"
       >
         <div className="container mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 text-slate-300 border-0">
+            <h2 className="text-4xl font-outfit font-bold mb-4 text-primary border-0">
               Powerful Features
             </h2>
-            <p className="text-xl max-w-2xl mx-auto text-[rgba(155,144,157,1)]">
+            <p className="text-xl max-w-2xl mx-auto text-text-dark font-dm-sans">
               Advanced technology meets humanitarian mission to create the most
               efficient blood donation network.
             </p>
@@ -264,23 +325,23 @@ const HomePage = () => {
               {features.map((feature, index) => (
                 <Card
                   key={index}
-                  className={`cursor-pointer transition-all duration-300 h-full backdrop-blur-md bg-slate-300/30 border border-slate-300/40 shadow-lg hover:shadow-yellow-600/50 hover:shadow-2xl hover:border-yellow-600/60 ${
+                  className={`cursor-pointer transition-all duration-300 h-full glass-morphism border shadow-lg hover:shadow-accent/50 hover:shadow-2xl hover:border-accent/60 card-hover ${
                     activeFeature === index
-                      ? "border-red-500 shadow-lg bg-slate-300/40"
-                      : ""
+                      ? "border-primary shadow-lg bg-white/40 scale-105"
+                      : "border-mist-green/40"
                   }`}
                   onClick={() => setActiveFeature(index)}
                 >
                   <CardContent className="p-4 h-full flex flex-col">
                     <div className="flex items-start gap-3 flex-1">
-                      <div className="w-6 h-6 md:w-10 md:h-10 rounded-lg flex items-center justify-center flex-shrink-0 backdrop-blur-sm bg-slate-400/60 text-gray-800">
+                      <div className="w-6 h-6 md:w-10 md:h-10 rounded-lg flex items-center justify-center flex-shrink-0 gradient-oxygen text-white">
                         <feature.icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-base font-semibold mb-1 text-slate-300">
+                        <h3 className="text-base font-outfit font-semibold mb-1 text-primary">
                           {feature.title}
                         </h3>
-                        <p className="text-xs leading-tight text-[rgba(155,148,162,1)]">
+                        <p className="text-xs leading-tight font-dm-sans text-text-dark/80">
                           {feature.description}
                         </p>
                       </div>
@@ -296,14 +357,15 @@ const HomePage = () => {
       {/* How It Works */}
       <section
         id="how-it-works"
-        className="py-20 px-4 bg-gradient-to-bl from-red-900 via-red-900 to-yellow-600 relative overflow-hidden"
+        ref={stepsRef}
+        className="py-20 px-4 bg-transparent relative overflow-hidden z-10"
       >
         <div className="container mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 text-slate-300">
+            <h2 className="text-4xl font-outfit font-bold mb-4 text-primary">
               How It Works
             </h2>
-            <p className="text-xl text-slate-300/80">
+            <p className="text-xl font-dm-sans text-text-dark">
               Simple steps to save lives in critical moments.
             </p>
           </div>
@@ -322,8 +384,8 @@ const HomePage = () => {
                   x2="100%"
                   y2="0%"
                 >
-                  <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.6" />
+                  <stop offset="0%" stopColor="#94D2BD" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#005F73" stopOpacity="0.6" />
                 </linearGradient>
               </defs>
               {/* Step 1 to 2 */}
@@ -380,17 +442,17 @@ const HomePage = () => {
                   }}
                 >
                   <div className="relative mb-6">
-                    <div className="w-24 h-24 rounded-full backdrop-blur-md bg-yellow-600/40 border border-yellow-600/60 shadow-lg flex items-center justify-center text-3xl transition-all duration-300 group-hover:shadow-slate-300/50 group-hover:shadow-2xl group-hover:bg-yellow-600/60 group-hover:scale-110">
+                    <div className="w-24 h-24 rounded-full glass-morphism border-2 border-accent shadow-lg flex items-center justify-center text-3xl transition-all duration-300 group-hover:shadow-primary/50 group-hover:shadow-2xl group-hover:bg-mist-green/40 group-hover:scale-110 animate-float">
                       <span className="filter drop-shadow-lg">{item.icon}</span>
                     </div>
-                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-yellow-600/80 backdrop-blur-sm flex items-center justify-center text-white font-bold text-sm border-2 border-yellow-500">
+                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full gradient-oxygen backdrop-blur-sm flex items-center justify-center text-white font-outfit font-bold text-sm border-2 border-secondary">
                       {item.step}
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-300 mb-3 group-hover:text-white transition-colors duration-300">
+                  <h3 className="text-lg font-outfit font-semibold text-primary mb-3 group-hover:text-secondary transition-colors duration-300">
                     {item.title}
                   </h3>
-                  <p className="text-sm text-slate-300/80 leading-relaxed group-hover:text-slate-200 transition-colors duration-300">
+                  <p className="text-sm font-dm-sans text-text-dark leading-relaxed group-hover:text-text-dark/80 transition-colors duration-300">
                     {item.description}
                   </p>
                 </div>
@@ -414,13 +476,13 @@ const HomePage = () => {
       </section>
 
       {/* Partners & Community Section */}
-      <section className="py-30 px-4 bg-gradient-to-tl from-red-900 via-red-900 to-yellow-600 relative overflow-hidden">
+      <section className="py-30 px-4 bg-white/5 backdrop-blur-[2px] relative overflow-hidden z-10">
         <div className="container mx-auto">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-bold mb-4 text-slate-300 mt-11">
+            <h2 className="text-4xl font-outfit font-bold mb-4 text-primary mt-11">
               Our Community Impact
             </h2>
-            <p className="text-xl text-slate-300/80">
+            <p className="text-xl font-dm-sans text-text-dark">
               Trusted by hospitals, loved by donors, saving lives together.
             </p>
           </div>
@@ -453,10 +515,10 @@ const HomePage = () => {
                     }}
                   >
                     <div
-                      className={`w-full h-full border-2 border-gray-200 rounded-2xl shadow-2xl transition-all duration-500 overflow-hidden group bg-transparent ${
+                      className={`w-full h-full border-2 rounded-2xl shadow-2xl transition-all duration-500 overflow-hidden group glass-morphism ${
                         isCenter
-                          ? "shadow-red-600/60 border-red-300 scale-110"
-                          : "hover:shadow-red-400/40 hover:border-red-200"
+                          ? "shadow-primary/60 border-primary scale-110 animate-glow"
+                          : "border-mist-green hover:shadow-accent/40 hover:border-accent"
                       }`}
                     >
                       <div className="relative h-44 overflow-hidden rounded-t-2xl">
@@ -465,28 +527,28 @@ const HomePage = () => {
                           alt={item.title}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"></div>
                       </div>
-                      <div className="p-4 text-center bg-slate-300">
+                      <div className="p-4 text-center bg-white/80 backdrop-blur-sm">
                         <h3
-                          className={`text-base font-semibold mb-2 transition-colors duration-300 ${
+                          className={`text-base font-outfit font-semibold mb-2 transition-colors duration-300 ${
                             isCenter
-                              ? "text-red-700"
-                              : "text-gray-800 group-hover:text-red-600"
+                              ? "text-primary"
+                              : "text-text-dark group-hover:text-secondary"
                           }`}
                         >
                           {item.title}
                         </h3>
                         <div className="flex justify-center">
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            className={`px-2 py-1 rounded-full text-xs font-dm-sans font-medium ${
                               item.type === "hospital"
-                                ? "bg-blue-100 text-blue-700"
+                                ? "bg-secondary/20 text-secondary"
                                 : item.type === "donors"
-                                ? "bg-green-100 text-green-700"
+                                ? "bg-accent/30 text-text-dark"
                                 : item.type === "event"
-                                ? "bg-purple-100 text-purple-700"
-                                : "bg-orange-100 text-orange-700"
+                                ? "bg-primary/20 text-primary"
+                                : "bg-mist-green/40 text-text-dark"
                             }`}
                           >
                             {item.type.charAt(0).toUpperCase() +
@@ -573,12 +635,13 @@ const HomePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-red-900 via-red-900 to-yellow-600">
-        <div className="container mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-4 text-yellow-600">
+      <section className="py-20 px-4 bg-white/5 backdrop-blur-[2px] relative overflow-hidden z-10">
+        <div className="absolute inset-0 oxygen-flow opacity-10"></div>
+        <div className="container mx-auto text-center relative z-10">
+          <h2 className="text-4xl font-outfit font-bold mb-4 text-primary animate-scale-in">
             Ready to Save Lives?
           </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto text-[rgba(190,187,183,1)]">
+          <p className="text-xl mb-8 max-w-2xl mx-auto font-dm-sans text-text-dark">
             Join thousands of donors and healthcare providers making a
             difference every day.
           </p>
@@ -590,7 +653,7 @@ const HomePage = () => {
                   <Button
                     size="lg"
                     variant="secondary"
-                    className="text-lg px-8 py-3 bg-slate-300 text-[rgba(199,134,5,1)]"
+                    className="text-lg px-8 py-3 gradient-ruby text-white hover:opacity-90 shadow-lg hover:shadow-primary/50 transition-all duration-300"
                   >
                     Register as Donor
                   </Button>
@@ -599,7 +662,7 @@ const HomePage = () => {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="text-lg px-8 py-3 hover:bg-yellow-600 hover:text-slate-300 bg-transparent border-[rgba(191,122,8,1)] text-slate-300"
+                    className="text-lg px-8 py-3 hover:bg-secondary/10 bg-transparent border-secondary border-2 text-secondary transition-all duration-300"
                   >
                     Register Hospital
                   </Button>
@@ -612,7 +675,7 @@ const HomePage = () => {
                 <Button
                   size="lg"
                   onClick={() => handleClick(dashboardPath)}
-                  className="hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+                  className="gradient-oxygen text-lg px-8 py-3 text-white shadow-lg hover:shadow-secondary/50 hover:opacity-90 transition-all duration-300"
                 >
                   {dashboardMessage}
                 </Button>
@@ -624,92 +687,83 @@ const HomePage = () => {
 
       {/* Footer */}
       <footer
-        className="text-gray-800 py-12 my-0 px-4 mx-0"
-        style={{
-          background: `
-      radial-gradient(at 21.2931% 21.9583%, #7f1d1d 0px, transparent 50%),
-      radial-gradient(at 83.1465% 79.4583%, #7f1d1d 0px, transparent 50%),
-      radial-gradient(at 28.944% 73.2083%, #c78605 0px, transparent 50%),
-      radial-gradient(at 71.1853% 22.375%, #c78605 0px, transparent 50%),
-      #1a2849
-    `,
-        }}
+        className="text-text-dark py-12 my-0 px-4 mx-0 bg-text-dark/95 backdrop-blur-md relative z-10"
       >
         <div className="container mx-auto">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Heart className="w-6 h-6 text-slate-300" />
-                <span className="text-xl font-bold text-slate-300">
+                <Heart className="w-6 h-6 text-primary" />
+                <span className="text-xl font-outfit font-bold text-background">
                   Haemologix
                 </span>
               </div>
-              <p className="text-gray-400">
+              <p className="text-background/80 font-dm-sans">
                 Connecting lives through technology and compassion.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4 text-slate-300">Platform</h4>
-              <ul className="space-y-2 text-gray-400">
+              <h4 className="font-outfit font-semibold mb-4 text-background">Platform</h4>
+              <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
-                  <Link href="/donor" className="hover:text-white">
+                  <Link href="/donor" className="hover:text-accent transition-colors">
                     Donor Dashboard
                   </Link>
                 </li>
                 <li>
-                  <Link href="/hospital" className="hover:text-white">
+                  <Link href="/hospital" className="hover:text-accent transition-colors">
                     Hospital Portal
                   </Link>
                 </li>
                 <li>
-                  <Link href="/admin" className="hover:text-white">
+                  <Link href="/admin" className="hover:text-accent transition-colors">
                     Admin Panel
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4 text-slate-300">Support</h4>
-              <ul className="space-y-2 text-gray-400">
+              <h4 className="font-outfit font-semibold mb-4 text-background">Support</h4>
+              <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="#" className="hover:text-accent transition-colors">
                     Help Center
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="#" className="hover:text-accent transition-colors">
                     Contact Us
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="#" className="hover:text-accent transition-colors">
                     Emergency
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4 text-slate-300">Legal</h4>
-              <ul className="space-y-2 text-gray-400">
+              <h4 className="font-outfit font-semibold mb-4 text-background">Legal</h4>
+              <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="#" className="hover:text-accent transition-colors">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="#" className="hover:text-accent transition-colors">
                     Terms of Service
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="#" className="hover:text-accent transition-colors">
                     HIPAA Compliance
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-slate-300 mt-8 pt-8 text-center text-gray-400">
+          <div className="border-t border-background/30 mt-8 pt-8 text-center text-background/70 font-dm-sans">
             <p>
               &copy; 2024 Haemologix. All rights reserved. Built for saving
               lives.

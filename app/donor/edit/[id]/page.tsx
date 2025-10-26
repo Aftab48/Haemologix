@@ -22,14 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Upload, CheckCircle, ArrowLeft, ArrowRight } from "lucide-react";
+import { Upload, CheckCircle, ArrowLeft, ArrowRight, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import {
-  checkIfDonorApplied,
-  markDonorAsApplied,
-} from "@/lib/actions/user.actions";
-import { useRouter } from "next/navigation";
-import { submitDonorRegistration } from "@/lib/actions/donor.actions";
+import { useRouter, useParams } from "next/navigation";
+import { fetchDonorById } from "@/lib/actions/donor.actions";
+import { updateDonorRegistration } from "@/lib/actions/donor.actions";
 import { sendDonorRegistrationEmail } from "@/lib/actions/mails.actions";
 import { sendDonorRegistrationSMS } from "@/lib/actions/sms.actions";
 import GradientBackground from "@/components/GradientBackground";
@@ -71,31 +68,98 @@ const initialFormData: DonorData = {
   termsAccepted: false,
 };
 
-export default function DonorRegistration() {
+export default function DonorEditPage() {
   const router = useRouter();
-
-  useEffect(() => {
-    const verify = async () => {
-      const alreadyApplied = await checkIfDonorApplied();
-      if (alreadyApplied) {
-        router.push("/waitlist");
-      }
-    };
-    verify();
-  }, [router]);
+  const params = useParams();
+  const donorId = params.id as string;
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<DonorData>(initialFormData);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [donorInfo, setDonorInfo] = useState<any>(null);
+  const [verificationErrors, setVerificationErrors] = useState<any[]>([]);
 
   const totalSteps = 6;
   const progress = ((currentStep - 1) / totalSteps) * 100;
 
+  // Load existing donor data
+  useEffect(() => {
+    const loadDonorData = async () => {
+      try {
+        const donor = await fetchDonorById(donorId);
+        
+        if (!donor) {
+          router.push("/");
+          return;
+        }
+
+        // Check if suspended
+        if (donor.suspendedUntil && new Date() < new Date(donor.suspendedUntil)) {
+          router.push("/suspended");
+          return;
+        }
+
+        setDonorInfo(donor);
+
+        // Pre-fill form data
+        setFormData({
+          firstName: donor.firstName || "",
+          lastName: donor.lastName || "",
+          email: donor.email || "",
+          phone: donor.phone || "",
+          dateOfBirth: donor.dateOfBirth ? new Date(donor.dateOfBirth).toISOString().split('T')[0] : "",
+          gender: donor.gender || "",
+          address: donor.address || "",
+          emergencyContact: donor.emergencyContact || "",
+          emergencyPhone: donor.emergencyPhone || "",
+          weight: donor.weight || "",
+          height: donor.height || "",
+          bmi: donor.bmi || "",
+          neverDonated: donor.neverDonated || false,
+          lastDonation: donor.lastDonation ? new Date(donor.lastDonation).toISOString().split('T')[0] : "",
+          donationCount: donor.donationCount || "",
+          recentVaccinations: donor.recentVaccinations || false,
+          vaccinationDetails: donor.vaccinationDetails || "",
+          medicalConditions: donor.medicalConditions || "",
+          medications: donor.medications || "",
+          hivTest: donor.hivTest || "",
+          hepatitisBTest: donor.hepatitisBTest || "",
+          hepatitisCTest: donor.hepatitisCTest || "",
+          syphilisTest: donor.syphilisTest || "",
+          malariaTest: donor.malariaTest || "",
+          hemoglobin: donor.hemoglobin || "",
+          bloodGroup: donor.bloodGroup || "",
+          plateletCount: donor.plateletCount || "",
+          wbcCount: donor.wbcCount || "",
+          bloodTestReport: null, // Files need to be re-uploaded
+          idProof: null,
+          medicalCertificate: null,
+          dataProcessingConsent: donor.dataProcessingConsent || false,
+          medicalScreeningConsent: donor.medicalScreeningConsent || false,
+          termsAccepted: donor.termsAccepted || false,
+        });
+
+        // Load verification errors if any
+        // TODO: Fetch from DonorVerification table
+        
+      } catch (error) {
+        console.error("Error loading donor data:", error);
+        router.push("/");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (donorId) {
+      loadDonorData();
+    }
+  }, [donorId, router]);
+
   const calculateBMI = (weight: string, height: string) => {
     const w = Number.parseFloat(weight);
-    const h = Number.parseFloat(height) / 100; // Convert cm to m
+    const h = Number.parseFloat(height) / 100;
     if (w && h) {
       const bmi = w / (h * h);
       return bmi.toFixed(1);
@@ -107,7 +171,6 @@ export default function DonorRegistration() {
     setFormData((prev) => {
       const updated = { ...prev, [field]: value };
 
-      // Auto-calculate BMI when weight or height changes
       if (field === "weight" || field === "height") {
         updated.bmi = calculateBMI(updated.weight, updated.height);
       }
@@ -115,7 +178,6 @@ export default function DonorRegistration() {
       return updated;
     });
 
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
@@ -130,11 +192,9 @@ export default function DonorRegistration() {
         if (!formData.lastName) newErrors.lastName = "Last name is required";
         if (!formData.email) newErrors.email = "Email is required";
         if (!formData.phone) newErrors.phone = "Phone is required";
-        if (!formData.dateOfBirth)
-          newErrors.dateOfBirth = "Date of birth is required";
+        if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
         if (!formData.gender) newErrors.gender = "Gender is required";
 
-        // age validation (18-65 years)
         if (formData.dateOfBirth) {
           const today = new Date();
           const birthDate = new Date(formData.dateOfBirth);
@@ -149,32 +209,24 @@ export default function DonorRegistration() {
         if (!formData.weight) newErrors.weight = "Weight is required";
         if (!formData.height) newErrors.height = "Height is required";
 
-        // weight validation (minimum 50kg)
         if (formData.weight && Number.parseFloat(formData.weight) < 50) {
           newErrors.weight = "Minimum weight requirement is 50kg";
         }
 
-        // BMI validation (minimum 18.5)
         if (formData.bmi && Number.parseFloat(formData.bmi) < 18.5) {
-          newErrors.bmi =
-            "BMI must be at least 18.5 (underweight individuals not eligible)";
+          newErrors.bmi = "BMI must be at least 18.5 (underweight individuals not eligible)";
         }
         break;
 
       case 3:
         if (!formData.neverDonated) {
-          if (!formData.lastDonation)
-            newErrors.lastDonation = "Last donation date is required";
-          if (!formData.donationCount)
-            newErrors.donationCount = "Donation count is required";
+          if (!formData.lastDonation) newErrors.lastDonation = "Last donation date is required";
+          if (!formData.donationCount) newErrors.donationCount = "Donation count is required";
 
-          // donation interval validation
           if (formData.lastDonation) {
             const lastDonation = new Date(formData.lastDonation);
             const today = new Date();
-            const monthsDiff =
-              (today.getTime() - lastDonation.getTime()) /
-              (1000 * 60 * 60 * 24 * 30);
+            const monthsDiff = (today.getTime() - lastDonation.getTime()) / (1000 * 60 * 60 * 24 * 30);
             const requiredGap = formData.gender === "male" ? 3 : 4;
 
             if (monthsDiff < requiredGap) {
@@ -185,38 +237,23 @@ export default function DonorRegistration() {
         break;
 
       case 4:
-        if (!formData.hivTest)
-          newErrors.hivTest = "HIV test result is required";
-        if (!formData.hepatitisBTest)
-          newErrors.hepatitisBTest = "Hepatitis B test result is required";
-        if (!formData.hepatitisCTest)
-          newErrors.hepatitisCTest = "Hepatitis C test result is required";
-        if (!formData.syphilisTest)
-          newErrors.syphilisTest = "Syphilis test result is required";
-        if (!formData.malariaTest)
-          newErrors.malariaTest = "Malaria test result is required";
-        if (!formData.hemoglobin)
-          newErrors.hemoglobin = "Hemoglobin level is required";
-        if (!formData.bloodGroup)
-          newErrors.bloodGroup = "Blood group is required";
+        if (!formData.hivTest) newErrors.hivTest = "HIV test result is required";
+        if (!formData.hepatitisBTest) newErrors.hepatitisBTest = "Hepatitis B test result is required";
+        if (!formData.hepatitisCTest) newErrors.hepatitisCTest = "Hepatitis C test result is required";
+        if (!formData.syphilisTest) newErrors.syphilisTest = "Syphilis test result is required";
+        if (!formData.malariaTest) newErrors.malariaTest = "Malaria test result is required";
+        if (!formData.hemoglobin) newErrors.hemoglobin = "Hemoglobin level is required";
+        if (!formData.bloodGroup) newErrors.bloodGroup = "Blood group is required";
         break;
 
       case 5:
-        if (!formData.bloodTestReport)
-          newErrors.bloodTestReport = "Blood test report is required";
-        if (!formData.idProof) newErrors.idProof = "ID proof is required";
-        if (!formData.medicalCertificate) newErrors.medicalCertificate = "Medical certificate is required";
+        // Files are optional on edit (only if user wants to replace them)
         break;
 
       case 6:
-        if (!formData.dataProcessingConsent)
-          newErrors.dataProcessingConsent =
-            "Data processing consent is required";
-        if (!formData.medicalScreeningConsent)
-          newErrors.medicalScreeningConsent =
-            "Medical screening consent is required";
-        if (!formData.termsAccepted)
-          newErrors.termsAccepted = "Terms and conditions must be accepted";
+        if (!formData.dataProcessingConsent) newErrors.dataProcessingConsent = "Data processing consent is required";
+        if (!formData.medicalScreeningConsent) newErrors.medicalScreeningConsent = "Medical screening consent is required";
+        if (!formData.termsAccepted) newErrors.termsAccepted = "Terms and conditions must be accepted";
         break;
     }
 
@@ -225,9 +262,9 @@ export default function DonorRegistration() {
   };
 
   const nextStep = () => {
-    
+    if (validateStep(currentStep)) {
       setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
-    
+    }
   };
 
   const prevStep = () => {
@@ -238,30 +275,35 @@ export default function DonorRegistration() {
     if (!validateStep(currentStep)) return;
 
     try {
-      // Step 1: Submit donor registration (includes file uploads and AI verification)
-      const result = await submitDonorRegistration(formData);
+      const result = await updateDonorRegistration(donorId, formData);
 
       if (!result.success) {
-        console.error("Donor registration failed:", result.error);
+        if (result.error === "Account suspended") {
+          router.push("/suspended");
+          return;
+        }
+        console.error("Donor update failed:", result.error);
         return;
       }
-      
-      // Note: markDonorAsApplied() is now called inside verification.actions.ts
-      // only if the AI verification passes
 
-      // Step 2: Send registration email
+      // Send notification emails
       await sendDonorRegistrationEmail(formData.email, formData.firstName);
-
-      // Step 3: Send registration SMS
       await sendDonorRegistrationSMS(formData.phone, formData.firstName);
 
-      console.log("Form submitted:", formData);
+      console.log("Form updated:", formData);
       setIsSubmitted(true);
     } catch (err) {
-      console.error("Error in submission flow:", err);
+      console.error("Error in update flow:", err);
     }
   };
 
+  if (loading) {
+    return (
+      <GradientBackground className="flex items-center justify-center p-4">
+        <div className="text-white text-2xl">Loading your information...</div>
+      </GradientBackground>
+    );
+  }
 
   if (isSubmitted) {
     return (
@@ -272,7 +314,7 @@ export default function DonorRegistration() {
           alt="Background"
         />
 
-        <Card className="w-full max-w-2xl glass-morphism border border-accent/30 text-white relative z-10">
+        <Card className="w-full max-w-2xl glass-morphism border border-accent/30 card-hover text-white relative z-10">
           <CardContent className="p-12 text-center">
             <div className="mb-8">
               <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -281,11 +323,10 @@ export default function DonorRegistration() {
             </div>
 
             <h1 className="text-3xl font-bold text-white mb-4">
-              Registration Successful!
+              Information Updated Successfully!
             </h1>
             <p className="text-xl text-gray-200 mb-6">
-              Thank you for your interest in becoming a blood donor. Your
-              details have been submitted successfully.
+              Your updated information has been submitted for re-verification.
             </p>
 
             <div className="bg-white/5 rounded-lg p-6 mb-8 border border-white/10">
@@ -296,21 +337,19 @@ export default function DonorRegistration() {
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
                   <span className="text-gray-200">
-                    Our medical team will review your application within 24-48
-                    hours
+                    Our AI system will re-verify your documents
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
                   <span className="text-gray-200">
-                    You'll receive an email confirmation with your donor ID
+                    If verification passes, admin will review your application
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
                   <span className="text-gray-200">
-                    If approved, you'll be notified about nearby blood donation
-                    requests
+                    You'll receive an email with the verification result
                   </span>
                 </div>
               </div>
@@ -356,15 +395,37 @@ export default function DonorRegistration() {
             Back To Home
           </Link>
           <h1 className="text-4xl font-bold text-white mb-2">
-            Donor Registration
+            Update Your Information
           </h1>
           <p className="text-xl text-gray-200">
-            Help save lives by becoming a verified blood donor
+            Correct any mismatched information to pass verification
           </p>
         </div>
 
+        {/* Verification Attempts Warning */}
+        {donorInfo && (
+          <Card className="mb-6 bg-yellow-500/10 backdrop-blur-sm border-2 border-yellow-500/30">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <AlertTriangle className="w-6 h-6 text-yellow-400" />
+                <h3 className="text-lg font-semibold text-white">
+                  Verification Attempt {donorInfo.verificationAttempts + 1}/3
+                </h3>
+              </div>
+              <p className="text-gray-200 mb-2">
+                Please carefully review and correct any information that doesn't match your documents.
+              </p>
+              <p className="text-yellow-300 text-sm font-semibold">
+                {donorInfo.verificationAttempts >= 2 
+                  ? "⚠️ Final attempt! Your account will be suspended for 7 days if this verification fails."
+                  : `You have ${3 - donorInfo.verificationAttempts} attempts remaining.`}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Progress Indicator */}
-        <Card className="mb-8 glass-morphism border border-white/20">
+        <Card className="mb-8 glass-morphism border border-accent/30">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <span className="text-white font-medium">
@@ -378,20 +439,12 @@ export default function DonorRegistration() {
 
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               {[
-                {
-                  number: 1,
-                  title: "Personal Info",
-                  description: "Basic details",
-                },
+                { number: 1, title: "Personal Info", description: "Basic details" },
                 { number: 2, title: "Physical", description: "Weight & BMI" },
                 { number: 3, title: "Medical", description: "Health history" },
                 { number: 4, title: "Screening", description: "Disease tests" },
                 { number: 5, title: "Documents", description: "Upload files" },
-                {
-                  number: 6,
-                  title: "Consent",
-                  description: "Terms & agreements",
-                },
+                { number: 6, title: "Consent", description: "Terms & agreements" },
               ].map((step) => (
                 <div
                   key={step.number}
@@ -430,7 +483,7 @@ export default function DonorRegistration() {
           </CardContent>
         </Card>
 
-        {/* Form Content */}
+        {/* Form Content - Reusing the same steps as registration */}
         <Card className="glass-morphism border border-accent/30 card-hover text-white">
           <CardHeader>
             <CardTitle className="text-white">
@@ -442,15 +495,12 @@ export default function DonorRegistration() {
               {currentStep === 6 && "Consent & Agreement"}
             </CardTitle>
             <CardDescription className="text-gray-200">
-              {currentStep === 1 &&
-                "Please provide your basic personal details"}
-              {currentStep === 2 &&
-                "Weight and BMI requirements for donation eligibility"}
-              {currentStep === 3 &&
-                "Previous donation history and medical conditions"}
-              {currentStep === 4 && "Disease screening and blood test results"}
-              {currentStep === 5 && "Upload required medical documents"}
-              {currentStep === 6 && "Review and accept terms and conditions"}
+              {currentStep === 1 && "Update your basic personal details"}
+              {currentStep === 2 && "Update weight and BMI information"}
+              {currentStep === 3 && "Update medical history"}
+              {currentStep === 4 && "Update disease screening results"}
+              {currentStep === 5 && "Re-upload documents if needed (optional)"}
+              {currentStep === 6 && "Review and confirm"}
             </CardDescription>
           </CardHeader>
 
@@ -463,9 +513,7 @@ export default function DonorRegistration() {
                     <Label className="text-white">First Name *</Label>
                     <Input
                       value={formData.firstName}
-                      onChange={(e) =>
-                        updateFormData("firstName", e.target.value)
-                      }
+                      onChange={(e) => updateFormData("firstName", e.target.value)}
                       className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
                       placeholder="Enter your first name"
                     />
@@ -477,9 +525,7 @@ export default function DonorRegistration() {
                     <Label className="text-white">Last Name *</Label>
                     <Input
                       value={formData.lastName}
-                      onChange={(e) =>
-                        updateFormData("lastName", e.target.value)
-                      }
+                      onChange={(e) => updateFormData("lastName", e.target.value)}
                       className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
                       placeholder="Enter your last name"
                     />
@@ -519,21 +565,15 @@ export default function DonorRegistration() {
 
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">
-                      Date of Birth * (Age: 18-65)
-                    </Label>
+                    <Label className="text-white">Date of Birth * (Age: 18-65)</Label>
                     <Input
                       type="date"
                       value={formData.dateOfBirth}
-                      onChange={(e) =>
-                        updateFormData("dateOfBirth", e.target.value)
-                      }
+                      onChange={(e) => updateFormData("dateOfBirth", e.target.value)}
                       className="bg-white/5 border-white/20 text-white"
                     />
                     {errors.dateOfBirth && (
-                      <p className="text-red-400 text-sm">
-                        {errors.dateOfBirth}
-                      </p>
+                      <p className="text-red-400 text-sm">{errors.dateOfBirth}</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -559,9 +599,7 @@ export default function DonorRegistration() {
                     <Label className="text-white">Blood Type</Label>
                     <Select
                       value={formData.bloodGroup}
-                      onValueChange={(value) =>
-                        updateFormData("bloodGroup", value)
-                      }
+                      onValueChange={(value) => updateFormData("bloodGroup", value)}
                     >
                       <SelectTrigger className="bg-white/5 border-white/20 text-white">
                         <SelectValue placeholder="Select blood type" />
@@ -646,7 +684,6 @@ export default function DonorRegistration() {
             {/* Step 3: Medical History */}
             {currentStep === 3 && (
               <div className="space-y-6">
-                {/* Never Donated Checkbox */}
                 <div className="flex items-center gap-2">
                   <input
                     className="accent-red-600 cursor-pointer"
@@ -657,7 +694,6 @@ export default function DonorRegistration() {
                       const checked = e.target.checked;
                       updateFormData("neverDonated", checked);
                       if (checked) {
-                        // Clear the other fields if checked
                         updateFormData("lastDonation", "");
                         updateFormData("donationCount", "");
                       }
@@ -670,35 +706,25 @@ export default function DonorRegistration() {
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">
-                      Last Blood Donation Date *
-                    </Label>
+                    <Label className="text-white">Last Blood Donation Date *</Label>
                     <Input
                       type="date"
                       value={formData.lastDonation}
                       disabled={formData.neverDonated}
-                      onChange={(e) =>
-                        updateFormData("lastDonation", e.target.value)
-                      }
+                      onChange={(e) => updateFormData("lastDonation", e.target.value)}
                       className="bg-white/5 border-white/20 text-white"
                     />
                     {errors.lastDonation && (
-                      <p className="text-red-400 text-sm">
-                        {errors.lastDonation}
-                      </p>
+                      <p className="text-red-400 text-sm">{errors.lastDonation}</p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-white">
-                      Total Previous Blood Donations *
-                    </Label>
+                    <Label className="text-white">Total Previous Blood Donations *</Label>
                     <Select
                       value={formData.donationCount}
                       disabled={formData.neverDonated}
-                      onValueChange={(value) =>
-                        updateFormData("donationCount", value)
-                      }
+                      onValueChange={(value) => updateFormData("donationCount", value)}
                     >
                       <SelectTrigger className="bg-white/5 border-white/20 text-white">
                         <SelectValue placeholder="Select count" />
@@ -712,9 +738,7 @@ export default function DonorRegistration() {
                       </SelectContent>
                     </Select>
                     {errors.donationCount && (
-                      <p className="text-red-400 text-sm">
-                        {errors.donationCount}
-                      </p>
+                      <p className="text-red-400 text-sm">{errors.donationCount}</p>
                     )}
                   </div>
                 </div>
@@ -735,14 +759,10 @@ export default function DonorRegistration() {
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <Label className="text-white">
-                      HIV 1 & 2 Test Result *
-                    </Label>
+                    <Label className="text-white">HIV 1 & 2 Test Result *</Label>
                     <RadioGroup
                       value={formData.hivTest}
-                      onValueChange={(value) =>
-                        updateFormData("hivTest", value)
-                      }
+                      onValueChange={(value) => updateFormData("hivTest", value)}
                       className="flex gap-6"
                     >
                       <div className="flex items-center space-x-2">
@@ -772,14 +792,10 @@ export default function DonorRegistration() {
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-white">
-                      Hepatitis B Surface Antigen (HBsAg) *
-                    </Label>
+                    <Label className="text-white">Hepatitis B Surface Antigen (HBsAg) *</Label>
                     <RadioGroup
                       value={formData.hepatitisBTest}
-                      onValueChange={(value) =>
-                        updateFormData("hepatitisBTest", value)
-                      }
+                      onValueChange={(value) => updateFormData("hepatitisBTest", value)}
                       className="flex gap-6"
                     >
                       <div className="flex items-center space-x-2">
@@ -804,21 +820,15 @@ export default function DonorRegistration() {
                       </div>
                     </RadioGroup>
                     {errors.hepatitisBTest && (
-                      <p className="text-red-400 text-sm">
-                        {errors.hepatitisBTest}
-                      </p>
+                      <p className="text-red-400 text-sm">{errors.hepatitisBTest}</p>
                     )}
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-white">
-                      Hepatitis C Virus (Anti-HCV) *
-                    </Label>
+                    <Label className="text-white">Hepatitis C Virus (Anti-HCV) *</Label>
                     <RadioGroup
                       value={formData.hepatitisCTest}
-                      onValueChange={(value) =>
-                        updateFormData("hepatitisCTest", value)
-                      }
+                      onValueChange={(value) => updateFormData("hepatitisCTest", value)}
                       className="flex gap-6"
                     >
                       <div className="flex items-center space-x-2">
@@ -843,9 +853,7 @@ export default function DonorRegistration() {
                       </div>
                     </RadioGroup>
                     {errors.hepatitisCTest && (
-                      <p className="text-red-400 text-sm">
-                        {errors.hepatitisCTest}
-                      </p>
+                      <p className="text-red-400 text-sm">{errors.hepatitisCTest}</p>
                     )}
                   </div>
 
@@ -853,9 +861,7 @@ export default function DonorRegistration() {
                     <Label className="text-white">Syphilis (VDRL/RPR) *</Label>
                     <RadioGroup
                       value={formData.syphilisTest}
-                      onValueChange={(value) =>
-                        updateFormData("syphilisTest", value)
-                      }
+                      onValueChange={(value) => updateFormData("syphilisTest", value)}
                       className="flex gap-6"
                     >
                       <div className="flex items-center space-x-2">
@@ -880,9 +886,7 @@ export default function DonorRegistration() {
                       </div>
                     </RadioGroup>
                     {errors.syphilisTest && (
-                      <p className="text-red-400 text-sm">
-                        {errors.syphilisTest}
-                      </p>
+                      <p className="text-red-400 text-sm">{errors.syphilisTest}</p>
                     )}
                   </div>
 
@@ -890,9 +894,7 @@ export default function DonorRegistration() {
                     <Label className="text-white">Malaria Test *</Label>
                     <RadioGroup
                       value={formData.malariaTest}
-                      onValueChange={(value) =>
-                        updateFormData("malariaTest", value)
-                      }
+                      onValueChange={(value) => updateFormData("malariaTest", value)}
                       className="flex gap-6"
                     >
                       <div className="flex items-center space-x-2">
@@ -917,21 +919,15 @@ export default function DonorRegistration() {
                       </div>
                     </RadioGroup>
                     {errors.malariaTest && (
-                      <p className="text-red-400 text-sm">
-                        {errors.malariaTest}
-                      </p>
+                      <p className="text-red-400 text-sm">{errors.malariaTest}</p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-white">
-                      Blood Group & Rh Factor *
-                    </Label>
+                    <Label className="text-white">Blood Group & Rh Factor *</Label>
                     <Select
                       value={formData.bloodGroup}
-                      onValueChange={(value) =>
-                        updateFormData("bloodGroup", value)
-                      }
+                      onValueChange={(value) => updateFormData("bloodGroup", value)}
                     >
                       <SelectTrigger className="bg-white/5 border-white/20 text-white">
                         <SelectValue placeholder="Select blood group" />
@@ -948,9 +944,7 @@ export default function DonorRegistration() {
                       </SelectContent>
                     </Select>
                     {errors.bloodGroup && (
-                      <p className="text-red-400 text-sm">
-                        {errors.bloodGroup}
-                      </p>
+                      <p className="text-red-400 text-sm">{errors.bloodGroup}</p>
                     )}
                   </div>
                 </div>
@@ -961,47 +955,33 @@ export default function DonorRegistration() {
                   </h3>
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-white">
-                        Hemoglobin (Hb) - ≥ 12.5 g/dL *
-                      </Label>
+                      <Label className="text-white">Hemoglobin (Hb) - ≥ 12.5 g/dL *</Label>
                       <Input
                         value={formData.hemoglobin}
-                        onChange={(e) =>
-                          updateFormData("hemoglobin", e.target.value)
-                        }
+                        onChange={(e) => updateFormData("hemoglobin", e.target.value)}
                         className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
                         placeholder="e.g., 13.2"
                       />
                       {errors.hemoglobin && (
-                        <p className="text-red-400 text-sm">
-                          {errors.hemoglobin}
-                        </p>
+                        <p className="text-red-400 text-sm">{errors.hemoglobin}</p>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-white">
-                        Platelet Count (Within normal range)
-                      </Label>
+                      <Label className="text-white">Platelet Count (Within normal range)</Label>
                       <Input
                         value={formData.plateletCount}
-                        onChange={(e) =>
-                          updateFormData("plateletCount", e.target.value)
-                        }
+                        onChange={(e) => updateFormData("plateletCount", e.target.value)}
                         className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
                         placeholder="e.g., 250,000"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-white">
-                        WBC Count (Within normal range)
-                      </Label>
+                      <Label className="text-white">WBC Count (Within normal range)</Label>
                       <Input
                         value={formData.wbcCount}
-                        onChange={(e) =>
-                          updateFormData("wbcCount", e.target.value)
-                        }
+                        onChange={(e) => updateFormData("wbcCount", e.target.value)}
                         className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
                         placeholder="e.g., 7,000"
                       />
@@ -1014,36 +994,33 @@ export default function DonorRegistration() {
             {/* Step 5: Document Upload */}
             {currentStep === 5 && (
               <div className="space-y-6">
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
+                  <h3 className="font-semibold text-blue-300 mb-2">
+                    Document Reupload (Optional)
+                  </h3>
+                  <p className="text-sm text-blue-200">
+                    Only reupload documents if you need to replace them with corrected versions.
+                    If you don't upload new files, your existing documents will be re-verified.
+                  </p>
+                </div>
+
                 <div className="space-y-2">
-                  <Label className="text-white">
-                    Blood Test Report * (within 90 days)
-                  </Label>
+                  <Label className="text-white">Blood Test Report (Optional)</Label>
                   <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-white/40 transition-colors">
                     <Upload className="w-8 h-8 text-white/60 mx-auto mb-2" />
-                    <p className="text-white/80 mb-2">
-                      Click to upload or drag and drop
-                    </p>
-                    <p className="text-xs text-white/60">
-                      PDF, JPG, PNG up to 10MB
-                    </p>
+                    <p className="text-white/80 mb-2">Click to upload new document (optional)</p>
+                    <p className="text-xs text-white/60">PDF, JPG, PNG up to 10MB</p>
                     <input
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) =>
-                        updateFormData(
-                          "bloodTestReport",
-                          e.target.files?.[0] || null
-                        )
-                      }
+                      onChange={(e) => updateFormData("bloodTestReport", e.target.files?.[0] || null)}
                       className="hidden"
                       id="bloodTest"
                     />
                     <Button
                       variant="outline"
                       className="mt-3 border-white/30 text-white hover:bg-white/20 bg-transparent"
-                      onClick={() =>
-                        document.getElementById("bloodTest")?.click()
-                      }
+                      onClick={() => document.getElementById("bloodTest")?.click()}
                     >
                       Choose File
                     </Button>
@@ -1053,39 +1030,25 @@ export default function DonorRegistration() {
                       </p>
                     )}
                   </div>
-                  {errors.bloodTestReport && (
-                    <p className="text-red-400 text-sm">
-                      {errors.bloodTestReport}
-                    </p>
-                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-white">Identity Proof *</Label>
+                  <Label className="text-white">Identity Proof (Optional)</Label>
                   <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-white/40 transition-colors">
                     <Upload className="w-8 h-8 text-white/60 mx-auto mb-2" />
-                    <p className="text-white/80 mb-2">Upload ID proof</p>
-                    <p className="text-xs text-white/60">
-                      Aadhar, Passport, License
-                    </p>
+                    <p className="text-white/80 mb-2">Upload new ID proof (optional)</p>
+                    <p className="text-xs text-white/60">Aadhar, Passport, License</p>
                     <input
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) =>
-                        updateFormData(
-                          "idProof",
-                          e.target.files?.[0] || null
-                        )
-                      }
+                      onChange={(e) => updateFormData("idProof", e.target.files?.[0] || null)}
                       className="hidden"
                       id="identity"
                     />
                     <Button
                       variant="outline"
                       className="mt-3 border-white/30 text-white hover:bg-white/20 bg-transparent"
-                      onClick={() =>
-                        document.getElementById("identity")?.click()
-                      }
+                      onClick={() => document.getElementById("identity")?.click()}
                     >
                       Choose File
                     </Button>
@@ -1095,39 +1058,25 @@ export default function DonorRegistration() {
                       </p>
                     )}
                   </div>
-                  {errors.idProof && (
-                    <p className="text-red-400 text-sm">{errors.idProof}</p>
-                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-white">Medical Certificate *</Label>
+                  <Label className="text-white">Medical Certificate (Optional)</Label>
                   <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-white/40 transition-colors">
                     <Upload className="w-8 h-8 text-white/60 mx-auto mb-2" />
-                    <p className="text-white/80 mb-2">
-                      Upload Medical Certificate
-                    </p>
-                    <p className="text-xs text-white/60">
-                      Aadhar, Passport, License
-                    </p>
+                    <p className="text-white/80 mb-2">Upload new medical certificate (optional)</p>
+                    <p className="text-xs text-white/60">PDF, JPG, PNG up to 10MB</p>
                     <input
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) =>
-                        updateFormData(
-                          "medicalCertificate",
-                          e.target.files?.[0] || null
-                        )
-                      }
+                      onChange={(e) => updateFormData("medicalCertificate", e.target.files?.[0] || null)}
                       className="hidden"
                       id="medical"
                     />
                     <Button
                       variant="outline"
                       className="mt-3 border-white/30 text-white hover:bg-white/20 bg-transparent"
-                      onClick={() =>
-                        document.getElementById("medical")?.click()
-                      }
+                      onClick={() => document.getElementById("medical")?.click()}
                     >
                       Choose File
                     </Button>
@@ -1137,11 +1086,6 @@ export default function DonorRegistration() {
                       </p>
                     )}
                   </div>
-                  {errors.medicalCertificate && (
-                    <p className="text-red-400 text-sm">
-                      {errors.medicalCertificate}
-                    </p>
-                  )}
                 </div>
               </div>
             )}
@@ -1154,84 +1098,60 @@ export default function DonorRegistration() {
                     <Checkbox
                       id="consent-data"
                       checked={formData.dataProcessingConsent}
-                      onCheckedChange={(checked) =>
-                        updateFormData("dataProcessingConsent", checked)
-                      }
+                      onCheckedChange={(checked) => updateFormData("dataProcessingConsent", checked)}
                       className="border-white/30 data-[state=checked]:bg-yellow-600 data-[state=checked]:border-yellow-600 mt-1"
                     />
                     <div className="space-y-1">
-                      <Label
-                        htmlFor="consent-data"
-                        className="text-white font-medium"
-                      >
+                      <Label htmlFor="consent-data" className="text-white font-medium">
                         Data Processing Consent *
                       </Label>
                       <p className="text-sm text-white/80">
-                        I consent to the processing of my personal and medical
-                        data for blood donation purposes.
+                        I consent to the processing of my personal and medical data for blood donation purposes.
                       </p>
                     </div>
                   </div>
                   {errors.dataProcessingConsent && (
-                    <p className="text-red-400 text-sm ml-6">
-                      {errors.dataProcessingConsent}
-                    </p>
+                    <p className="text-red-400 text-sm ml-6">{errors.dataProcessingConsent}</p>
                   )}
 
                   <div className="flex items-start space-x-3">
                     <Checkbox
                       id="consent-medical"
                       checked={formData.medicalScreeningConsent}
-                      onCheckedChange={(checked) =>
-                        updateFormData("medicalScreeningConsent", checked)
-                      }
+                      onCheckedChange={(checked) => updateFormData("medicalScreeningConsent", checked)}
                       className="border-white/30 data-[state=checked]:bg-yellow-600 data-[state=checked]:border-yellow-600 mt-1"
                     />
                     <div className="space-y-1">
-                      <Label
-                        htmlFor="consent-medical"
-                        className="text-white font-medium"
-                      >
+                      <Label htmlFor="consent-medical" className="text-white font-medium">
                         Medical Screening Consent *
                       </Label>
                       <p className="text-sm text-white/80">
-                        I consent to medical screening and health verification
-                        procedures.
+                        I consent to medical screening and health verification procedures.
                       </p>
                     </div>
                   </div>
                   {errors.medicalScreeningConsent && (
-                    <p className="text-red-400 text-sm ml-6">
-                      {errors.medicalScreeningConsent}
-                    </p>
+                    <p className="text-red-400 text-sm ml-6">{errors.medicalScreeningConsent}</p>
                   )}
 
                   <div className="flex items-start space-x-3">
                     <Checkbox
                       id="terms-conditions"
                       checked={formData.termsAccepted}
-                      onCheckedChange={(checked) =>
-                        updateFormData("termsAccepted", checked)
-                      }
+                      onCheckedChange={(checked) => updateFormData("termsAccepted", checked)}
                       className="border-white/30 data-[state=checked]:bg-yellow-600 data-[state=checked]:border-yellow-600 mt-1"
                     />
                     <div className="space-y-1">
-                      <Label
-                        htmlFor="terms-conditions"
-                        className="text-white font-medium"
-                      >
+                      <Label htmlFor="terms-conditions" className="text-white font-medium">
                         Terms & Conditions Agreement *
                       </Label>
                       <p className="text-sm text-white/80">
-                        I have read and agree to the Terms of Service and
-                        Privacy Policy.
+                        I have read and agree to the Terms of Service and Privacy Policy.
                       </p>
                     </div>
                   </div>
                   {errors.termsAccepted && (
-                    <p className="text-red-400 text-sm ml-6">
-                      {errors.termsAccepted}
-                    </p>
+                    <p className="text-red-400 text-sm ml-6">{errors.termsAccepted}</p>
                   )}
                 </div>
               </div>
@@ -1253,9 +1173,7 @@ export default function DonorRegistration() {
                 onClick={currentStep === totalSteps ? handleSubmit : nextStep}
                 className="gradient-ruby hover:opacity-90 text-white shadow-lg hover:shadow-primary/50 transition-all duration-300"
               >
-                {currentStep === totalSteps
-                  ? "Submit Registration"
-                  : "Next Step"}
+                {currentStep === totalSteps ? "Update & Re-Verify" : "Next Step"}
                 {currentStep < totalSteps && (
                   <ArrowRight className="w-4 h-4 ml-2" />
                 )}
@@ -1267,3 +1185,4 @@ export default function DonorRegistration() {
     </GradientBackground>
   );
 }
+

@@ -4,3 +4,4 @@ onlyBuiltDependencies:
   - '@prisma/engines'
   - prisma
   - sharp
+  - tesseract.js

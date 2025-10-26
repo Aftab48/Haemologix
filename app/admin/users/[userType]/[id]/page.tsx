@@ -1,5 +1,6 @@
 import ProfileTabs from "@/components/ProfileTabs";
 import { fetchUserDataById } from "@/lib/actions/user.actions";
+import GradientBackground from "@/components/GradientBackground";
 
 export default async function UserDetailPage(props: {
   params: { userType: string; id: string };
@@ -21,9 +22,8 @@ export default async function UserDetailPage(props: {
   console.log("Profile data:", userData);
 
   return (
-    // <div className="p-6 min-h-screen bg-gradient-to-br from-red-900 via-red-900 to-yellow-600">
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">
+    <GradientBackground className="p-6">
+      <h1 className="text-2xl font-outfit font-bold text-primary mb-6">
         {userType === "donor" ? "Donor Profile" : "Hospital Profile"}
       </h1>
       
@@ -32,6 +32,6 @@ export default async function UserDetailPage(props: {
         userType={userType as "donor" | "hospital"}
         userData={userData}
       />
-    </div>
+    </GradientBackground>
   );
 }

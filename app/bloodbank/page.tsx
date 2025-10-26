@@ -52,6 +52,7 @@ import { useRouter } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 
 import { formatLastActivity } from "@/lib/utils";
+import GradientBackground from "@/components/GradientBackground";
 
 type Donor = {
   id: number;
@@ -79,6 +80,7 @@ export default function BloodbankDashboard() {
       status: "Confirmed",
       eta: "30 minutes",
       lastDonation: "3 months ago",
+      type: "Blood",
     },
     {
       id: "2",
@@ -89,6 +91,7 @@ export default function BloodbankDashboard() {
       status: "Pending",
       eta: "25 minutes",
       lastDonation: "4 months ago",
+      type: "Blood",
     },
     {
       id: "3",
@@ -99,6 +102,7 @@ export default function BloodbankDashboard() {
       status: "Confirmed",
       eta: "65 minutes",
       lastDonation: "5 months ago",
+      type: "Blood",
     },
     {
       id: "4",
@@ -109,6 +113,7 @@ export default function BloodbankDashboard() {
       status: "Pending",
       eta: "70 minutes",
       lastDonation: "6 months ago",
+      type: "Blood",
     },
     {
       id: "5",
@@ -119,6 +124,7 @@ export default function BloodbankDashboard() {
       status: "Confirmed",
       eta: "60 minutes",
       lastDonation: "2 months ago",
+      type: "Blood",
     },
     {
       id: "6",
@@ -129,6 +135,7 @@ export default function BloodbankDashboard() {
       status: "Pending",
       eta: "75 minutes",
       lastDonation: "7 months ago",
+      type: "Blood",
     },
     {
       id: "7",
@@ -139,6 +146,7 @@ export default function BloodbankDashboard() {
       status: "Confirmed",
       eta: "40 minutes",
       lastDonation: "1 month ago",
+      type: "Blood",
     },
     {
       id: "8",
@@ -149,6 +157,7 @@ export default function BloodbankDashboard() {
       status: "Pending",
       eta: "95 minutes",
       lastDonation: "8 months ago",
+      type: "Blood",
     },
     {
       id: "9",
@@ -159,6 +168,7 @@ export default function BloodbankDashboard() {
       status: "Confirmed",
       eta: "22 minutes",
       lastDonation: "6 months ago",
+      type: "Blood",
     },
     {
       id: "10",
@@ -169,6 +179,7 @@ export default function BloodbankDashboard() {
       status: "Pending",
       eta: "70 minutes",
       lastDonation: "5 months ago",
+      type: "Blood",
     },
   ]);
 
@@ -531,13 +542,13 @@ export default function BloodbankDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-900 to-yellow-600 flex flex-col relative overflow-hidden">
+    <GradientBackground className="flex flex-col">
       <img
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
-        className="w-full h-full object-cover absolute mix-blend-overlay"
+        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
       />
       {/* Header */}
-      <header className="bg-white/10 backdrop-blur-sm border-b border-white/20 shadow-lg relative z-10">
+      <header className="glass-morphism border-b border-mist-green/40 shadow-lg relative z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -718,7 +729,7 @@ export default function BloodbankDashboard() {
       <div className="container mx-auto px-4 py-8 relative z-10">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-red-800/20 rounded-lg flex items-center justify-center">
@@ -734,7 +745,7 @@ export default function BloodbankDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
@@ -750,7 +761,7 @@ export default function BloodbankDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
@@ -766,7 +777,7 @@ export default function BloodbankDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
@@ -784,7 +795,7 @@ export default function BloodbankDashboard() {
         </div>
 
         <Tabs defaultValue="inventory" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/10 backdrop-blur-sm border border-white/20">
+          <TabsList className="grid w-full grid-cols-4 glass-morphism border border-accent/30">
             <TabsTrigger
               value="inventory"
               className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
@@ -834,7 +845,7 @@ export default function BloodbankDashboard() {
                 return (
                   <Card
                     key={item.type}
-                    className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
+                    className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
                   >
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
@@ -961,7 +972,7 @@ export default function BloodbankDashboard() {
             </div>
 
             {activeAlerts.length === 0 ? (
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+              <Card className="glass-morphism border border-accent/30 text-white">
                 <CardContent className="p-12 text-center">
                   <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-white mb-2">
@@ -983,7 +994,7 @@ export default function BloodbankDashboard() {
                 {activeAlerts.map((alert) => (
                   <Card
                     key={alert.id}
-                    className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
+                    className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
                   >
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
@@ -1123,7 +1134,7 @@ export default function BloodbankDashboard() {
                 </Select>
               </div>
             </div>
-            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+            <Card className="glass-morphism border border-accent/30 text-white">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -1250,7 +1261,7 @@ export default function BloodbankDashboard() {
             </h2>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-white">
                     <BarChart3 className="w-5 h-5 text-yellow-400" />
@@ -1288,7 +1299,7 @@ export default function BloodbankDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
                 <CardHeader>
                   <CardTitle className="text-white">
                     Blood Type Demand
@@ -1323,6 +1334,6 @@ export default function BloodbankDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </GradientBackground>
   );
 }

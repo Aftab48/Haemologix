@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { VerificationBadge, SuspensionBadge, AttemptsBadge } from "@/components/VerificationBadge";
 
 import { fetchAllDonors } from "@/lib/actions/donor.actions";
 import {
@@ -45,6 +46,7 @@ import { useUser } from "@clerk/nextjs";
 import { formatLastActivity } from "@/lib/utils";
 import { UserModal } from "@/components/UserModal";
 import { updateUserStatus } from "@/lib/actions/user.actions";
+import GradientBackground from "@/components/GradientBackground";
 import {
   sendApplicationApprovedEmail,
   sendApplicationRejectedEmail,
@@ -204,8 +206,38 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState<ApprovalStatus | "ALL">(
     "ALL"
   );
-  // Filtered users
-  const filteredUsers = users.filter((user) => {
+  
+  // Verification filter state
+  const [verificationTab, setVerificationTab] = useState<"auto-verified" | "manual" | "suspended">("auto-verified");
+  
+  // Categorize users by verification status
+  const autoVerifiedUsers = users.filter((user) => {
+    // Users with verifications who passed AI check
+    return user.status === "PENDING" && (user as any).verificationAttempts >= 0;
+  });
+  
+  const manualReviewUsers = users.filter((user) => {
+    // Users pending without verification or with technical errors
+    return user.status === "PENDING" && !(user as any).verificationAttempts;
+  });
+  
+  const suspendedUsers = users.filter((user) => {
+    // Users who are suspended
+    return (user as any).suspendedUntil && new Date() < new Date((user as any).suspendedUntil);
+  });
+  
+  // Filtered users based on current verification tab
+  let usersToDisplay = users;
+  if (verificationTab === "auto-verified") {
+    usersToDisplay = autoVerifiedUsers;
+  } else if (verificationTab === "manual") {
+    usersToDisplay = manualReviewUsers;
+  } else if (verificationTab === "suspended") {
+    usersToDisplay = suspendedUsers;
+  }
+  
+  // Apply other filters
+  const filteredUsers = usersToDisplay.filter((user) => {
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
     const matchesStatus =
       statusFilter === "ALL" || user.status === statusFilter;
@@ -320,13 +352,13 @@ export default function AdminDashboard() {
   if (loading) return <p>Loading Data...</p>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-900 to-yellow-600 flex flex-col relative overflow-hidden">
+    <GradientBackground className="flex flex-col">
       <img
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
-        className="w-full h-full object-cover absolute mix-blend-overlay"
+        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
       />
       {/* Header */}
-      <header className="bg-white/10 backdrop-blur-sm border-b border-white/20 shadow-lg relative z-10">
+      <header className="glass-morphism border-b border-mist-green/40 shadow-lg relative z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -370,7 +402,7 @@ export default function AdminDashboard() {
       <div className="container mx-auto px-4 py-8 relative z-10">
         {/* System Overview Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
@@ -386,7 +418,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
@@ -402,7 +434,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
@@ -418,7 +450,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-red-600/20 rounded-lg flex items-center justify-center">
@@ -437,7 +469,7 @@ export default function AdminDashboard() {
 
         {/* System Health */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <TrendingUp className="w-5 h-5 text-yellow-400" />
@@ -466,7 +498,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Globe className="w-5 h-5 text-blue-400" />
@@ -489,7 +521,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
                 <Clock className="w-5 h-5 text-orange-400" />
@@ -541,7 +573,7 @@ export default function AdminDashboard() {
               </SelectContent>
             </Select>
           </div>
-          <TabsList className="lg:grid w-full grid-cols-4 bg-white/10 backdrop-blur-sm border hidden border-white/20">
+          <TabsList className="lg:grid w-full grid-cols-4 glass-morphism border hidden border-white/20">
             {tabOptions.map((tab) => (
               <TabsTrigger
                 key={tab.value}
@@ -597,7 +629,62 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <Card className="bg-white/10 backdrop-blur-sm border hidden lg:block border-white/20 text-white">
+            {/* Verification Status Sub-Tabs */}
+            <div className="flex flex-wrap gap-3 p-4 bg-white/5 backdrop-blur-sm rounded-lg border border-white/20">
+              <Button
+                variant={verificationTab === "auto-verified" ? "default" : "outline"}
+                onClick={() => setVerificationTab("auto-verified")}
+                className={verificationTab === "auto-verified" 
+                  ? "bg-green-600 hover:bg-green-700 text-white" 
+                  : "bg-white/10 border-white/20 text-white hover:bg-white/20"}
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Auto-Verified ({autoVerifiedUsers.length})
+              </Button>
+              <Button
+                variant={verificationTab === "manual" ? "default" : "outline"}
+                onClick={() => setVerificationTab("manual")}
+                className={verificationTab === "manual" 
+                  ? "bg-yellow-600 hover:bg-yellow-700 text-white" 
+                  : "bg-white/10 border-white/20 text-white hover:bg-white/20"}
+              >
+                <Clock className="w-4 h-4 mr-2" />
+                Manual Review ({manualReviewUsers.length})
+              </Button>
+              <Button
+                variant={verificationTab === "suspended" ? "default" : "outline"}
+                onClick={() => setVerificationTab("suspended")}
+                className={verificationTab === "suspended" 
+                  ? "bg-red-600 hover:bg-red-700 text-white" 
+                  : "bg-white/10 border-white/20 text-white hover:bg-white/20"}
+              >
+                <AlertTriangle className="w-4 h-4 mr-2" />
+                Suspended ({suspendedUsers.length})
+              </Button>
+            </div>
+
+            {/* Section Description */}
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+              <p className="text-sm text-blue-200">
+                {verificationTab === "auto-verified" && (
+                  <>
+                    <strong>Auto-Verified Users:</strong> These users have passed AI document verification and are awaiting final admin review.
+                  </>
+                )}
+                {verificationTab === "manual" && (
+                  <>
+                    <strong>Manual Review:</strong> These users require manual verification due to technical errors or pending verification.
+                  </>
+                )}
+                {verificationTab === "suspended" && (
+                  <>
+                    <strong>Suspended Accounts:</strong> These users exceeded 3 failed verification attempts and are temporarily suspended.
+                  </>
+                )}
+              </p>
+            </div>
+
+            <Card className="glass-morphism border hidden lg:block border-white/20 text-white">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -611,6 +698,9 @@ export default function AdminDashboard() {
                         </th>
                         <th className="text-left p-4 font-medium text-white">
                           Status
+                        </th>
+                        <th className="text-left p-4 font-medium text-white">
+                          Verification
                         </th>
                         <th className="text-left p-4 font-medium text-white">
                           Last Activity
@@ -656,6 +746,16 @@ export default function AdminDashboard() {
                             </Badge>
                           </td>
                           <td className="p-4">{getStatusBadge(user.status)}</td>
+                          <td className="p-4">
+                            <div className="flex flex-col gap-1">
+                              {(user as any).suspendedUntil && new Date() < new Date((user as any).suspendedUntil) && (
+                                <SuspensionBadge suspendedUntil={(user as any).suspendedUntil} />
+                              )}
+                              {(user as any).verificationAttempts !== undefined && (
+                                <AttemptsBadge attempts={(user as any).verificationAttempts} />
+                              )}
+                            </div>
+                          </td>
                           <td className="p-4 text-sm text-gray-300">
                             {formatLastActivity(user.lastActivity, false)}
                           </td>
@@ -726,7 +826,7 @@ export default function AdminDashboard() {
               {filteredUsers.map((user) => (
                 <Card
                   key={user.id}
-                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
+                  className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
                 >
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col gap-3">
@@ -853,7 +953,7 @@ export default function AdminDashboard() {
                   return (
                     <Card
                       key={hospital.id}
-                      className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
+                      className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
                     >
                       <CardContent className="p-4 sm:p-6">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -987,7 +1087,7 @@ export default function AdminDashboard() {
             <h2 className="text-2xl font-bold text-white">System Analytics</h2>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-white">
                     <BarChart3 className="w-5 h-5 text-yellow-400" />
@@ -1018,7 +1118,7 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
                 <CardHeader>
                   <CardTitle className="text-white">
                     Emergency Response Metrics
@@ -1078,7 +1178,7 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+            <Card className="glass-morphism border border-accent/30 text-white">
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {recentActivity.map((activity) => (
@@ -1120,6 +1220,6 @@ export default function AdminDashboard() {
           onClose={() => setSelectedUser(null)}
         />
       )}
-    </div>
+    </GradientBackground>
   );
 }

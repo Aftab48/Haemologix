@@ -3,13 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import GradientBackground from "@/components/GradientBackground";
 
 const waitlistPage = () => {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-900 to-yellow-600 flex items-center justify-center p-6">
-      <div className="max-w-lg w-full bg-white/5 backdrop-blur-md rounded-2xl shadow-lg p-8 text-center border border-white/10">
+    <GradientBackground className="flex items-center justify-center p-6">
+      <div className="max-w-lg w-full glass-morphism rounded-2xl shadow-lg p-8 text-center border border-accent/30">
         {/* Success Icon */}
         <div className="flex justify-center mb-4">
           <CheckCircle className="w-16 h-16 text-green-400" />
@@ -38,12 +39,12 @@ const waitlistPage = () => {
         <Button
           size="lg"
           onClick={() => router.push("/")}
-          className="shad-primary-btn hover:bg-zinc-50 text-lg px-8 py-3 bg-slate-300 text-[rgba(154,117,31,1)] shadow-lg hover:shadow-yellow-500/50 transition-all duration-300"
+          className="gradient-ruby hover:opacity-90 text-white text-lg px-8 py-3 shadow-lg hover:shadow-primary/50 transition-all duration-300"
         >
           Return to Home
         </Button>
       </div>
-    </div>
+    </GradientBackground>
   );
 };
 

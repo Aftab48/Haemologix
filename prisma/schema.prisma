@@ -45,12 +45,16 @@ model DonorRegistration {
   medicalScreeningConsent Boolean         @default(false)
   termsAccepted           Boolean         @default(false)
   status                  ApprovalStatus  @default(PENDING)
+  verificationAttempts    Int             @default(0)
+  suspendedUntil          DateTime?
+  lastVerificationAt      DateTime?
   createdAt               DateTime        @default(now())
   updatedAt               DateTime        @updatedAt
   latitude                String?
   longitude               String?
   responses               AlertResponse[]
   approvals               Approval[]      @relation("DonorApprovals")
+  verifications           DonorVerification[]
 }
 
 model HospitalRegistration {
@@ -96,6 +100,9 @@ model HospitalRegistration {
   dataProcessingConsent         Boolean
   networkParticipationAgreement Boolean
   status                        ApprovalStatus @default(PENDING)
+  verificationAttempts          Int            @default(0)
+  suspendedUntil                DateTime?
+  lastVerificationAt            DateTime?
   createdAt                     DateTime       @default(now())
   updatedAt                     DateTime       @updatedAt
   latitude                      String?
@@ -176,9 +183,40 @@ enum ResponseStatus {
   DECLINED
 }
 
-
 model Document {
   id        Int      @id @default(autoincrement())
   fileUrl   String
   createdAt DateTime @default(now())
+}
+
+
+enum VerificationStatus {
+  PENDING           // doc uploaded, waiting for AI check
+  AUTO_REJECTED     // AI found mismatch / unsafe values
+  MATCHED_FOR_ADMIN // AI passed, awaiting admin approval
+  ADMIN_REJECTED    // admin manually rejected
+  APPROVED          // admin approved
+}
+
+enum DonorDocumentType {
+  BLOOD_TEST
+  ID_PROOF
+  MEDICAL_CERTIFICATE
+}
+
+model DonorVerification {
+  id              String             @id @default(cuid())
+  donorId         String
+  donor           DonorRegistration              @relation(fields: [donorId], references: [id])
+
+  docType         DonorDocumentType
+  docUrl          String
+  status          VerificationStatus @default(PENDING)
+
+  confidence      Float?
+  extractedFields Json?
+  mismatchFields  Json?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
