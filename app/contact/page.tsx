@@ -17,6 +17,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import Image from "next/image";
+import GradientBackground from "@/components/GradientBackground";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -33,40 +34,40 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-red-900">
+    <GradientBackground>
       {/* Header */}
-           <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-yellow-600/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center bg-transparent">
+           <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-mist-green/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center glass-morphism">
              <div className="container mx-auto px-2 md:px-4 py-2 md:py-4 flex items-center justify-between gap-px rounded bg-transparent">
                <div className="flex items-center gap-2">
-                 <div className="w-12 h-12 rounded-full flex items-center justify-center bg-slate-300">
-                   <Image
-                     src="/logo.png"
-                     alt="Logo"
-                     width={48}
-                     height={48}
-                     className="rounded-full"
-                   />
-                 </div>
-                 <Link href={"/"} className="text-xl font-bold text-slate-300">
-                   {"HaemoLogix"}
-                 </Link>
+                 <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primary/10 border-2 border-primary animate-glow">
+                  <Image
+                    src="/logo.png"
+                    alt="Logo"
+                    width={48}
+                    height={48}
+                    className="rounded-full"
+                  />
+                </div>
+                <Link href={"/"} className="text-xl font-outfit font-bold text-primary">
+                  {"HaemoLogix"}
+                </Link>
                </div>
                <nav className="hidden md:flex items-center gap-6">
                  <Link
                    href="/#features"
-                   className="hover:text-yellow-600 transition-colors text-slate-300"
+                   className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
                  >
                    Features
                  </Link>
                  <Link
                    href="/impact"
-                   className="hover:text-yellow-600 transition-colors text-slate-300"
+                   className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
                  >
                    Impact
                  </Link>
                  <Link
                    href="/contact"
-                   className="hover:text-yellow-600 transition-colors text-slate-300"
+                   className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
                  >
                    Contact
                  </Link>
@@ -74,13 +75,13 @@ export default function ContactPage() {
                <div className="flex items-center gap-1 md:gap-3">
                  <SignedOut>
                    <SignInButton>
-                     <Button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
+                     <Button className="gradient-oxygen hover:opacity-90 text-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer transition-all">
                        Sign In
                      </Button>
                    </SignInButton>
                    <div className="hidden lg:block">
                      <SignUpButton>
-                       <Button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
+                       <Button className="gradient-ruby hover:opacity-90 text-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer transition-all">
                          Sign Up
                        </Button>
                      </SignUpButton>
@@ -94,7 +95,7 @@ export default function ContactPage() {
            </header>
 
       {/* Contact Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-red-900 via-red-900 to-yellow-600">
+      <section className="py-20 px-4 bg-white/5 backdrop-blur-[2px]">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 text-slate-300">
@@ -127,7 +128,7 @@ export default function ContactPage() {
             </div>
 
             {/* Right Side - Contact Form */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl">
+            <div className="glass-morphism rounded-3xl p-8 shadow-2xl">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-gray-800 font-semibold">
@@ -208,7 +209,7 @@ export default function ContactPage() {
                 <Button
                   type="submit"
                   disabled={!formData.acceptTerms}
-                  className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 rounded-xl h-12 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full gradient-ruby hover:opacity-90 text-white font-outfit font-semibold py-3 rounded-xl h-12 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-primary/50"
                 >
                   <Send className="w-4 h-4 mr-2" />
                   SUBMIT
@@ -220,30 +221,28 @@ export default function ContactPage() {
           {/* Contact Information Cards */}
           <div className="grid md:grid-cols-3 gap-6">
             {/* Call Us Card */}
-            <Card className="bg-gradient-to-br from-red-500 to-red-600 border-0 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+            <Card className="gradient-ruby border-0 text-white shadow-xl hover:shadow-2xl transition-all duration-300 card-hover">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Phone className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-4">CALL US</h3>
                 <div className="space-y-2">
-                  <p className="text-white/90">Emergency: 1 (234) 567-8911</p>
-                  <p className="text-white/90">General: 1 (234) 987-6543</p>
+                  <p className="text-white/90">+91 9903776046</p>
+                  <p className="text-white/90">+91 9874712191</p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Location Card */}
-            <Card className="bg-gradient-to-br from-yellow-500 to-yellow-600 border-0 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+            <Card className="gradient-mist border-0 text-text-dark shadow-xl hover:shadow-2xl transition-all duration-300 card-hover">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <MapPin className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-4">LOCATION</h3>
                 <div className="space-y-1">
-                  <p className="text-white/90">123 Blood Bank Street</p>
-                  <p className="text-white/90">Medical District, NY</p>
-                  <p className="text-white/90">10001-2000</p>
+                  <p className="text-white/90">Remote, Kolkata, India</p>
                 </div>
               </CardContent>
             </Card>
@@ -270,7 +269,7 @@ export default function ContactPage() {
               Other Ways to Reach Us
             </h2>
             <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              <Card className="bg-white/10 backdrop-blur-sm border border-slate-300/20 hover:bg-white/20 transition-all duration-300">
+              <Card className="glass-morphism border border-slate-300/20 hover:bg-white/20 transition-all duration-300">
                 <CardContent className="p-6 text-center">
                   <Mail className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-slate-300 mb-2">
@@ -290,7 +289,7 @@ export default function ContactPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/10 backdrop-blur-sm border border-slate-300/20 hover:bg-white/20 transition-all duration-300">
+              <Card className="glass-morphism border border-slate-300/20 hover:bg-white/20 transition-all duration-300">
                 <CardContent className="p-6 text-center">
                   <Heart className="w-12 h-12 text-red-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-slate-300 mb-2">
@@ -313,18 +312,7 @@ export default function ContactPage() {
       </section>
 
       {/* Footer */}
-      <footer
-        className="text-gray-800 py-12 my-0 px-4 mx-0"
-        style={{
-          background: `
-            radial-gradient(at 21.2931% 21.9583%, #7f1d1d 0px, transparent 50%),
-            radial-gradient(at 83.1465% 79.4583%, #7f1d1d 0px, transparent 50%),
-            radial-gradient(at 28.944% 73.2083%, #c78605 0px, transparent 50%),
-            radial-gradient(at 71.1853% 22.375%, #c78605 0px, transparent 50%),
-            #1a2849
-          `,
-        }}
-      >
+      <footer className="text-text-dark py-12 my-0 px-4 mx-0 bg-text-dark/95 backdrop-blur-md">
         <div className="container mx-auto">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
@@ -339,8 +327,8 @@ export default function ContactPage() {
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4 text-slate-300">Platform</h4>
-              <ul className="space-y-2 text-gray-400">
+              <h4 className="font-outfit font-semibold mb-4 text-background">Platform</h4>
+              <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
                   <Link href="/donor" className="hover:text-white">
                     Donor Dashboard
@@ -359,8 +347,8 @@ export default function ContactPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4 text-slate-300">Support</h4>
-              <ul className="space-y-2 text-gray-400">
+              <h4 className="font-outfit font-semibold mb-4 text-background">Support</h4>
+              <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
                   <Link href="#" className="hover:text-white">
                     Help Center
@@ -379,8 +367,8 @@ export default function ContactPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4 text-slate-300">Legal</h4>
-              <ul className="space-y-2 text-gray-400">
+              <h4 className="font-outfit font-semibold mb-4 text-background">Legal</h4>
+              <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
                   <Link href="#" className="hover:text-white">
                     Privacy Policy
@@ -399,7 +387,7 @@ export default function ContactPage() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-slate-300 mt-8 pt-8 text-center text-gray-400">
+          <div className="border-t border-background/30 mt-8 pt-8 text-center text-background/70 font-dm-sans">
             <p>
               &copy; 2024 HaemoLogix. All rights reserved. Built for saving
               lives.
@@ -407,6 +395,6 @@ export default function ContactPage() {
           </div>
         </div>
       </footer>
-    </div>
+    </GradientBackground>
   );
 }

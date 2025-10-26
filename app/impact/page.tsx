@@ -49,6 +49,7 @@ import {
   SignUpButton,
   UserButton,
 } from "@clerk/nextjs";
+import GradientBackground from "@/components/GradientBackground";
 
 export default function ImpactAndProspects() {
   const [activeTab, setActiveTab] = useState("current-impact");
@@ -260,16 +261,16 @@ export default function ImpactAndProspects() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-900 to-yellow-600 flex flex-col relative overflow-hidden">
+    <GradientBackground className="flex flex-col">
       <img
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
-        className="w-full h-full object-cover absolute mix-blend-overlay"
+        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
       />
       {/* Header */}
-      <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-yellow-600/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center bg-transparent">
+      <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-mist-green/40 glass-morphism rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center">
         <div className="container mx-auto px-2 md:px-4 py-2 md:py-4 flex items-center justify-between gap-px rounded bg-transparent">
           <div className="flex items-center gap-2">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-slate-300">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primary/10 border-2 border-primary animate-glow">
               <Image
                 src="/logo.png"
                 alt="Logo"
@@ -278,26 +279,26 @@ export default function ImpactAndProspects() {
                 className="rounded-full"
               />
             </div>
-            <Link href={"/"} className="text-xl font-bold text-slate-300">
+            <Link href={"/"} className="text-xl font-outfit font-bold text-primary">
               {"HaemoLogix"}
             </Link>
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <Link
               href="/#features"
-              className="hover:text-yellow-600 transition-colors text-slate-300"
+              className="text-text-dark font-dm-sans hover:text-secondary transition-colors"
             >
               Features
             </Link>
             <Link
               href="/impact"
-              className="hover:text-yellow-600 transition-colors text-slate-300"
+              className="text-text-dark font-dm-sans hover:text-secondary transition-colors"
             >
               Impact
             </Link>
             <Link
               href="/contact"
-              className="hover:text-yellow-600 transition-colors text-slate-300"
+              className="text-text-dark font-dm-sans hover:text-secondary transition-colors"
             >
               Contact
             </Link>
@@ -305,13 +306,13 @@ export default function ImpactAndProspects() {
           <div className="flex items-center gap-1 md:gap-3">
             <SignedOut>
               <SignInButton>
-                <Button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
+                <Button className="gradient-oxygen hover:opacity-90 text-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
                   Sign In
                 </Button>
               </SignInButton>
               <div className="hidden lg:block">
                 <SignUpButton>
-                  <Button className="bg-yellow-600 text-ceramic-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer">
+                  <Button className="gradient-ruby hover:opacity-90 text-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer shadow-lg hover:shadow-primary/50">
                     Sign Up
                   </Button>
                 </SignUpButton>
@@ -353,7 +354,7 @@ export default function ImpactAndProspects() {
               <SelectTrigger
                 className="
               w-full
-              bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg
+              glass-morphism border border-white/20 rounded-lg
               text-white
             "
                 aria-label="Select section"
@@ -374,7 +375,7 @@ export default function ImpactAndProspects() {
           <TabsList
             className="
           hidden lg:grid lg:grid-cols-5 w-full
-          bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg
+          glass-morphism border border-white/20 rounded-lg
         "
           >
             {TAB_ITEMS.map((t, i) => (
@@ -405,7 +406,7 @@ export default function ImpactAndProspects() {
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 text-center">
+              <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
                 <CardContent className="p-8">
                   <Heart className="w-12 h-12 text-red-600 mx-auto mb-4" />
                   <div className="text-4xl font-bold text-white mb-2">
@@ -418,7 +419,7 @@ export default function ImpactAndProspects() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 text-center">
+              <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
                 <CardContent className="p-8">
                   <Users className="w-12 h-12 text-blue-600 mx-auto mb-4" />
                   <div className="text-4xl font-bold text-white mb-2">
@@ -431,7 +432,7 @@ export default function ImpactAndProspects() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 text-center">
+              <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
                 <CardContent className="p-8">
                   <Clock className="w-12 h-12 text-green-600 mx-auto mb-4" />
                   <div className="text-4xl font-bold text-white mb-2">
@@ -444,7 +445,7 @@ export default function ImpactAndProspects() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 text-center">
+              <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
                 <CardContent className="p-8">
                   <Target className="w-12 h-12 text-purple-600 mx-auto mb-4" />
                   <div className="text-4xl font-bold text-white mb-2">
@@ -460,7 +461,7 @@ export default function ImpactAndProspects() {
 
             {/* Geographic Impact */}
             <div className="grid md:grid-cols-2 gap-8">
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 ">
+              <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 ">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Globe className="w-5 h-5" />
@@ -505,7 +506,7 @@ export default function ImpactAndProspects() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+              <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5" />
@@ -566,7 +567,7 @@ export default function ImpactAndProspects() {
               {socialImpact.map((impact, index) => (
                 <Card
                   key={index}
-                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col"
+                  className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col"
                 >
                   <CardContent className="p-6 flex flex-col justify-between h-full">
                     {/* Header: Icon + Title */}
@@ -615,7 +616,7 @@ export default function ImpactAndProspects() {
             </div>
 
             {/* Success Stories */}
-            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col">
+            <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
               <CardHeader>
                 <CardTitle className="text-center text-2xl">
                   Success Stories
@@ -684,7 +685,7 @@ export default function ImpactAndProspects() {
               {futureGoals.map((goal, index) => (
                 <Card
                   key={index}
-                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col"
+                  className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col"
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -717,7 +718,7 @@ export default function ImpactAndProspects() {
             </div>
 
             {/* Technology Roadmap Timeline */}
-            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col">
+            <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Rocket className="w-5 h-5" />
@@ -806,7 +807,7 @@ export default function ImpactAndProspects() {
               {partnerships.map((partnership, index) => (
                 <Card
                   key={index}
-                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col"
+                  className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col"
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -837,7 +838,7 @@ export default function ImpactAndProspects() {
             </div>
 
             {/* Partnership Benefits */}
-            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col">
+            <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
               <CardHeader>
                 <CardTitle className="text-center">
                   Partnership Benefits
@@ -893,7 +894,7 @@ export default function ImpactAndProspects() {
               {challenges.map((item, index) => (
                 <Card
                   key={index}
-                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col"
+                  className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col"
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -932,7 +933,7 @@ export default function ImpactAndProspects() {
             </div>
 
             {/* Future Outlook */}
-            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 flex flex-col">
+            <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
               <CardHeader>
                 <CardTitle className="text-center text-2xl">
                   Future Outlook
@@ -996,7 +997,7 @@ export default function ImpactAndProspects() {
         </Tabs>
 
         {/* Call to Action */}
-        <Card className="bg-white/10 mt-16 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 text-center">
+        <Card className="bg-white/10 mt-16 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
           <CardContent className="p-12 text-center">
             <h2 className="text-3xl font-bold mb-4">Join the Revolution</h2>
             <p className="text-xl mb-8 opacity-90">
@@ -1028,6 +1029,6 @@ export default function ImpactAndProspects() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </GradientBackground>
   );
 }

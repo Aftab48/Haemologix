@@ -181,3 +181,23 @@ export async function sendUrgentBloodRequestEmail(
     throw new Error("Failed to send urgent blood request email");
   }
 }
+
+export async function sendAccountSuspensionEmail(to: string, name: string) {
+  let html = await loadEmailTemplate("accountSuspension.html");
+  html = applyTemplate(html, { name });
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Haemologix" <${process.env.SMTP_USER}>`,
+      to,
+      subject: "Account Suspended - Too Many Failed Verification Attempts",
+      html,
+    });
+
+    console.log("Account suspension email sent:", info.messageId);
+    return { success: true };
+  } catch (err) {
+    console.error("Email send error:", err);
+    throw new Error("Failed to send account suspension email");
+  }
+}

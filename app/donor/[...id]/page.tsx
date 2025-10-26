@@ -38,6 +38,7 @@ import {
   isCompatible,
 } from "@/lib/utils";
 import Image from "next/image";
+import GradientBackground from "@/components/GradientBackground";
 
 export default function DonorDashboard() {
   const { user: loggedInUser } = useUser();
@@ -318,19 +319,19 @@ export default function DonorDashboard() {
   console.log("lastDonation raw:", user?.lastDonation);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-red-900 to-yellow-600 flex flex-col relative overflow-hidden">
+    <GradientBackground className="flex flex-col">
       <img
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
-        className="w-full h-full object-cover absolute mix-blend-overlay"
+        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
         alt="Blood donation background"
       />
 
       {/* Header */}
-      <header className="bg-white/10 backdrop-blur-sm border-b border-white/20 shadow-lg relative z-10">
+      <header className="glass-morphism border-b border-mist-green/40 shadow-lg relative z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary/10 border-2 border-primary animate-glow rounded-full flex items-center justify-center">
                 <Link href={"/"}>
                  <Image
                                       src="/logo.png"
@@ -342,10 +343,10 @@ export default function DonorDashboard() {
                 </Link>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">
+                <h1 className="text-xl font-outfit font-bold text-primary">
                   Donor Dashboard
                 </h1>
-                <p className="text-sm text-gray-200">
+                <p className="text-sm text-text-dark font-dm-sans">
                   Welcome back, {user?.firstName || user?.email.split("@")[0]}
                 </p>
               </div>
@@ -358,7 +359,7 @@ export default function DonorDashboard() {
               >
                 <Bell className="w-4 h-4 mr-2" />
                 Notifications
-                <Badge className="ml-2 bg-red-600 text-white">2</Badge>
+                <Badge className="ml-2 gradient-ruby text-white">2</Badge>
               </Button>
               <UserButton />
             </div>
@@ -366,7 +367,7 @@ export default function DonorDashboard() {
         </div>
       </header>
 
-      <Card className="mb-6 bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+      <Card className="mb-6 glass-morphism border border-accent/30 card-hover text-white">
         <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-white">
@@ -381,7 +382,7 @@ export default function DonorDashboard() {
               onClick={() => setIsAvailable(true)}
               className={`${
                 isAvailable
-                  ? "bg-green-600 hover:bg-green-700"
+                  ? "gradient-mist hover:opacity-90"
                   : "bg-white/20 border-white/30 hover:bg-white/30"
               } text-white`}
             >
@@ -391,7 +392,7 @@ export default function DonorDashboard() {
               onClick={() => setIsAvailable(false)}
               className={`${
                 !isAvailable
-                  ? "bg-red-600 hover:bg-red-700"
+                  ? "gradient-ruby hover:opacity-90"
                   : "bg-white/20 border-white/30 hover:bg-white/30"
               } text-white`}
             >
@@ -404,7 +405,7 @@ export default function DonorDashboard() {
       <div className="container mx-auto px-4 py-8 relative z-10">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
+          <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-red-600/20 rounded-lg flex items-center justify-center">
@@ -420,7 +421,7 @@ export default function DonorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
+          <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
@@ -436,7 +437,7 @@ export default function DonorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
+          <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
@@ -454,7 +455,7 @@ export default function DonorDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
+          <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
@@ -479,7 +480,7 @@ export default function DonorDashboard() {
         </div>
 
         {/* Eligibility Progress */}
-        <Card className="mb-8 bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+        <Card className="mb-8 glass-morphism border border-accent/30 card-hover text-white">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-white">
               <Clock className="w-5 h-5 text-gray-200" />
@@ -529,7 +530,7 @@ export default function DonorDashboard() {
         </Card>
 
         <Tabs defaultValue="alerts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-white/10 backdrop-blur-sm border border-white/20">
+          <TabsList className="grid w-full grid-cols-3 glass-morphism border border-accent/30">
             <TabsTrigger
               value="alerts"
               className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
@@ -567,7 +568,7 @@ export default function DonorDashboard() {
             </div>
 
             {!isAvailable ? (
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+              <Card className="glass-morphism border border-accent/30 card-hover text-white">
                 <CardContent className="p-12 text-center">
                   <XCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-white mb-2">
@@ -580,7 +581,7 @@ export default function DonorDashboard() {
                 </CardContent>
               </Card>
             ) : activeAlerts.length === 0 ? (
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+              <Card className="glass-morphism border border-accent/30 card-hover text-white">
                 <CardContent className="p-12 text-center">
                   <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-white mb-2">
@@ -597,7 +598,7 @@ export default function DonorDashboard() {
                 {activeAlerts.map((alert) => (
                   <Card
                     key={alert.id}
-                    className="border-l-4 border-l-red-500 bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg"
+                    className="border-l-4 border-l-red-500 glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg"
                   >
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
@@ -732,7 +733,7 @@ export default function DonorDashboard() {
           <TabsContent value="history" className="space-y-6">
             <h2 className="text-2xl font-bold text-white">Donation History</h2>
 
-            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white">
+            <Card className="glass-morphism border border-accent/30 card-hover text-white">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -797,7 +798,7 @@ export default function DonorDashboard() {
             <h2 className="text-2xl font-bold text-white">Profile Settings</h2>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
+              <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-white">
                     Personal Information
@@ -845,7 +846,7 @@ export default function DonorDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
+              <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-white">
                     Notification Preferences
@@ -907,6 +908,6 @@ export default function DonorDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </GradientBackground>
   );
 }
