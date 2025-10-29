@@ -98,10 +98,10 @@ export default function ContactPage() {
       <section className="py-20 px-4 bg-white/5 backdrop-blur-[2px]">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-slate-300">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-text-dark">
               Contact Us
             </h1>
-            <p className="text-xl text-slate-300/80 max-w-2xl mx-auto">
+            <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
               Get in touch with our team for emergency support, partnerships, or
               general inquiries about HaemoLogix.
             </p>
@@ -265,24 +265,24 @@ export default function ContactPage() {
 
           {/* Additional Contact Methods */}
           <div className="mt-16 text-center">
-            <h2 className="text-3xl font-bold text-slate-300 mb-8">
+            <h2 className="text-3xl font-bold text-text-dark mb-8">
               Other Ways to Reach Us
             </h2>
             <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               <Card className="glass-morphism border border-slate-300/20 hover:bg-white/20 transition-all duration-300">
                 <CardContent className="p-6 text-center">
                   <Mail className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-slate-300 mb-2">
+                  <h3 className="text-xl font-semibold text-text-dark mb-2">
                     Email Support
                   </h3>
-                  <p className="text-slate-300/80 mb-4">
+                  <p className="text-text-dark/80 mb-4">
                     Get detailed responses to your inquiries
                   </p>
                   <div className="space-y-2">
-                    <p className="text-slate-300">
+                    <p className="text-text-dark">
                       Emergency: emergency@haemologix.com
                     </p>
-                    <p className="text-slate-300">
+                    <p className="text-text-dark">
                       General: support@haemologix.com
                     </p>
                   </div>
@@ -292,17 +292,17 @@ export default function ContactPage() {
               <Card className="glass-morphism border border-slate-300/20 hover:bg-white/20 transition-all duration-300">
                 <CardContent className="p-6 text-center">
                   <Heart className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-slate-300 mb-2">
+                  <h3 className="text-xl font-semibold text-text-dark mb-2">
                     Emergency Hotline
                   </h3>
-                  <p className="text-slate-300/80 mb-4">
+                  <p className="text-text-dark/80 mb-4">
                     24/7 emergency blood request support
                   </p>
                   <div className="space-y-2">
-                    <p className="text-slate-300 text-2xl font-bold">
+                    <p className="text-text-dark text-2xl font-bold">
                       1-800-BLOOD-NOW
                     </p>
-                    <p className="text-slate-300/80">(1-800-256-6369)</p>
+                    <p className="text-text-dark/80">(1-800-256-6369)</p>
                   </div>
                 </CardContent>
               </Card>

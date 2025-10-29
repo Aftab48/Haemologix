@@ -17,21 +17,21 @@ const waitlistPage = () => {
         </div>
 
         {/* Heading */}
-        <h1 className="text-3xl font-bold text-white mb-4">
+        <h1 className="text-3xl font-bold text-text-dark mb-4">
           🎉 Thank You for Applying!
         </h1>
 
         {/* Expanded Message */}
-        <p className="text-gray-300 leading-relaxed mb-6">
+        <p className="text-text-dark/80 leading-relaxed mb-6">
           Your application has been successfully submitted. Our team will
-          carefully review the details you’ve provided. You can expect to
+          carefully review the details you've provided. You can expect to
           receive an update via email within the next{" "}
-          <span className="font-semibold text-white">24–48 hours</span>.
+          <span className="font-semibold text-text-dark">24–48 hours</span>.
         </p>
 
-        <p className="text-gray-400 text-sm mb-6">
+        <p className="text-text-dark/70 text-sm mb-6">
           In the meantime, feel free to check your inbox (and spam/junk folder)
-          to ensure you don’t miss any important messages from us. We appreciate
+          to ensure you don't miss any important messages from us. We appreciate
           your interest and look forward to connecting with you!
         </p>
 

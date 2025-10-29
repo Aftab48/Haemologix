@@ -31,7 +31,7 @@ export function UserModal({ userId, userType, onClose }: Props) {
     <Dialog open onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-text-dark">
             {userType === "donor" ? "Donor Details" : "Hospital Details"}
           </DialogTitle>
         </DialogHeader>
@@ -39,25 +39,27 @@ export function UserModal({ userId, userType, onClose }: Props) {
         {userData ? (
           userType === "donor" ? (
             <>
-              <p>
+              <p className="text-text-dark">
                 <strong>Name:</strong>{" "}
                 {`${userData.firstName} ${userData.lastName}`}
               </p>
-              <p>
+              <p className="text-text-dark">
                 <strong>Email:</strong> {userData.email}
               </p>
-              <p>
+              <p className="text-text-dark">
                 <strong>Blood Group:</strong> {userData.bloodGroup}
               </p>
-              <p>
+              <p className="text-text-dark">
                 <strong>Contact:</strong> {userData.phone}
               </p>
-              <p>
+              <p className="text-text-dark">
                 <strong>Last Donation:</strong>{" "}
                 {formatLastActivity(userData.lastDonation) || "N/A"}
               </p>
               <Link
                 href={`/admin/users/${userType}/${userData.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-blue-600 underline mt-4 block text-center"
               >
                 View Full Profile
@@ -65,25 +67,27 @@ export function UserModal({ userId, userType, onClose }: Props) {
             </>
           ) : (
             <>
-              <p>
+              <p className="text-text-dark">
                 <strong>Hospital Name:</strong> {userData.hospitalName}
               </p>
-              <p>
+              <p className="text-text-dark">
                 <strong>Email:</strong> {userData.contactEmail}
               </p>
-              <p>
+              <p className="text-text-dark">
                 <strong>Address:</strong>{" "}
                 {`${userData.hospitalAddress}, ${userData.city}, ${userData.state} - ${userData.pincode}`}
               </p>
 
-              <p>
+              <p className="text-text-dark">
                 <strong>License:</strong> {userData.bloodBankLicense}
               </p>
-              <p>
+              <p className="text-text-dark">
                 <strong>Active Alerts:</strong> {userData.alerts?.length || 0}
               </p>
               <Link
                 href={`/admin/users/${userType}/${userData.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-blue-600 underline mt-4 block text-center"
               >
                 View Full Profile
@@ -91,7 +95,7 @@ export function UserModal({ userId, userType, onClose }: Props) {
             </>
           )
         ) : (
-          <p>Loading...</p>
+          <p className="text-text-dark">Loading...</p>
         )}
       </DialogContent>
     </Dialog>

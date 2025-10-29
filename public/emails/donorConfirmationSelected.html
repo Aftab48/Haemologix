@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Donation Confirmed - You've Been Selected!</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #059669, #047857);
+        color: white;
+        text-align: center;
+        padding: 25px 15px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .success-icon {
+        font-size: 48px;
+        margin: 10px 0;
+      }
+      .content {
+        padding: 25px;
+        color: #333;
+        line-height: 1.6;
+      }
+      .info-box {
+        background: #f0fdf4;
+        border-left: 4px solid #059669;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .info-box p {
+        margin: 8px 0;
+      }
+      .info-box strong {
+        color: #059669;
+      }
+      .button-container {
+        text-align: center;
+        margin: 25px 0;
+      }
+      .button {
+        display: inline-block;
+        background: linear-gradient(135deg, #059669, #047857);
+        color: white !important;
+        padding: 14px 30px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 16px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888;
+        padding: 15px;
+        background: #f9fafb;
+      }
+      .checklist {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .checklist h3 {
+        margin-top: 0;
+        color: #92400e;
+      }
+      .checklist ul {
+        margin: 10px 0;
+        padding-left: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <div class="success-icon">✅</div>
+        <h1>You've Been Selected!</h1>
+      </div>
+      <div class="content">
+        <p>Dear <strong>{{donorName}}</strong>,</p>
+        <p style="font-size: 16px; font-weight: bold; color: #059669">
+          Thank you for accepting! You've been matched with
+          <strong>{{hospitalName}}</strong>.
+        </p>
+
+        <div class="info-box">
+          <p><strong>🏥 Hospital:</strong> {{hospitalName}}</p>
+          <p><strong>📍 Address:</strong> {{hospitalAddress}}</p>
+          <p><strong>🕐 Expected Arrival:</strong> {{etaMinutes}} minutes</p>
+          <p><strong>📞 Contact:</strong> {{hospitalPhone}}</p>
+        </div>
+
+        <div class="checklist">
+          <h3>📋 What to Bring:</h3>
+          <ul>
+            <li>Government-issued Photo ID</li>
+            <li>Completed health screening form (if provided)</li>
+            <li>Comfortable clothing</li>
+          </ul>
+        </div>
+
+        <p style="font-size: 15px">
+          <strong>Why you were selected:</strong><br />
+          You were chosen from multiple donors based on your match score
+          ({{matchScore}}/100), proximity, and reliability. The hospital is
+          expecting you!
+        </p>
+
+        <div class="button-container">
+          <a href="{{directionsUrl}}" class="button" target="_blank">
+            🗺️ Get Directions
+          </a>
+        </div>
+
+        <p style="font-size: 13px; color: #777; margin-top: 25px">
+          <strong>Before you go:</strong><br />
+          • Eat a healthy meal and stay hydrated<br />
+          • Get adequate rest<br />
+          • Avoid alcohol 24 hours before donation<br />
+          • Bring a friend or family member if possible
+        </p>
+
+        <p style="font-size: 16px; font-weight: bold; text-align: center; color: #059669; margin-top: 30px">
+          Thank you for saving a life today! 🩸❤️
+        </p>
+      </div>
+      <div class="footer">
+        © 2025 Haemologix — Intelligent Blood Donation Network<br />
+        Safe travels! The hospital staff is ready to receive you.
+      </div>
+    </div>
+  </body>
+</html>
+

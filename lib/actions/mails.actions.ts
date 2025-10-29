@@ -70,15 +70,32 @@ export async function sendApplicationApprovedEmail(to: string, name: string) {
   }
 }
 
-export async function sendApplicationRejectedEmail(to: string, name: string) {
+export async function sendApplicationRejectedEmail(
+  to: string,
+  name: string,
+  mismatches?: any[]
+) {
   let html = await loadEmailTemplate("rejectedDonor.html");
-  html = applyTemplate(html, { name });
+  
+  // Build mismatch details if provided
+  let mismatchDetails = "";
+  if (mismatches && mismatches.length > 0) {
+    mismatchDetails = mismatches
+      .map(
+        (m) =>
+          `<li><strong>${m.field}:</strong> Expected "${m.entered}", Found "${m.extracted}" - ${m.reason}</li>`
+      )
+      .join("");
+    mismatchDetails = `<ul>${mismatchDetails}</ul>`;
+  }
+
+  html = applyTemplate(html, { name, mismatchDetails: mismatchDetails || "Please review your documents." });
 
   try {
     const info = await transporter.sendMail({
       from: `"Haemologix" <${process.env.SMTP_USER}>`,
       to,
-      subject: "Application Status – Rejected",
+      subject: "Document Verification Failed - Please Retry",
       html,
     });
 
@@ -182,15 +199,36 @@ export async function sendUrgentBloodRequestEmail(
   }
 }
 
-export async function sendAccountSuspensionEmail(to: string, name: string) {
+export async function sendAccountSuspensionEmail(
+  to: string,
+  name: string,
+  mismatches?: any[]
+) {
   let html = await loadEmailTemplate("accountSuspension.html");
-  html = applyTemplate(html, { name });
+  
+  // Build mismatch details if provided
+  let mismatchDetails = "";
+  if (mismatches && mismatches.length > 0) {
+    mismatchDetails = mismatches
+      .map(
+        (m) =>
+          `<li><strong>${m.field}:</strong> Expected "${m.entered}", Found "${m.extracted}" - ${m.reason}</li>`
+      )
+      .join("");
+    mismatchDetails = `<ul>${mismatchDetails}</ul>`;
+  }
+
+  html = applyTemplate(html, {
+    name,
+    suspensionDays: "14",
+    reason: mismatchDetails || "Multiple failed document verification attempts (3/3 attempts used)",
+  });
 
   try {
     const info = await transporter.sendMail({
       from: `"Haemologix" <${process.env.SMTP_USER}>`,
       to,
-      subject: "Account Suspended - Too Many Failed Verification Attempts",
+      subject: "Account Suspended - 14 Days",
       html,
     });
 
@@ -199,5 +237,188 @@ export async function sendAccountSuspensionEmail(to: string, name: string) {
   } catch (err) {
     console.error("Email send error:", err);
     throw new Error("Failed to send account suspension email");
+  }
+}
+
+/**
+ * Send eligibility rejection email with detailed failure reasons
+ */
+export async function sendEligibilityRejectionEmail(
+  to: string,
+  name: string,
+  failedCriteria: any[]
+) {
+  let html = await loadEmailTemplate("eligibilityRejection.html");
+
+  // Build failed criteria list
+  const failedCriteriaList = failedCriteria
+    .map(
+      (c) =>
+        `<div class="criteria-item">
+          <strong>${c.criterion}</strong>
+          <div class="value">Your value: ${c.value}</div>
+          <div class="value">Required: ${c.required}</div>
+          <div class="value">Reason: ${c.reason}</div>
+        </div>`
+    )
+    .join("");
+
+  // Calculate reapplication date (14 days from now)
+  const reapplicationDate = new Date();
+  reapplicationDate.setDate(reapplicationDate.getDate() + 14);
+  const formattedDate = reapplicationDate.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  html = applyTemplate(html, {
+    donorName: name,
+    failedCriteriaList,
+    reapplicationDate: formattedDate,
+  });
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Haemologix" <${process.env.SMTP_USER}>`,
+      to,
+      subject: "Blood Donation Eligibility - Not Eligible",
+      html,
+    });
+
+    console.log("Eligibility rejection email sent:", info.messageId);
+    return { success: true };
+  } catch (err) {
+    console.error("Email send error:", err);
+    throw new Error("Failed to send eligibility rejection email");
+  }
+}
+
+/**
+ * Send donor blood request notification email (used by Donor Agent)
+ */
+export async function sendDonorBloodRequestEmail(data: {
+  to: string;
+  donorName: string;
+  hospitalName: string;
+  bloodType: string;
+  distance: string;
+  urgency: string;
+  contactPhone: string;
+  totalEligible: number;
+  donorScore: number;
+  acceptUrl: string;
+  declineUrl: string;
+}) {
+  let html = await loadEmailTemplate("donorBloodRequest.html");
+  html = applyTemplate(html, {
+    donorName: data.donorName,
+    hospitalName: data.hospitalName,
+    bloodType: data.bloodType,
+    distance: data.distance,
+    urgency: data.urgency.toUpperCase(),
+    contactPhone: data.contactPhone,
+    totalEligible: String(data.totalEligible),
+    donorScore: data.donorScore.toFixed(1),
+    acceptUrl: data.acceptUrl,
+    declineUrl: data.declineUrl,
+  });
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Haemologix Blood Alert" <${process.env.SMTP_USER}>`,
+      to: data.to,
+      subject: `🚨 ${data.urgency.toUpperCase()} Blood Donation Request - ${data.bloodType}`,
+      html,
+    });
+
+    console.log(`[Email] Donor blood request sent to ${data.to}:`, info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (err: any) {
+    console.error("❌ Donor blood request email error:", {
+      message: err.message,
+      code: err.code,
+      to: data.to,
+    });
+    throw new Error(`Failed to send donor blood request email: ${err.message}`);
+  }
+}
+
+/**
+ * Send confirmation email to selected donor (used by Coordinator Agent)
+ */
+export async function sendDonorSelectedEmail(data: {
+  to: string;
+  donorName: string;
+  hospitalName: string;
+  hospitalAddress: string;
+  hospitalPhone: string;
+  etaMinutes: number;
+  matchScore: number;
+  directionsUrl: string;
+}) {
+  let html = await loadEmailTemplate("donorConfirmationSelected.html");
+  html = applyTemplate(html, {
+    donorName: data.donorName,
+    hospitalName: data.hospitalName,
+    hospitalAddress: data.hospitalAddress,
+    hospitalPhone: data.hospitalPhone,
+    etaMinutes: String(data.etaMinutes),
+    matchScore: data.matchScore.toFixed(1),
+    directionsUrl: data.directionsUrl,
+  });
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Haemologix" <${process.env.SMTP_USER}>`,
+      to: data.to,
+      subject: `✅ You've Been Selected! - ${data.hospitalName} is Expecting You`,
+      html,
+    });
+
+    console.log(`[Email] Donor selected confirmation sent to ${data.to}:`, info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (err: any) {
+    console.error("❌ Donor selected email error:", {
+      message: err.message,
+      code: err.code,
+      to: data.to,
+    });
+    throw new Error(`Failed to send donor selected email: ${err.message}`);
+  }
+}
+
+/**
+ * Send "not selected" email to rejected donor (used by Coordinator Agent)
+ */
+export async function sendDonorNotSelectedEmail(data: {
+  to: string;
+  donorName: string;
+  hospitalName: string;
+}) {
+  let html = await loadEmailTemplate("donorNotSelected.html");
+  html = applyTemplate(html, {
+    donorName: data.donorName,
+    hospitalName: data.hospitalName,
+  });
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Haemologix" <${process.env.SMTP_USER}>`,
+      to: data.to,
+      subject: `Thank You for Responding - ${data.hospitalName}`,
+      html,
+    });
+
+    console.log(`[Email] Donor not selected email sent to ${data.to}:`, info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (err: any) {
+    console.error("❌ Donor not selected email error:", {
+      message: err.message,
+      code: err.code,
+      to: data.to,
+    });
+    // Don't throw - this is a courtesy email, shouldn't break the flow
+    return { success: false, error: err.message };
   }
 }

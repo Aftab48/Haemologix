@@ -479,21 +479,69 @@ async function handleVerificationResult(
     throw new Error("Donor not found");
   }
 
-  if (allPassed) {
-    // Mark as applied in Clerk (now user can't re-register)
-    await markDonorAsApplied();
+  // Import verification agent
+  const { processDonorVerification } = await import("@/lib/agents/verificationAgent");
 
-    // Update status to flag for admin review
-    await db.donorRegistration.update({
-      where: { id: donorId },
-      data: {
-        status: "PENDING",
-        lastVerificationAt: new Date(),
-      },
+  if (allPassed) {
+    // Document verification passed, now check eligibility
+    const eligibilityResult = await processDonorVerification(donorId, {
+      allPassed: true,
+      hasTechnicalError: false,
+      mismatches: [],
     });
 
-    console.log(`Donor ${donorId} passed verification, flagged for admin review`);
+    if (eligibilityResult.passed) {
+      // All checks passed: Mark as applied and flag for admin review
+      await markDonorAsApplied();
+
+      await db.donorRegistration.update({
+        where: { id: donorId },
+        data: {
+          status: "PENDING",
+          lastVerificationAt: new Date(),
+        },
+      });
+
+      console.log(`[Verification] ✅ Donor ${donorId} passed all checks, flagged for admin review`);
+    } else {
+      // Eligibility failed: Immediate 14-day suspension, NO retries
+      const suspendedUntil = new Date();
+      suspendedUntil.setDate(suspendedUntil.getDate() + 14);
+
+      await db.donorRegistration.update({
+        where: { id: donorId },
+        data: {
+          status: "REJECTED",
+          suspendedUntil,
+          lastVerificationAt: new Date(),
+        },
+      });
+
+      // Send eligibility rejection email with detailed failure reasons
+      const { sendEligibilityRejectionEmail } = await import("@/lib/actions/mails.actions");
+      
+      // Get failed criteria from agent decision
+      const decision = await db.agentDecision.findFirst({
+        where: {
+          agentType: "VERIFICATION",
+          requestId: donorId,
+          eventType: "eligibility_failed",
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      const failedCriteria = decision ? (decision.decision as any).failed_criteria || [] : [];
+
+      await sendEligibilityRejectionEmail(
+        donor.email,
+        donor.firstName,
+        failedCriteria
+      );
+
+      console.log(`[Verification] ❌ Donor ${donorId} failed eligibility check - suspended for 14 days`);
+    }
   } else {
+    // Document verification failed
     // Don't increment attempts if it's a technical error
     if (hasTechnicalError) {
       await db.donorRegistration.update({
@@ -503,17 +551,24 @@ async function handleVerificationResult(
           lastVerificationAt: new Date(),
         },
       });
-      console.log(`Donor ${donorId} has technical verification errors, needs manual review`);
+      console.log(`[Verification] Donor ${donorId} has technical verification errors, needs manual review`);
       return;
     }
 
-    // Increment attempt counter
+    // Increment attempt counter for document failures
     const newAttempts = donor.verificationAttempts + 1;
 
+    // Notify verification agent of document failure
+    await processDonorVerification(donorId, {
+      allPassed: false,
+      hasTechnicalError: false,
+      mismatches: allMismatches,
+    });
+
     if (newAttempts >= 3) {
-      // Suspend for 7 days
+      // Suspend for 14 days after 3 document verification failures
       const suspendedUntil = new Date();
-      suspendedUntil.setDate(suspendedUntil.getDate() + 7);
+      suspendedUntil.setDate(suspendedUntil.getDate() + 14);
 
       await db.donorRegistration.update({
         where: { id: donorId },
@@ -525,9 +580,9 @@ async function handleVerificationResult(
         },
       });
 
-      // Send suspension email
-      await sendAccountSuspensionEmail(donor.email, donor.firstName);
-      console.log(`Donor ${donorId} suspended for 7 days after 3 failed attempts`);
+      // Send suspension email with document mismatch details
+      await sendAccountSuspensionEmail(donor.email, donor.firstName, allMismatches);
+      console.log(`[Verification] Donor ${donorId} suspended for 14 days after 3 failed document attempts`);
     } else {
       // Allow retry
       await db.donorRegistration.update({
@@ -539,9 +594,9 @@ async function handleVerificationResult(
         },
       });
 
-      // Send auto-rejection email with mismatch details
-      await sendApplicationRejectedEmail(donor.email, donor.firstName);
-      console.log(`Donor ${donorId} verification failed (attempt ${newAttempts}/3)`);
+      // Send document rejection email with mismatch details
+      await sendApplicationRejectedEmail(donor.email, donor.firstName, allMismatches);
+      console.log(`[Verification] Donor ${donorId} document verification failed (attempt ${newAttempts}/3)`);
     }
   }
 }

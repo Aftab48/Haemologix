@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Urgent Blood Donation Request</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #dc2626, #991b1b);
+        color: white;
+        text-align: center;
+        padding: 25px 15px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .urgency-badge {
+        display: inline-block;
+        background: #fbbf24;
+        color: #78350f;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        margin-top: 10px;
+        text-transform: uppercase;
+      }
+      .content {
+        padding: 25px;
+        color: #333;
+        line-height: 1.6;
+      }
+      .info-box {
+        background: #f3f4f6;
+        border-left: 4px solid #dc2626;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .info-box p {
+        margin: 8px 0;
+      }
+      .info-box strong {
+        color: #dc2626;
+      }
+      .button-container {
+        text-align: center;
+        margin: 25px 0;
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+      }
+      .button {
+        display: inline-block;
+        padding: 14px 30px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 16px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        min-width: 140px;
+      }
+      .button-accept {
+        background: linear-gradient(135deg, #059669, #047857);
+        color: white !important;
+      }
+      .button-decline {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white !important;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888;
+        padding: 15px;
+        background: #f9fafb;
+      }
+      .highlight {
+        background: #fef3c7;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-weight: bold;
+      }
+      @media only screen and (max-width: 600px) {
+        .button-container {
+          flex-direction: column;
+          gap: 10px;
+        }
+        .button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>🩸 Blood Donation Request</h1>
+        <span class="urgency-badge">{{urgency}} Priority</span>
+      </div>
+      <div class="content">
+        <p>Dear <strong>{{donorName}}</strong>,</p>
+        <p>
+          <strong>{{hospitalName}}</strong> has an urgent need for
+          <span class="highlight">{{bloodType}}</span> blood and you've been
+          matched as an eligible donor!
+        </p>
+
+        <div class="info-box">
+          <p><strong>🏥 Hospital:</strong> {{hospitalName}}</p>
+          <p><strong>🩸 Blood Type Needed:</strong> {{bloodType}}</p>
+          <p><strong>📍 Distance:</strong> {{distance}} km from you</p>
+          <p><strong>⚡ Urgency:</strong> {{urgency}}</p>
+          <p><strong>📞 Contact:</strong> {{contactPhone}}</p>
+        </div>
+
+        <p style="font-size: 15px; color: #555">
+          You were selected from <strong>{{totalEligible}}</strong> eligible
+          donors based on your proximity, donation history, and health profile.
+          Your score: <strong>{{donorScore}}/100</strong>
+        </p>
+
+        <p style="font-size: 16px; font-weight: bold; color: #dc2626">
+          Can you donate within the next few hours?
+        </p>
+
+        <div class="button-container">
+          <a href="{{acceptUrl}}" class="button button-accept" target="_blank">
+            ✅ Yes, I Can Donate
+          </a>
+          <a href="{{declineUrl}}" class="button button-decline" target="_blank">
+            ❌ Not Available
+          </a>
+        </div>
+
+        <p style="font-size: 13px; color: #777; margin-top: 25px">
+          <strong>What happens next?</strong><br />
+          • If you accept, you'll receive confirmation with directions<br />
+          • If multiple donors accept, the best match will be selected<br />
+          • You'll be notified either way within minutes
+        </p>
+
+        <p style="font-size: 13px; color: #777; margin-top: 20px">
+          <strong>Why you?</strong><br />
+          Our AI agent analyzed distance, donation history, response rate, and
+          health data to select you as one of the top candidates. Your
+          willingness to help saves lives! 🙏
+        </p>
+
+        <p style="font-size: 12px; color: #999; margin-top: 25px">
+          This request expires in 4 hours. Please respond as soon as possible.
+        </p>
+      </div>
+      <div class="footer">
+        © 2025 Haemologix — Intelligent Blood Donation Network<br />
+        You're receiving this because you're an approved donor with matching
+        blood type.
+      </div>
+    </div>
+  </body>
+</html>
+

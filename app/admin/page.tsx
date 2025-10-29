@@ -41,12 +41,13 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
-import { ApprovalStatus } from "@prisma/client";
 import { useUser } from "@clerk/nextjs";
 import { formatLastActivity } from "@/lib/utils";
 import { UserModal } from "@/components/UserModal";
 import { updateUserStatus } from "@/lib/actions/user.actions";
 import GradientBackground from "@/components/GradientBackground";
+import AgenticDashboard from "@/components/AgenticDashboard";
+import AIAgentLogs from "@/components/AIAgentLogs";
 import {
   sendApplicationApprovedEmail,
   sendApplicationRejectedEmail,
@@ -64,10 +65,10 @@ export default function AdminDashboard() {
   const { user } = useUser();
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState({
-    id: "",
-    name: "",
-    email: "",
-    role: "",
+    id: "admin",
+    name: "Admin User",
+    email: "admin@haemologix.com",
+    role: "admin",
   });
   const [activeTab, setActiveTab] = useState("users");
 
@@ -75,8 +76,8 @@ export default function AdminDashboard() {
     if (user) {
       setCurrentUser({
         id: user.id,
-        name: user.fullName || "",
-        email: user.primaryEmailAddress?.emailAddress || "",
+        name: user.fullName || "Admin User",
+        email: user.primaryEmailAddress?.emailAddress || "admin@haemologix.com",
         role: "admin",
       });
     }
@@ -124,6 +125,8 @@ export default function AdminDashboard() {
     },
   ]);
 
+  type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+
   type NormalizedUser = {
     id: string;
     name: string; // unified display name
@@ -147,7 +150,7 @@ export default function AdminDashboard() {
       const donors = await fetchAllDonors();
       const hospitals = await fetchAllHospitals();
 
-      const formattedDonors: NormalizedUser[] = donors.map((d) => ({
+      const formattedDonors: NormalizedUser[] = donors.map((d: any) => ({
         id: d.id,
         name: `${d.firstName} ${d.lastName}`,
         email: d.email,
@@ -159,7 +162,7 @@ export default function AdminDashboard() {
         phone: d.phone,
       }));
 
-      const formattedHospitals: NormalizedUser[] = hospitals.map((h) => ({
+      const formattedHospitals: NormalizedUser[] = hospitals.map((h: any) => ({
         id: h.id,
         name: h.hospitalName,
         email: h.contactEmail,
@@ -212,8 +215,8 @@ export default function AdminDashboard() {
   
   // Categorize users by verification status
   const autoVerifiedUsers = users.filter((user) => {
-    // Users with verifications who passed AI check
-    return user.status === "PENDING" && (user as any).verificationAttempts >= 0;
+    // Show all approved donors
+    return user.status === "APPROVED" && user.role === "donor";
   });
   
   const manualReviewUsers = users.filter((user) => {
@@ -303,13 +306,14 @@ export default function AdminDashboard() {
     }
   };
 
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-white">
-        Loading...
-      </div>
-    );
-  }
+  // Allow access without authentication
+  // if (!user) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen text-white">
+  //       Loading...
+  //     </div>
+  //   );
+  // }
 
   const handleApprove = async (user: any) => {
     setUsers((prev) =>
@@ -344,9 +348,9 @@ export default function AdminDashboard() {
 
   const tabOptions = [
     { value: "users", label: "User Management" },
-    { value: "hospitals", label: "Hospital Verification" },
+    { value: "agentic", label: "Agentic AI Dashboard" },
     { value: "analytics", label: "System Analytics" },
-    { value: "activity", label: "Activity Logs" },
+    { value: "activity", label: "AI Agent Logs" },
   ];
 
   if (loading) return <p>Loading Data...</p>;
@@ -368,10 +372,10 @@ export default function AdminDashboard() {
                 </Link>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">
+                <h1 className="text-xl font-bold text-text-dark">
                   System Administration
                 </h1>
-                <p className="text-sm text-gray-200">
+                <p className="text-sm text-text-dark/80">
                   Haemologix Management Portal
                 </p>
               </div>
@@ -402,65 +406,65 @@ export default function AdminDashboard() {
       <div className="container mx-auto px-4 py-8 relative z-10">
         {/* System Overview Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
                   <Users className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-text-dark">
                     {systemStats.totalUsers.toLocaleString()}
                   </p>
-                  <p className="text-sm text-gray-200">Total Users</p>
+                  <p className="text-sm text-text-dark/80">Total Users</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
                   <Activity className="w-6 h-6 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-text-dark">
                     {systemStats.activeDonors.toLocaleString()}
                   </p>
-                  <p className="text-sm text-gray-200">Active Donors</p>
+                  <p className="text-sm text-text-dark/80">Active Donors</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
                   <Building className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-text-dark">
                     {systemStats.registeredHospitals}
                   </p>
-                  <p className="text-sm text-gray-200">Hospitals</p>
+                  <p className="text-sm text-text-dark/80">Hospitals</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-red-600/20 rounded-lg flex items-center justify-center">
                   <AlertTriangle className="w-6 h-6 text-red-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-text-dark">
                     {systemStats.activeAlerts}
                   </p>
-                  <p className="text-sm text-gray-200">Active Alerts</p>
+                  <p className="text-sm text-text-dark/80">Active Alerts</p>
                 </div>
               </div>
             </CardContent>
@@ -469,61 +473,61 @@ export default function AdminDashboard() {
 
         {/* System Health */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-text-dark">
                 <TrendingUp className="w-5 h-5 text-yellow-400" />
                 System Performance
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-200">
+            <CardContent className="space-y-4 text-text-dark/80">
               <div className="flex justify-between">
                 <span>System Uptime</span>
-                <span className="font-semibold text-green-400">
+                <span className="font-semibold text-green-600">
                   {systemStats.systemUptime}%
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Response Rate</span>
-                <span className="font-semibold text-white">
+                <span className="font-semibold text-text-dark">
                   {systemStats.responseRate}%
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Total Donations</span>
-                <span className="font-semibold text-white">
+                <span className="font-semibold text-text-dark">
                   {systemStats.totalDonations.toLocaleString()}
                 </span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-text-dark">
                 <Globe className="w-5 h-5 text-blue-400" />
                 Geographic Coverage
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-gray-200">
+            <CardContent className="space-y-4 text-text-dark/80">
               <div className="flex justify-between">
                 <span>Cities Covered</span>
-                <span className="font-semibold text-white">50+</span>
+                <span className="font-semibold text-text-dark">50+</span>
               </div>
               <div className="flex justify-between">
                 <span>Average Coverage Radius</span>
-                <span className="font-semibold text-white">15 km</span>
+                <span className="font-semibold text-text-dark">15 km</span>
               </div>
               <div className="flex justify-between">
                 <span>Rural Areas</span>
-                <span className="font-semibold text-white">25%</span>
+                <span className="font-semibold text-text-dark">25%</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+          <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-text-dark">
                 <Clock className="w-5 h-5 text-orange-400" />
                 Recent Activity
               </CardTitle>
@@ -539,10 +543,10 @@ export default function AdminDashboard() {
                   <div className="flex items-start gap-2">
                     {getActivityIcon(activity.type)}
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-text-dark">
                         {activity.message}
                       </p>
-                      <p className="text-xs text-gray-300">
+                      <p className="text-xs text-text-dark/70">
                         {activity.timestamp}
                       </p>
                     </div>
@@ -561,7 +565,7 @@ export default function AdminDashboard() {
         >
           <div className="lg:hidden mb-4">
             <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full bg-white/10 text-white border border-white/20">
+              <SelectTrigger className="w-full bg-white/10 text-text-dark border border-white/20">
                 <SelectValue placeholder="Select Tab" />
               </SelectTrigger>
               <SelectContent>
@@ -579,7 +583,7 @@ export default function AdminDashboard() {
                 key={tab.value}
                 value={tab.value}
                 className="
-                text-white text-center rounded-md
+                text-text-dark text-center rounded-md
                 data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md
                 transition-all duration-300
                 first:rounded-l-lg last:rounded-r-lg
@@ -593,7 +597,7 @@ export default function AdminDashboard() {
           {/* User Management Tab */}
           <TabsContent value="users" className="space-y-6">
             <div className="flex flex-col lg:flex-row gap-y-3 items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">User Management</h2>
+              <h2 className="text-2xl font-bold text-text-dark">User Management</h2>
               <div className="flex flex-col lg:flex-row gap-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -601,7 +605,7 @@ export default function AdminDashboard() {
                     placeholder="Search users..."
                     value={search} // always defined
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-10 w-64 bg-white/5 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-yellow-600"
+                    className="pl-10 w-64 bg-white/5 border-white/20 text-text-dark placeholder:text-gray-400 focus-visible:ring-yellow-600"
                   />
                 </div>
                 <div className="flex justify-between gap-2 w-full">
@@ -609,7 +613,7 @@ export default function AdminDashboard() {
                     value={roleFilter}
                     onValueChange={(value) => setRoleFilter(value as any)}
                   >
-                    <SelectTrigger className="w-32 bg-white/5 border-white/20 text-white">
+                    <SelectTrigger className="w-32 bg-white/5 border-white/20 text-text-dark">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 text-white border-gray-700">
@@ -665,50 +669,48 @@ export default function AdminDashboard() {
 
             {/* Section Description */}
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-              <p className="text-sm text-blue-200">
-                {verificationTab === "auto-verified" && (
-                  <>
-                    <strong>Auto-Verified Users:</strong> These users have passed AI document verification and are awaiting final admin review.
-                  </>
-                )}
-                {verificationTab === "manual" && (
-                  <>
-                    <strong>Manual Review:</strong> These users require manual verification due to technical errors or pending verification.
-                  </>
-                )}
-                {verificationTab === "suspended" && (
-                  <>
-                    <strong>Suspended Accounts:</strong> These users exceeded 3 failed verification attempts and are temporarily suspended.
-                  </>
-                )}
-              </p>
+              {verificationTab === "auto-verified" && (
+                <p className="text-sm text-blue-200">
+                  <strong>Auto-Verified Users:</strong> These users have passed AI document verification and eligibility criteria.
+                </p>
+              )}
+              {verificationTab === "manual" && (
+                <p className="text-sm text-blue-200">
+                  <strong>Manual Review:</strong> These users require manual verification due to technical errors or pending verification.
+                </p>
+              )}
+              {verificationTab === "suspended" && (
+                <p className="text-sm text-blue-900">
+                  <strong>Suspended Accounts:</strong> These users exceeded 3 failed verification attempts and are temporarily suspended.
+                </p>
+              )}
             </div>
 
-            <Card className="glass-morphism border hidden lg:block border-white/20 text-white">
+            <Card className="glass-morphism border hidden lg:block border-white/20 text-text-dark">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-white/5 border-b border-white/20">
                       <tr>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           User
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Role
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Status
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Verification
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Last Activity
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Stats
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Actions
                         </th>
                       </tr>
@@ -721,16 +723,16 @@ export default function AdminDashboard() {
                         >
                           <td className="p-4">
                             <div>
-                              <p className="font-medium text-white">
+                              <p className="font-medium text-text-dark">
                                 {user.name}
                               </p>
-                              <p className="text-sm text-gray-300">
+                              <p className="text-sm text-text-dark/70">
                                 {user.email}
                               </p>
                               {user.bloodType && (
                                 <Badge
                                   variant="outline"
-                                  className="mt-1 bg-white/5 border-white/20 text-white"
+                                  className="mt-1 bg-white/5 border-white/20 text-text-dark"
                                 >
                                   {user.bloodType}
                                 </Badge>
@@ -740,7 +742,7 @@ export default function AdminDashboard() {
                           <td className="p-4">
                             <Badge
                               variant="outline"
-                              className="capitalize bg-white/5 border-white/20 text-white"
+                              className="capitalize bg-white/5 border-white/20 text-text-dark"
                             >
                               {user.role}
                             </Badge>
@@ -756,11 +758,11 @@ export default function AdminDashboard() {
                               )}
                             </div>
                           </td>
-                          <td className="p-4 text-sm text-gray-300">
+                          <td className="p-4 text-sm text-text-dark/70">
                             {formatLastActivity(user.lastActivity, false)}
                           </td>
 
-                          <td className="p-4 text-sm text-gray-300">
+                          <td className="p-4 text-sm text-text-dark/70">
                             {user.role === "donor" ? (
                               <span>{user.totalDonations} donations</span>
                             ) : (
@@ -826,28 +828,28 @@ export default function AdminDashboard() {
               {filteredUsers.map((user) => (
                 <Card
                   key={user.id}
-                  className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
+                  className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
                 >
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col gap-3">
                       {/* Header: Name, Email, Role */}
                       <div>
-                        <p className="text-lg font-semibold text-white">
+                        <p className="text-lg font-semibold text-text-dark">
                           {user.name}
                         </p>
-                        <p className="text-sm text-gray-300">{user.email}</p>
+                        <p className="text-sm text-text-dark/70">{user.email}</p>
                         {user.bloodType && (
-                          <Badge className="mt-1 bg-white/5 border-white/20 text-white">
+                          <Badge className="mt-1 bg-white/5 border-white/20 text-text-dark">
                             {user.bloodType}
                           </Badge>
                         )}
-                        <Badge className="capitalize bg-white/5 border-white/20 text-white ml-2">
+                        <Badge className="capitalize bg-white/5 border-white/20 text-text-dark ml-2">
                           {user.role}
                         </Badge>
                       </div>
 
                       {/* Info Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm text-gray-300">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm text-text-dark/70">
                         <div>Status: {getStatusBadge(user.status)}</div>
                         <div>
                           Last Activity:{" "}
@@ -913,236 +915,72 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Hospital Verification Tab */}
-          <TabsContent value="hospitals" className="space-y-6">
-            <div className="flex gap-y-3 flex-col lg:flex-row items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">
-                Hospital Verification
-              </h2>
-              <Select
-                value={statusFilter}
-                onValueChange={(value) =>
-                  setStatusFilter(value as ApprovalStatus | "ALL")
-                }
-              >
-                <SelectTrigger className="w-full lg:w-32 bg-white/5 border-white/20 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 text-white border-gray-700">
-                  <SelectItem className="cursor-pointer" value="ALL">
-                    All
-                  </SelectItem>
-                  <SelectItem className="cursor-pointer" value="PENDING">
-                    Pending
-                  </SelectItem>
-                  <SelectItem className="cursor-pointer" value="APPROVED">
-                    Approved
-                  </SelectItem>
-                  <SelectItem className="cursor-pointer" value="REJECTED">
-                    Rejected
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-4">
-              {filteredUsers
-                .filter((user) => user.role === "hospital")
-                .map((hospital) => {
-                  const isExpanded = expanded[hospital.id] || false;
-
-                  return (
-                    <Card
-                      key={hospital.id}
-                      className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                    >
-                      <CardContent className="p-4 sm:p-6">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div className="flex-1">
-                            {/* Title & Badges */}
-                            <div className="flex flex-wrap items-center gap-2 mb-3 justify-between">
-                              <div className="flex items-center gap-2">
-                                <h3 className="text-lg font-semibold text-white">
-                                  {hospital.name}
-                                </h3>
-                                {getStatusBadge(hospital.status)}
-                                <Badge
-                                  variant="outline"
-                                  className="bg-white/5 border-white/20 text-white"
-                                >
-                                  {Math.random() < 0.5
-                                    ? "Government"
-                                    : "Private"}
-                                </Badge>
-                              </div>
-
-                              {/* Toggle for Mobile */}
-                              <button
-                                className="sm:hidden text-yellow-400 flex items-center text-sm"
-                                onClick={() => toggleExpand(hospital.id)}
-                              >
-                                {isExpanded ? (
-                                  <>
-                                    Hide Details{" "}
-                                    <ChevronUp className="ml-1 w-4 h-4" />
-                                  </>
-                                ) : (
-                                  <>
-                                    Show Details{" "}
-                                    <ChevronDown className="ml-1 w-4 h-4" />
-                                  </>
-                                )}
-                              </button>
-                            </div>
-
-                            {/* Info Grid - Hidden on mobile unless expanded */}
-                            <div
-                              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm text-gray-300 mb-3 transition-all duration-300 overflow-hidden ${
-                                isExpanded
-                                  ? "max-h-96 opacity-100"
-                                  : "max-h-0 opacity-0 sm:max-h-none sm:opacity-100"
-                              }`}
-                            >
-                              <div>
-                                <span className="font-medium text-white">
-                                  Email:
-                                </span>{" "}
-                                {hospital.email}
-                              </div>
-                              <div>
-                                <span className="font-medium text-white">
-                                  License:
-                                </span>{" "}
-                                {hospital.bloodBankLicense}
-                              </div>
-                              <div>
-                                <span className="font-medium text-white">
-                                  Location:
-                                </span>{" "}
-                                {hospital.address}
-                              </div>
-                              <div>
-                                <span className="font-medium text-white">
-                                  Response Time:
-                                </span>{" "}
-                                {hospital.responseTimeMinutes} min
-                              </div>
-                            </div>
-
-                            {/* Buttons - Stack on mobile */}
-                            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-white/20 hover:bg-white/20 text-slate-700"
-                                onClick={() => handleViewClick(hospital)}
-                              >
-                                View
-                              </Button>
-
-                              {hospital.status === "PENDING" ? (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    className="bg-green-600 hover:bg-green-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-green-500/50"
-                                    onClick={() => handleApprove(hospital)}
-                                  >
-                                    <CheckCircle className="w-3 h-3 mr-1" />
-                                    Approve
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="bg-transparent hover:bg-red-600/20 border-red-950 text-red-950"
-                                    onClick={() => handleReject(hospital)}
-                                  >
-                                    <XCircle className="w-3 h-3 mr-1" />
-                                    Reject
-                                  </Button>
-                                </>
-                              ) : (
-                                <span
-                                  className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                                    hospital.status === "APPROVED"
-                                      ? "bg-green-100 text-green-800"
-                                      : "bg-red-100 text-red-800"
-                                  }`}
-                                >
-                                  {hospital.status === "APPROVED"
-                                    ? "User Approved ✅"
-                                    : "User Rejected ❌"}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-            </div>
+          {/* Agentic AI Dashboard Tab */}
+          <TabsContent value="agentic" className="space-y-6">
+            <AgenticDashboard />
           </TabsContent>
 
           {/* System Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">System Analytics</h2>
+            <h2 className="text-2xl font-bold text-text-dark">System Analytics</h2>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+              <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
+                  <CardTitle className="flex items-center gap-2 text-text-dark">
                     <BarChart3 className="w-5 h-5 text-yellow-400" />
                     Platform Usage Statistics
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 text-gray-200">
+                <CardContent className="space-y-4 text-text-dark/80">
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span>Daily Active Users</span>
-                      <span className="font-semibold text-white">8,234</span>
+                      <span className="font-semibold text-text-dark">8,234</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Monthly Active Users</span>
-                      <span className="font-semibold text-white">18,456</span>
+                      <span className="font-semibold text-text-dark">18,456</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Average Session Duration</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-text-dark">
                         12 minutes
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Mobile Users</span>
-                      <span className="font-semibold text-white">65%</span>
+                      <span className="font-semibold text-text-dark">65%</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+              <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
                 <CardHeader>
-                  <CardTitle className="text-white">
+                  <CardTitle className="text-text-dark">
                     Emergency Response Metrics
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 text-gray-200">
+                <CardContent className="space-y-4 text-text-dark/80">
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span>Average Response Time</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-text-dark">
                         8.5 minutes
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Success Rate</span>
-                      <span className="font-semibold text-white">89%</span>
+                      <span className="font-semibold text-text-dark">89%</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Critical Alerts Resolved</span>
-                      <span className="font-semibold text-white">94%</span>
+                      <span className="font-semibold text-text-dark">94%</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Lives Saved (Est.)</span>
-                      <span className="font-semibold text-white">2,456</span>
+                      <span className="font-semibold text-text-dark">2,456</span>
                     </div>
                   </div>
                 </CardContent>
@@ -1150,66 +988,9 @@ export default function AdminDashboard() {
             </div>
           </TabsContent>
 
-          {/* Activity Logs Tab */}
+          {/* AI Agent Logs Tab */}
           <TabsContent value="activity" className="space-y-6">
-            <div className="flex flex-col lg:flex-row gap-2 items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">
-                System Activity Logs
-              </h2>
-              <div className="flex gap-3">
-                <Select defaultValue="all">
-                  <SelectTrigger className="w-40 bg-white/5 border-white/20 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 text-white border-gray-700">
-                    <SelectItem value="all">All Activities</SelectItem>
-                    <SelectItem value="alerts">Alerts</SelectItem>
-                    <SelectItem value="registrations">Registrations</SelectItem>
-                    <SelectItem value="system">System Events</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export Logs
-                </Button>
-              </div>
-            </div>
-
-            <Card className="glass-morphism border border-accent/30 text-white">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {recentActivity.map((activity) => (
-                    <div
-                      key={activity.id}
-                      className={`border-l-4 pl-4 py-3 ${getSeverityColor(
-                        activity.severity
-                      )}`}
-                    >
-                      <div className="flex items-start gap-3">
-                        {getActivityIcon(activity.type)}
-                        <div className="flex-1">
-                          <p className="font-medium text-white">
-                            {activity.message}
-                          </p>
-                          <p className="text-sm text-gray-300">
-                            {activity.timestamp}
-                          </p>
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className="capitalize bg-white/5 border-white/20 text-white"
-                        >
-                          {activity.type.replace("_", " ")}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <AIAgentLogs />
           </TabsContent>
         </Tabs>
       </div>

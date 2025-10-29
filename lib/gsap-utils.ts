@@ -108,7 +108,7 @@ export const pulseGlow = (element: gsap.TweenTarget) => {
 };
 
 // Scroll-triggered animation
-export const scrollReveal = (element: gsap.TweenTarget, options = {}) => {
+export const scrollReveal = (element: gsap.DOMTarget, options = {}) => {
   return gsap.from(element, {
     y: 100,
     opacity: 0,
@@ -222,6 +222,20 @@ export const magneticButton = (button: HTMLElement) => {
 
   button.addEventListener('mousemove', handleMouseMove);
   button.addEventListener('mouseleave', handleMouseLeave);
+};
+
+// Cleanup utility - kills all ScrollTrigger instances
+export const killAllScrollTriggers = () => {
+  if (typeof window !== 'undefined') {
+    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+  }
+};
+
+// Refresh all ScrollTriggers (useful after DOM changes)
+export const refreshScrollTriggers = () => {
+  if (typeof window !== 'undefined') {
+    ScrollTrigger.refresh();
+  }
 };
 
 export { gsap, ScrollTrigger };

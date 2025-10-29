@@ -343,10 +343,10 @@ export default function DonorDashboard() {
                 </Link>
               </div>
               <div>
-                <h1 className="text-xl font-outfit font-bold text-primary">
+                <h1 className="text-xl font-outfit font-bold text-text-dark">
                   Donor Dashboard
                 </h1>
-                <p className="text-sm text-text-dark font-dm-sans">
+                <p className="text-sm text-text-dark/80 font-dm-sans">
                   Welcome back, {user?.firstName || user?.email.split("@")[0]}
                 </p>
               </div>
@@ -370,10 +370,10 @@ export default function DonorDashboard() {
       <Card className="mb-6 glass-morphism border border-accent/30 card-hover text-white">
         <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-text-dark">
               Are you currently available to donate?
             </h2>
-            <p className="text-sm text-gray-200">
+            <p className="text-sm text-text-dark/80">
               Toggle your availability to receive donation alerts.
             </p>
           </div>
@@ -412,10 +412,10 @@ export default function DonorDashboard() {
                   <Heart className="w-6 h-6 text-red-500" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-text-dark">
                     {stats.totalDonations}
                   </p>
-                  <p className="text-sm text-gray-200">Total Donations</p>
+                  <p className="text-sm text-text-dark/80">Total Donations</p>
                 </div>
               </div>
             </CardContent>
@@ -428,10 +428,10 @@ export default function DonorDashboard() {
                   <Activity className="w-6 h-6 text-green-500" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-text-dark">
                     {stats.livesSaved}
                   </p>
-                  <p className="text-sm text-gray-200">Lives Saved</p>
+                  <p className="text-sm text-text-dark/80">Lives Saved</p>
                 </div>
               </div>
             </CardContent>
@@ -444,10 +444,10 @@ export default function DonorDashboard() {
                   <Calendar className="w-6 h-6 text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">
+                  <p className="text-sm font-medium text-text-dark">
                     Next Eligible
                   </p>
-                  <p className="text-sm text-gray-200">
+                  <p className="text-sm text-text-dark/80">
                     {calculateNextEligible(user?.lastDonation)}
                   </p>
                 </div>
@@ -472,7 +472,7 @@ export default function DonorDashboard() {
                     {isAvailable ? stats.eligibilityStatus : "Unavailable"}
                   </Badge>
 
-                  <p className="text-sm text-gray-200 mt-1">Current Status</p>
+                  <p className="text-sm text-text-dark/80 mt-1">Current Status</p>
                 </div>
               </div>
             </CardContent>
@@ -482,17 +482,17 @@ export default function DonorDashboard() {
         {/* Eligibility Progress */}
         <Card className="mb-8 glass-morphism border border-accent/30 card-hover text-white">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Clock className="w-5 h-5 text-gray-200" />
+            <CardTitle className="flex items-center gap-2 text-text-dark">
+              <Clock className="w-5 h-5 text-text-dark/70" />
               Donation Eligibility
             </CardTitle>
-            <CardDescription className="text-gray-200">
+            <CardDescription className="text-text-dark/80">
               Track your eligibility for next donation (3-month waiting period)
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex justify-between text-sm text-gray-200">
+              <div className="flex justify-between text-sm text-text-dark/80">
                 <span>
                   Last Donation:{" "}
                   {user?.lastDonation && user.lastDonation !== "N/A"
@@ -512,7 +512,7 @@ export default function DonorDashboard() {
                 className="h-2 bg-white/20 [&::-webkit-progress-bar]:bg-red-500 [&::-webkit-progress-value]:bg-yellow-500"
               />
 
-              <p className="text-sm text-gray-200">
+              <p className="text-sm text-text-dark/80">
                 {user?.lastDonation && user.lastDonation !== "N/A"
                   ? getEligibilityProgress(user.lastDonation) >= 100
                     ? "You are eligible to donate!"
@@ -533,19 +533,19 @@ export default function DonorDashboard() {
           <TabsList className="grid w-full grid-cols-3 glass-morphism border border-accent/30">
             <TabsTrigger
               value="alerts"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               Active Alerts ({activeAlerts.length})
             </TabsTrigger>
             <TabsTrigger
               value="history"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               Donation History
             </TabsTrigger>
             <TabsTrigger
               value="profile"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               Profile Settings
             </TabsTrigger>
@@ -554,7 +554,7 @@ export default function DonorDashboard() {
           {/* Active Alerts Tab */}
           <TabsContent value="alerts" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-text-dark">
                 Emergency Blood Requests
               </h2>
               <Button
@@ -571,10 +571,10 @@ export default function DonorDashboard() {
               <Card className="glass-morphism border border-accent/30 card-hover text-white">
                 <CardContent className="p-12 text-center">
                   <XCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-white mb-2">
-                    You’re marked as unavailable
+                  <h3 className="text-lg font-medium text-text-dark mb-2">
+                    You're marked as unavailable
                   </h3>
-                  <p className="text-gray-200">
+                  <p className="text-text-dark/80">
                     Turn your availability back on to receive active donation
                     requests.
                   </p>
@@ -584,10 +584,10 @@ export default function DonorDashboard() {
               <Card className="glass-morphism border border-accent/30 card-hover text-white">
                 <CardContent className="p-12 text-center">
                   <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-white mb-2">
+                  <h3 className="text-lg font-medium text-text-dark mb-2">
                     No Active Alerts
                   </h3>
-                  <p className="text-gray-200">
+                  <p className="text-text-dark/80">
                     You'll be notified when hospitals in your area need your
                     blood type.
                   </p>
@@ -604,7 +604,7 @@ export default function DonorDashboard() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-white">
+                            <h3 className="text-lg font-semibold text-text-dark">
                               {alert.hospitalName}
                             </h3>
                             <Badge className={getUrgencyColor(alert.urgency)}>
@@ -612,15 +612,15 @@ export default function DonorDashboard() {
                             </Badge>
                             <Badge
                               variant="outline"
-                              className="bg-white/20 text-white border-white/30"
+                              className="bg-white/20 text-text-dark border-white/30"
                             >
                               Blood Type: {alert.bloodType}
                             </Badge>
                           </div>
-                          <p className="text-gray-200 mb-3">
+                          <p className="text-text-dark/80 mb-3">
                             {alert.description}
                           </p>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-200">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-text-dark/70">
                             <div className="flex items-center gap-1">
                               <MapPin className="w-4 h-4 text-gray-300" />
                               {alert.distance} away
@@ -731,7 +731,7 @@ export default function DonorDashboard() {
 
           {/* Donation History Tab */}
           <TabsContent value="history" className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">Donation History</h2>
+            <h2 className="text-2xl font-bold text-text-dark">Donation History</h2>
 
             <Card className="glass-morphism border border-accent/30 card-hover text-white">
               <CardContent className="p-0">
@@ -739,19 +739,19 @@ export default function DonorDashboard() {
                   <table className="w-full">
                     <thead className="bg-white/20 border-b border-white/30">
                       <tr>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Date
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Hospital
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Blood Type
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Units
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Status
                         </th>
                       </tr>
@@ -762,21 +762,21 @@ export default function DonorDashboard() {
                           key={donation.id}
                           className="border-b border-white/10 hover:bg-white/5 transition-colors duration-200"
                         >
-                          <td className="p-4 text-gray-200">
+                          <td className="p-4 text-text-dark/70">
                             {new Date(donation.date).toLocaleDateString()}
                           </td>
-                          <td className="p-4 text-gray-200">
+                          <td className="p-4 text-text-dark/70">
                             {donation.hospital}
                           </td>
                           <td className="p-4">
                             <Badge
                               variant="outline"
-                              className="bg-white/20 text-white border-white/30"
+                              className="bg-white/20 text-text-dark border-white/30"
                             >
                               {donation.bloodType}
                             </Badge>
                           </td>
-                          <td className="p-4 text-gray-200">
+                          <td className="p-4 text-text-dark/70">
                             {donation.units}
                           </td>
                           <td className="p-4">
@@ -795,35 +795,35 @@ export default function DonorDashboard() {
 
           {/* Profile Settings Tab */}
           <TabsContent value="profile" className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">Profile Settings</h2>
+            <h2 className="text-2xl font-bold text-text-dark">Profile Settings</h2>
 
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-white">
+                  <CardTitle className="text-text-dark">
                     Personal Information
                   </CardTitle>
-                  <CardDescription className="text-gray-200">
+                  <CardDescription className="text-text-dark/80">
                     Update your personal details
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-200">
+                    <label className="text-sm font-medium text-text-dark/70">
                       Full Name
                     </label>
-                    <p className="text-white">
+                    <p className="text-text-dark">
                       {user?.firstName || "John Donor"}
                     </p>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-200">
+                    <label className="text-sm font-medium text-text-dark/70">
                       Email
                     </label>
-                    <p className="text-white">{user?.email}</p>
+                    <p className="text-text-dark">{user?.email}</p>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-200">
+                    <label className="text-sm font-medium text-text-dark/70">
                       Blood Type
                     </label>
                     <Badge className="bg-red-600 text-white">
@@ -831,10 +831,10 @@ export default function DonorDashboard() {
                     </Badge>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-200">
+                    <label className="text-sm font-medium text-text-dark/70">
                       Age
                     </label>
-                    <p className="text-white">28 years</p>
+                    <p className="text-text-dark">28 years</p>
                   </div>
                   <Button
                     variant="outline"
@@ -848,20 +848,20 @@ export default function DonorDashboard() {
 
               <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-white">
+                  <CardTitle className="text-text-dark">
                     Notification Preferences
                   </CardTitle>
-                  <CardDescription className="text-gray-200">
+                  <CardDescription className="text-text-dark/80">
                     Manage how you receive alerts
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-white">
+                      <p className="font-medium text-text-dark">
                         SMS Notifications
                       </p>
-                      <p className="text-sm text-gray-200">
+                      <p className="text-sm text-text-dark/80">
                         Receive alerts via text message
                       </p>
                     </div>
@@ -869,10 +869,10 @@ export default function DonorDashboard() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-white">
+                      <p className="font-medium text-text-dark">
                         Email Notifications
                       </p>
-                      <p className="text-sm text-gray-200">
+                      <p className="text-sm text-text-dark/80">
                         Receive alerts via email
                       </p>
                     </div>
@@ -880,20 +880,20 @@ export default function DonorDashboard() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-white">
+                      <p className="font-medium text-text-dark">
                         Push Notifications
                       </p>
-                      <p className="text-sm text-gray-200">
+                      <p className="text-sm text-text-dark/80">
                         Browser push notifications
                       </p>
                     </div>
                     <Badge className="bg-green-600 text-white">Enabled</Badge>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-200">
+                    <label className="text-sm font-medium text-text-dark/70">
                       Alert Radius
                     </label>
-                    <p className="text-white">10 km</p>
+                    <p className="text-text-dark">10 km</p>
                   </div>
                   <Button
                     variant="outline"

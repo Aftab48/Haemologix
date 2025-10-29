@@ -1,0 +1,118 @@
+================================================================================
+BLOOD ALERT TO FULFILLMENT - QUICK OVERVIEW
+Haemologix AI Agent System
+================================================================================
+
+SCENARIO: Critical O- Blood Shortage at St. Mary's Hospital, Mumbai
+TIME: October 29, 2025, 2:30 AM - 3:15 AM (45 minutes total)
+
+================================================================================
+
+PHASE 1: ALERT CREATION (2:30 AM)
+├─ Hospital staff creates critical alert
+├─ Blood Type: O- | Units: 4 | Urgency: CRITICAL
+└─ Alert Status: PENDING
+
+PHASE 2: HOSPITAL AGENT (2:30 AM - 8 seconds)
+├─ Validates hospital authorization
+├─ Analyzes inventory (1 unit, critical shortage)
+├─ Calculates priority score: 100/100
+├─ Creates shortage.request.v1 event
+├─ Initializes workflow state
+└─ Triggers Donor Agent
+
+PHASE 3: DONOR AGENT (2:30 AM - 15 seconds)
+├─ Searches 847 approved donors
+├─ Filters by blood type: 62 O- donors
+├─ Medical eligibility checks: 38 eligible
+├─ Geographic filtering (20km): 14 eligible
+├─ Scores and ranks all 14 donors
+├─ Sends 14 email notifications
+└─ Triggers Inventory Agent (parallel - insufficient donors)
+
+PHASE 4: DONOR RESPONSES (2:30 AM - 2:45 AM)
+├─ 2:33 AM - Amit Sharma accepts (ETA: 15 min)
+├─ 2:35 AM - Priya Patel accepts (ETA: 18 min)
+├─ 2:36 AM - Mohammed Khan declines
+├─ 2:38 AM - Rajesh Menon accepts (ETA: 25 min)
+├─ 2:40 AM - Sunita Reddy accepts (ETA: 23 min)
+└─ Total: 4 accepted, 1 declined, 9 no response
+
+PHASE 5: COORDINATOR AGENT (2:45 AM - 15 seconds)
+├─ Retrieves 4 accepted donors
+├─ Calculates match scores for each
+├─ Selects Amit Sharma (97.4/100 score)
+├─ Sends confirmation email to Amit
+├─ Sends "not selected" emails to 3 others
+├─ Updates alert status: MATCHED
+└─ Creates fulfillment plan with backup
+
+PHASE 6: INVENTORY AGENT - BACKUP (2:30 AM - 2:50 AM)
+├─ Searches hospital network inventory
+├─ Finds 24 units across 6 facilities
+├─ Ranks by proximity, expiry, quantity
+├─ Best source: Mumbai Blood Bank (6.7km, 8 units)
+├─ Holds reservation as backup
+└─ Ready to activate if donor fails
+
+PHASE 7: DONOR ARRIVAL (2:48 AM - 3:15 AM)
+├─ 2:48 AM - Amit arrives at hospital
+├─ 2:50 AM - Pre-donation screening passed
+├─ 2:52 AM - Donation begins
+├─ 3:02 AM - Donation complete (1 unit collected)
+├─ 3:05 AM - Post-donation care
+├─ 3:15 AM - Hospital confirms in system
+└─ Coordinator updates: FULFILLED
+
+PHASE 8: POST-FULFILLMENT (3:15 AM onwards)
+├─ Blood unit processed and cross-matched
+├─ 3:30 AM - Transfusion to trauma patient
+├─ Donor record updated (6th donation)
+├─ Backup inventory released
+├─ Analytics recorded
+└─ Thank you email scheduled (8:00 AM)
+
+================================================================================
+
+RESULTS
+-------
+✓ Total Time: 45 minutes (alert → fulfillment)
+✓ Donor Response: 3 minutes 12 seconds
+✓ Donor Arrival: 18 minutes
+✓ Success Rate: 100%
+✓ Method: Direct Donor Match
+✓ Backup Ready: Yes (inventory)
+✓ Patient Outcome: Life Saved ❤️
+
+AGENTS ACTIVATED
+----------------
+✓ Hospital Agent - Shortage detection
+✓ Donor Agent - Matching & notification
+✓ Coordinator Agent - Optimal selection
+✓ Inventory Agent - Backup preparation
+
+KEY METRICS
+-----------
+• Donors Notified: 14
+• Donors Accepted: 4
+• Match Score: 97.4/100
+• Backup Sources: 6 facilities, 24 units
+• System Uptime: 100%
+• Manual Interventions: 0
+
+================================================================================
+
+ALTERNATE PATH (If No Donors)
+------------------------------
+2:50 AM - Timeout triggered (no responses)
+       ├─ Inventory Agent activates primary path
+       ├─ Reserves 4 units from Mumbai Blood Bank
+       ├─ Logistics Agent plans ambulance transport
+       └─ 3:15 AM - Blood arrives via transfer
+       
+Result: Still fulfilled, different method ✓
+
+================================================================================
+End | Generated: Oct 29, 2025 | Haemologix
+================================================================================
+

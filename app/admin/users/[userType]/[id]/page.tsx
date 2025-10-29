@@ -15,7 +15,7 @@ export default async function UserDetailPage(props: {
 
   if (!userData) {
     return (
-      <div className="p-6 text-red-500 text-center text-lg">User not found</div>
+      <div className="p-6 text-red-800 text-center text-lg">User not found</div>
     );
   }
 
@@ -23,7 +23,7 @@ export default async function UserDetailPage(props: {
 
   return (
     <GradientBackground className="p-6">
-      <h1 className="text-2xl font-outfit font-bold text-primary mb-6">
+      <h1 className="text-2xl font-outfit font-bold text-text-dark mb-6">
         {userType === "donor" ? "Donor Profile" : "Hospital Profile"}
       </h1>
       

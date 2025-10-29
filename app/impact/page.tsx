@@ -331,11 +331,11 @@ export default function ImpactAndProspects() {
           <Badge className="mb-4 hover:bg-red-100 text-[rgba(127,29,29,1)] bg-[rgba(204,165,165,1)]">
             🌟 Transforming Emergency Healthcare
           </Badge>
-          <h1 className="text-5xl md:text-6xl font-bold text-black mb-6 leading-tight">
+          <h1 className="text-5xl md:text-6xl font-bold text-text-dark mb-6 leading-tight">
             Impact & Future
-            <span className="text-red-500 block">Prospects</span>
+            <span className="text-primary block">Prospects</span>
           </h1>
-          <p className="text-xl text-white mb-8 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-text-dark mb-8 max-w-3xl mx-auto leading-relaxed">
             Discover how ect is revolutionizing emergency blood donation and our
             vision for the future of healthcare technology.
           </p>
@@ -395,10 +395,10 @@ export default function ImpactAndProspects() {
           {/* Current Impact Tab */}
           <TabsContent value="current-impact" className="space-y-8">
             <div className="text-center mt-10 mb-12">
-              <h2 className="text-4xl font-bold text-white mb-4">
+              <h2 className="text-4xl font-bold text-text-dark mb-4">
                 Measurable Impact Today
               </h2>
-              <p className="text-xl text-white max-w-2xl mx-auto">
+              <p className="text-xl text-text-dark max-w-2xl mx-auto">
                 Real numbers showing how Haemologix is already saving lives and
                 transforming emergency healthcare
               </p>
@@ -406,52 +406,52 @@ export default function ImpactAndProspects() {
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-              <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
+              <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
                 <CardContent className="p-8">
                   <Heart className="w-12 h-12 text-red-600 mx-auto mb-4" />
-                  <div className="text-4xl font-bold text-white mb-2">
+                  <div className="text-4xl font-bold text-text-dark mb-2">
                     {currentImpact.livesSaved.toLocaleString()}
                   </div>
-                  <div className="text-white">Lives Saved</div>
+                  <div className="text-text-dark">Lives Saved</div>
                   <div className="text-sm text-green-600 mt-2">
                     ↑ 23% this month
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
+              <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
                 <CardContent className="p-8">
                   <Users className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                  <div className="text-4xl font-bold text-white mb-2">
+                  <div className="text-4xl font-bold text-text-dark mb-2">
                     {currentImpact.donationsEnabled.toLocaleString()}
                   </div>
-                  <div className="text-white">Donations Enabled</div>
+                  <div className="text-text-dark">Donations Enabled</div>
                   <div className="text-sm text-green-600 mt-2">
                     ↑ 18% this month
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
+              <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
                 <CardContent className="p-8">
                   <Clock className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                  <div className="text-4xl font-bold text-white mb-2">
+                  <div className="text-4xl font-bold text-text-dark mb-2">
                     {currentImpact.averageResponseTime}m
                   </div>
-                  <div className="text-white">Avg Response Time</div>
+                  <div className="text-text-dark">Avg Response Time</div>
                   <div className="text-sm text-green-600 mt-2">
                     ↓ 75% improvement
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
+              <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
                 <CardContent className="p-8">
                   <Target className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-                  <div className="text-4xl font-bold text-white mb-2">
+                  <div className="text-4xl font-bold text-text-dark mb-2">
                     {currentImpact.successRate}%
                   </div>
-                  <div className="text-white">Success Rate</div>
+                  <div className="text-text-dark">Success Rate</div>
                   <div className="text-sm text-green-600 mt-2">
                     ↑ 12% this quarter
                   </div>
@@ -461,13 +461,13 @@ export default function ImpactAndProspects() {
 
             {/* Geographic Impact */}
             <div className="grid md:grid-cols-2 gap-8">
-              <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 ">
+              <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 ">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-text-dark">
                     <Globe className="w-5 h-5" />
                     Geographic Reach
                   </CardTitle>
-                  <CardDescription className="text-white">
+                  <CardDescription className="text-text-dark/80">
                     Platform coverage and expansion metrics
                   </CardDescription>
                 </CardHeader>
@@ -506,13 +506,13 @@ export default function ImpactAndProspects() {
                 </CardContent>
               </Card>
 
-              <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50">
+              <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-text-dark">
                     <BarChart3 className="w-5 h-5" />
                     Economic Impact
                   </CardTitle>
-                  <CardDescription className="text-white">
+                  <CardDescription className="text-text-dark/80">
                     Cost savings and efficiency improvements
                   </CardDescription>
                 </CardHeader>
@@ -554,10 +554,10 @@ export default function ImpactAndProspects() {
           {/* Social Transformation Tab */}
           <TabsContent value="social-transformation" className="space-y-8">
             <div className="text-center mt-10 mb-12">
-              <h2 className="text-4xl font-bold text-white mb-4">
+              <h2 className="text-4xl font-bold text-text-dark mb-4">
                 Transforming Emergency Healthcare
               </h2>
-              <p className="text-xl text-white max-w-2xl mx-auto">
+              <p className="text-xl text-text-dark max-w-2xl mx-auto">
                 How Haemologix is revolutionizing the way we respond to medical
                 emergencies
               </p>
@@ -567,7 +567,7 @@ export default function ImpactAndProspects() {
               {socialImpact.map((impact, index) => (
                 <Card
                   key={index}
-                  className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col"
+                  className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col"
                 >
                   <CardContent className="p-6 flex flex-col justify-between h-full">
                     {/* Header: Icon + Title */}
@@ -575,7 +575,7 @@ export default function ImpactAndProspects() {
                       <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center">
                         <impact.icon className="w-7 h-7 text-red-600" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white">
+                      <h3 className="text-xl font-semibold text-text-dark">
                         {impact.metric}
                       </h3>
                     </div>
@@ -584,17 +584,17 @@ export default function ImpactAndProspects() {
                     <div className="grid grid-cols-3 items-center text-center gap-4">
                       {/* Before */}
                       <div>
-                        <div className="text-sm text-gray-300 mb-1">
+                        <div className="text-sm text-text-dark/70 mb-1">
                           Before Haemologix
                         </div>
-                        <div className="text-lg font-semibold text-red-500">
+                        <div className="text-lg font-semibold text-red-800">
                           {impact.before}
                         </div>
                       </div>
 
                       {/* Improvement */}
                       <div className="flex flex-col items-center">
-                        <ArrowRight className="w-6 h-6 text-gray-400 mb-2" />
+                        <ArrowRight className="w-6 h-6 text-text-dark/60 mb-2" />
                         <Badge className="bg-green-100 text-green-800 text-sm px-3 py-1">
                           {impact.improvement}
                         </Badge>
@@ -602,10 +602,10 @@ export default function ImpactAndProspects() {
 
                       {/* After */}
                       <div>
-                        <div className="text-sm text-gray-300 mb-1">
+                        <div className="text-sm text-text-dark/70 mb-1">
                           With Haemologix
                         </div>
-                        <div className="text-lg font-semibold text-green-500">
+                        <div className="text-lg font-semibold text-green-700">
                           {impact.after}
                         </div>
                       </div>
@@ -616,12 +616,12 @@ export default function ImpactAndProspects() {
             </div>
 
             {/* Success Stories */}
-            <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
+            <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
               <CardHeader>
-                <CardTitle className="text-center text-2xl">
+                <CardTitle className="text-center text-2xl text-text-dark">
                   Success Stories
                 </CardTitle>
-                <CardDescription className="text-center">
+                <CardDescription className="text-center text-text-dark/80">
                   Real impact on communities and individuals
                 </CardDescription>
               </CardHeader>
@@ -629,37 +629,37 @@ export default function ImpactAndProspects() {
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="text-center">
                     <Star className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-                    <h4 className="font-semibold mb-2">
+                    <h4 className="font-semibold mb-2 text-text-dark">
                       Emergency Surgery Success
                     </h4>
-                    <p className="text-sm text-white">
+                    <p className="text-sm text-text-dark/80">
                       "Haemologix helped us find 3 O- donors in 12 minutes for a
                       critical surgery. The patient made a full recovery."
                     </p>
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-text-dark/60 mt-2">
                       - Dr. Sarah Chen, City General Hospital
                     </p>
                   </div>
                   <div className="text-center">
                     <Heart className="w-8 h-8 text-red-500 mx-auto mb-3" />
-                    <h4 className="font-semibold mb-2">Rural Area Coverage</h4>
-                    <p className="text-sm text-white">
+                    <h4 className="font-semibold mb-2 text-text-dark">Rural Area Coverage</h4>
+                    <p className="text-sm text-text-dark/80">
                       "For the first time, our rural hospital can quickly
                       mobilize donors from nearby towns. It's been
                       life-changing."
                     </p>
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-text-dark/60 mt-2">
                       - Nurse Manager, Rural Health Center
                     </p>
                   </div>
                   <div className="text-center">
                     <Users className="w-8 h-8 text-blue-500 mx-auto mb-3" />
-                    <h4 className="font-semibold mb-2">Community Engagement</h4>
-                    <p className="text-sm text-white">
+                    <h4 className="font-semibold mb-2 text-text-dark">Community Engagement</h4>
+                    <p className="text-sm text-text-dark/80">
                       "I've donated 8 times this year through Haemologix alerts.
                       It feels great to help save lives in my community."
                     </p>
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-xs text-text-dark/60 mt-2">
                       - John M., Regular Donor
                     </p>
                   </div>
@@ -671,10 +671,10 @@ export default function ImpactAndProspects() {
           {/* Technology Roadmap Tab */}
           <TabsContent value="technology-roadmap" className="space-y-8">
             <div className="text-center mt-10 mb-12">
-              <h2 className="text-4xl font-bold text-white mb-4">
+              <h2 className="text-4xl font-bold text-text-dark mb-4">
                 Technology Evolution
               </h2>
-              <p className="text-xl text-white max-w-2xl mx-auto">
+              <p className="text-xl text-text-dark max-w-2xl mx-auto">
                 Our roadmap for advancing blood donation technology and
                 expanding global impact
               </p>
@@ -685,7 +685,7 @@ export default function ImpactAndProspects() {
               {futureGoals.map((goal, index) => (
                 <Card
                   key={index}
-                  className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col"
+                  className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col"
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -694,15 +694,15 @@ export default function ImpactAndProspects() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="outline">{goal.category}</Badge>
+                          <Badge variant="outline" className="text-text-dark">{goal.category}</Badge>
                           <Badge className="bg-gray-100 text-gray-800">
                             {goal.timeline}
                           </Badge>
                         </div>
-                        <h3 className="text-lg font-semibold text-white mb-2">
+                        <h3 className="text-lg font-semibold text-text-dark mb-2">
                           {goal.title}
                         </h3>
-                        <p className="text-white mb-4">{goal.description}</p>
+                        <p className="text-text-dark/80 mb-4">{goal.description}</p>
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
                             <span>Target: {goal.target}</span>
@@ -718,13 +718,13 @@ export default function ImpactAndProspects() {
             </div>
 
             {/* Technology Roadmap Timeline */}
-            <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
+            <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-text-dark">
                   <Rocket className="w-5 h-5" />
                   Development Timeline
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-text-dark/80">
                   Planned technology releases and feature rollouts
                 </CardDescription>
               </CardHeader>
@@ -748,7 +748,7 @@ export default function ImpactAndProspects() {
                       </div>
                       <div className="flex-1 pb-8">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold">
+                          <h3 className="text-lg font-semibold text-text-dark">
                             {phase.phase}
                           </h3>
                           <Badge
@@ -762,7 +762,7 @@ export default function ImpactAndProspects() {
                           >
                             {phase.status.replace("-", " ")}
                           </Badge>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-text-dark/60">
                             {phase.period}
                           </span>
                         </div>
@@ -779,7 +779,7 @@ export default function ImpactAndProspects() {
                                     : "text-gray-400"
                                 }`}
                               />
-                              <span className="text-sm">{feature}</span>
+                              <span className="text-sm text-text-dark">{feature}</span>
                             </div>
                           ))}
                         </div>
@@ -794,10 +794,10 @@ export default function ImpactAndProspects() {
           {/* Partnerships Tab */}
           <TabsContent value="partnerships" className="space-y-8">
             <div className="text-center mt-10 mb-12">
-              <h2 className="text-4xl font-bold text-white mb-4">
+              <h2 className="text-4xl font-bold text-text-dark mb-4">
                 Strategic Partnerships
               </h2>
-              <p className="text-xl text-white max-w-2xl mx-auto">
+              <p className="text-xl text-text-dark max-w-2xl mx-auto">
                 Collaborating with leading organizations to maximize impact and
                 drive innovation
               </p>
@@ -807,7 +807,7 @@ export default function ImpactAndProspects() {
               {partnerships.map((partnership, index) => (
                 <Card
                   key={index}
-                  className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col"
+                  className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col"
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -815,7 +815,7 @@ export default function ImpactAndProspects() {
                         <partnership.icon className="w-6 h-6 text-purple-600" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-white mb-2">
+                        <h3 className="text-lg font-semibold text-text-dark mb-2">
                           {partnership.type} Partners
                         </h3>
                         <div className="flex flex-wrap gap-2 mb-4">
@@ -823,13 +823,13 @@ export default function ImpactAndProspects() {
                             <Badge
                               key={partnerIndex}
                               variant="outline"
-                              className="text-white"
+                              className="text-text-dark"
                             >
                               {partner}
                             </Badge>
                           ))}
                         </div>
-                        <p className="text-white">{partnership.impact}</p>
+                        <p className="text-text-dark/80">{partnership.impact}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -838,12 +838,12 @@ export default function ImpactAndProspects() {
             </div>
 
             {/* Partnership Benefits */}
-            <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
+            <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
               <CardHeader>
-                <CardTitle className="text-center">
+                <CardTitle className="text-center text-text-dark">
                   Partnership Benefits
                 </CardTitle>
-                <CardDescription className="text-center">
+                <CardDescription className="text-center text-text-dark/80">
                   How strategic alliances amplify our impact
                 </CardDescription>
               </CardHeader>
@@ -851,24 +851,24 @@ export default function ImpactAndProspects() {
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="text-center">
                     <Network className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-                    <h4 className="font-semibold mb-2">Global Reach</h4>
-                    <p className="text-sm text-white">
+                    <h4 className="font-semibold mb-2 text-text-dark">Global Reach</h4>
+                    <p className="text-sm text-text-dark/80">
                       Access to international networks and best practices from
                       leading healthcare organizations
                     </p>
                   </div>
                   <div className="text-center">
                     <Lightbulb className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
-                    <h4 className="font-semibold mb-2">Innovation</h4>
-                    <p className="text-sm text-white">
+                    <h4 className="font-semibold mb-2 text-text-dark">Innovation</h4>
+                    <p className="text-sm text-text-dark/80">
                       Cutting-edge technology and research capabilities through
                       academic and tech partnerships
                     </p>
                   </div>
                   <div className="text-center">
                     <Shield className="w-8 h-8 text-green-600 mx-auto mb-3" />
-                    <h4 className="font-semibold mb-2">Trust & Credibility</h4>
-                    <p className="text-sm text-white">
+                    <h4 className="font-semibold mb-2 text-text-dark">Trust & Credibility</h4>
+                    <p className="text-sm text-text-dark/80">
                       Enhanced credibility and trust through associations with
                       respected healthcare institutions
                     </p>
@@ -881,10 +881,10 @@ export default function ImpactAndProspects() {
           {/* Challenges & Solutions Tab */}
           <TabsContent value="challenges" className="space-y-8">
             <div className="text-center mt-10 mb-12">
-              <h2 className="text-4xl font-bold text-white mb-4">
+              <h2 className="text-4xl font-bold text-text-dark mb-4">
                 Challenges & Solutions
               </h2>
-              <p className="text-xl text-white max-w-2xl mx-auto">
+              <p className="text-xl text-text-dark max-w-2xl mx-auto">
                 Addressing key challenges in scaling emergency blood donation
                 technology
               </p>
@@ -894,7 +894,7 @@ export default function ImpactAndProspects() {
               {challenges.map((item, index) => (
                 <Card
                   key={index}
-                  className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col"
+                  className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col"
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
@@ -903,7 +903,7 @@ export default function ImpactAndProspects() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
-                          <h3 className="text-lg font-semibold text-white">
+                          <h3 className="text-lg font-semibold text-text-dark">
                             {item.challenge}
                           </h3>
                           <Badge
@@ -918,7 +918,7 @@ export default function ImpactAndProspects() {
                             {item.priority} Priority
                           </Badge>
                         </div>
-                        <p className="text-white mb-4">{item.description}</p>
+                        <p className="text-text-dark/80 mb-4">{item.description}</p>
                         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                           <h4 className="font-medium text-green-800 mb-2">
                             Our Solution:
@@ -933,22 +933,22 @@ export default function ImpactAndProspects() {
             </div>
 
             {/* Future Outlook */}
-            <Card className="glass-morphism border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
+            <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
               <CardHeader>
-                <CardTitle className="text-center text-2xl">
+                <CardTitle className="text-center text-2xl text-text-dark">
                   Future Outlook
                 </CardTitle>
-                <CardDescription className="text-center">
+                <CardDescription className="text-center text-text-dark/80">
                   Our vision for the next decade of emergency healthcare
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-8">
                   <div>
-                    <h4 className="font-semibold text-lg mb-4">
+                    <h4 className="font-semibold text-lg mb-4 text-text-dark">
                       2025-2027: Expansion Phase
                     </h4>
-                    <ul className="space-y-2 text-white">
+                    <ul className="space-y-2 text-text-dark">
                       <li className="flex items-center gap-2">
                         <CheckCircle className="w-4 h-4 text-green-500" />
                         Global platform covering 50+ countries
@@ -968,10 +968,10 @@ export default function ImpactAndProspects() {
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-lg mb-4">
+                    <h4 className="font-semibold text-lg mb-4 text-text-dark">
                       2028-2030: Innovation Phase
                     </h4>
-                    <ul className="space-y-2 text-white">
+                    <ul className="space-y-2 text-text-dark">
                       <li className="flex items-center gap-2">
                         <CheckCircle className="w-4 h-4 text-blue-500" />
                         IoT-enabled blood monitoring systems
@@ -997,10 +997,10 @@ export default function ImpactAndProspects() {
         </Tabs>
 
         {/* Call to Action */}
-        <Card className="bg-white/10 mt-16 backdrop-blur-sm border border-white/20 text-white transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
+        <Card className="bg-white/10 mt-16 backdrop-blur-sm border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
           <CardContent className="p-12 text-center">
-            <h2 className="text-3xl font-bold mb-4">Join the Revolution</h2>
-            <p className="text-xl mb-8 opacity-90">
+            <h2 className="text-3xl font-bold mb-4 text-text-dark">Join the Revolution</h2>
+            <p className="text-xl mb-8 text-text-dark/90">
               Be part of the future of emergency healthcare. Every donation,
               every alert response, every life saved matters.
             </p>
@@ -1019,7 +1019,7 @@ export default function ImpactAndProspects() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="text-lg px-8 py-3 text-white border-white hover:bg-white hover:text-red-600 bg-transparent"
+                  className="text-lg px-8 py-3 text-text-dark border-text-dark hover:bg-text-dark/10 bg-transparent"
                 >
                   <Building className="w-5 h-5 mr-2" />
                   Partner with Us

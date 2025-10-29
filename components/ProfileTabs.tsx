@@ -27,7 +27,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Verification Status</h3>
+              <h3 className="text-lg font-semibold text-text-dark mb-2">Verification Status</h3>
               <div className="flex gap-2 flex-wrap">
                 {userData.suspendedUntil && new Date() < new Date(userData.suspendedUntil) && (
                   <SuspensionBadge suspendedUntil={userData.suspendedUntil} />
@@ -41,7 +41,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
               </div>
             </div>
             {userData.lastVerificationAt && (
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-text-dark/70">
                 Last verified: {formatLastActivity(userData.lastVerificationAt, false)}
               </div>
             )}
@@ -58,7 +58,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
             className={`px-4 py-2 text-sm font-medium transition whitespace-nowrap ${
               activeTab === index
                 ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-500 hover:text-gray-700"
+                : "text-text-dark/70 hover:text-text-dark"
             }`}
           >
             {tab.label}
@@ -71,25 +71,25 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
         <div className="space-y-6">
           {/* Verification Overview */}
           <div className="bg-white rounded-xl shadow p-6 border">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Verification Overview</h3>
+            <h3 className="text-lg font-semibold text-text-dark mb-4">Verification Overview</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-xs text-gray-500">Verification Attempts</p>
-                <p className="text-2xl font-bold text-gray-800">
+                <p className="text-xs text-text-dark/70">Verification Attempts</p>
+                <p className="text-2xl font-bold text-text-dark">
                   {userData.verificationAttempts || 0}/3
                 </p>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-xs text-gray-500">Account Status</p>
-                <p className="text-2xl font-bold text-gray-800">
+                <p className="text-xs text-text-dark/70">Account Status</p>
+                <p className="text-2xl font-bold text-text-dark">
                   {userData.suspendedUntil && new Date() < new Date(userData.suspendedUntil) 
                     ? "Suspended" 
                     : userData.status || "PENDING"}
                 </p>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-xs text-gray-500">Last Verification</p>
-                <p className="text-sm font-semibold text-gray-800">
+                <p className="text-xs text-text-dark/70">Last Verification</p>
+                <p className="text-sm font-semibold text-text-dark">
                   {userData.lastVerificationAt 
                     ? formatLastActivity(userData.lastVerificationAt, false)
                     : "Not verified yet"}
@@ -106,11 +106,11 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
                 This account has been suspended due to 3 failed verification attempts.
               </p>
               <div className="bg-white rounded-lg p-4">
-                <p className="text-xs text-gray-500">Suspension Ends</p>
-                <p className="text-lg font-semibold text-gray-800">
+                <p className="text-xs text-text-dark/70">Suspension Ends</p>
+                <p className="text-lg font-semibold text-text-dark">
                   {new Date(userData.suspendedUntil).toLocaleString()}
                 </p>
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-sm text-text-dark/70 mt-2">
                   Days remaining: {Math.ceil((new Date(userData.suspendedUntil).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}
                 </p>
               </div>
@@ -120,10 +120,10 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
           {/* Documents Info */}
           {userType === "donor" && (
             <div className="bg-white rounded-xl shadow p-6 border">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Uploaded Documents</h3>
+              <h3 className="text-lg font-semibold text-text-dark mb-4">Uploaded Documents</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 mb-2">Blood Test Report</p>
+                  <p className="text-xs text-text-dark/70 mb-2">Blood Test Report</p>
                   {userData.bloodTestReport ? (
                     <a
                       href={userData.bloodTestReport}
@@ -134,11 +134,11 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
                       View Document
                     </a>
                   ) : (
-                    <p className="text-sm text-gray-500">Not uploaded</p>
+                    <p className="text-sm text-text-dark/70">Not uploaded</p>
                   )}
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 mb-2">ID Proof</p>
+                  <p className="text-xs text-text-dark/70 mb-2">ID Proof</p>
                   {userData.idProof ? (
                     <a
                       href={userData.idProof}
@@ -149,11 +149,11 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
                       View Document
                     </a>
                   ) : (
-                    <p className="text-sm text-gray-500">Not uploaded</p>
+                    <p className="text-sm text-text-dark/70">Not uploaded</p>
                   )}
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 mb-2">Medical Certificate</p>
+                  <p className="text-xs text-text-dark/70 mb-2">Medical Certificate</p>
                   {userData.medicalCertificate ? (
                     <a
                       href={userData.medicalCertificate}
@@ -164,7 +164,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
                       View Document
                     </a>
                   ) : (
-                    <p className="text-sm text-gray-500">Not uploaded</p>
+                    <p className="text-sm text-text-dark/70">Not uploaded</p>
                   )}
                 </div>
               </div>
@@ -173,9 +173,9 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
 
           {/* Admin Actions */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Admin Actions</h3>
+            <h3 className="text-lg font-semibold text-text-dark mb-4">Admin Actions</h3>
             <div className="space-y-3">
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-text-dark/80">
                 Review the user's information and documents carefully before making a decision.
               </p>
               <div className="flex gap-3">
@@ -196,7 +196,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
 
           {/* Note for future verification history */}
           <div className="bg-gray-50 border border-gray-200 rounded-xl shadow p-6">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-text-dark/80">
               <strong>Note:</strong> Detailed verification history (extracted fields, mismatch details, OCR confidence scores) 
               from the DonorVerification table will be displayed here once the database query is implemented.
             </p>
@@ -226,8 +226,8 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
                 key={field.key}
                 className="bg-white rounded-xl shadow p-4 border transition-shadow duration-300 hover:shadow-xl hover:shadow-blue-400/70"
               >
-                <p className="text-xs text-gray-500">{field.label}</p>
-                <p className="text-sm font-semibold text-gray-800 mt-1">
+                <p className="text-xs text-text-dark/70">{field.label}</p>
+                <p className="text-sm font-semibold text-text-dark mt-1">
                   {field.type === "boolean"
                     ? value
                       ? "✅ Yes"

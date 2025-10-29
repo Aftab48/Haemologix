@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Thank You for Your Response</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+        text-align: center;
+        padding: 25px 15px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .content {
+        padding: 25px;
+        color: #333;
+        line-height: 1.6;
+      }
+      .info-box {
+        background: #f3f4f6;
+        border-left: 4px solid #6b7280;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888;
+        padding: 15px;
+        background: #f9fafb;
+      }
+      .highlight {
+        background: #fef3c7;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>Thank You for Responding</h1>
+      </div>
+      <div class="content">
+        <p>Dear <strong>{{donorName}}</strong>,</p>
+        <p>
+          Thank you for your prompt response to the blood donation request from
+          <strong>{{hospitalName}}</strong>.
+        </p>
+
+        <div class="info-box">
+          <p style="font-size: 15px">
+            We've successfully matched other donors for this urgent request.
+            While you weren't selected this time, your willingness to help is
+            deeply appreciated and makes our network stronger.
+          </p>
+        </div>
+
+        <p style="font-size: 15px">
+          <strong>Why matching matters:</strong><br />
+          Our AI system selected the donor with the optimal combination of
+          proximity, availability, and health profile to ensure the fastest
+          possible response. This doesn't reflect negatively on you in any
+          way—it's simply about finding the best match for this specific
+          situation.
+        </p>
+
+        <p style="font-size: 16px; font-weight: bold; color: #dc2626; text-align: center; margin: 25px 0">
+          You're still a valued donor on standby! 🩸
+        </p>
+
+        <p style="font-size: 14px; color: #555">
+          We may reach out again soon if:
+        </p>
+        <ul style="color: #555">
+          <li>Another urgent request matches your blood type</li>
+          <li>The selected donor is unable to complete the donation</li>
+          <li>Multiple units are needed</li>
+        </ul>
+
+        <p style="font-size: 13px; color: #777; margin-top: 25px">
+          Your response time and willingness are tracked positively in our
+          system, increasing your priority for future requests. Thank you for
+          being part of our life-saving community!
+        </p>
+
+        <p style="text-align: center; font-size: 18px; margin: 30px 0">
+          💙 Thank you for caring! 💙
+        </p>
+      </div>
+      <div class="footer">
+        © 2025 Haemologix — Intelligent Blood Donation Network<br />
+        Every response counts. Stay ready, stay caring.
+      </div>
+    </div>
+  </body>
+</html>
+

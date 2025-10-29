@@ -24,6 +24,26 @@ export async function createAlert(input: CreateAlertInput) {
       },
     });
 
+    // 🤖 AGENTIC: Automatically trigger Hospital Agent
+    try {
+      // In production, use full URL. In dev, relative path works
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      
+      // Trigger Hospital Agent asynchronously (non-blocking)
+      fetch(`${baseUrl}/api/agents/hospital`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ alertId: alert.id }),
+      }).catch((err) => {
+        console.error("Failed to trigger Hospital Agent:", err);
+      });
+
+      console.log(`[Alert Created] Triggered Hospital Agent for alert: ${alert.id}`);
+    } catch (agentError) {
+      // Don't fail alert creation if agent trigger fails
+      console.error("Error triggering Hospital Agent:", agentError);
+    }
+
     return { success: true, alert };
   } catch (err) {
     console.error("Error creating alert:", err);

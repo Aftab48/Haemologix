@@ -34,6 +34,12 @@ const HomePage = () => {
   const router = useRouter();
 
   const handleClick = (path: string) => {
+    // Allow direct access to admin without authentication
+    if (path.includes("admin")) {
+      router.push(path);
+      return;
+    }
+    
     if (!isSignedIn) {
       router.push("/auth/sign-up");
     } else {
@@ -73,34 +79,42 @@ const HomePage = () => {
 
   // GSAP animations on mount
   useEffect(() => {
-    if (heroRef.current) {
-      gsap.from(heroRef.current, {
-        opacity: 0,
-        y: 50,
-        duration: 1,
-        ease: 'power3.out',
-      });
-    }
+    // Create a GSAP context for proper cleanup
+    const ctx = gsap.context(() => {
+      if (heroRef.current) {
+        gsap.from(heroRef.current, {
+          opacity: 0,
+          y: 50,
+          duration: 1,
+          ease: 'power3.out',
+        });
+      }
 
-    if (statsRef.current) {
-      const statCards = statsRef.current.querySelectorAll('.stat-card');
-      // Set initial visible state first
-      gsap.set(statCards, { opacity: 1, scale: 1 });
-      
-      // Then animate from the initial state
-      gsap.from(statCards, {
-        scale: 0.8,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'back.out(1.7)',
-        scrollTrigger: {
-          trigger: statsRef.current,
-          start: 'top 80%',
-          once: true, // Only animate once
-        },
-      });
-    }
+      if (statsRef.current) {
+        const statCards = statsRef.current.querySelectorAll('.stat-card');
+        // Set initial visible state first
+        gsap.set(statCards, { opacity: 1, scale: 1 });
+        
+        // Then animate from the initial state
+        gsap.from(statCards, {
+          scale: 0.8,
+          opacity: 0,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: 'back.out(1.7)',
+          scrollTrigger: {
+            trigger: statsRef.current,
+            start: 'top 80%',
+            once: true, // Only animate once
+          },
+        });
+      }
+    });
+
+    // Cleanup function to kill all animations and ScrollTriggers
+    return () => {
+      ctx.revert(); // Reverts all animations in this context
+    };
   }, []);
 
   let dashboardMessage = "";

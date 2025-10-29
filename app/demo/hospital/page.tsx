@@ -487,10 +487,10 @@ export default function HospitalDashboard() {
                 </Link>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">
+                <h1 className="text-xl font-bold text-text-dark">
                   Hospital Dashboard
                 </h1>
-                <p className="text-sm text-gray-200">{user?.name}</p>
+                <p className="text-sm text-text-dark/80">{user?.name}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -666,10 +666,10 @@ export default function HospitalDashboard() {
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-text-dark">
                     {criticalTypes}
                   </p>
-                  <p className="text-sm text-gray-200">Critical Blood Types</p>
+                  <p className="text-sm text-text-dark/80">Critical Blood Types</p>
                 </div>
               </div>
             </CardContent>
@@ -682,10 +682,10 @@ export default function HospitalDashboard() {
                   <Activity className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-text-dark">
                     {activeAlerts.length}
                   </p>
-                  <p className="text-sm text-gray-200">Active Alerts</p>
+                  <p className="text-sm text-text-dark/80">Active Alerts</p>
                 </div>
               </div>
             </CardContent>
@@ -698,10 +698,10 @@ export default function HospitalDashboard() {
                   <Users className="w-6 h-6 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-text-dark">
                     {totalResponses}
                   </p>
-                  <p className="text-sm text-gray-200">Donor Responses</p>
+                  <p className="text-sm text-text-dark/80">Donor Responses</p>
                 </div>
               </div>
             </CardContent>
@@ -714,10 +714,10 @@ export default function HospitalDashboard() {
                   <CheckCircle className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-text-dark">
                     {totalConfirmed}
                   </p>
-                  <p className="text-sm text-gray-200">Confirmed Donors</p>
+                  <p className="text-sm text-text-dark/80">Confirmed Donors</p>
                 </div>
               </div>
             </CardContent>
@@ -728,25 +728,25 @@ export default function HospitalDashboard() {
           <TabsList className="grid w-full grid-cols-4 glass-morphism border border-accent/30">
             <TabsTrigger
               value="inventory"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
+              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
             >
               Blood Inventory
             </TabsTrigger>
             <TabsTrigger
               value="alerts"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
+              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
             >
               Active Alerts ({activeAlerts.length})
             </TabsTrigger>
             <TabsTrigger
               value="responses"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
+              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
             >
               Donor Responses
             </TabsTrigger>
             <TabsTrigger
               value="analytics"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
+              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
             >
               Analytics
             </TabsTrigger>
@@ -756,7 +756,7 @@ export default function HospitalDashboard() {
 
           <TabsContent value="inventory" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-text-dark">
                 Blood Inventory Status
               </h2>
               <Button
@@ -779,13 +779,13 @@ export default function HospitalDashboard() {
                   >
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold">{item.type}</h3>
+                        <h3 className="text-lg font-semibold text-text-dark">{item.type}</h3>
                         <Badge className={getInventoryStatus(status)}>
                           {status}
                         </Badge>
                       </div>
                       <div className="space-y-3">
-                        <div className="flex justify-between text-sm text-gray-200">
+                        <div className="flex justify-between text-sm text-text-dark/80">
                           <span>Current: {item.current} units</span>
                           <span>Min: {item.minimum} units</span>
                         </div>
@@ -914,7 +914,7 @@ export default function HospitalDashboard() {
           {/* Active Alerts Tab */}
           <TabsContent value="alerts" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-text-dark">
                 Active Emergency Alerts
               </h2>
               <Button
@@ -927,13 +927,13 @@ export default function HospitalDashboard() {
             </div>
 
             {activeAlerts.length === 0 ? (
-              <Card className="glass-morphism border border-accent/30 text-white">
+              <Card className="glass-morphism border border-accent/30 text-text-dark">
                 <CardContent className="p-12 text-center">
                   <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-white mb-2">
+                  <h3 className="text-lg font-medium text-text-dark mb-2">
                     No Active Alerts
                   </h3>
-                  <p className="text-gray-200 mb-4">
+                  <p className="text-text-dark/80 mb-4">
                     Create an emergency alert when you need blood urgently.
                   </p>
                   <Button
@@ -963,7 +963,7 @@ export default function HospitalDashboard() {
                             {/* Alert Type (defaults to Blood if not set) */}
                             <Badge
                               variant="outline"
-                              className="bg-white/5 border-white/20 text-white"
+                              className="bg-white/5 border-white/20 text-text-dark"
                             >
                               {alert.type ? alert.type : "Blood"}
                             </Badge>
@@ -972,7 +972,7 @@ export default function HospitalDashboard() {
                             {(!alert.type || alert.type === "Blood") && (
                               <Badge
                                 variant="outline"
-                                className="bg-white/5 border-white/20 text-white"
+                                className="bg-white/5 border-white/20 text-text-dark"
                               >
                                 Blood Type: {alert.bloodType}
                               </Badge>
@@ -981,15 +981,15 @@ export default function HospitalDashboard() {
                             {/* Units Needed */}
                             <Badge
                               variant="outline"
-                              className="bg-white/5 border-white/20 text-white"
+                              className="bg-white/5 border-white/20 text-text-dark"
                             >
                               {alert.unitsNeeded} units needed
                             </Badge>
                           </div>
-                          <p className="text-gray-200 mb-3">
+                          <p className="text-text-dark/80 mb-3">
                             {alert.description}
                           </p>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-300">
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-text-dark/70">
                             <div className="flex items-center gap-1">
                               <Clock className="w-4 h-4 text-gray-400" />
                               {alert.createdAt}
@@ -1042,7 +1042,7 @@ export default function HospitalDashboard() {
           {/* Donor Responses Tab */}
           <TabsContent value="responses" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">Donor Responses</h2>
+              <h2 className="text-2xl font-bold text-text-dark">Donor Responses</h2>
               <div className="flex gap-3">
                 {/* Search */}
                 <div className="relative">
@@ -1051,13 +1051,13 @@ export default function HospitalDashboard() {
                     placeholder="Search users..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64 bg-white/5 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-yellow-600"
+                    className="pl-10 w-64 bg-white/5 border-white/20 text-text-dark placeholder:text-gray-400 focus-visible:ring-yellow-600"
                   />
                 </div>
 
                 {/* Type Filter */}
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-32 bg-white/5 border-white/20 text-white">
+                  <SelectTrigger className="w-32 bg-white/5 border-white/20 text-text-dark">
                     <SelectValue placeholder="Type" />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 text-white border-gray-700">
@@ -1074,7 +1074,7 @@ export default function HospitalDashboard() {
                     value={bloodTypeFilter}
                     onValueChange={setBloodTypeFilter}
                   >
-                    <SelectTrigger className="w-32 bg-white/5 border-white/20 text-white">
+                    <SelectTrigger className="w-32 bg-white/5 border-white/20 text-text-dark">
                       <SelectValue placeholder="Blood Type" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 text-white border-gray-700">
@@ -1095,7 +1095,7 @@ export default function HospitalDashboard() {
                   value={distanceFilter}
                   onValueChange={setDistanceFilter}
                 >
-                  <SelectTrigger className="w-32 bg-white/5 border-white/20 text-white">
+                  <SelectTrigger className="w-32 bg-white/5 border-white/20 text-text-dark">
                     <SelectValue placeholder="Distance" />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 text-white border-gray-700">
@@ -1116,28 +1116,28 @@ export default function HospitalDashboard() {
                   <table className="w-full">
                     <thead className="bg-white/5 border-b border-white/20">
                       <tr>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Donor
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Type
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Blood Type
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Distance
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           ETA
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Status
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Contact
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-medium text-text-dark">
                           Actions
                         </th>
                       </tr>
@@ -1150,10 +1150,10 @@ export default function HospitalDashboard() {
                         >
                           <td className="p-4">
                             <div>
-                              <p className="font-medium text-white">
+                              <p className="font-medium text-text-dark">
                                 {response.donorName}
                               </p>
-                              <p className="text-sm text-gray-300">
+                              <p className="text-sm text-text-dark/70">
                                 Last donation: {response.lastDonation}
                               </p>
                             </div>
@@ -1163,23 +1163,23 @@ export default function HospitalDashboard() {
                           <td className="p-4">
                             <Badge
                               variant="outline"
-                              className="bg-white/5 border-white/20 text-white"
+                              className="bg-white/5 border-white/20 text-text-dark"
                             >
                               {response.type}
                             </Badge>
                           </td>
 
                           {/* Blood Type (only for Blood donors) */}
-                          <td className="p-4 text-gray-200">
+                          <td className="p-4 text-text-dark/80">
                             {response.type === "Blood"
                               ? response.bloodType
                               : "-"}
                           </td>
 
-                          <td className="p-4 text-gray-200">
+                          <td className="p-4 text-text-dark/80">
                             {response.distance}
                           </td>
-                          <td className="p-4 text-gray-200">{response.eta}</td>
+                          <td className="p-4 text-text-dark/80">{response.eta}</td>
                           <td className="p-4">
                             <Badge
                               className={
@@ -1195,7 +1195,7 @@ export default function HospitalDashboard() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-white hover:bg-white/20"
+                              className="text-text-dark hover:bg-white/20"
                             >
                               <Phone className="w-4 h-4" />
                             </Button>
@@ -1220,7 +1220,7 @@ export default function HospitalDashboard() {
                                   </Button>
                                 </>
                               ) : justConfirmed === response.id ? (
-                                <p className="text-green-700 font-medium">
+                                <p className="text-green-800 font-medium">
                                   Thank you for confirming, the donor has been
                                   notified.
                                 </p>
@@ -1246,40 +1246,40 @@ export default function HospitalDashboard() {
 
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-text-dark">
               Analytics & Reports
             </h2>
 
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
+                  <CardTitle className="flex items-center gap-2 text-text-dark">
                     <BarChart3 className="w-5 h-5 text-yellow-400" />
                     Response Rate Analytics
                   </CardTitle>
-                  <CardDescription className="text-gray-200">
+                  <CardDescription className="text-text-dark/80">
                     Donor response statistics for the last 30 days
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-3 text-gray-200">
+                  <div className="space-y-3 text-text-dark/80">
                     <div className="flex justify-between">
                       <span>Total Alerts Sent</span>
-                      <span className="font-semibold text-white">24</span>
+                      <span className="font-semibold text-text-dark">24</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Average Response Rate</span>
-                      <span className="font-semibold text-white">68%</span>
+                      <span className="font-semibold text-text-dark">68%</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Average Response Time</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-text-dark">
                         12 minutes
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Successful Collections</span>
-                      <span className="font-semibold text-white">89%</span>
+                      <span className="font-semibold text-text-dark">89%</span>
                     </div>
                   </div>
                   <Progress
@@ -1289,12 +1289,12 @@ export default function HospitalDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+              <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
                 <CardHeader>
-                  <CardTitle className="text-white">
+                  <CardTitle className="text-text-dark">
                     Blood Type Demand
                   </CardTitle>
-                  <CardDescription className="text-gray-200">
+                  <CardDescription className="text-text-dark/80">
                     Most requested blood types this month
                   </CardDescription>
                 </CardHeader>
@@ -1306,9 +1306,9 @@ export default function HospitalDashboard() {
                     { type: "O-", requests: 7, percentage: 16 },
                   ].map((item) => (
                     <div key={item.type} className="space-y-2">
-                      <div className="flex justify-between text-gray-200">
+                      <div className="flex justify-between text-text-dark/80">
                         <span>{item.type}</span>
-                        <span className="text-sm text-white">
+                        <span className="text-sm text-text-dark">
                           {item.requests} requests
                         </span>
                       </div>

@@ -94,7 +94,7 @@ export default function SuspendedPage() {
   if (loading) {
     return (
       <GradientBackground className="flex items-center justify-center p-4">
-        <div className="text-white text-xl">Loading...</div>
+        <div className="text-text-dark text-xl">Loading...</div>
       </GradientBackground>
     );
   }
@@ -107,7 +107,7 @@ export default function SuspendedPage() {
         alt="Background"
       />
 
-      <Card className="w-full max-w-2xl glass-morphism border border-accent/30 text-white relative z-10">
+      <Card className="w-full max-w-2xl glass-morphism border border-accent/30 text-text-dark relative z-10">
         <CardContent className="p-12 text-center">
           <div className="mb-8">
             <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -115,18 +115,18 @@ export default function SuspendedPage() {
             </div>
           </div>
 
-          <h1 className="text-3xl font-bold text-white mb-4">
+          <h1 className="text-3xl font-bold text-text-dark mb-4">
             Account Temporarily Suspended
           </h1>
           
-          <p className="text-xl text-gray-200 mb-6">
+          <p className="text-xl text-text-dark/80 mb-6">
             Your account has been suspended due to three consecutive failed document verification attempts.
           </p>
 
           <div className="bg-white/5 rounded-lg p-6 mb-8 border border-white/10">
             <div className="flex items-center justify-center gap-3 mb-4">
               <Clock className="w-6 h-6 text-yellow-400" />
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-text-dark">
                 Time Until Reactivation
               </h3>
             </div>
@@ -134,77 +134,77 @@ export default function SuspendedPage() {
               {timeRemaining || "Calculating..."}
             </div>
             {suspendedUntil && (
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-text-dark/70">
                 Reactivates on: {suspendedUntil.toLocaleString()}
               </p>
             )}
           </div>
 
           <div className="bg-white/5 rounded-lg p-6 mb-8 border border-white/10 text-left">
-            <h3 className="text-lg font-semibold text-white mb-3">
+            <h3 className="text-lg font-semibold text-text-dark mb-3">
               Why was I suspended?
             </h3>
-            <p className="text-gray-200 mb-4">
+            <p className="text-text-dark/80 mb-4">
               Our automated document verification system detected mismatches between your entered information and your uploaded documents on three occasions.
             </p>
 
-            <h3 className="text-lg font-semibold text-white mb-3 mt-6">
+            <h3 className="text-lg font-semibold text-text-dark mb-3 mt-6">
               What happens next?
             </h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                <span className="text-gray-200">
+                <span className="text-text-dark/80">
                   Your account will automatically reactivate in 7 days
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                <span className="text-gray-200">
+                <span className="text-text-dark/80">
                   You'll receive an email notification when reactivated
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                <span className="text-gray-200">
+                <span className="text-text-dark/80">
                   You can then retry registration with correct information
                 </span>
               </div>
             </div>
 
-            <h3 className="text-lg font-semibold text-white mb-3 mt-6">
+            <h3 className="text-lg font-semibold text-text-dark mb-3 mt-6">
               Tips for successful verification:
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex items-start gap-2">
                 <span className="text-yellow-400">•</span>
-                <span className="text-gray-200">Use clear, high-quality scans of your documents</span>
+                <span className="text-text-dark/80">Use clear, high-quality scans of your documents</span>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-yellow-400">•</span>
-                <span className="text-gray-200">Ensure documents are recent (blood reports within 90 days)</span>
+                <span className="text-text-dark/80">Ensure documents are recent (blood reports within 90 days)</span>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-yellow-400">•</span>
-                <span className="text-gray-200">Double-check all information matches exactly</span>
+                <span className="text-text-dark/80">Double-check all information matches exactly</span>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-yellow-400">•</span>
-                <span className="text-gray-200">Verify name spelling is identical to your ID proof</span>
+                <span className="text-text-dark/80">Verify name spelling is identical to your ID proof</span>
               </div>
             </div>
           </div>
 
           <div className="bg-white/5 rounded-lg p-4 mb-8 border border-white/10">
-            <p className="text-sm text-gray-300 mb-2">Need help? Contact our support team:</p>
-            <p className="text-white font-semibold">support@haemologix.com</p>
+            <p className="text-sm text-text-dark/70 mb-2">Need help? Contact our support team:</p>
+            <p className="text-text-dark font-semibold">support@haemologix.com</p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/">
               <Button
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/20 px-8 py-3 bg-transparent"
+                className="border-text-dark/30 text-text-dark hover:bg-text-dark/10 px-8 py-3 bg-transparent"
               >
                 Back to Home
               </Button>
