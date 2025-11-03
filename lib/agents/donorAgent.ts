@@ -440,6 +440,16 @@ export async function processShortageEvent(eventId: string): Promise<{
           },
         });
 
+        // Also create AlertResponse for hospital dashboard tracking
+        await db.alertResponse.create({
+          data: {
+            alertId: requestId,
+            donorId: donor.id,
+            status: "PENDING", // Initially pending, will be updated when donor responds
+            confirmed: false,
+          },
+        });
+
         notifiedCount++;
       } catch (error) {
         console.error(
@@ -490,7 +500,7 @@ export async function processShortageEvent(eventId: string): Promise<{
     await db.workflowState.update({
       where: { requestId },
       data: {
-        status: "matching",
+        status: "donors_notified",
         currentStep: "donors_notified",
         metadata: {
           donors_found: rankedDonors.length,

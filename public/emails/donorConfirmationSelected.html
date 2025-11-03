@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Donation Confirmed - You've Been Selected!</title>
+    <title>Donation Confirmed - Hospital Details</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -93,13 +93,13 @@
     <div class="email-container">
       <div class="header">
         <div class="success-icon">✅</div>
-        <h1>You've Been Selected!</h1>
+        <h1>Your Donation Is Confirmed!</h1>
       </div>
       <div class="content">
         <p>Dear <strong>{{donorName}}</strong>,</p>
         <p style="font-size: 16px; font-weight: bold; color: #059669">
-          Thank you for accepting! You've been matched with
-          <strong>{{hospitalName}}</strong>.
+          Thank you for accepting! <strong>{{hospitalName}}</strong> is expecting you
+          and ready to receive your donation.
         </p>
 
         <div class="info-box">
@@ -118,11 +118,9 @@
           </ul>
         </div>
 
-        <p style="font-size: 15px">
-          <strong>Why you were selected:</strong><br />
-          You were chosen from multiple donors based on your match score
-          ({{matchScore}}/100), proximity, and reliability. The hospital is
-          expecting you!
+        <p style="font-size: 15px; text-align: center; color: #059669">
+          <strong>The hospital is ready and waiting for you!</strong><br />
+          Your generosity will save a life today.
         </p>
 
         <div class="button-container">

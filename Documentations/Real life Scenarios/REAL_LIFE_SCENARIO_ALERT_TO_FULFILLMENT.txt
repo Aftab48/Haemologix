@@ -288,6 +288,13 @@ DONOR AGENT OUTPUT:
 ✓ Inventory Agent triggered in parallel (safety net)
 ✓ Waiting for donor responses...
 
+DONOR ACCEPTANCE POLICY (NEW):
+------------------------------
+For each alert, the system will confirm up to 5 donors who accept within the window.
+- If 1–5 donors accept: all are confirmed and invited to donate.
+- If more than 5 donors accept: the top 5 by match score are confirmed; the rest receive a courteous deferral email.
+- If all confirmed donors arrive, blood is collected from all of them; any units beyond immediate need are safely processed and stored in hospital inventory.
+
 ================================================================================
 PHASE 4: DONOR RESPONSES (2:30 AM - 2:45 AM)
 ================================================================================
@@ -334,11 +341,11 @@ RESPONSE SUMMARY:
 - No response: 9 donors (timeout window ongoing)
 
 ================================================================================
-PHASE 5: COORDINATOR AGENT - DONOR MATCHING (2:45 AM)
+PHASE 5: COORDINATOR AGENT - DONOR CONFIRMATIONS (UP TO 5) (2:45 AM)
 ================================================================================
 
 AGENT: Coordinator Agent
-ACTION: Select optimal donor match from accepted responses
+ACTION: Confirm up to five donors from accepted responses and coordinate arrival
 
 TRIGGER: 
 --------
@@ -354,7 +361,7 @@ STEPS EXECUTED:
    
 2. MATCH SCORING (2:45:03)
    
-   For each accepted donor, calculate match score:
+   For each accepted donor, calculate match score (used for prioritization only if >5 accept):
    
    SCORING FORMULA:
    - ETA Score (40%): Faster arrival = Higher score
@@ -392,54 +399,50 @@ STEPS EXECUTED:
    ├─ Health: Hb 13.5 → Health Score: 92.0
    └─ MATCH SCORE: 85.7/100
 
-3. OPTIMAL MATCH SELECTION (2:45:04)
+3. MULTI-DONOR CONFIRMATION (2:45:04)
    
-   SELECTED DONOR: Amit Sharma 🏆
-   ├─ Match Score: 97.4/100
-   ├─ ETA: 15 minutes (2:48 AM)
-   ├─ Distance: 2.3 km
-   ├─ Confidence: 97.4%
-   └─ Reasoning: "Highest match score due to proximity, fast ETA, and
-                  perfect reliability history. Strong health indicators."
+   POLICY APPLIED: ≤5 accepted donors → confirm all.
    
-   REJECTED DONORS (Backup):
+   CONFIRMED DONORS (4):
+   ├─ Amit Sharma (Score: 97.4)
    ├─ Priya Patel (Score: 95.8)
    ├─ Rajesh Menon (Score: 89.3)
    └─ Sunita Reddy (Score: 85.7)
+   
+   Reasoning: "Four donors accepted within the window, which is ≤5. Confirm all to ensure rapid fulfillment and to allow storing any surplus units."
 
 4. WORKFLOW UPDATE (2:45:05)
    ✓ Update WorkflowState
    ✓ Status: MATCHING
-   ✓ Current Step: donor_matched
-   ✓ Matched Donor: Amit Sharma
-   ✓ Match Score: 97.4/100
-   ✓ Expected Arrival: 2:48 AM
+   ✓ Current Step: donors_confirmed
+   ✓ Confirmed Donors: 4 (Amit Sharma, Priya Patel, Rajesh Menon, Sunita Reddy)
+   ✓ Expected Arrivals: 2:48–3:00 AM
    
 5. FULFILLMENT PLAN CREATED (2:45:05)
-   ✓ Method: donor
-   ✓ Confidence: 97.4%
-   ✓ Estimated Completion: 2:48 AM
-   ✓ Selected Donor: Amit Sharma
-   ✓ Backup Donors: 3 alternatives available
+   ✓ Method: donors (multi-donor, up to 5)
+   ✓ Confidence: High (multi-path redundancy)
+   ✓ Estimated Completion: 2:48–3:10 AM
+   ✓ Confirmed Donors: 4
+   ✓ Overflow Policy: If >5 confirm, keep top 5, defer the rest
 
-6. CONFIRMATION EMAIL SENT (2:45:06)
+6. CONFIRMATION EMAILS SENT (2:45:06)
    
-   TO: Amit Sharma (amit.sharma@example.com)
+   TO: All confirmed donors (Amit Sharma, Priya Patel, Rajesh Menon, Sunita Reddy)
    ┌────────────────────────────────────────────────────────────┐
    │ Subject: ✓ CONFIRMED: You've Been Selected to Save Lives! │
    │                                                             │
-   │ Dear Amit,                                                  │
+   │ Dear [Donor Name],                                          │
    │                                                             │
-   │ 🎯 YOU'VE BEEN SELECTED!                                   │
+   │ 🎯 YOU'RE CONFIRMED TO DONATE                               │
    │                                                             │
-   │ Thank you for your rapid response! You have been selected  │
-   │ as the primary donor for this critical emergency.          │
+   │ Thank you for your rapid response! You are confirmed        │
+   │ to donate for this critical emergency.                      │
    │                                                             │
-   │ 🏥 Hospital: St. Mary's Medical Center                     │
-   │ 📍 Address: 123 Central Road, Mumbai 400001                │
-   │ 📞 Emergency Contact: +91-22-2345-6789                     │
-   │ ⏰ Expected Arrival: 2:48 AM                                │
-   │ 🎯 Match Score: 97.4/100                                    │
+   │ 🏥 Hospital: St. Mary's Medical Center                      │
+   │ 📍 Address: 123 Central Road, Mumbai 400001                 │
+   │ 📞 Emergency Contact: +91-22-2345-6789                      │
+   │ ⏰ Expected Arrival: [ETA Window]                           │
+   │ 🎯 Match Score: [Score]/100                                 │
    │                                                             │
    │ DIRECTIONS:                                                 │
    │ [Google Maps Link]                                          │
@@ -453,45 +456,47 @@ STEPS EXECUTED:
    │ You are saving lives tonight. Drive safely! 🚗            │
    └────────────────────────────────────────────────────────────┘
 
-7. NOT SELECTED EMAILS (2:45:07-09)
+7. OVERFLOW HANDLING (ONLY IF >5 CONFIRM) (2:45:07-09)
    
-   TO: Priya Patel, Rajesh Menon, Sunita Reddy
+   CONDITION: Triggered only when more than 5 donors accept within the window.
+   ACTION: Confirm top 5 by match score; send courteous deferral emails to the rest.
+   
+   DEFERRAL EMAIL (example):
    ┌────────────────────────────────────────────────────────────┐
-   │ Subject: Thank You for Your Response                       │
+   │ Subject: Thank You — We'll Reach Out Soon                  │
    │                                                             │
    │ Dear [Donor Name],                                          │
    │                                                             │
    │ Thank you for responding to our critical blood request!    │
+   │ We've reached our maximum of 5 confirmed donors for this   │
+   │ alert. Your willingness to help is invaluable, and we've   │
+   │ noted your availability for upcoming needs.                 │
    │                                                             │
-   │ We've selected another donor who is slightly closer to     │
-   │ the hospital. However, your willingness to help is deeply  │
-   │ appreciated and has been noted in our system.              │
+   │ We may reach out to you again soon.                        │
    │                                                             │
-   │ We may reach out to you again soon for future needs.       │
-   │                                                             │
-   │ Thank you for being a hero in our community! ❤️           │
-   │                                                             │
-   │ - St. Mary's Medical Center                                │
+   │ With gratitude,                                            │
+   │ St. Mary's Medical Center                                  │
    └────────────────────────────────────────────────────────────┘
+   
+   STATUS IN THIS SCENARIO: Not triggered (only 4 accepted).
 
 8. ALERT STATUS UPDATE (2:45:10)
    ✓ Alert status: NOTIFIED → MATCHED
-   ✓ Matched with: Amit Sharma
-   ✓ Waiting for arrival confirmation...
+   ✓ Confirmed donors: 4 (multi-donor)
+   ✓ Waiting for arrival confirmations...
 
 9. AGENT DECISION LOG (2:45:11)
    ✓ Agent: COORDINATOR
-   ✓ Event: fulfillment_decision
-   ✓ Confidence: 97.4%
+   ✓ Event: confirmations_issued
+   ✓ Confidence: 100%
    ✓ Total Accepted: 4 donors
-   ✓ Reasoning: "Selected Amit Sharma due to highest match score (97.4/100).
-                 ETA: 15 min, Distance: 2.3 km. Three backup donors available."
+   ✓ Reasoning: "≤5 accepted. Confirmed all four donors to maximize fulfillment speed and allow storing surplus units."
 
 COORDINATOR AGENT OUTPUT:
 -------------------------
-✓ Optimal donor selected: Amit Sharma
-✓ Confirmation sent to selected donor
-✓ Thank you emails sent to rejected donors
+✓ Four donors confirmed (≤5 policy)
+✓ Confirmation emails sent to all confirmed donors
+✓ No deferral emails needed (overflow not reached)
 ✓ Fallback plan: inventory_search_if_no_show
 
 ================================================================================
@@ -653,30 +658,67 @@ REAL-TIME UPDATES:
 ├─ Check-in: "Emergency Response - O- Critical"
 └─ Staff: "Thank you for coming so quickly!"
 
-2:50 AM - Quick pre-donation screening
+2:51 AM - Priya Patel arrives at hospital
+├─ Location: Emergency Blood Bank entrance
+├─ Check-in: "Emergency Response - O- Critical"
+└─ Staff: "Welcome, thank you for responding!"
+
+2:56 AM - Sunita Reddy arrives at hospital
+├─ Location: Emergency Blood Bank entrance
+├─ Check-in: "Emergency Response - O- Critical"
+└─ Staff: "We appreciate your first-time donation!"
+
+3:00 AM - Rajesh Menon arrives at hospital
+├─ Location: Emergency Blood Bank entrance
+├─ Check-in: "Emergency Response - O- Critical"
+└─ Staff: "Thank you, please proceed to screening."
+
+2:50 AM - Quick pre-donation screening (rolling, parallel stations)
 ├─ Temperature: Normal
 ├─ Blood Pressure: 120/80 (Normal)
 ├─ Pulse: 72 bpm (Normal)
 ├─ Quick health questions: All clear
 └─ Consent signed
 
-2:52 AM - Donation begins
+2:52 AM - Donation begins (Amit)
 ├─ Vein located
 ├─ Needle inserted
 ├─ Blood flowing into collection bag
 └─ Estimated time: 8-10 minutes
 
-3:02 AM - Donation completed
+2:55 AM - Donation begins (Priya)
+2:58 AM - Donation begins (Sunita)
+3:00 AM - Donation begins (Rajesh)
+
+3:02 AM - Donation completed (Amit)
 ├─ Volume collected: 450 ml (1 unit)
 ├─ Quality check: Passed
 ├─ Label: O- / Donor ID: DS12847
 └─ Expiry: 35 days
 
-3:05 AM - Post-donation care
+3:05 AM - Donation completed (Priya)
+├─ Volume collected: 450 ml (1 unit)
+├─ Quality check: Passed
+├─ Label: O- / Donor ID: DS12848
+└─ Expiry: 35 days
+
+3:08 AM - Donation completed (Sunita)
+├─ Volume collected: 450 ml (1 unit)
+├─ Quality check: Passed
+├─ Label: O- / Donor ID: DS12849
+└─ Expiry: 35 days
+
+3:10 AM - Donation completed (Rajesh)
+├─ Volume collected: 450 ml (1 unit)
+├─ Quality check: Passed
+├─ Label: O- / Donor ID: DS12850
+└─ Expiry: 35 days
+
+3:12 AM - Post-donation care (all donors)
 ├─ Bandage applied
-├─ Amit resting with juice and snacks
+├─ All resting with juice and snacks
 ├─ Monitoring for 10 minutes
-└─ Feeling good, no dizziness
+└─ All feeling good, no dizziness
 
 3:15 AM - HOSPITAL CONFIRMS ARRIVAL IN SYSTEM
 ├─ Hospital staff marks: "Donor Arrived" ✓
@@ -687,17 +729,17 @@ COORDINATOR AGENT - CONFIRMATION (3:15 AM):
 -------------------------------------------
 
 1. UPDATE DONOR RESPONSE HISTORY (3:15:01)
-   ✓ DonorResponseHistory updated
-   ✓ Donor: Amit Sharma
+   ✓ DonorResponseHistory updated for all confirmed donors
+   ✓ Donors: Amit Sharma, Priya Patel, Rajesh Menon, Sunita Reddy
    ✓ Status: accepted → confirmed: true
    ✓ No-show: false
-   ✓ Actual arrival: 2:48 AM (2 min early!)
+   ✓ Actual arrivals: 2:48–3:00 AM
 
 2. UPDATE WORKFLOW STATE (3:15:02)
    ✓ Status: MATCHING → FULFILLED
    ✓ Current Step: completed
    ✓ Fulfilled at: 2025-10-29 03:15:01
-   ✓ Fulfillment method: donor
+   ✓ Fulfillment method: donors (multi-donor)
 
 3. UPDATE ALERT STATUS (3:15:03)
    ✓ Alert status: MATCHED → FULFILLED
@@ -707,8 +749,8 @@ COORDINATOR AGENT - CONFIRMATION (3:15 AM):
    ✓ Agent: COORDINATOR
    ✓ Event: fulfillment_completed
    ✓ Confidence: 100%
-   ✓ Donor: Amit Sharma
-   ✓ Reasoning: "Donor confirmed arrival. Request fulfilled successfully."
+   ✓ Donors: Amit Sharma, Priya Patel, Rajesh Menon, Sunita Reddy
+   ✓ Reasoning: "All confirmed donors arrived and donated. Excess units processed and stored."
 
 5. RELEASE BACKUP INVENTORY (3:15:05)
    ✓ Release reservation hold on Mumbai Blood Bank units
@@ -719,10 +761,10 @@ FINAL STATUS:
 -------------
 ✅ MISSION ACCOMPLISHED
 ├─ Alert Created: 2:30 AM
-├─ Donor Arrived: 2:48 AM (18 minutes)
-├─ Donation Complete: 3:02 AM (32 minutes)
-├─ System Updated: 3:15 AM (45 minutes total)
-└─ Result: SUCCESSFUL FULFILLMENT
+├─ Donors Arrived: 2:48–3:00 AM
+├─ Donations Complete: 3:02–3:10 AM
+├─ System Updated: 3:15 AM (~45 minutes total to fulfillment start; ~40 minutes to last completion)
+└─ Result: SUCCESSFUL FULFILLMENT (multi-donor, surplus stored)
 
 ================================================================================
 PHASE 8: POST-FULFILLMENT (3:15 AM onwards)
@@ -752,12 +794,12 @@ SYSTEM UPDATES:
 ---------------
 
 1. INVENTORY UPDATE (3:32 AM)
-   ✓ St. Mary's O- inventory: 1 → 2 units (Amit's donation)
-   ✓ Then: 2 → 1 unit (used for trauma patient)
-   ✓ Net change: Still critical
+   ✓ Donations collected: 4 units (Amit, Priya, Sunita, Rajesh)
+   ✓ Immediate transfusion: 2 units for trauma surgery
+   ✓ Inventory: 1 (starting) + 4 (donated) − 2 (used) = 3 units
+   ✓ Status: Recovered to critical threshold (3 units)
    
-   NOTE: Hospital Agent will monitor and may create new alert if
-         inventory drops further below critical threshold.
+   NOTE: Any surplus units beyond immediate need are safely processed and stored (2–6°C) for future use.
 
 2. DONOR RECORD UPDATE (3:35 AM)
    ✓ Amit Sharma's profile updated
@@ -770,13 +812,13 @@ SYSTEM UPDATES:
 3. ANALYTICS & REPORTING (3:40 AM)
    
    FULFILLMENT METRICS:
-   ├─ Total Time: 45 minutes (alert → fulfillment)
-   ├─ Donor Response Time: 3 min 12 sec
-   ├─ Donor Arrival Time: 18 minutes
+   ├─ Total Time: ~45 minutes (alert → first fulfillment)
+   ├─ Donor Response Time: 3 min 12 sec (first)
+   ├─ Donor Arrival Window: 2:48–3:00 AM
    ├─ Agents Activated: 4 (Hospital, Donor, Coordinator, Inventory)
-   ├─ Emails Sent: 16 (14 requests + 1 confirmation + 1 not-selected)
+   ├─ Emails Sent: 18 (14 requests + 4 confirmations; 0 deferrals)
    ├─ Success Rate: 100%
-   └─ Method: Direct Donor (Primary Path)
+   └─ Method: Direct Donors (Primary Path, multi-donor up to 5)
 
 THANK YOU EMAIL (8:00 AM - Next Morning):
 ------------------------------------------

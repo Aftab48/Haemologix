@@ -74,6 +74,9 @@ export async function processDonorResponse(
         requestId: responseData.request_id,
         status: "notified",
       },
+      include: {
+        donor: true,
+      },
     });
 
     if (!responseHistory) {
@@ -88,6 +91,35 @@ export async function processDonorResponse(
         status: responseData.status,
       },
     });
+
+    // 1.5. Create or update AlertResponse for hospital dashboard
+    const existingAlertResponse = await db.alertResponse.findFirst({
+      where: {
+        alertId: responseData.request_id,
+        donorId: responseData.donor_id,
+      },
+    });
+
+    if (existingAlertResponse) {
+      // Update existing response
+      await db.alertResponse.update({
+        where: { id: existingAlertResponse.id },
+        data: {
+          status: responseData.status === "accepted" ? "CONFIRMED" : responseData.status === "declined" ? "DECLINED" : "PENDING",
+          confirmed: responseData.status === "accepted",
+        },
+      });
+    } else {
+      // Create new response
+      await db.alertResponse.create({
+        data: {
+          alertId: responseData.request_id,
+          donorId: responseData.donor_id,
+          status: responseData.status === "accepted" ? "CONFIRMED" : responseData.status === "declined" ? "DECLINED" : "PENDING",
+          confirmed: responseData.status === "accepted",
+        },
+      });
+    }
 
     // 2. Publish donor.response event
     await publishEvent(
@@ -120,17 +152,58 @@ export async function processDonorResponse(
       },
     });
 
-    // 4. If accepted, trigger match selection
+    // 4. If accepted, send hospital details immediately (all accepting donors can come)
     if (responseData.status === "accepted") {
       console.log(
-        `[CoordinatorAgent] Donor accepted. Triggering match selection...`
+        `[CoordinatorAgent] Donor accepted. Sending hospital details...`
       );
-      // Trigger match selection (can be done immediately or after a short delay)
-      setTimeout(() => {
-        selectOptimalMatch(responseData.request_id).catch((err) =>
-          console.error("[CoordinatorAgent] Error selecting match:", err)
+      
+      // Get alert and hospital details
+      const alert = await db.alert.findUnique({
+        where: { id: responseData.request_id },
+        include: { hospital: true },
+      });
+
+      if (alert && responseHistory.donor) {
+        const donor = responseHistory.donor;
+        const hospital = alert.hospital;
+        const directionsUrl = `https://maps.google.com/?q=${hospital.latitude},${hospital.longitude}`;
+        
+        // Calculate distance and ETA
+        const distance_km = calculateDistance(
+          parseFloat(hospital.latitude || "0"),
+          parseFloat(hospital.longitude || "0"),
+          parseFloat(donor.latitude || "0"),
+          parseFloat(donor.longitude || "0")
         );
-      }, 2000); // Wait 2 seconds for other potential acceptances
+        const eta_minutes = Math.ceil((distance_km / 40) * 60 + 25);
+
+        // Send hospital details to accepting donor
+        await sendDonorSelectedEmail({
+          to: donor.email,
+          donorName: `${donor.firstName} ${donor.lastName}`,
+          hospitalName: hospital.hospitalName,
+          hospitalAddress: hospital.hospitalAddress,
+          hospitalPhone: hospital.contactPhone,
+          etaMinutes: eta_minutes,
+          matchScore: 100, // All accepting donors are welcomed
+          directionsUrl,
+        });
+        
+        console.log(`[CoordinatorAgent] Hospital details sent to ${donor.firstName} ${donor.lastName}`);
+
+        // Update alert status to MATCHED if this is the first acceptance
+        const currentAlert = await db.alert.findUnique({
+          where: { id: responseData.request_id },
+        });
+        
+        if (currentAlert && currentAlert.status === "PENDING") {
+          await db.alert.update({
+            where: { id: responseData.request_id },
+            data: { status: "MATCHED" },
+          });
+        }
+      }
     }
 
     return {
@@ -165,9 +238,18 @@ export async function selectOptimalMatch(
       return { success: false, error: "Workflow state not found" };
     }
 
-    if (workflowState.status === "fulfilled" || workflowState.status === "matching") {
+    if (workflowState.status === "fulfilled") {
       console.log(`[CoordinatorAgent] Request already in ${workflowState.status} state`);
       return { success: false, error: "Request already processed" };
+    }
+
+    // If already matching, check if we have a selected donor
+    if (workflowState.status === "matching") {
+      const metadata = workflowState.metadata as any;
+      if (metadata?.matched_donor_id) {
+        console.log(`[CoordinatorAgent] Donor already selected: ${metadata.matched_donor_id}`);
+        return { success: false, error: "Donor already selected" };
+      }
     }
 
     // 2. Get all accepted donors

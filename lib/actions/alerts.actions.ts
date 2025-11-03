@@ -56,11 +56,14 @@ export async function getAlerts(hospitalId: string) {
   try {
     const alerts = await db.alert.findMany({
       where: { hospitalId },
-      include: { hospital: true },
+      include: { 
+        hospital: true,
+        responses: true, // Include all responses
+      },
       orderBy: { createdAt: "desc" },
     });
 
-    // transform DB → frontend-safe type
+    // transform DB → frontend-safe type with response counts
     return alerts.map((a) => ({
       id: a.id,
       bloodType: a.bloodType as BloodType,
@@ -70,7 +73,11 @@ export async function getAlerts(hospitalId: string) {
       description: a.description ?? "",
       hospitalId: a.hospitalId,
       createdAt: formatLastActivity(a.createdAt, false),
+      status: a.status,
+      autoDetected: a.autoDetected,
       hospital: a.hospital,
+      responses: a.responses.length, // Total responses count
+      confirmed: a.responses.filter(r => r.confirmed).length, // Confirmed responses count
     }));
   } catch (err) {
     console.error("[getAlerts] error:", err);
