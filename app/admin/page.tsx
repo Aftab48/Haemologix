@@ -381,14 +381,16 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="lg:flex items-center hidden gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                System Settings
-              </Button>
+              <Link href="/admin/pilot">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+                >
+                  <Building className="w-4 h-4 mr-2" />
+                  Pilot Requests
+                </Button>
+              </Link>
               {/* <Link href="/auth/login">
                 <Button
                   variant="ghost"

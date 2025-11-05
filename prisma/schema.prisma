@@ -369,3 +369,39 @@ enum WorkflowStatus {
   FAILED
   CANCELLED
 }
+
+model PilotRequest {
+  id            String   @id @default(uuid())
+  hospitalName  String
+  contactPerson String
+  email         String
+  phone         String
+  location      String
+  hasBloodBank  Boolean
+  status        String   @default("PENDING") // PENDING, CONTACTED, APPROVED, REJECTED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model PilotAnalytics {
+  id            String   @id @default(uuid())
+  eventType     String   // "qr_scan", "page_view", "form_submission"
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+  utmContent    String?
+  referrer      String?
+  userAgent     String?
+  ipAddress     String?
+  metadata      Json?    // Additional event data
+  createdAt     DateTime @default(now())
+
+  @@index([eventType])
+  @@index([utmMedium])
+  @@index([createdAt])
+  @@index([eventType, createdAt])
+}
