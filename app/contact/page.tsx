@@ -71,6 +71,12 @@ export default function ContactPage() {
                  >
                    Contact
                  </Link>
+                 <Link
+                   href="/pilot"
+                   className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
+                 >
+                   Pilot
+                 </Link>
                </nav>
                <div className="flex items-center gap-1 md:gap-3">
                  <SignedOut>

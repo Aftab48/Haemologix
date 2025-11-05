@@ -302,6 +302,12 @@ export default function ImpactAndProspects() {
             >
               Contact
             </Link>
+            <Link
+              href="/pilot"
+              className="text-text-dark font-dm-sans hover:text-secondary transition-colors"
+            >
+              Pilot
+            </Link>
           </nav>
           <div className="flex items-center gap-1 md:gap-3">
             <SignedOut>
