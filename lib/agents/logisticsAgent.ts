@@ -2,6 +2,8 @@ import { db } from "@/db";
 import { AgentType } from "@prisma/client";
 import { publishEvent } from "./eventBus";
 import { calculateDistance } from "./donorAgent";
+import { reasonAboutTransport } from "./llmReasoning";
+import { getTrafficConditions } from "./outcomeTracking";
 
 /**
  * LOGISTICS AGENT
@@ -72,7 +74,10 @@ function selectTransportMethod(
   }
 
   // Courier for medium distance and high/critical urgency
-  if (distanceKm < 50 && (urgencyLower === "high" || urgencyLower === "critical")) {
+  if (
+    distanceKm < 50 &&
+    (urgencyLower === "high" || urgencyLower === "critical")
+  ) {
     return "courier";
   }
 
@@ -122,7 +127,9 @@ function validateColdChain(
   if (etaHours > maxTransportHours) {
     return {
       compliant: false,
-      reason: `Transport time ${etaHours.toFixed(1)}h exceeds 6-hour cold chain limit`,
+      reason: `Transport time ${etaHours.toFixed(
+        1
+      )}h exceeds 6-hour cold chain limit`,
     };
   }
 
@@ -168,8 +175,12 @@ export async function planTransport(transportRequestId: string): Promise<{
     const toHospital = transportRequest.toHospital;
 
     // Calculate distance
-    if (!fromHospital.latitude || !fromHospital.longitude || 
-        !toHospital.latitude || !toHospital.longitude) {
+    if (
+      !fromHospital.latitude ||
+      !fromHospital.longitude ||
+      !toHospital.latitude ||
+      !toHospital.longitude
+    ) {
       return { success: false, error: "Hospital coordinates missing" };
     }
 
@@ -180,26 +191,114 @@ export async function planTransport(transportRequestId: string): Promise<{
       parseFloat(toHospital.longitude)
     );
 
-    // Calculate time factors
+    // Use LLM reasoning to plan transport (AGENTIC AI)
+    let method: "ambulance" | "courier" | "scheduled";
+    let adjustedEtaMinutes: number;
+    let transportReasoning: string;
+    let routeOptimization: string;
+    let coldChainCompliant: boolean | undefined;
+    let llmUsed: boolean = false;
+
+    try {
+      console.log("[LogisticsAgent] Using LLM reasoning to plan transport...");
+
+      // Try to find related alert through workflow state
+      const workflowState = await db.workflowState.findFirst({
+        where: {
+          metadata: {
+            path: ["transport_id"],
+            equals: transportRequestId,
+          },
+        },
+      });
+
+      const alert = workflowState
+        ? await db.alert.findUnique({
+            where: { id: workflowState.requestId },
+          })
+        : null;
+
+      const timeOfDay = new Date().toLocaleTimeString();
+      const trafficConditions = getTrafficConditions(timeOfDay);
+
+      const llmResult = await reasonAboutTransport({
+        fromHospital,
+        toHospital,
+        distanceKm,
+        urgency: alert?.urgency || "medium",
+        bloodType: transportRequest.bloodType,
+        units: transportRequest.units,
+        timeOfDay,
+        trafficConditions,
+      });
+
+      method = llmResult.method;
+      adjustedEtaMinutes = llmResult.etaMinutes;
+      transportReasoning = llmResult.reasoning;
+      routeOptimization = llmResult.routeOptimization;
+      coldChainCompliant = llmResult.coldChainCompliant;
+      llmUsed = true;
+
+      console.log(
+        `[LogisticsAgent] LLM selected: ${method} transport, ETA: ${adjustedEtaMinutes}min`
+      );
+    } catch (error) {
+      console.warn(
+        "[LogisticsAgent] LLM reasoning failed, using algorithmic fallback:",
+        error
+      );
+      // Fallback to algorithmic planning
+      const workflowState = await db.workflowState.findFirst({
+        where: {
+          metadata: {
+            path: ["transport_id"],
+            equals: transportRequestId,
+          },
+        },
+      });
+
+      const alert = workflowState
+        ? await db.alert.findUnique({
+            where: { id: workflowState.requestId },
+          })
+        : null;
+      const urgency = alert?.urgency || "medium";
+      method = selectTransportMethod(distanceKm, urgency);
+      const baseTimeMinutes = calculateBaseTime(distanceKm);
+      const currentHour = new Date().getHours();
+      const trafficMultiplier = getTrafficMultiplier(currentHour);
+      adjustedEtaMinutes = calculateETA(
+        baseTimeMinutes,
+        trafficMultiplier,
+        method
+      );
+      transportReasoning = `Algorithmic selection: ${method} for ${distanceKm.toFixed(
+        1
+      )}km.`;
+      routeOptimization = "Standard route";
+      coldChainCompliant = undefined; // Will use validation function
+      llmUsed = false;
+    }
+
+    // Calculate base time and traffic multiplier for logging
+    const baseTimeMinutes = calculateBaseTime(distanceKm);
     const currentHour = new Date().getHours();
     const trafficMultiplier = getTrafficMultiplier(currentHour);
-    const baseTimeMinutes = calculateBaseTime(distanceKm);
 
-    // Get urgency from related alert (simplified - assume from metadata)
-    const urgency = "high"; // This should come from the shortage request
-
-    // Select transport method
-    const method = selectTransportMethod(distanceKm, urgency);
-
-    // Calculate ETA
-    const adjustedEtaMinutes = calculateETA(baseTimeMinutes, trafficMultiplier, method);
-
-    // Validate cold chain
-    const coldChainValidation = validateColdChain(adjustedEtaMinutes, method);
+    // Validate cold chain (use LLM result if available)
+    const coldChainValidation =
+      coldChainCompliant !== undefined
+        ? {
+            compliant: coldChainCompliant,
+            reason: coldChainCompliant ? "Compliant" : "Non-compliant",
+          }
+        : validateColdChain(adjustedEtaMinutes, method);
 
     if (!coldChainValidation.compliant) {
-      console.error(`[LogisticsAgent] Cold chain validation failed: ${coldChainValidation.reason}`);
-      
+      console.error(
+        `[LogisticsAgent] Cold chain validation failed: ${coldChainValidation.reason}`
+      );
+
       // Log decision about non-compliance
       await db.agentDecision.create({
         data: {
@@ -210,7 +309,8 @@ export async function planTransport(transportRequestId: string): Promise<{
             distance_km: distanceKm,
             eta_hours: adjustedEtaMinutes / 60,
             reason: coldChainValidation.reason,
-            recommendation: "Escalate to manual coordination or find closer source",
+            recommendation:
+              "Escalate to manual coordination or find closer source",
           },
           confidence: 1.0,
         },
@@ -222,7 +322,9 @@ export async function planTransport(transportRequestId: string): Promise<{
     // Calculate pickup and delivery times
     const now = new Date();
     const pickupTime = new Date(now.getTime() + 15 * 60 * 1000); // +15 min prep
-    const estimatedDelivery = new Date(pickupTime.getTime() + adjustedEtaMinutes * 60 * 1000);
+    const estimatedDelivery = new Date(
+      pickupTime.getTime() + adjustedEtaMinutes * 60 * 1000
+    );
 
     // Create route details
     const mapUrl = `https://www.google.com/maps/dir/${fromHospital.latitude},${fromHospital.longitude}/${toHospital.latitude},${toHospital.longitude}`;
@@ -304,14 +406,28 @@ export async function planTransport(transportRequestId: string): Promise<{
           pickup_time: pickupTime.toISOString(),
           estimated_delivery: estimatedDelivery.toISOString(),
           cold_chain_compliant: true,
-          reasoning: `Selected ${method} transport for ${distanceKm.toFixed(1)}km journey. Base time: ${baseTimeMinutes.toFixed(0)}min, traffic multiplier: ${trafficMultiplier}x, final ETA: ${adjustedEtaMinutes}min. Pickup at ${pickupTime.toTimeString().slice(0, 5)}, delivery at ${estimatedDelivery.toTimeString().slice(0, 5)}.`,
+          reasoning:
+            transportReasoning ||
+            `Selected ${method} transport for ${distanceKm.toFixed(
+              1
+            )}km journey. Base time: ${baseTimeMinutes.toFixed(
+              0
+            )}min, traffic multiplier: ${trafficMultiplier}x, final ETA: ${adjustedEtaMinutes}min. Pickup at ${pickupTime
+              .toTimeString()
+              .slice(0, 5)}, delivery at ${estimatedDelivery
+              .toTimeString()
+              .slice(0, 5)}.`,
+          llm_used: llmUsed,
+          route_optimization: routeOptimization,
         },
         confidence: 0.9,
       },
     });
 
     console.log(
-      `[LogisticsAgent] Transport plan created: ${method}, ${distanceKm.toFixed(1)}km, ETA ${adjustedEtaMinutes}min`
+      `[LogisticsAgent] Transport plan created: ${method}, ${distanceKm.toFixed(
+        1
+      )}km, ETA ${adjustedEtaMinutes}min`
     );
 
     return { success: true, plan };
@@ -343,7 +459,9 @@ export async function calculateDonorETA(
   error?: string;
 }> {
   try {
-    console.log(`[LogisticsAgent] Calculating donor ETA: ${donorId} -> ${hospitalId}`);
+    console.log(
+      `[LogisticsAgent] Calculating donor ETA: ${donorId} -> ${hospitalId}`
+    );
 
     // Check if donor already accepted and has expected arrival time
     const existingResponse = await db.donorResponseHistory.findFirst({
@@ -359,10 +477,15 @@ export async function calculateDonorETA(
       // Calculate remaining time instead of recalculating from scratch
       const now = Date.now();
       const arrivalTime = existingResponse.expectedArrival.getTime();
-      const remainingMinutes = Math.max(0, Math.ceil((arrivalTime - now) / (60 * 1000)));
-      
+      const remainingMinutes = Math.max(
+        0,
+        Math.ceil((arrivalTime - now) / (60 * 1000))
+      );
+
       console.log(
-        `[LogisticsAgent] Donor already accepted. Expected arrival: ${existingResponse.expectedArrival.toTimeString().slice(0, 5)}. Remaining time: ${remainingMinutes}min`
+        `[LogisticsAgent] Donor already accepted. Expected arrival: ${existingResponse.expectedArrival
+          .toTimeString()
+          .slice(0, 5)}. Remaining time: ${remainingMinutes}min`
       );
 
       // Return remaining time with same structure
@@ -395,7 +518,12 @@ export async function calculateDonorETA(
     }
 
     // Calculate distance
-    if (!donor.latitude || !donor.longitude || !hospital.latitude || !hospital.longitude) {
+    if (
+      !donor.latitude ||
+      !donor.longitude ||
+      !hospital.latitude ||
+      !hospital.longitude
+    ) {
       return { success: false, error: "Coordinates missing" };
     }
 
@@ -444,7 +572,9 @@ export async function calculateDonorETA(
     const etaOptions = {
       walking: Math.ceil(adjustedTimes.walking + prepAndCheckin),
       bicycle: Math.ceil(adjustedTimes.bicycle + prepAndCheckin),
-      publicTransport: Math.ceil(adjustedTimes.publicTransport + prepAndCheckin),
+      publicTransport: Math.ceil(
+        adjustedTimes.publicTransport + prepAndCheckin
+      ),
       car: Math.ceil(adjustedTimes.car + prepAndCheckin),
       motorcycle: Math.ceil(adjustedTimes.motorcycle + prepAndCheckin),
     };
@@ -481,14 +611,18 @@ export async function calculateDonorETA(
           eta_options: etaOptions,
           recommended_mode: recommendedMode,
           recommended_eta: recommendedEta,
-          reasoning: `Donor is ${distanceKm.toFixed(1)}km away. Calculated ETAs for all transport modes (includes 25min prep+check-in). Traffic multiplier: ${trafficMultiplier}x. Recommended: ${recommendedMode} (${recommendedEta}min).`,
+          reasoning: `Donor is ${distanceKm.toFixed(
+            1
+          )}km away. Calculated ETAs for all transport modes (includes 25min prep+check-in). Traffic multiplier: ${trafficMultiplier}x. Recommended: ${recommendedMode} (${recommendedEta}min).`,
         },
         confidence: 0.85,
       },
     });
 
     console.log(
-      `[LogisticsAgent] Donor ETA calculated for ${distanceKm.toFixed(1)}km. Recommended: ${recommendedMode} (${recommendedEta}min)`
+      `[LogisticsAgent] Donor ETA calculated for ${distanceKm.toFixed(
+        1
+      )}km. Recommended: ${recommendedMode} (${recommendedEta}min)`
     );
 
     return {
@@ -512,7 +646,9 @@ export async function updateTransportStatus(
   status: "pending" | "picked_up" | "in_transit" | "delivered" | "cancelled"
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    console.log(`[LogisticsAgent] Updating transport status: ${transportId} -> ${status}`);
+    console.log(
+      `[LogisticsAgent] Updating transport status: ${transportId} -> ${status}`
+    );
 
     await db.transportRequest.update({
       where: { id: transportId },
@@ -543,4 +679,3 @@ export async function updateTransportStatus(
     return { success: false, error: String(error) };
   }
 }
-

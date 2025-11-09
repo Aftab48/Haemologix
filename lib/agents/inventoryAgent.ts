@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { AgentType } from "@prisma/client";
 import { publishEvent } from "./eventBus";
 import { calculateDistance } from "./donorAgent";
+import { reasonAboutInventorySelection } from "./llmReasoning";
 
 /**
  * INVENTORY AGENT
@@ -29,6 +30,7 @@ export type RankedInventoryUnit = {
 
 /**
  * Blood type compatibility matrix (same as Donor Agent)
+ * Maps donor blood type → list of recipient types they can donate to
  */
 const BLOOD_TYPE_COMPATIBILITY: Record<string, string[]> = {
   "O-": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
@@ -40,6 +42,25 @@ const BLOOD_TYPE_COMPATIBILITY: Record<string, string[]> = {
   "AB-": ["AB-", "AB+"],
   "AB+": ["AB+"],
 };
+
+/**
+ * Get all donor blood types that can donate to a given recipient type
+ * This is the inverse of BLOOD_TYPE_COMPATIBILITY
+ */
+function getCompatibleDonorTypes(requiredBloodType: string): string[] {
+  const compatibleDonors: string[] = [];
+
+  // Check each donor type to see if it can donate to the required type
+  for (const [donorType, recipientTypes] of Object.entries(
+    BLOOD_TYPE_COMPATIBILITY
+  )) {
+    if (recipientTypes.includes(requiredBloodType)) {
+      compatibleDonors.push(donorType);
+    }
+  }
+
+  return compatibleDonors;
+}
 
 /**
  * Check if unit's blood type is compatible with required type
@@ -144,15 +165,25 @@ export async function findAndRankInventoryUnits(
   requestingHospitalLat: number,
   requestingHospitalLng: number
 ): Promise<RankedInventoryUnit[]> {
+  // Get all compatible donor blood types (e.g., for A+ → [O-, O+, A-, A+])
+  const compatibleDonorTypes = getCompatibleDonorTypes(bloodType);
+
   console.log(
-    `[InventoryAgent] Searching for ${bloodType} units across hospital network and blood banks...`
+    `[InventoryAgent] Searching for ${bloodType} compatible units across hospital network and blood banks...`
+  );
+  console.log(
+    `[InventoryAgent] Compatible donor types: ${compatibleDonorTypes.join(
+      ", "
+    )}`
   );
 
-  // Find all inventory units matching blood type (excluding requesting facility)
+  // Find all inventory units with compatible blood types (excluding requesting facility)
   // This searches both hospitals and blood banks (stored in HospitalRegistration)
   const inventoryUnits = await db.inventoryUnit.findMany({
     where: {
-      bloodType: bloodType,
+      bloodType: {
+        in: compatibleDonorTypes,
+      },
       units: { gt: 0 },
       reserved: false,
       expiryDate: { gt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) }, // > 7 days
@@ -164,7 +195,11 @@ export async function findAndRankInventoryUnits(
   });
 
   console.log(
-    `[InventoryAgent] Found ${inventoryUnits.length} available units across hospitals and blood banks`
+    `[InventoryAgent] Found ${
+      inventoryUnits.length
+    } available units with compatible blood types (${compatibleDonorTypes.join(
+      ", "
+    )}) across hospitals and blood banks`
   );
 
   if (inventoryUnits.length === 0) {
@@ -176,8 +211,12 @@ export async function findAndRankInventoryUnits(
   for (const unit of inventoryUnits) {
     const hospital = unit.hospital;
 
-    // Check blood type compatibility
+    // Blood type compatibility already filtered at database level
+    // Double-check for safety (should always pass now)
     if (!isBloodTypeCompatible(unit.bloodType, bloodType)) {
+      console.warn(
+        `[InventoryAgent] Unexpected: Unit ${unit.id} with blood type ${unit.bloodType} passed DB filter but is incompatible with ${bloodType}`
+      );
       continue;
     }
 
@@ -256,7 +295,12 @@ export async function processInventorySearch(requestId: string): Promise<{
     });
 
     if (!shortageEvent) {
-      return { success: false, unitsFound: 0, reserved: false, error: "Shortage event not found" };
+      return {
+        success: false,
+        unitsFound: 0,
+        reserved: false,
+        error: "Shortage event not found",
+      };
     }
 
     const payload = shortageEvent.payload as any;
@@ -297,8 +341,53 @@ export async function processInventorySearch(requestId: string): Promise<{
       return { success: true, unitsFound: 0, reserved: false };
     }
 
-    // 3. Select best unit(s) - prefer single source if possible
-    const topUnit = rankedUnits[0];
+    // 3. Use LLM reasoning to select optimal source (AGENTIC AI)
+    let topUnit: RankedInventoryUnit;
+    let selectionReasoning: string;
+    let transportStrategy: string;
+    let confidence: number;
+    let llmUsed: boolean = false;
+
+    try {
+      console.log(
+        "[InventoryAgent] Using LLM reasoning to select optimal inventory source..."
+      );
+
+      const alert = await db.alert.findUnique({
+        where: { id: requestId },
+        include: { hospital: true },
+      });
+
+      const llmResult = await reasonAboutInventorySelection(rankedUnits, {
+        bloodType,
+        unitsNeeded,
+        urgency: alert?.urgency || "medium",
+        requestingHospital: alert?.hospital,
+      });
+
+      topUnit = llmResult.selectedSource;
+      selectionReasoning = llmResult.reasoning;
+      transportStrategy = llmResult.transportStrategy;
+      confidence = llmResult.confidence;
+      llmUsed = true;
+
+      console.log(
+        `[InventoryAgent] LLM selected: ${
+          topUnit.hospital_name
+        } (confidence: ${(confidence * 100).toFixed(1)}%)`
+      );
+    } catch (error) {
+      console.warn(
+        "[InventoryAgent] LLM reasoning failed, using algorithmic fallback:",
+        error
+      );
+      // Fallback to algorithmic selection
+      topUnit = rankedUnits[0];
+      selectionReasoning = `Algorithmic selection: Highest score (${topUnit.scores.final}/100).`;
+      transportStrategy = topUnit.distance_km < 15 ? "Ambulance" : "Courier";
+      confidence = topUnit.scores.final / 100;
+      llmUsed = false;
+    }
 
     // Check if top unit has enough
     const unitsToReserve = Math.min(topUnit.units_available, unitsNeeded);
@@ -347,24 +436,35 @@ export async function processInventorySearch(requestId: string): Promise<{
       },
     });
 
-    console.log(`[InventoryAgent] Created transport request: ${transportRequest.id}`);
+    console.log(
+      `[InventoryAgent] Created transport request: ${transportRequest.id}`
+    );
 
     // 7. Trigger Logistics Agent to plan transport
-    console.log(`[InventoryAgent] Triggering Logistics Agent for transport planning...`);
+    console.log(
+      `[InventoryAgent] Triggering Logistics Agent for transport planning...`
+    );
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const baseUrl =
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
       fetch(`${baseUrl}/api/agents/logistics`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          action: 'plan_transport',
-          transport_id: transportRequest.id
-        })
-      }).catch(err => {
-        console.error("[InventoryAgent] Failed to trigger Logistics Agent:", err);
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "plan_transport",
+          transport_id: transportRequest.id,
+        }),
+      }).catch((err) => {
+        console.error(
+          "[InventoryAgent] Failed to trigger Logistics Agent:",
+          err
+        );
       });
     } catch (error) {
-      console.error("[InventoryAgent] Error triggering Logistics Agent:", error);
+      console.error(
+        "[InventoryAgent] Error triggering Logistics Agent:",
+        error
+      );
     }
 
     // 8. Log agent decision
@@ -381,7 +481,17 @@ export async function processInventorySearch(requestId: string): Promise<{
           distance_km: topUnit.distance_km,
           expiry_date: topUnit.expiry_date,
           transport_method: transportRequest.transportMethod,
-          reasoning: `Selected ${topUnit.hospital_name} based on optimal scoring. Score: ${topUnit.scores.final}/100. Distance: ${topUnit.distance_km.toFixed(1)}km. ${unitsToReserve} units reserved.`,
+          reasoning:
+            selectionReasoning ||
+            `Selected ${
+              topUnit.hospital_name
+            } based on optimal scoring. Score: ${
+              topUnit.scores.final
+            }/100. Distance: ${topUnit.distance_km.toFixed(
+              1
+            )}km. ${unitsToReserve} units reserved.`,
+          llm_used: llmUsed,
+          transport_strategy: transportStrategy,
           top_alternatives: rankedUnits.slice(0, 3).map((u) => ({
             rank: u.rank,
             hospital: u.hospital_name,
@@ -400,10 +510,9 @@ export async function processInventorySearch(requestId: string): Promise<{
         status: "fulfillment_in_progress",
         currentStep: "inventory_matched",
         metadata: {
-          ...(
-            (await db.workflowState.findUnique({ where: { requestId } }))
-              ?.metadata as object
-          ),
+          ...((
+            await db.workflowState.findUnique({ where: { requestId } })
+          )?.metadata as object),
           inventory_source: topUnit.hospital_name,
           units_reserved: unitsToReserve,
           transport_id: transportRequest.id,
@@ -427,7 +536,12 @@ export async function processInventorySearch(requestId: string): Promise<{
     return { success: true, unitsFound: rankedUnits.length, reserved: true };
   } catch (error) {
     console.error("[InventoryAgent] Error processing inventory search:", error);
-    return { success: false, unitsFound: 0, reserved: false, error: String(error) };
+    return {
+      success: false,
+      unitsFound: 0,
+      reserved: false,
+      error: String(error),
+    };
   }
 }
 
@@ -446,6 +560,7 @@ export async function releaseReservedUnits(requestId: string): Promise<void> {
     },
   });
 
-  console.log(`[InventoryAgent] Released reserved units for request: ${requestId}`);
+  console.log(
+    `[InventoryAgent] Released reserved units for request: ${requestId}`
+  );
 }
-

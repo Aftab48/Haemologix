@@ -15,36 +15,36 @@ export async function POST(req: NextRequest) {
 
     // QR Code 1: Hero Section
     const heroQrUrl = `${baseUrl}?utm_source=qr_code&utm_medium=qr_code&utm_campaign=pilot_program&utm_content=hero_section`;
-    const heroQrPath = path.join(publicDir, "qr-code-hero.png");
+    const heroQrPath = path.join(publicDir, "qr-code-black.png");
     
     await QRCode.toFile(heroQrPath, heroQrUrl, {
       width: 512,
       margin: 2,
       color: {
-        dark: "#9B2226", // Primary color (ruby)
+        dark: "#010101",
         light: "#FFFFFF",
       },
     });
 
-    // QR Code 2: Footer Section
-    const footerQrUrl = `${baseUrl}?utm_source=qr_code&utm_medium=qr_code&utm_campaign=pilot_program&utm_content=footer_section`;
-    const footerQrPath = path.join(publicDir, "qr-code-footer.png");
+    // // QR Code 2: Footer Section
+    // const footerQrUrl = `${baseUrl}?utm_source=qr_code&utm_medium=qr_code&utm_campaign=pilot_program&utm_content=footer_section`;
+    // const footerQrPath = path.join(publicDir, "qr-code-footer.png");
     
-    await QRCode.toFile(footerQrPath, footerQrUrl, {
-      width: 512,
-      margin: 2,
-      color: {
-        dark: "#9B2226", // Primary color (ruby)
-        light: "#FFFFFF",
-      },
-    });
+    // await QRCode.toFile(footerQrPath, footerQrUrl, {
+    //   width: 512,
+    //   margin: 2,
+    //   color: {
+    //     dark: "#9B2226", // Primary color (ruby)
+    //     light: "#FFFFFF",
+    //   },
+    // });
 
     return NextResponse.json({
       success: true,
       message: "QR codes generated successfully",
       files: {
         hero: "/qr-code-hero.png",
-        footer: "/qr-code-footer.png",
+        // footer: "/qr-code-footer.png",
       },
     });
   } catch (error) {

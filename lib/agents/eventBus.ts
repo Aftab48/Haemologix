@@ -14,7 +14,10 @@ export type AgentEventType =
   | "inventory.match.v1"
   | "logistics.plan.v1"
   | "logistics.status.v1"
-  | "compliance.check.v1";
+  | "compliance.check.v1"
+  | "verification.document.failed.v1"
+  | "verification.eligibility.passed.v1"
+  | "verification.eligibility.failed.v1";
 
 export interface EventPayload {
   [key: string]: any;
@@ -78,10 +81,10 @@ export async function publishEvent(
     });
 
     console.log(`[EventBus] Published ${type} by ${agentType}:`, event.id);
-    
+
     // TODO: If Redis is configured, also publish to Redis channel
     // await publishToRedis(`events:${agentType}`, payload);
-    
+
     return event.id;
   } catch (error) {
     console.error(`[EventBus] Error publishing event:`, error);
@@ -169,4 +172,3 @@ export async function getRecentEvents(limit: number = 50): Promise<any[]> {
     return [];
   }
 }
-

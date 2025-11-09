@@ -5,10 +5,8 @@
 
 import { db } from "@/db";
 import { AgentType, UrgencyLevel } from "@prisma/client";
-import {
-  publishEvent,
-  ShortageRequestEvent,
-} from "./eventBus";
+import { publishEvent, ShortageRequestEvent } from "./eventBus";
+import { reasonAboutUrgency } from "./llmReasoning";
 
 export interface InventoryCheck {
   hospitalId: string;
@@ -150,7 +148,9 @@ export function detectShortage(
       urgency: "low",
       unitsNeeded: 0,
       priorityScore: 0,
-      reasoning: `Stock sufficient: ${currentUnits} units, ${daysRemaining.toFixed(1)} days remaining`,
+      reasoning: `Stock sufficient: ${currentUnits} units, ${daysRemaining.toFixed(
+        1
+      )} days remaining`,
     };
   }
 
@@ -160,7 +160,11 @@ export function detectShortage(
   const unitsNeeded = Math.max(1, safeSupplyUnits - currentUnits);
 
   const urgency = calculateUrgency(bloodType, daysRemaining, currentUnits);
-  const priorityScore = calculatePriorityScore(urgency, bloodType, daysRemaining);
+  const priorityScore = calculatePriorityScore(
+    urgency,
+    bloodType,
+    daysRemaining
+  );
 
   return {
     detected: true,
@@ -220,14 +224,55 @@ export async function processAlert(alertId: string): Promise<{
       daysRemaining,
     });
 
-    // Determine urgency (use alert urgency or detected urgency)
-    const urgency = alert.urgency.toLowerCase() as any;
-    const priorityScore = calculatePriorityScore(
-      urgency,
-      alert.bloodType,
-      daysRemaining
-    );
-    const searchRadius = parseInt(alert.searchRadius) || calculateSearchRadius(urgency);
+    // Use LLM reasoning to assess urgency (AGENTIC AI)
+    let urgency: "low" | "medium" | "high" | "critical";
+    let priorityScore: number;
+    let urgencyReasoning: string;
+    let recommendedAction: string;
+    let llmUsed: boolean = false;
+
+    try {
+      console.log("[HospitalAgent] Using LLM reasoning to assess urgency...");
+      const llmUrgency = await reasonAboutUrgency({
+        bloodType: alert.bloodType,
+        currentUnits,
+        daysRemaining,
+        dailyUsage,
+        hospitalContext: {
+          hospitalName: alert.hospital.hospitalName,
+          operationalStatus: alert.hospital.operationalStatus,
+        },
+        timeOfDay: new Date().toLocaleTimeString(),
+      });
+
+      urgency = llmUrgency.urgency;
+      priorityScore = llmUrgency.priorityScore;
+      urgencyReasoning = llmUrgency.reasoning;
+      recommendedAction = llmUrgency.recommendedAction;
+      llmUsed = true;
+
+      console.log(
+        `[HospitalAgent] LLM assessed urgency: ${urgency} (priority: ${priorityScore})`
+      );
+    } catch (error) {
+      console.warn(
+        "[HospitalAgent] LLM reasoning failed, using algorithmic fallback:",
+        error
+      );
+      // Fallback to algorithmic assessment
+      urgency = alert.urgency.toLowerCase() as any;
+      priorityScore = calculatePriorityScore(
+        urgency,
+        alert.bloodType,
+        daysRemaining
+      );
+      urgencyReasoning = `Algorithmic assessment: ${urgency} urgency based on stock levels.`;
+      recommendedAction = "Standard donor notification process";
+      llmUsed = false;
+    }
+
+    const searchRadius =
+      parseInt(alert.searchRadius) || calculateSearchRadius(urgency);
 
     // Create shortage.request event
     const eventPayload: ShortageRequestEvent = {
@@ -273,7 +318,11 @@ export async function processAlert(alertId: string): Promise<{
           priority_score: priorityScore,
           search_radius_km: searchRadius,
           units_needed: eventPayload.units_needed,
-          reasoning: `Hospital ${alert.hospital.hospitalName} requires ${eventPayload.units_needed} units of ${alert.bloodType}. Urgency: ${urgency}. Search radius: ${searchRadius}km.`,
+          reasoning:
+            urgencyReasoning ||
+            `Hospital ${alert.hospital.hospitalName} requires ${eventPayload.units_needed} units of ${alert.bloodType}. Urgency: ${urgency}. Search radius: ${searchRadius}km.`,
+          llm_used: llmUsed,
+          recommended_action: recommendedAction,
         },
         confidence: 1.0,
       },
@@ -314,7 +363,9 @@ export async function checkInventoryAndAutoAlert(
   bloodType: string
 ): Promise<{ alertCreated: boolean; alertId?: string; reason?: string }> {
   try {
-    console.log(`[HospitalAgent] Checking inventory: ${hospitalId} - ${bloodType}`);
+    console.log(
+      `[HospitalAgent] Checking inventory: ${hospitalId} - ${bloodType}`
+    );
 
     // Get threshold for this blood type
     const threshold = await db.inventoryThreshold.findUnique({
@@ -327,7 +378,9 @@ export async function checkInventoryAndAutoAlert(
     });
 
     if (!threshold) {
-      console.log(`[HospitalAgent] No threshold set for ${bloodType} at this hospital`);
+      console.log(
+        `[HospitalAgent] No threshold set for ${bloodType} at this hospital`
+      );
       return { alertCreated: false, reason: "No threshold configured" };
     }
 
@@ -340,14 +393,22 @@ export async function checkInventoryAndAutoAlert(
       },
     });
 
-    const currentTotal = inventoryUnits.reduce((sum, unit) => sum + unit.units, 0);
+    const currentTotal = inventoryUnits.reduce(
+      (sum, unit) => sum + unit.units,
+      0
+    );
     const criticalThreshold = threshold.minimumRequired * 0.4;
 
-    console.log(`[HospitalAgent] Current: ${currentTotal}, Critical threshold: ${criticalThreshold}`);
+    console.log(
+      `[HospitalAgent] Current: ${currentTotal}, Critical threshold: ${criticalThreshold}`
+    );
 
     // Not critical yet
     if (currentTotal >= criticalThreshold) {
-      return { alertCreated: false, reason: "Inventory above critical threshold" };
+      return {
+        alertCreated: false,
+        reason: "Inventory above critical threshold",
+      };
     }
 
     // Check if alert already exists for this blood type (unfulfilled)
@@ -401,7 +462,9 @@ export async function checkInventoryAndAutoAlert(
         bloodType,
         urgency,
         unitsNeeded: String(unitsNeeded),
-        searchRadius: String(calculateSearchRadius(urgency.toLowerCase() as any)),
+        searchRadius: String(
+          calculateSearchRadius(urgency.toLowerCase() as any)
+        ),
         description: `Auto-detected critical shortage: ${currentTotal} units remaining (critical threshold: ${criticalThreshold})`,
         autoDetected: true, // Mark as auto-detected
         hospitalId: hospital.id,
@@ -420,7 +483,10 @@ export async function checkInventoryAndAutoAlert(
       reason: `Critical shortage detected: ${currentTotal} < ${criticalThreshold}`,
     };
   } catch (error) {
-    console.error("[HospitalAgent] Error in checkInventoryAndAutoAlert:", error);
+    console.error(
+      "[HospitalAgent] Error in checkInventoryAndAutoAlert:",
+      error
+    );
     return { alertCreated: false, reason: String(error) };
   }
 }
@@ -467,4 +533,3 @@ export async function monitorAllHospitalsInventory(): Promise<{
     return { hospitalsChecked: 0, alertsCreated: 0 };
   }
 }
-

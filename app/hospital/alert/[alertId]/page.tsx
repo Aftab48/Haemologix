@@ -20,21 +20,30 @@ import {
   Package,
   Truck,
   Brain,
-  TrendingUp,
-  MapPin,
-  Phone,
   RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import GradientBackground from "@/components/GradientBackground";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { XCircle } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import LLMReasoningCard from "@/components/LLMReasoningCard";
 
 export default function AlertDetailsPage() {
   const params = useParams();
@@ -52,7 +61,8 @@ export default function AlertDetailsPage() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [showCloseAlertModal, setShowCloseAlertModal] = useState(false);
   const [selectedDonors, setSelectedDonors] = useState<string[]>([]);
-  const [fulfillmentSource, setFulfillmentSource] = useState<string>("registered_donors");
+  const [fulfillmentSource, setFulfillmentSource] =
+    useState<string>("registered_donors");
   const [externalDonorEmail, setExternalDonorEmail] = useState("");
   const [otherDetails, setOtherDetails] = useState("");
   const [isClosingAlert, setIsClosingAlert] = useState(false);
@@ -62,7 +72,7 @@ export default function AlertDetailsPage() {
     try {
       const response = await fetch(`/api/alerts/${alertId}/details`);
       const data = await response.json();
-      
+
       if (data.success) {
         setAlertData(data.alert);
         setWorkflowState(data.workflowState);
@@ -164,15 +174,13 @@ export default function AlertDetailsPage() {
     } else if (seconds < 3600) {
       const minutes = Math.floor(seconds / 60);
       const remainingSeconds = seconds % 60;
-      return remainingSeconds > 0 
-        ? `${minutes}m ${remainingSeconds}s` 
+      return remainingSeconds > 0
+        ? `${minutes}m ${remainingSeconds}s`
         : `${minutes}m`;
     } else {
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
-      return minutes > 0 
-        ? `${hours}h ${minutes}m` 
-        : `${hours}h`;
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
     }
   };
 
@@ -196,17 +204,20 @@ export default function AlertDetailsPage() {
 
   const formatEventType = (eventType: string): string => {
     return eventType
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
 
   const handleCloseAlert = async () => {
-    if (fulfillmentSource === "registered_donors" && selectedDonors.length === 0) {
+    if (
+      fulfillmentSource === "registered_donors" &&
+      selectedDonors.length === 0
+    ) {
       alert("Please select at least one donor who donated");
       return;
     }
-    
+
     if (fulfillmentSource === "external_donor" && !externalDonorEmail) {
       alert("Please provide the external donor's email");
       return;
@@ -221,7 +232,10 @@ export default function AlertDetailsPage() {
 
     try {
       // If registered donors were selected, confirm their arrivals
-      if (fulfillmentSource === "registered_donors" && selectedDonors.length > 0) {
+      if (
+        fulfillmentSource === "registered_donors" &&
+        selectedDonors.length > 0
+      ) {
         for (const donorId of selectedDonors) {
           await fetch("/api/agents/coordinator", {
             method: "POST",
@@ -239,7 +253,8 @@ export default function AlertDetailsPage() {
       const fulfillmentData = {
         source: fulfillmentSource,
         donors: selectedDonors,
-        externalDonorEmail: fulfillmentSource === "external_donor" ? externalDonorEmail : null,
+        externalDonorEmail:
+          fulfillmentSource === "external_donor" ? externalDonorEmail : null,
         otherDetails: fulfillmentSource === "other" ? otherDetails : null,
       };
 
@@ -267,12 +282,17 @@ export default function AlertDetailsPage() {
     }
   };
 
-  const extractResponseTime = (text: string): { formatted: string; cleanText: string } | null => {
+  const extractResponseTime = (
+    text: string
+  ): { formatted: string; cleanText: string } | null => {
     const match = text.match(/Response time:\s*(\d+)s/i);
     if (match) {
       const seconds = parseInt(match[1]);
       const formatted = formatDuration(seconds);
-      const cleanText = text.replace(/Response time:\s*\d+s/i, `Response time: ${formatted}`);
+      const cleanText = text.replace(
+        /Response time:\s*\d+s/i,
+        `Response time: ${formatted}`
+      );
       return { formatted, cleanText };
     }
     return null;
@@ -331,7 +351,8 @@ export default function AlertDetailsPage() {
                   Alert Details
                 </h1>
                 <p className="text-sm text-text-dark/80">
-                  Alert ID: {alertId.substring(0, 8)}... • Auto-refreshing every 5s
+                  Alert ID: {alertId.substring(0, 8)}... • Auto-refreshing every
+                  5s
                 </p>
                 <p className="text-xs text-text-dark/60">
                   Last updated: {lastUpdated.toLocaleTimeString()}
@@ -344,8 +365,10 @@ export default function AlertDetailsPage() {
                 disabled={refreshing}
                 className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-md transition-all flex items-center gap-2 disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                {refreshing ? 'Refreshing...' : 'Refresh'}
+                <RefreshCw
+                  className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
+                />
+                {refreshing ? "Refreshing..." : "Refresh"}
               </button>
             </div>
           </div>
@@ -356,24 +379,37 @@ export default function AlertDetailsPage() {
       <Dialog open={showCloseAlertModal} onOpenChange={setShowCloseAlertModal}>
         <DialogContent className="max-w-2xl bg-white/10 backdrop-blur-lg border border-white/20 text-white max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-white text-xl">Close Alert & Record Fulfillment</DialogTitle>
+            <DialogTitle className="text-white text-xl">
+              Close Alert & Record Fulfillment
+            </DialogTitle>
             <DialogDescription className="text-gray-200">
               Please provide details about how this alert was fulfilled
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6 py-4">
             {/* Fulfillment Source */}
             <div className="space-y-2">
-              <Label className="text-white text-base">How was this alert fulfilled?</Label>
-              <Select value={fulfillmentSource} onValueChange={setFulfillmentSource}>
+              <Label className="text-white text-base">
+                How was this alert fulfilled?
+              </Label>
+              <Select
+                value={fulfillmentSource}
+                onValueChange={setFulfillmentSource}
+              >
                 <SelectTrigger className="bg-white/5 border-white/20 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 text-white border-gray-700">
-                  <SelectItem value="registered_donors">Registered Donor(s) from our platform</SelectItem>
-                  <SelectItem value="external_donor">External Donor (not registered)</SelectItem>
-                  <SelectItem value="hospital_bloodbank">Nearby Hospital/Blood Bank</SelectItem>
+                  <SelectItem value="registered_donors">
+                    Registered Donor(s) from our platform
+                  </SelectItem>
+                  <SelectItem value="external_donor">
+                    External Donor (not registered)
+                  </SelectItem>
+                  <SelectItem value="hospital_bloodbank">
+                    Nearby Hospital/Blood Bank
+                  </SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
@@ -382,10 +418,14 @@ export default function AlertDetailsPage() {
             {/* Registered Donors Selection */}
             {fulfillmentSource === "registered_donors" && (
               <div className="space-y-3">
-                <Label className="text-white text-base">Select donor(s) who donated:</Label>
+                <Label className="text-white text-base">
+                  Select donor(s) who donated:
+                </Label>
                 <div className="bg-white/5 border border-white/20 rounded-lg p-4 max-h-60 overflow-y-auto">
                   {donorResponses.length === 0 ? (
-                    <p className="text-gray-400 text-sm">No donor responses yet</p>
+                    <p className="text-gray-400 text-sm">
+                      No donor responses yet
+                    </p>
                   ) : (
                     <div className="space-y-2">
                       {donorResponses.map((donor) => (
@@ -398,9 +438,16 @@ export default function AlertDetailsPage() {
                             checked={selectedDonors.includes(donor.donorId)}
                             onChange={(e) => {
                               if (e.target.checked) {
-                                setSelectedDonors([...selectedDonors, donor.donorId]);
+                                setSelectedDonors([
+                                  ...selectedDonors,
+                                  donor.donorId,
+                                ]);
                               } else {
-                                setSelectedDonors(selectedDonors.filter(id => id !== donor.donorId));
+                                setSelectedDonors(
+                                  selectedDonors.filter(
+                                    (id) => id !== donor.donorId
+                                  )
+                                );
                               }
                             }}
                             className="w-4 h-4 rounded border-white/20"
@@ -413,7 +460,13 @@ export default function AlertDetailsPage() {
                               {donor.donor.bloodGroup} • {donor.donor.email}
                             </p>
                           </div>
-                          <Badge className={donor.status === "accepted" ? "bg-green-600" : "bg-gray-600"}>
+                          <Badge
+                            className={
+                              donor.status === "accepted"
+                                ? "bg-green-600"
+                                : "bg-gray-600"
+                            }
+                          >
                             {donor.status}
                           </Badge>
                         </label>
@@ -432,7 +485,9 @@ export default function AlertDetailsPage() {
             {/* External Donor */}
             {fulfillmentSource === "external_donor" && (
               <div className="space-y-3">
-                <Label className="text-white text-base">External Donor Email</Label>
+                <Label className="text-white text-base">
+                  External Donor Email
+                </Label>
                 <Input
                   type="email"
                   placeholder="donor@example.com"
@@ -449,7 +504,9 @@ export default function AlertDetailsPage() {
             {/* Hospital/Blood Bank */}
             {fulfillmentSource === "hospital_bloodbank" && (
               <div className="space-y-3">
-                <Label className="text-white text-base">Hospital/Blood Bank Details</Label>
+                <Label className="text-white text-base">
+                  Hospital/Blood Bank Details
+                </Label>
                 <Textarea
                   placeholder="Enter hospital name, location, contact person, etc."
                   value={otherDetails}
@@ -462,7 +519,9 @@ export default function AlertDetailsPage() {
             {/* Other */}
             {fulfillmentSource === "other" && (
               <div className="space-y-3">
-                <Label className="text-white text-base">Please provide details</Label>
+                <Label className="text-white text-base">
+                  Please provide details
+                </Label>
                 <Textarea
                   placeholder="Describe how the alert was fulfilled..."
                   value={otherDetails}
@@ -580,9 +639,14 @@ export default function AlertDetailsPage() {
         {workflowState && (
           <Card className="glass-morphism border border-accent/30 text-white mb-6">
             <CardHeader>
-              <CardTitle className="text-text-dark">Workflow Progress</CardTitle>
+              <CardTitle className="text-text-dark">
+                Workflow Progress
+              </CardTitle>
               <CardDescription className="text-text-dark/80">
-                Current Step: <span className="font-semibold">{workflowState.currentStep}</span>
+                Current Step:{" "}
+                <span className="font-semibold">
+                  {workflowState.currentStep}
+                </span>
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -620,14 +684,20 @@ export default function AlertDetailsPage() {
               <div className="space-y-4">
                 {agentDecisions.map((decision, index) => {
                   // Extract and format the reasoning text
-                  let reasoningText = '';
-                  if (typeof decision.decision === 'string') {
+                  let reasoningText = "";
+                  if (typeof decision.decision === "string") {
                     reasoningText = decision.decision;
                   } else if (decision.decision.reasoning) {
                     reasoningText = decision.decision.reasoning;
                   } else {
-                    reasoningText = '';
+                    reasoningText = "";
                   }
+
+                  // Check if LLM was used
+                  const llmUsed = decision.decision?.llm_used === true;
+                  const modelUsed =
+                    decision.decision?.model_used ||
+                    (llmUsed ? "claude-4.5" : "unknown");
 
                   // Extract and format response time from reasoning text
                   const responseTimeMatch = extractResponseTime(reasoningText);
@@ -635,6 +705,28 @@ export default function AlertDetailsPage() {
                     reasoningText = responseTimeMatch.cleanText;
                   }
 
+                  // If LLM was used, use the enhanced LLMReasoningCard component
+                  if (llmUsed && reasoningText) {
+                    return (
+                      <LLMReasoningCard
+                        key={decision.id}
+                        reasoning={reasoningText}
+                        modelUsed={modelUsed}
+                        confidence={
+                          decision.confidence ||
+                          decision.decision?.llm_confidence ||
+                          decision.decision?.confidence
+                        }
+                        agentType={decision.agentType}
+                        eventType={decision.eventType}
+                        timestamp={decision.createdAt}
+                        requestId={decision.requestId || undefined}
+                        decision={decision.decision}
+                      />
+                    );
+                  }
+
+                  // Otherwise, use the standard display
                   return (
                     <div
                       key={decision.id}
@@ -647,18 +739,27 @@ export default function AlertDetailsPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <h4 className="font-semibold text-text-dark">
-                              {decision.agentType.charAt(0) + decision.agentType.slice(1).toLowerCase()} Agent
+                              {decision.agentType.charAt(0) +
+                                decision.agentType.slice(1).toLowerCase()}{" "}
+                              Agent
                             </h4>
-                            <Badge variant="outline" className="text-xs bg-blue-600/20 text-blue-300 border-blue-600">
+                            <Badge
+                              variant="outline"
+                              className="text-xs bg-blue-600/20 text-blue-300 border-blue-600"
+                            >
                               {formatEventType(decision.eventType)}
                             </Badge>
                             {decision.confidence && (
-                              <Badge variant="outline" className="text-xs bg-green-600/20 text-green-300 border-green-600">
-                                {(decision.confidence * 100).toFixed(0)}% confidence
+                              <Badge
+                                variant="outline"
+                                className="text-xs bg-green-600/20 text-green-300 border-green-600"
+                              >
+                                {(decision.confidence * 100).toFixed(0)}%
+                                confidence
                               </Badge>
                             )}
                           </div>
-                          
+
                           {reasoningText && (
                             <p className="text-sm text-text-dark/90 mb-3 leading-relaxed">
                               {reasoningText}
@@ -669,20 +770,30 @@ export default function AlertDetailsPage() {
                           <div className="flex flex-wrap gap-x-4 gap-y-1 mb-2">
                             {decision.decision.response_time && (
                               <span className="text-xs text-text-dark/70">
-                                ⏱️ Response: {typeof decision.decision.response_time === 'number' 
-                                  ? formatDuration(Math.floor(decision.decision.response_time))
+                                ⏱️ Response:{" "}
+                                {typeof decision.decision.response_time ===
+                                "number"
+                                  ? formatDuration(
+                                      Math.floor(
+                                        decision.decision.response_time
+                                      )
+                                    )
                                   : decision.decision.response_time}
                               </span>
                             )}
                             {decision.decision.distance_km && (
                               <span className="text-xs text-text-dark/70">
-                                📍 {decision.decision.distance_km.toFixed(1)} km away
+                                📍 {decision.decision.distance_km.toFixed(1)} km
+                                away
                               </span>
                             )}
                             {decision.decision.eta_minutes && (
                               <span className="text-xs text-text-dark/70">
-                                🚗 ETA: {decision.decision.eta_minutes >= 60 
-                                  ? `${Math.floor(decision.decision.eta_minutes / 60)}h ${decision.decision.eta_minutes % 60}m`
+                                🚗 ETA:{" "}
+                                {decision.decision.eta_minutes >= 60
+                                  ? `${Math.floor(
+                                      decision.decision.eta_minutes / 60
+                                    )}h ${decision.decision.eta_minutes % 60}m`
                                   : `${decision.decision.eta_minutes}m`}
                               </span>
                             )}
@@ -851,4 +962,3 @@ export default function AlertDetailsPage() {
     </GradientBackground>
   );
 }
-

@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Transform to a cleaner format and normalize agent types
-    const validAgentTypes = ["HOSPITAL", "DONOR", "COORDINATOR", "INVENTORY", "LOGISTICS"];
+    const validAgentTypes = ["HOSPITAL", "DONOR", "COORDINATOR", "INVENTORY", "LOGISTICS", "VERIFICATION"];
     const formattedLogs = logs
       .map((log: any) => ({
         id: log.id,

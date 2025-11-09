@@ -6,7 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { VerificationBadge, SuspensionBadge, AttemptsBadge } from "@/components/VerificationBadge";
+import {
+  VerificationBadge,
+  SuspensionBadge,
+  AttemptsBadge,
+} from "@/components/VerificationBadge";
 
 import { fetchAllDonors } from "@/lib/actions/donor.actions";
 import {
@@ -48,6 +52,7 @@ import { updateUserStatus } from "@/lib/actions/user.actions";
 import GradientBackground from "@/components/GradientBackground";
 import AgenticDashboard from "@/components/AgenticDashboard";
 import AIAgentLogs from "@/components/AIAgentLogs";
+import LLMReasoningView from "@/components/LLMReasoningView";
 import {
   sendApplicationApprovedEmail,
   sendApplicationRejectedEmail,
@@ -209,26 +214,31 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState<ApprovalStatus | "ALL">(
     "ALL"
   );
-  
+
   // Verification filter state
-  const [verificationTab, setVerificationTab] = useState<"auto-verified" | "manual" | "suspended">("auto-verified");
-  
+  const [verificationTab, setVerificationTab] = useState<
+    "auto-verified" | "manual" | "suspended"
+  >("auto-verified");
+
   // Categorize users by verification status
   const autoVerifiedUsers = users.filter((user) => {
     // Show all approved donors
     return user.status === "APPROVED" && user.role === "donor";
   });
-  
+
   const manualReviewUsers = users.filter((user) => {
     // Users pending without verification or with technical errors
     return user.status === "PENDING" && !(user as any).verificationAttempts;
   });
-  
+
   const suspendedUsers = users.filter((user) => {
     // Users who are suspended
-    return (user as any).suspendedUntil && new Date() < new Date((user as any).suspendedUntil);
+    return (
+      (user as any).suspendedUntil &&
+      new Date() < new Date((user as any).suspendedUntil)
+    );
   });
-  
+
   // Filtered users based on current verification tab
   let usersToDisplay = users;
   if (verificationTab === "auto-verified") {
@@ -238,7 +248,7 @@ export default function AdminDashboard() {
   } else if (verificationTab === "suspended") {
     usersToDisplay = suspendedUsers;
   }
-  
+
   // Apply other filters
   const filteredUsers = usersToDisplay.filter((user) => {
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
@@ -349,8 +359,9 @@ export default function AdminDashboard() {
   const tabOptions = [
     { value: "users", label: "User Management" },
     { value: "agentic", label: "Agentic AI Dashboard" },
-    { value: "analytics", label: "System Analytics" },
     { value: "activity", label: "AI Agent Logs" },
+    { value: "llm-reasoning", label: "LLM Reasoning" },
+    { value: "analytics", label: "System Analytics" },
   ];
 
   if (loading) return <p>Loading Data...</p>;
@@ -579,7 +590,7 @@ export default function AdminDashboard() {
               </SelectContent>
             </Select>
           </div>
-          <TabsList className="lg:grid w-full grid-cols-4 glass-morphism border hidden border-white/20">
+          <TabsList className="lg:grid w-full grid-cols-5 glass-morphism border hidden border-white/20">
             {tabOptions.map((tab) => (
               <TabsTrigger
                 key={tab.value}
@@ -599,7 +610,9 @@ export default function AdminDashboard() {
           {/* User Management Tab */}
           <TabsContent value="users" className="space-y-6">
             <div className="flex flex-col lg:flex-row gap-y-3 items-center justify-between">
-              <h2 className="text-2xl font-bold text-text-dark">User Management</h2>
+              <h2 className="text-2xl font-bold text-text-dark">
+                User Management
+              </h2>
               <div className="flex flex-col lg:flex-row gap-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -638,11 +651,15 @@ export default function AdminDashboard() {
             {/* Verification Status Sub-Tabs */}
             <div className="flex flex-wrap gap-3 p-4 bg-white/5 backdrop-blur-sm rounded-lg border border-white/20">
               <Button
-                variant={verificationTab === "auto-verified" ? "default" : "outline"}
+                variant={
+                  verificationTab === "auto-verified" ? "default" : "outline"
+                }
                 onClick={() => setVerificationTab("auto-verified")}
-                className={verificationTab === "auto-verified" 
-                  ? "bg-green-600 hover:bg-green-700 text-white" 
-                  : "bg-white/10 border-white/20 text-white hover:bg-white/20"}
+                className={
+                  verificationTab === "auto-verified"
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                }
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
                 Auto-Verified ({autoVerifiedUsers.length})
@@ -650,19 +667,25 @@ export default function AdminDashboard() {
               <Button
                 variant={verificationTab === "manual" ? "default" : "outline"}
                 onClick={() => setVerificationTab("manual")}
-                className={verificationTab === "manual" 
-                  ? "bg-yellow-600 hover:bg-yellow-700 text-white" 
-                  : "bg-white/10 border-white/20 text-white hover:bg-white/20"}
+                className={
+                  verificationTab === "manual"
+                    ? "bg-yellow-600 hover:bg-yellow-700 text-white"
+                    : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                }
               >
                 <Clock className="w-4 h-4 mr-2" />
                 Manual Review ({manualReviewUsers.length})
               </Button>
               <Button
-                variant={verificationTab === "suspended" ? "default" : "outline"}
+                variant={
+                  verificationTab === "suspended" ? "default" : "outline"
+                }
                 onClick={() => setVerificationTab("suspended")}
-                className={verificationTab === "suspended" 
-                  ? "bg-red-600 hover:bg-red-700 text-white" 
-                  : "bg-white/10 border-white/20 text-white hover:bg-white/20"}
+                className={
+                  verificationTab === "suspended"
+                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                }
               >
                 <AlertTriangle className="w-4 h-4 mr-2" />
                 Suspended ({suspendedUsers.length})
@@ -673,17 +696,20 @@ export default function AdminDashboard() {
             <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
               {verificationTab === "auto-verified" && (
                 <p className="text-sm text-blue-200">
-                  <strong>Auto-Verified Users:</strong> These users have passed AI document verification and eligibility criteria.
+                  <strong>Auto-Verified Users:</strong> These users have passed
+                  AI document verification and eligibility criteria.
                 </p>
               )}
               {verificationTab === "manual" && (
                 <p className="text-sm text-blue-200">
-                  <strong>Manual Review:</strong> These users require manual verification due to technical errors or pending verification.
+                  <strong>Manual Review:</strong> These users require manual
+                  verification due to technical errors or pending verification.
                 </p>
               )}
               {verificationTab === "suspended" && (
                 <p className="text-sm text-blue-900">
-                  <strong>Suspended Accounts:</strong> These users exceeded 3 failed verification attempts and are temporarily suspended.
+                  <strong>Suspended Accounts:</strong> These users exceeded 3
+                  failed verification attempts and are temporarily suspended.
                 </p>
               )}
             </div>
@@ -752,11 +778,20 @@ export default function AdminDashboard() {
                           <td className="p-4">{getStatusBadge(user.status)}</td>
                           <td className="p-4">
                             <div className="flex flex-col gap-1">
-                              {(user as any).suspendedUntil && new Date() < new Date((user as any).suspendedUntil) && (
-                                <SuspensionBadge suspendedUntil={(user as any).suspendedUntil} />
-                              )}
-                              {(user as any).verificationAttempts !== undefined && (
-                                <AttemptsBadge attempts={(user as any).verificationAttempts} />
+                              {(user as any).suspendedUntil &&
+                                new Date() <
+                                  new Date((user as any).suspendedUntil) && (
+                                  <SuspensionBadge
+                                    suspendedUntil={
+                                      (user as any).suspendedUntil
+                                    }
+                                  />
+                                )}
+                              {(user as any).verificationAttempts !==
+                                undefined && (
+                                <AttemptsBadge
+                                  attempts={(user as any).verificationAttempts}
+                                />
                               )}
                             </div>
                           </td>
@@ -839,7 +874,9 @@ export default function AdminDashboard() {
                         <p className="text-lg font-semibold text-text-dark">
                           {user.name}
                         </p>
-                        <p className="text-sm text-text-dark/70">{user.email}</p>
+                        <p className="text-sm text-text-dark/70">
+                          {user.email}
+                        </p>
                         {user.bloodType && (
                           <Badge className="mt-1 bg-white/5 border-white/20 text-text-dark">
                             {user.bloodType}
@@ -924,7 +961,9 @@ export default function AdminDashboard() {
 
           {/* System Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
-            <h2 className="text-2xl font-bold text-text-dark">System Analytics</h2>
+            <h2 className="text-2xl font-bold text-text-dark">
+              System Analytics
+            </h2>
 
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
@@ -938,11 +977,15 @@ export default function AdminDashboard() {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span>Daily Active Users</span>
-                      <span className="font-semibold text-text-dark">8,234</span>
+                      <span className="font-semibold text-text-dark">
+                        8,234
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Monthly Active Users</span>
-                      <span className="font-semibold text-text-dark">18,456</span>
+                      <span className="font-semibold text-text-dark">
+                        18,456
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Average Session Duration</span>
@@ -982,7 +1025,9 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex justify-between">
                       <span>Lives Saved (Est.)</span>
-                      <span className="font-semibold text-text-dark">2,456</span>
+                      <span className="font-semibold text-text-dark">
+                        2,456
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -993,6 +1038,11 @@ export default function AdminDashboard() {
           {/* AI Agent Logs Tab */}
           <TabsContent value="activity" className="space-y-6">
             <AIAgentLogs />
+          </TabsContent>
+
+          {/* LLM Reasoning Tab */}
+          <TabsContent value="llm-reasoning" className="space-y-6">
+            <LLMReasoningView />
           </TabsContent>
         </Tabs>
       </div>
