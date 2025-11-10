@@ -40,3 +40,8 @@ Thumbs.db
 *.lock
 
 /lib/generated/prisma
+
+.venv/
+venv/
+__pycache__/
+*.pyc

@@ -405,3 +405,60 @@ model PilotAnalytics {
   @@index([createdAt])
   @@index([eventType, createdAt])
 }
+
+// ML Training and Model Management
+
+model TrainingExample {
+  id            String   @id @default(uuid())
+  taskType      String   // "donor_selection", "urgency_assessment", "inventory_selection", "transport_planning", "eligibility_analysis"
+  inputFeatures Json     // Structured input features for the model
+  outputLabel   Json     // Expected output/label (decision, outcome, etc.)
+  outcome       Json?    // Actual outcome (success/failure, metrics, etc.)
+  agentDecisionId String? // Link to AgentDecision for traceability
+  requestId     String?  // Related request/alert ID
+  usedForTraining Boolean @default(false) // Whether this example was used in training
+  createdAt     DateTime @default(now())
+
+  @@index([taskType, usedForTraining])
+  @@index([agentDecisionId])
+  @@index([requestId])
+  @@index([createdAt])
+}
+
+model CustomModel {
+  id            String   @id @default(uuid())
+  version       String   @unique // Model version identifier (e.g., "v1.0.0")
+  taskType      String   // Which task this model handles (or "multi_task")
+  modelPath     String   // Path to saved model file
+  config        Json     // Model configuration and hyperparameters
+  metrics       Json?    // Training and validation metrics
+  status        String   @default("training") // "training", "active", "archived", "failed"
+  isActive      Boolean  @default(false) // Whether this is the active model for production
+  trainedAt     DateTime @default(now())
+  deployedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  predictions   ModelPrediction[]
+
+  @@index([taskType, isActive])
+  @@index([status])
+}
+
+model ModelPrediction {
+  id            String   @id @default(uuid())
+  modelId       String
+  model         CustomModel @relation(fields: [modelId], references: [id])
+  taskType      String   // Task type for this prediction
+  inputFeatures Json     // Input features used
+  prediction    Json     // Model prediction output
+  confidence    Float?   // Confidence score
+  actualOutcome Json?    // Actual outcome (for feedback loop)
+  feedback      String?  // Human feedback or correction
+  requestId     String?  // Related request ID
+  createdAt     DateTime @default(now())
+
+  @@index([modelId])
+  @@index([taskType, createdAt])
+  @@index([requestId])
+}
