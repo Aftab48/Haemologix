@@ -42,10 +42,11 @@ class DataPreprocessor:
     ) -> np.ndarray:
         """Extract numerical features based on task type"""
         features = []
+        input_features = example.get("inputFeatures", {})
 
         if task_type == "donor_selection":
-            # Extract from candidates and alert context
-            alert = example.get("alert", {})
+            # Extract from alert context
+            alert = input_features.get("alert", {})
             features.extend([
                 float(alert.get("unitsNeeded", 1)),
                 float(alert.get("searchRadius", 10)),
@@ -53,31 +54,36 @@ class DataPreprocessor:
 
         elif task_type == "urgency_assessment":
             features.extend([
-                float(example.get("currentUnits", 0)),
-                float(example.get("daysRemaining", 0)),
-                float(example.get("dailyUsage", 0)),
+                float(input_features.get("currentUnits", 0)),
+                float(input_features.get("daysRemaining", 0)),
+                float(input_features.get("dailyUsage", 0)),
             ])
 
         elif task_type == "inventory_selection":
-            request = example.get("request", {})
+            request = input_features.get("request", {})
             features.extend([
                 float(request.get("unitsNeeded", 1)),
             ])
 
         elif task_type == "transport_planning":
             features.extend([
-                float(example.get("distanceKm", 0)),
-                float(example.get("units", 1)),
+                float(input_features.get("distanceKm", 0)),
+                float(input_features.get("units", 1)),
             ])
 
         elif task_type == "eligibility_analysis":
-            donor = example.get("donor", {})
+            donor = input_features.get("donor", {})
+            last_donation = donor.get("lastDonation", 365)
+            if isinstance(last_donation, (int, float)):
+                last_donation_days = last_donation
+            else:
+                last_donation_days = 365
             features.extend([
                 float(donor.get("age", 30)),
                 float(donor.get("weight", 70)),
                 float(donor.get("bmi", 22)),
                 float(donor.get("hemoglobin", 14)),
-                float(donor.get("lastDonationDays", 365) if donor.get("lastDonationDays") else 365),
+                float(last_donation_days),
             ])
 
         # Add time features (common to all)
@@ -88,18 +94,58 @@ class DataPreprocessor:
             now.month,
         ])
 
-        return np.array(features, dtype=np.float32)
+        features_array = np.array(features, dtype=np.float32)
+        
+        # Pad to expected numerical_dim (64) if needed
+        # This ensures compatibility with the model's numerical_encoder
+        expected_dim = 64
+        if len(features_array) < expected_dim:
+            # Pad with zeros
+            padding = np.zeros(expected_dim - len(features_array), dtype=np.float32)
+            features_array = np.concatenate([features_array, padding])
+        elif len(features_array) > expected_dim:
+            # Truncate if somehow larger
+            features_array = features_array[:expected_dim]
+        
+        return features_array
 
     def encode_categorical(
         self, example: Dict[str, Any], task_type: str
     ) -> Tuple[int, int, Optional[int]]:
         """Encode categorical features"""
-        blood_type = example.get("bloodType", "O+")
-        urgency = example.get("urgency", "MEDIUM")
-        transport_method = example.get("transportMethod")
+        input_features = example.get("inputFeatures", {})
+        
+        # Extract blood type and urgency from appropriate location
+        if task_type == "donor_selection":
+            alert = input_features.get("alert", {})
+            blood_type = alert.get("bloodType", "O+")
+            urgency = alert.get("urgency", "MEDIUM")
+        elif task_type == "urgency_assessment":
+            blood_type = input_features.get("bloodType", "O+")
+            urgency = "MEDIUM"  # Will be determined by model
+        elif task_type == "inventory_selection":
+            request = input_features.get("request", {})
+            blood_type = request.get("bloodType", "O+")
+            urgency = request.get("urgency", "MEDIUM")
+        elif task_type == "transport_planning":
+            blood_type = input_features.get("bloodType", "O+")
+            urgency = input_features.get("urgency", "MEDIUM")
+        else:
+            blood_type = input_features.get("bloodType", "O+")
+            urgency = input_features.get("urgency", "MEDIUM")
+        
+        transport_method = input_features.get("transportMethod")
 
-        blood_type_idx = self.blood_type_encoder.transform([blood_type])[0]
-        urgency_idx = self.urgency_encoder.transform([urgency])[0]
+        try:
+            blood_type_idx = self.blood_type_encoder.transform([blood_type])[0]
+        except:
+            blood_type_idx = 1  # Default to O+
+        
+        try:
+            urgency_idx = self.urgency_encoder.transform([urgency])[0]
+        except:
+            urgency_idx = 1  # Default to MEDIUM
+        
         transport_idx = (
             self.transport_method_encoder.transform([transport_method])[0]
             if transport_method
@@ -110,11 +156,21 @@ class DataPreprocessor:
 
     def extract_time_features(self, example: Dict[str, Any]) -> Dict[str, float]:
         """Extract time features"""
-        time_str = example.get("timeOfDay")
+        input_features = example.get("inputFeatures", {})
+        context = input_features.get("context", {})
+        time_str = context.get("timeOfDay") or input_features.get("timeOfDay")
+        
         if time_str:
             # Parse time string if provided
             try:
-                dt = datetime.fromisoformat(time_str)
+                # Handle ISO format with or without timezone
+                if isinstance(time_str, str):
+                    if 'T' in time_str:
+                        dt = datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+                    else:
+                        dt = datetime.fromisoformat(time_str)
+                else:
+                    dt = datetime.now()
             except:
                 dt = datetime.now()
         else:
@@ -146,7 +202,13 @@ class DataPreprocessor:
     ) -> Dict[str, Any]:
         """Preprocess a single training example"""
         # Extract features
-        numerical_features = self.extract_numerical_features(example, task_type)
+        numerical_features_raw = self.extract_numerical_features(example, task_type)
+        # Transform using fitted scaler (if fitted)
+        if hasattr(self.numerical_scaler, 'mean_') and self.numerical_scaler.mean_ is not None:
+            numerical_features = self.transform_numerical(numerical_features_raw)
+        else:
+            # If scaler not fitted yet, use raw features (will be normalized during fit)
+            numerical_features = numerical_features_raw
         blood_type_idx, urgency_idx, transport_idx = self.encode_categorical(
             example, task_type
         )
@@ -156,8 +218,10 @@ class DataPreprocessor:
         candidate_features = None
         source_features = None
 
+        input_features = example.get("inputFeatures", {})
+        
         if task_type == "donor_selection":
-            candidates = example.get("candidates", [])
+            candidates = input_features.get("candidates", [])
             if candidates:
                 # Extract features for each candidate
                 candidate_features = []
@@ -172,15 +236,16 @@ class DataPreprocessor:
                     candidate_features.append(cand_features)
 
         elif task_type == "inventory_selection":
-            ranked_units = example.get("rankedUnits", [])
+            ranked_units = input_features.get("rankedUnits", [])
             if ranked_units:
                 source_features = []
                 for unit in ranked_units:
+                    scores = unit.get("scores", {})
                     unit_features = [
                         float(unit.get("distance", 0)),
-                        float(unit.get("expiryDays", 30)),
+                        float(unit.get("expiry", 30)),
                         float(unit.get("quantity", 0)),
-                        float(unit.get("scores", {}).get("final", 0)),
+                        float(scores.get("final", 0) if isinstance(scores, dict) else 0),
                     ]
                     source_features.append(unit_features)
 

@@ -1,0 +1,1362 @@
+[
+  {
+    "id": "479b6baf-d985-48fd-b4d0-28f426615d83",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 5,
+      "urgency": "MEDIUM",
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T11:11:00.000Z",
+      "distanceKm": 36.94,
+      "toHospital": {
+        "latitude": "18.612260",
+        "longitude": "73.149038",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.057750",
+        "longitude": "72.548687",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 134
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 126,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "680109-9015-2310-5689-628889583487",
+    "requestId": "443850-3335-8554-5771-889930370501",
+    "createdAt": "2025-10-29T11:00:33.398Z"
+  },
+  {
+    "id": "2cd5a151-d6fb-4c48-b09b-0fbcbf6e9465",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 9,
+      "urgency": "CRITICAL",
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T05:45:00.000Z",
+      "distanceKm": 10.26,
+      "toHospital": {
+        "latitude": "19.046479",
+        "longitude": "73.276559",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.487854",
+        "longitude": "73.442667",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 0,
+      "eta_minutes": 28
+    },
+    "outcome": {
+      "success": false,
+      "actualETA": 36,
+      "coldChainMaintained": false
+    },
+    "agentDecisionId": "890212-1376-5147-4874-544964248696",
+    "requestId": "326401-9551-3123-1660-566057491110",
+    "createdAt": "2025-10-30T11:00:26.810Z"
+  },
+  {
+    "id": "7919e598-03b0-4666-9314-d1ba66182f7a",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 1,
+      "urgency": "MEDIUM",
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T12:36:00.000Z",
+      "distanceKm": 50.18,
+      "toHospital": {
+        "latitude": "18.870233",
+        "longitude": "72.536699",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.252025",
+        "longitude": "72.967684",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 161
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 199,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "762252-1606-7140-4980-150975041154",
+    "requestId": "198495-4283-8273-6963-933258758403",
+    "createdAt": "2025-10-31T11:00:29.319Z"
+  },
+  {
+    "id": "f75be12c-1bee-4ec8-bfa0-058257760f34",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 4,
+      "urgency": "CRITICAL",
+      "bloodType": "B-",
+      "timeOfDay": "2025-11-16T13:01:00.000Z",
+      "distanceKm": 99.35,
+      "toHospital": {
+        "latitude": "19.448776",
+        "longitude": "73.271472",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.838148",
+        "longitude": "72.859018",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "heavy"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 259
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 313,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "417839-7165-1248-5731-535269198399",
+    "requestId": "142178-6795-7841-8559-262673105059",
+    "createdAt": "2025-10-31T11:00:49.542Z"
+  },
+  {
+    "id": "5e31bb5c-47c0-4a1d-9008-c3337a308596",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 6,
+      "urgency": "MEDIUM",
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T03:47:00.000Z",
+      "distanceKm": 16.66,
+      "toHospital": {
+        "latitude": "19.068407",
+        "longitude": "73.244243",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.352055",
+        "longitude": "73.487623",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 94
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 89,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "435651-6769-8505-5373-949095894183",
+    "requestId": "318948-3681-7775-4629-858176099581",
+    "createdAt": "2025-10-31T11:00:51.387Z"
+  },
+  {
+    "id": "f6b269bf-97f2-41de-b9f1-287ba51310f1",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 8,
+      "urgency": "HIGH",
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T05:41:00.000Z",
+      "distanceKm": 99.08,
+      "toHospital": {
+        "latitude": "19.446001",
+        "longitude": "73.326704",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.746748",
+        "longitude": "73.469689",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 259
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 205,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "150680-8799-3325-8446-194299446247",
+    "requestId": "637936-1384-3958-6525-954378760345",
+    "createdAt": "2025-11-01T11:00:32.172Z"
+  },
+  {
+    "id": "26a86b06-b946-42cc-9d01-355448e2dcb8",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 10,
+      "urgency": "HIGH",
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T09:31:00.000Z",
+      "distanceKm": 60.17,
+      "toHospital": {
+        "latitude": "19.132259",
+        "longitude": "72.711248",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.929657",
+        "longitude": "73.108110",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "moderate"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 181
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 140,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "496601-3052-7282-3463-813470091717",
+    "requestId": "231388-2643-3413-2637-576105932534",
+    "createdAt": "2025-11-01T11:00:34.012Z"
+  },
+  {
+    "id": "48554ec9-3313-4e76-a131-7ba5ea9df851",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 5,
+      "urgency": "CRITICAL",
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T03:57:00.000Z",
+      "distanceKm": 63.64,
+      "toHospital": {
+        "latitude": "18.724373",
+        "longitude": "73.247866",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.900462",
+        "longitude": "72.835928",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "moderate"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 188
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 226,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "403977-8165-2661-3050-459903681908",
+    "requestId": "513049-7545-6810-1983-658271564729",
+    "createdAt": "2025-11-02T11:00:50.976Z"
+  },
+  {
+    "id": "6c407450-875d-4f11-93e8-6c42d169a306",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 2,
+      "urgency": "MEDIUM",
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T11:20:00.000Z",
+      "distanceKm": 22.3,
+      "toHospital": {
+        "latitude": "18.871165",
+        "longitude": "72.771157",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.349425",
+        "longitude": "73.494535",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "moderate"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 105
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 95,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "247486-2827-7681-4918-413947687009",
+    "requestId": "481456-8828-4294-2421-317566770742",
+    "createdAt": "2025-11-03T11:00:30.088Z"
+  },
+  {
+    "id": "5c1b9319-bd32-46bb-bc08-1f88a6e2162e",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 6,
+      "urgency": "CRITICAL",
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T14:34:00.000Z",
+      "distanceKm": 89.04,
+      "toHospital": {
+        "latitude": "19.377012",
+        "longitude": "72.668397",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.281340",
+        "longitude": "73.402029",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 239
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 242,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "187143-5455-6357-4009-856559442781",
+    "requestId": "550537-2621-4834-2978-731458724921",
+    "createdAt": "2025-11-03T11:00:30.294Z"
+  },
+  {
+    "id": "48ffbfb9-dea2-4523-abe5-0555569b5c70",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 7,
+      "urgency": "CRITICAL",
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T08:39:00.000Z",
+      "distanceKm": 25.06,
+      "toHospital": {
+        "latitude": "19.480651",
+        "longitude": "73.117027",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.884233",
+        "longitude": "72.534942",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 1,
+      "eta_minutes": 54
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 66,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "169903-7157-2127-8449-940593910422",
+    "requestId": "206854-1332-1958-5400-415890756128",
+    "createdAt": "2025-11-03T11:00:34.112Z"
+  },
+  {
+    "id": "77548fc0-461e-4e62-ac20-fe055e1ce856",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 7,
+      "urgency": "HIGH",
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T07:20:00.000Z",
+      "distanceKm": 50.9,
+      "toHospital": {
+        "latitude": "19.370487",
+        "longitude": "72.971948",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.254945",
+        "longitude": "73.086598",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "heavy"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 162
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 176,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "417795-7709-7550-4004-273960874288",
+    "requestId": "884788-3795-7167-5729-786649683113",
+    "createdAt": "2025-11-03T11:00:42.069Z"
+  },
+  {
+    "id": "be8c3f17-ba28-45ea-9c4d-7d0cfa37ff8b",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 5,
+      "urgency": "MEDIUM",
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T06:54:00.000Z",
+      "distanceKm": 5.79,
+      "toHospital": {
+        "latitude": "19.265041",
+        "longitude": "73.397605",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.648487",
+        "longitude": "73.153765",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 72
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 79,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "533703-7438-2696-3404-661128846254",
+    "requestId": "108483-7877-7639-5746-588688793393",
+    "createdAt": "2025-11-04T11:00:40.225Z"
+  },
+  {
+    "id": "341d6782-5c53-4b74-b5fb-a3e5b20f9871",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 1,
+      "urgency": "MEDIUM",
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T10:21:00.000Z",
+      "distanceKm": 64.33,
+      "toHospital": {
+        "latitude": "19.461244",
+        "longitude": "72.941070",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.064476",
+        "longitude": "73.462678",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 189
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 151,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "765473-4383-1709-8781-658188868557",
+    "requestId": "479063-3063-1039-6569-258735457298",
+    "createdAt": "2025-11-05T11:00:30.397Z"
+  },
+  {
+    "id": "762816e2-6d98-46af-bc41-274d99d24631",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 5,
+      "urgency": "HIGH",
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T11:34:00.000Z",
+      "distanceKm": 89.77,
+      "toHospital": {
+        "latitude": "18.748442",
+        "longitude": "73.459910",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.978344",
+        "longitude": "72.518505",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "heavy"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 240
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 281,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "500384-8493-4420-5716-522828752941",
+    "requestId": "430948-4002-1561-3643-870150680772",
+    "createdAt": "2025-11-06T11:00:27.629Z"
+  },
+  {
+    "id": "4b186686-1455-4932-8ba9-6a8055ef703c",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 5,
+      "urgency": "CRITICAL",
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T08:29:00.000Z",
+      "distanceKm": 59.07,
+      "toHospital": {
+        "latitude": "19.132503",
+        "longitude": "73.401979",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.694210",
+        "longitude": "73.497287",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 179
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 158,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "867769-7417-7177-7574-823223848696",
+    "requestId": "861134-6102-8227-2537-913024116164",
+    "createdAt": "2025-11-06T11:00:38.423Z"
+  },
+  {
+    "id": "f4d1a651-1a7a-456c-bfe1-c75b1cec862d",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 8,
+      "urgency": "MEDIUM",
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T11:28:00.000Z",
+      "distanceKm": 83.72,
+      "toHospital": {
+        "latitude": "18.962228",
+        "longitude": "73.462186",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.667370",
+        "longitude": "72.833336",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 228
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 216,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "635410-7344-8097-4631-218638670807",
+    "requestId": "835915-3137-1221-9505-331759564992",
+    "createdAt": "2025-11-07T11:00:38.722Z"
+  },
+  {
+    "id": "e5362bdc-ed9c-4821-85b7-11b0aea58c6d",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 9,
+      "urgency": "HIGH",
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T08:40:00.000Z",
+      "distanceKm": 63.55,
+      "toHospital": {
+        "latitude": "19.061896",
+        "longitude": "73.017594",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.459173",
+        "longitude": "72.733016",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "moderate"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 188
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 172,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "241066-4586-4049-3951-240733107002",
+    "requestId": "137764-2652-5535-3626-610220458316",
+    "createdAt": "2025-11-08T11:00:28.965Z"
+  },
+  {
+    "id": "eae4a717-ca9f-450c-92d8-1550954722e0",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 2,
+      "urgency": "MEDIUM",
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T08:44:00.000Z",
+      "distanceKm": 18.45,
+      "toHospital": {
+        "latitude": "19.268200",
+        "longitude": "72.530925",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.023057",
+        "longitude": "73.067369",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "heavy"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 97
+    },
+    "outcome": {
+      "success": false,
+      "actualETA": 96,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "175035-6925-9678-8127-298804797800",
+    "requestId": "105139-5207-4354-2470-469711841467",
+    "createdAt": "2025-11-08T11:00:34.310Z"
+  },
+  {
+    "id": "59c0b70d-846d-4c1c-b662-c70ffd1d8d9f",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 9,
+      "urgency": "MEDIUM",
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T08:41:00.000Z",
+      "distanceKm": 65.58,
+      "toHospital": {
+        "latitude": "19.440422",
+        "longitude": "73.105501",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.276358",
+        "longitude": "73.107949",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 192
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 181,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "365112-3162-8888-8351-490422491084",
+    "requestId": "438906-9768-3947-6335-717241678001",
+    "createdAt": "2025-11-09T11:00:28.562Z"
+  },
+  {
+    "id": "22bb7408-655d-41e1-adf0-bb8588786472",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 4,
+      "urgency": "HIGH",
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T06:43:00.000Z",
+      "distanceKm": 77.02,
+      "toHospital": {
+        "latitude": "19.124169",
+        "longitude": "73.254933",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.660179",
+        "longitude": "73.066649",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 215
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 190,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "941685-6860-6416-7202-783597435459",
+    "requestId": "183371-1938-7758-5636-348813941241",
+    "createdAt": "2025-11-09T11:00:30.908Z"
+  },
+  {
+    "id": "ed03145a-51cc-4874-b713-d6e783b4986c",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 7,
+      "urgency": "CRITICAL",
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T08:23:00.000Z",
+      "distanceKm": 24.63,
+      "toHospital": {
+        "latitude": "18.567000",
+        "longitude": "73.356084",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.007308",
+        "longitude": "73.350723",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "heavy"
+    },
+    "outputLabel": {
+      "method": 1,
+      "eta_minutes": 75
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 66,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "523062-6132-9430-3656-157928387321",
+    "requestId": "255516-3557-9173-7073-351010777180",
+    "createdAt": "2025-11-09T11:00:31.316Z"
+  },
+  {
+    "id": "e4a2607a-00f2-4fc2-856e-f2ee8eabdc17",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 2,
+      "urgency": "MEDIUM",
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T17:36:00.000Z",
+      "distanceKm": 7.45,
+      "toHospital": {
+        "latitude": "19.434557",
+        "longitude": "73.397753",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.450836",
+        "longitude": "72.784718",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "moderate"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 75
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 80,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "829130-6132-5611-6710-741312161857",
+    "requestId": "241950-5144-2568-2877-142835208990",
+    "createdAt": "2025-11-10T11:00:26.612Z"
+  },
+  {
+    "id": "c928546d-e1d0-4dc8-aa41-5204a9336651",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 4,
+      "urgency": "CRITICAL",
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-15T20:49:00.000Z",
+      "distanceKm": 58.36,
+      "toHospital": {
+        "latitude": "19.190710",
+        "longitude": "72.756797",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.566984",
+        "longitude": "72.810715",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 177
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 218,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "340384-8075-6125-2067-188788369922",
+    "requestId": "237738-2278-5990-5070-418097076124",
+    "createdAt": "2025-11-10T11:00:47.700Z"
+  },
+  {
+    "id": "8756f30d-8f05-4bd3-9770-ccddce6d03f7",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 9,
+      "urgency": "HIGH",
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T13:14:00.000Z",
+      "distanceKm": 76.03,
+      "toHospital": {
+        "latitude": "19.498995",
+        "longitude": "73.472367",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.228124",
+        "longitude": "73.177201",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "heavy"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 213
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 265,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "500486-8808-1195-1326-173022721359",
+    "requestId": "705828-1319-4263-8666-980692331418",
+    "createdAt": "2025-11-11T11:00:34.622Z"
+  },
+  {
+    "id": "8fa42ce3-c235-456a-b0d8-892c7e95c543",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 7,
+      "urgency": "HIGH",
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T14:58:00.000Z",
+      "distanceKm": 61.35,
+      "toHospital": {
+        "latitude": "19.332805",
+        "longitude": "73.101690",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.859973",
+        "longitude": "73.209568",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "moderate"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 183
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 154,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "273062-4660-7956-5656-878173166665",
+    "requestId": "973563-5703-1470-8226-231126321219",
+    "createdAt": "2025-11-11T11:00:37.704Z"
+  },
+  {
+    "id": "8bc73fa8-ee96-4698-8886-a0d9ab801470",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 4,
+      "urgency": "MEDIUM",
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T08:44:00.000Z",
+      "distanceKm": 57.46,
+      "toHospital": {
+        "latitude": "18.557391",
+        "longitude": "73.173549",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.328818",
+        "longitude": "72.977013",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "moderate"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 175
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 211,
+      "coldChainMaintained": false
+    },
+    "agentDecisionId": "634919-6854-5107-1671-160370352036",
+    "requestId": "928199-8004-1453-5850-946657885789",
+    "createdAt": "2025-11-11T11:00:53.332Z"
+  },
+  {
+    "id": "6720893b-b4f7-4d4b-82c5-91598527e059",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 3,
+      "urgency": "CRITICAL",
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T08:12:00.000Z",
+      "distanceKm": 61.52,
+      "toHospital": {
+        "latitude": "18.943980",
+        "longitude": "73.150161",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.751026",
+        "longitude": "73.228092",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "heavy"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 184
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 168,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "189197-7006-6789-3965-354382282407",
+    "requestId": "803913-3423-5319-1686-293571201761",
+    "createdAt": "2025-11-13T11:00:39.125Z"
+  },
+  {
+    "id": "9500e135-5c86-499b-abfe-f922609f21ba",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 5,
+      "urgency": "MEDIUM",
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T08:54:00.000Z",
+      "distanceKm": 47.56,
+      "toHospital": {
+        "latitude": "18.950517",
+        "longitude": "73.427901",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.679991",
+        "longitude": "72.985978",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "moderate"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 156
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 141,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "676964-3835-7084-6516-872367718686",
+    "requestId": "276160-2906-3352-7292-688308895438",
+    "createdAt": "2025-11-13T11:00:43.102Z"
+  },
+  {
+    "id": "ae29fa30-0d31-44f9-a1b5-8c6556029087",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 2,
+      "urgency": "MEDIUM",
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T05:24:00.000Z",
+      "distanceKm": 24.25,
+      "toHospital": {
+        "latitude": "19.104490",
+        "longitude": "73.363505",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.497861",
+        "longitude": "72.751898",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "heavy"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 109
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 115,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "921528-5336-5602-4623-660573796114",
+    "requestId": "485521-6827-4161-5922-888787911991",
+    "createdAt": "2025-11-13T11:00:52.619Z"
+  },
+  {
+    "id": "f47fd359-7e0f-4412-a571-e1113e87886f",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 3,
+      "urgency": "CRITICAL",
+      "bloodType": "AB+",
+      "timeOfDay": "2025-11-16T06:15:00.000Z",
+      "distanceKm": 81.04,
+      "toHospital": {
+        "latitude": "19.135214",
+        "longitude": "72.998064",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.608824",
+        "longitude": "73.315699",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "moderate"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 223
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 168,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "530802-9520-1580-7296-101663467081",
+    "requestId": "628269-4770-2493-3908-277628142958",
+    "createdAt": "2025-11-14T11:00:42.777Z"
+  },
+  {
+    "id": "37eb63e5-ee28-489e-a8c8-3a95679bfe61",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 4,
+      "urgency": "HIGH",
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T14:40:00.000Z",
+      "distanceKm": 34.14,
+      "toHospital": {
+        "latitude": "19.175156",
+        "longitude": "73.188847",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.582795",
+        "longitude": "72.746046",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "heavy"
+    },
+    "outputLabel": {
+      "method": 1,
+      "eta_minutes": 98
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 79,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "727532-1682-2139-8489-589586024691",
+    "requestId": "570634-5472-5878-9000-428466985652",
+    "createdAt": "2025-11-14T11:00:47.496Z"
+  },
+  {
+    "id": "7a02e625-b14c-4a19-aa4f-3b3957958375",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 6,
+      "urgency": "MEDIUM",
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T08:36:00.000Z",
+      "distanceKm": 68.33,
+      "toHospital": {
+        "latitude": "19.286479",
+        "longitude": "72.522088",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.601074",
+        "longitude": "73.411827",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 197
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 148,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "262281-4553-8240-1803-532146426289",
+    "requestId": "401935-4272-7785-7813-196817349668",
+    "createdAt": "2025-11-15T11:00:29.694Z"
+  },
+  {
+    "id": "692196a6-df39-402f-9491-dc13efd777e2",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 1,
+      "urgency": "MEDIUM",
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T09:34:00.000Z",
+      "distanceKm": 91.04,
+      "toHospital": {
+        "latitude": "18.654553",
+        "longitude": "72.654851",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.540023",
+        "longitude": "73.186281",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "moderate"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 243
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 299,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "310276-5973-8471-3159-714509350076",
+    "requestId": "381094-5676-9337-4165-106862454759",
+    "createdAt": "2025-11-15T11:00:29.894Z"
+  },
+  {
+    "id": "4c191801-6acf-4171-8805-280c72b3b396",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 2,
+      "urgency": "MEDIUM",
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-15T22:52:00.000Z",
+      "distanceKm": 66.4,
+      "toHospital": {
+        "latitude": "19.180161",
+        "longitude": "73.034441",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.471852",
+        "longitude": "72.505967",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "moderate"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 193
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 185,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "752986-8483-9755-3941-774398335871",
+    "requestId": "431395-3292-7496-2416-227311770368",
+    "createdAt": "2025-11-15T11:00:31.112Z"
+  },
+  {
+    "id": "433e3faf-daa0-48d6-a58a-defc24737068",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 1,
+      "urgency": "MEDIUM",
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T12:37:00.000Z",
+      "distanceKm": 28.76,
+      "toHospital": {
+        "latitude": "19.351908",
+        "longitude": "73.213898",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.499774",
+        "longitude": "72.818397",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 118
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 110,
+      "coldChainMaintained": false
+    },
+    "agentDecisionId": "240906-8120-7605-5190-221515540792",
+    "requestId": "995562-5004-3619-1598-145563043047",
+    "createdAt": "2025-11-15T11:00:34.842Z"
+  },
+  {
+    "id": "427647c3-161a-4617-a679-8feb73ac0cd7",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 2,
+      "urgency": "MEDIUM",
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-15T22:46:00.000Z",
+      "distanceKm": 48.03,
+      "toHospital": {
+        "latitude": "19.131237",
+        "longitude": "73.105953",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.060357",
+        "longitude": "72.924399",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 157
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 158,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "727897-9484-6977-8638-884730315950",
+    "requestId": "654468-7743-6142-7219-598573054906",
+    "createdAt": "2025-11-15T11:00:37.901Z"
+  },
+  {
+    "id": "96da7747-8b7a-44c3-ab79-547e70d4d940",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 7,
+      "urgency": "MEDIUM",
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T08:46:00.000Z",
+      "distanceKm": 77.09,
+      "toHospital": {
+        "latitude": "18.713572",
+        "longitude": "73.097119",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.334940",
+        "longitude": "72.995321",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "heavy"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 215
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 204,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "641189-7761-8453-5916-150091467852",
+    "requestId": "804162-4332-7129-4081-688508347578",
+    "createdAt": "2025-11-15T11:00:38.000Z"
+  },
+  {
+    "id": "ca646959-0707-4090-ac09-0baff317a5e7",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 8,
+      "urgency": "MEDIUM",
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T12:29:00.000Z",
+      "distanceKm": 60.75,
+      "toHospital": {
+        "latitude": "19.337520",
+        "longitude": "73.116172",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "19.022231",
+        "longitude": "72.642833",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "heavy"
+    },
+    "outputLabel": {
+      "method": 2,
+      "eta_minutes": 182
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 152,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "318151-3992-4717-3457-111638124645",
+    "requestId": "269744-7062-8850-7834-706666400993",
+    "createdAt": "2025-11-15T11:00:41.762Z"
+  },
+  {
+    "id": "defd3e52-b1ff-43d0-8b8d-e01bd2bf4218",
+    "taskType": "transport_planning",
+    "inputFeatures": {
+      "units": 1,
+      "urgency": "HIGH",
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T14:41:00.000Z",
+      "distanceKm": 46.64,
+      "toHospital": {
+        "latitude": "18.529648",
+        "longitude": "72.610318",
+        "hospitalName": "Destination Hospital"
+      },
+      "fromHospital": {
+        "latitude": "18.533496",
+        "longitude": "72.788577",
+        "hospitalName": "Source Hospital"
+      },
+      "trafficConditions": "light"
+    },
+    "outputLabel": {
+      "method": 1,
+      "eta_minutes": 82
+    },
+    "outcome": {
+      "success": true,
+      "actualETA": 74,
+      "coldChainMaintained": true
+    },
+    "agentDecisionId": "244925-3657-3090-9136-181520141865",
+    "requestId": "628597-4969-6700-4909-905455166831",
+    "createdAt": "2025-11-16T11:00:39.817Z"
+  }
+]

@@ -4,13 +4,13 @@ task_type: "donor_selection"  # or "urgency_assessment", "inventory_selection", 
 
 training:
   batch_size: 32
-  num_epochs: 50
-  early_stopping_patience: 10
-  save_every: 5
+  num_epochs: 100
+  early_stopping_patience: 999
+  save_every: 10
 
 optimizer:
   type: "AdamW"
-  lr: 0.0001
+  lr: 0.001
   weight_decay: 0.00001
 
 scheduler:
@@ -31,5 +31,6 @@ data:
   val_ratio: 0.15
   test_ratio: 0.15
 
-checkpoint_dir: "ml/checkpoints"
+checkpoint_dir: "checkpoints"
+data_dir: "data"
 

@@ -80,7 +80,7 @@ class MultiFactorReasoningLayer(nn.Module):
         )
 
         # Flatten factors: [batch_size, num_factors * hidden_dim]
-        flattened = attended_factors.view(batch_size, -1)
+        flattened = attended_factors.reshape(batch_size, -1)
 
         # Fusion
         fused = self.fusion(flattened)

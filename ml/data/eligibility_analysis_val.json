@@ -1,0 +1,2719 @@
+[
+  {
+    "id": "038e3955-dd40-4c57-9050-4c64923488e3",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 21,
+        "bmi": 17.01,
+        "gender": "female",
+        "weight": 56.49,
+        "hemoglobin": 11.37,
+        "lastDonation": 391
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": false,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 17.01,
+            "required": ">=18.5",
+            "criterion": "bmi"
+          },
+          {
+            "value": 11.36527390034446,
+            "required": ">=12.5",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "977452-4117-6113-7704-550959231501",
+    "requestId": null,
+    "createdAt": "2025-10-29T11:01:29.616Z"
+  },
+  {
+    "id": "4082aa4b-6a24-472c-835f-e93c085415ec",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 58,
+        "bmi": 20.96,
+        "gender": "male",
+        "weight": 49.89,
+        "hemoglobin": 12.1,
+        "lastDonation": 580
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": false,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 49.88699290626476,
+            "required": ">=50kg",
+            "criterion": "weight"
+          },
+          {
+            "value": 12.09811080103045,
+            "required": ">=13",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "236301-5203-5826-4673-257373335856",
+    "requestId": null,
+    "createdAt": "2025-10-30T11:01:14.223Z"
+  },
+  {
+    "id": "dc28dfd6-b14b-4b53-928b-5664af8d25b4",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 48,
+        "bmi": 22.9,
+        "gender": "female",
+        "weight": 82.47,
+        "hemoglobin": 12.57,
+        "lastDonation": 332
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "856015-2363-9063-2093-469462015380",
+    "requestId": null,
+    "createdAt": "2025-10-30T11:01:23.334Z"
+  },
+  {
+    "id": "63b5cf7f-2a8a-407c-a45b-85e8f0017daf",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 31,
+        "bmi": 26.3,
+        "gender": "male",
+        "weight": 63.59,
+        "hemoglobin": 15.92,
+        "lastDonation": 59
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": false,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 59,
+            "required": ">=90 days",
+            "criterion": "donation_interval"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "593822-2587-8383-4866-106372793725",
+    "requestId": null,
+    "createdAt": "2025-10-30T11:01:31.322Z"
+  },
+  {
+    "id": "51612070-b307-4359-af38-9cbc99308b7a",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 44,
+        "bmi": 17.01,
+        "gender": "female",
+        "weight": 54.04,
+        "hemoglobin": 12.84,
+        "lastDonation": 562
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": false,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 17.01,
+            "required": ">=18.5",
+            "criterion": "bmi"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "636599-3461-4739-7922-862551750654",
+    "requestId": null,
+    "createdAt": "2025-11-01T11:01:04.599Z"
+  },
+  {
+    "id": "c495c69a-dcd4-435b-ad3e-eefe6ab41298",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 54,
+        "bmi": 26.76,
+        "gender": "male",
+        "weight": 70.58,
+        "hemoglobin": 12.71,
+        "lastDonation": 623
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 12.71128597068547,
+            "required": ">=13",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "661819-4236-3351-7167-863638768744",
+    "requestId": null,
+    "createdAt": "2025-11-01T11:01:23.439Z"
+  },
+  {
+    "id": "d9117a9d-f013-4f3e-aa87-14d498d1d738",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 19,
+        "bmi": 18.48,
+        "gender": "female",
+        "weight": 64.25,
+        "hemoglobin": 15.19,
+        "lastDonation": 97
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": false,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": false,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 18.48,
+            "required": ">=18.5",
+            "criterion": "bmi"
+          },
+          {
+            "value": 97,
+            "required": ">=120 days",
+            "criterion": "donation_interval"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        1
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "925524-3734-9667-1183-138333377432",
+    "requestId": null,
+    "createdAt": "2025-11-02T11:01:06.851Z"
+  },
+  {
+    "id": "bab48a62-9512-4622-b450-de8ef2e4b510",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 22,
+        "bmi": 23.24,
+        "gender": "female",
+        "weight": 77,
+        "hemoglobin": 14.11,
+        "lastDonation": 516
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "434031-1851-5096-1198-275895969406",
+    "requestId": null,
+    "createdAt": "2025-11-02T11:01:13.828Z"
+  },
+  {
+    "id": "b1ecdd89-7dbf-44b9-bbb0-dddf8990982c",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 31,
+        "bmi": 29.45,
+        "gender": "female",
+        "weight": 76.23,
+        "hemoglobin": 12.04,
+        "lastDonation": 6
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": false,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 12.03626840261301,
+            "required": ">=12.5",
+            "criterion": "hemoglobin"
+          },
+          {
+            "value": 6,
+            "required": ">=120 days",
+            "criterion": "donation_interval"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        1
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "545195-6424-6469-2077-895733244836",
+    "requestId": null,
+    "createdAt": "2025-11-02T11:01:16.886Z"
+  },
+  {
+    "id": "d3d3bd2f-4c71-4165-9ffe-14e8759ff934",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 42,
+        "bmi": 29.64,
+        "gender": "female",
+        "weight": 93.24,
+        "hemoglobin": 15.45,
+        "lastDonation": 436
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "242913-4096-8232-4481-405132922355",
+    "requestId": null,
+    "createdAt": "2025-11-03T11:01:06.071Z"
+  },
+  {
+    "id": "25279c0d-aa16-4473-bd4a-34a18278a327",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 44,
+        "bmi": 20.01,
+        "gender": "male",
+        "weight": 71.33,
+        "hemoglobin": 14.62,
+        "lastDonation": 497
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "465887-9005-3445-4739-333193550796",
+    "requestId": null,
+    "createdAt": "2025-11-03T11:01:15.151Z"
+  },
+  {
+    "id": "91d1cab9-9f30-4d54-8d24-0f0209d2bbfc",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 53,
+        "bmi": 30.42,
+        "gender": "female",
+        "weight": 69.05,
+        "hemoglobin": 14.53,
+        "lastDonation": 684
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "468257-7992-5457-2620-418940941878",
+    "requestId": null,
+    "createdAt": "2025-11-03T11:01:18.870Z"
+  },
+  {
+    "id": "fb53679c-8d97-4f22-9156-73d14db651ce",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 53,
+        "bmi": 17.15,
+        "gender": "male",
+        "weight": 49.9,
+        "hemoglobin": 13.18,
+        "lastDonation": 613
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": false,
+            "criterion": "weight"
+          },
+          {
+            "passed": false,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 49.90343734038917,
+            "required": ">=50kg",
+            "criterion": "weight"
+          },
+          {
+            "value": 17.15,
+            "required": ">=18.5",
+            "criterion": "bmi"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        1,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "931381-3993-8207-1725-423793324251",
+    "requestId": null,
+    "createdAt": "2025-11-04T11:00:57.429Z"
+  },
+  {
+    "id": "6e97a09c-cd1b-4040-9774-50cdb2158086",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 60,
+        "bmi": 18.51,
+        "gender": "female",
+        "weight": 52.41,
+        "hemoglobin": 11.02,
+        "lastDonation": 122
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 11.02498289543234,
+            "required": ">=12.5",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "486362-1558-7946-5696-371814852593",
+    "requestId": null,
+    "createdAt": "2025-11-04T11:01:18.470Z"
+  },
+  {
+    "id": "850f0fe6-5621-44a5-9b39-0dfcddc34611",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 63,
+        "bmi": 37.94,
+        "gender": "female",
+        "weight": 93.47,
+        "hemoglobin": 15.52,
+        "lastDonation": 504
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "765604-4232-4584-3548-862871630573",
+    "requestId": null,
+    "createdAt": "2025-11-04T11:01:22.115Z"
+  },
+  {
+    "id": "4c71a74d-db8e-4abe-84b3-f278ec971cc5",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 55,
+        "bmi": 15.39,
+        "gender": "male",
+        "weight": 49.64,
+        "hemoglobin": 13.8,
+        "lastDonation": 132
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": false,
+            "criterion": "weight"
+          },
+          {
+            "passed": false,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 49.63764275578784,
+            "required": ">=50kg",
+            "criterion": "weight"
+          },
+          {
+            "value": 15.39,
+            "required": ">=18.5",
+            "criterion": "bmi"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        1,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "311035-2381-7753-8169-179915678843",
+    "requestId": null,
+    "createdAt": "2025-11-05T11:00:58.044Z"
+  },
+  {
+    "id": "fcaac45e-86e4-4151-acb9-d55164bc27be",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 50,
+        "bmi": 25.39,
+        "gender": "female",
+        "weight": 62.32,
+        "hemoglobin": 14.51,
+        "lastDonation": 721
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "370066-4799-5017-1906-943447395024",
+    "requestId": null,
+    "createdAt": "2025-11-05T11:01:30.547Z"
+  },
+  {
+    "id": "f84875dd-d04c-4352-b67d-fccaaf67de17",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 40,
+        "bmi": 14.24,
+        "gender": "female",
+        "weight": 49.56,
+        "hemoglobin": 11.37,
+        "lastDonation": 564
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": false,
+            "criterion": "weight"
+          },
+          {
+            "passed": false,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 49.55684496926879,
+            "required": ">=50kg",
+            "criterion": "weight"
+          },
+          {
+            "value": 14.24,
+            "required": ">=18.5",
+            "criterion": "bmi"
+          },
+          {
+            "value": 11.37153716230975,
+            "required": ">=12.5",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        1,
+        1,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "499991-9444-5232-5367-650707463957",
+    "requestId": null,
+    "createdAt": "2025-11-06T11:01:09.615Z"
+  },
+  {
+    "id": "205d520f-e909-476f-a6a1-df9a96ac0e4f",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 32,
+        "bmi": 20.94,
+        "gender": "female",
+        "weight": 51.56,
+        "hemoglobin": 12.7,
+        "lastDonation": 304
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "908050-4605-1934-6320-721756781919",
+    "requestId": null,
+    "createdAt": "2025-11-07T11:01:13.620Z"
+  },
+  {
+    "id": "2c476ffd-13f1-4626-9224-35691adf491d",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 57,
+        "bmi": 17.66,
+        "gender": "female",
+        "weight": 48.47,
+        "hemoglobin": 11.96,
+        "lastDonation": 703
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": false,
+            "criterion": "weight"
+          },
+          {
+            "passed": false,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 48.46863956330698,
+            "required": ">=50kg",
+            "criterion": "weight"
+          },
+          {
+            "value": 17.66,
+            "required": ">=18.5",
+            "criterion": "bmi"
+          },
+          {
+            "value": 11.95951811685108,
+            "required": ">=12.5",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        1,
+        1,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "732495-8322-6834-6851-679367195172",
+    "requestId": null,
+    "createdAt": "2025-11-07T11:01:17.401Z"
+  },
+  {
+    "id": "27a0963b-5f97-4edc-81ae-24077a893297",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 64,
+        "bmi": 15.92,
+        "gender": "male",
+        "weight": 53.05,
+        "hemoglobin": 11.83,
+        "lastDonation": 165
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": false,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 15.92,
+            "required": ">=18.5",
+            "criterion": "bmi"
+          },
+          {
+            "value": 11.82814745450996,
+            "required": ">=13",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "354659-6327-5428-5783-642862628941",
+    "requestId": null,
+    "createdAt": "2025-11-07T11:01:25.180Z"
+  },
+  {
+    "id": "870e8450-e876-465a-9ff8-4c41906717a7",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 58,
+        "bmi": 25.79,
+        "gender": "female",
+        "weight": 85.13,
+        "hemoglobin": 14.67,
+        "lastDonation": 285
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "160592-4313-1166-8690-915571916562",
+    "requestId": null,
+    "createdAt": "2025-11-08T11:01:29.310Z"
+  },
+  {
+    "id": "ec141928-e46c-4cb6-a82b-878110e7b415",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 32,
+        "bmi": 41.98,
+        "gender": "female",
+        "weight": 99.54,
+        "hemoglobin": 12.56,
+        "lastDonation": 361
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "350261-3170-6548-4493-377991512347",
+    "requestId": null,
+    "createdAt": "2025-11-09T11:01:19.216Z"
+  },
+  {
+    "id": "d28aa0e5-d026-4a07-806f-c9fe1e9ed3ae",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 41,
+        "bmi": 29.36,
+        "gender": "male",
+        "weight": 87.13,
+        "hemoglobin": 11.89,
+        "lastDonation": 616
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 11.88811838972002,
+            "required": ">=13",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "409239-8554-3694-8153-429273649221",
+    "requestId": null,
+    "createdAt": "2025-11-09T11:01:28.698Z"
+  },
+  {
+    "id": "d8118b3f-9ca7-44ba-9723-1b122133c28e",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 57,
+        "bmi": 23.59,
+        "gender": "male",
+        "weight": 84.93,
+        "hemoglobin": 13.65,
+        "lastDonation": 74
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": false,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 74,
+            "required": ">=90 days",
+            "criterion": "donation_interval"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "921709-9081-6869-6623-451022770333",
+    "requestId": null,
+    "createdAt": "2025-11-10T11:01:10.332Z"
+  },
+  {
+    "id": "ce0ab7bc-4409-48a4-9f5b-f4619bb43c46",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 46,
+        "bmi": 29.22,
+        "gender": "female",
+        "weight": 72.47,
+        "hemoglobin": 11.8,
+        "lastDonation": 713
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 11.80239801021398,
+            "required": ">=12.5",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "130609-3271-1247-4569-655582259630",
+    "requestId": null,
+    "createdAt": "2025-11-10T11:01:15.264Z"
+  },
+  {
+    "id": "66434c3c-2a9b-4b95-a33c-932057bb0305",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 55,
+        "bmi": 18.41,
+        "gender": "male",
+        "weight": 48.6,
+        "hemoglobin": 13.45,
+        "lastDonation": 574
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": false,
+            "criterion": "weight"
+          },
+          {
+            "passed": false,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 48.60054685996582,
+            "required": ">=50kg",
+            "criterion": "weight"
+          },
+          {
+            "value": 18.41,
+            "required": ">=18.5",
+            "criterion": "bmi"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        1,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "898079-3533-9397-8700-930986316770",
+    "requestId": null,
+    "createdAt": "2025-11-10T11:01:16.787Z"
+  },
+  {
+    "id": "f5714845-6dcd-47a1-964d-f803fb96cc7a",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 54,
+        "bmi": 28.13,
+        "gender": "female",
+        "weight": 77.42,
+        "hemoglobin": 11.93,
+        "lastDonation": 688
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 11.93208066400369,
+            "required": ">=12.5",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "621971-3733-7783-9508-230034789748",
+    "requestId": null,
+    "createdAt": "2025-11-10T11:01:27.125Z"
+  },
+  {
+    "id": "add46edf-14ee-4757-a075-d980c7f56ef6",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 42,
+        "bmi": 24.3,
+        "gender": "male",
+        "weight": 74.49,
+        "hemoglobin": 12.63,
+        "lastDonation": 648
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 12.63154272897185,
+            "required": ">=13",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "353869-2323-9860-8544-267909612504",
+    "requestId": null,
+    "createdAt": "2025-11-11T11:01:09.512Z"
+  },
+  {
+    "id": "d2c2188d-8c4b-43b5-9ed4-23c4f8cd9ad0",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 34,
+        "bmi": 21.22,
+        "gender": "female",
+        "weight": 74.68,
+        "hemoglobin": 11.44,
+        "lastDonation": 582
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 11.43560351475044,
+            "required": ">=12.5",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "806506-9255-4513-5345-831004185400",
+    "requestId": null,
+    "createdAt": "2025-11-11T11:01:18.329Z"
+  },
+  {
+    "id": "265b534a-6eeb-40d3-af2d-d41d725c9183",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 50,
+        "bmi": 25.46,
+        "gender": "female",
+        "weight": 89.23,
+        "hemoglobin": 11.47,
+        "lastDonation": 36
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": false,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 11.47133280883213,
+            "required": ">=12.5",
+            "criterion": "hemoglobin"
+          },
+          {
+            "value": 36,
+            "required": ">=120 days",
+            "criterion": "donation_interval"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        1
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "576275-4789-1620-8903-830789437354",
+    "requestId": null,
+    "createdAt": "2025-11-11T11:01:27.332Z"
+  },
+  {
+    "id": "df3f13a3-9a53-4815-a030-a66da28104aa",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 42,
+        "bmi": 27.35,
+        "gender": "male",
+        "weight": 95.72,
+        "hemoglobin": 11.43,
+        "lastDonation": 95
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 11.4260057699818,
+            "required": ">=13",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "777173-3826-3278-5078-676861787911",
+    "requestId": null,
+    "createdAt": "2025-11-12T11:00:58.967Z"
+  },
+  {
+    "id": "a7fe2f71-6a49-4484-84dd-0ccc7793f822",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 25,
+        "bmi": 33.98,
+        "gender": "male",
+        "weight": 94.37,
+        "hemoglobin": 11.82,
+        "lastDonation": 325
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 11.82229354735933,
+            "required": ">=13",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "902322-6306-8633-5308-411750362255",
+    "requestId": null,
+    "createdAt": "2025-11-12T11:01:04.085Z"
+  },
+  {
+    "id": "27b6d8f2-f584-44f9-ac3d-67d23a046529",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 37,
+        "bmi": 38.16,
+        "gender": "male",
+        "weight": 94.57,
+        "hemoglobin": 13.96,
+        "lastDonation": 141
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "896141-4109-7253-3982-437836941267",
+    "requestId": null,
+    "createdAt": "2025-11-13T11:00:58.249Z"
+  },
+  {
+    "id": "4a77dc4b-b8a0-438a-a260-9c559243cef8",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 22,
+        "bmi": 23.47,
+        "gender": "male",
+        "weight": 73.66,
+        "hemoglobin": 15.2,
+        "lastDonation": 513
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": true
+    },
+    "agentDecisionId": "634339-4280-9822-7779-949112357609",
+    "requestId": null,
+    "createdAt": "2025-11-13T11:01:23.644Z"
+  },
+  {
+    "id": "6104a43b-3dcb-44f8-9074-0dad82b721f3",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 60,
+        "bmi": 27.74,
+        "gender": "male",
+        "weight": 88.11,
+        "hemoglobin": 14.76,
+        "lastDonation": 524
+      },
+      "eligibilityResult": {
+        "passed": true,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": []
+      }
+    },
+    "outputLabel": {
+      "eligible": 1,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "309258-2295-2314-6762-136149048190",
+    "requestId": null,
+    "createdAt": "2025-11-14T11:01:20.485Z"
+  },
+  {
+    "id": "9b2d8517-68ed-4d79-b87b-4ae7f21992b2",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 38,
+        "bmi": 15.88,
+        "gender": "male",
+        "weight": 56.13,
+        "hemoglobin": 14.82,
+        "lastDonation": 122
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": false,
+            "criterion": "bmi"
+          },
+          {
+            "passed": true,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 15.88,
+            "required": ">=18.5",
+            "criterion": "bmi"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "944785-9296-2195-1133-684608003662",
+    "requestId": null,
+    "createdAt": "2025-11-15T11:01:01.833Z"
+  },
+  {
+    "id": "449238ed-bc01-4f10-9338-8aec45107496",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 46,
+        "bmi": 22.4,
+        "gender": "female",
+        "weight": 78.99,
+        "hemoglobin": 11.68,
+        "lastDonation": 2
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": false,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 11.68453270225297,
+            "required": ">=12.5",
+            "criterion": "hemoglobin"
+          },
+          {
+            "value": 2,
+            "required": ">=120 days",
+            "criterion": "donation_interval"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        1
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "254558-1419-4149-9680-176084219590",
+    "requestId": null,
+    "createdAt": "2025-11-15T11:01:03.163Z"
+  },
+  {
+    "id": "1029a88b-3343-4157-b3c7-f16271fbe0d7",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 42,
+        "bmi": 34.85,
+        "gender": "female",
+        "weight": 85.75,
+        "hemoglobin": 11.7,
+        "lastDonation": 725
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": true,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 11.69542033110508,
+            "required": ">=12.5",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "178522-2842-2944-7668-184695210058",
+    "requestId": null,
+    "createdAt": "2025-11-15T11:01:08.488Z"
+  },
+  {
+    "id": "c0f43ab6-dd62-412e-9534-c3e015b21a68",
+    "taskType": "eligibility_analysis",
+    "inputFeatures": {
+      "donor": {
+        "age": 22,
+        "bmi": 16.32,
+        "gender": "male",
+        "weight": 58.26,
+        "hemoglobin": 11.28,
+        "lastDonation": 339
+      },
+      "eligibilityResult": {
+        "passed": false,
+        "allCriteria": [
+          {
+            "passed": true,
+            "criterion": "age"
+          },
+          {
+            "passed": true,
+            "criterion": "weight"
+          },
+          {
+            "passed": false,
+            "criterion": "bmi"
+          },
+          {
+            "passed": false,
+            "criterion": "hemoglobin"
+          },
+          {
+            "passed": true,
+            "criterion": "disease_tests"
+          },
+          {
+            "passed": true,
+            "criterion": "donation_interval"
+          }
+        ],
+        "failedCriteria": [
+          {
+            "value": 16.32,
+            "required": ">=18.5",
+            "criterion": "bmi"
+          },
+          {
+            "value": 11.2834700284614,
+            "required": ">=13",
+            "criterion": "hemoglobin"
+          }
+        ]
+      }
+    },
+    "outputLabel": {
+      "eligible": 0,
+      "failed_criteria": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        0
+      ]
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualEligibility": false
+    },
+    "agentDecisionId": "914514-6446-7672-5324-658592702146",
+    "requestId": null,
+    "createdAt": "2025-11-16T11:01:26.217Z"
+  }
+]

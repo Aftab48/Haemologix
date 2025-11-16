@@ -11,9 +11,10 @@ from pathlib import Path
 import json
 from datetime import datetime
 
-from ..models.haemologix_decision_network import HaemologixDecisionNetwork
-from ..data.dataset import HaemologixDataset
-from .losses import MultiTaskLoss
+from models.haemologix_decision_network import HaemologixDecisionNetwork
+from data.dataset import HaemologixDataset
+from training.losses import MultiTaskLoss
+from utils.metrics import compute_metrics
 
 
 class Trainer:
@@ -42,17 +43,19 @@ class Trainer:
         self.checkpoint_dir = Path(checkpoint_dir)
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
-        # Optimizer
+        # Optimizer - use config if available, otherwise default
         if optimizer is None:
+            # Try to get LR from config, default to 0.001
+            lr = getattr(self, 'learning_rate', 0.001)
             self.optimizer = AdamW(
-                model.parameters(), lr=1e-4, weight_decay=1e-5
+                model.parameters(), lr=lr, weight_decay=1e-5
             )
         else:
             self.optimizer = optimizer
 
         # Learning rate scheduler
         self.scheduler = ReduceLROnPlateau(
-            self.optimizer, mode="min", factor=0.5, patience=5, verbose=True
+            self.optimizer, mode="min", factor=0.5, patience=5
         )
 
         # Training state
@@ -60,6 +63,7 @@ class Trainer:
         self.epoch = 0
         self.train_losses = []
         self.val_losses = []
+        self.val_metrics_history = []  # Store validation metrics over time
 
     def train_epoch(
         self, train_loader: DataLoader
@@ -91,20 +95,30 @@ class Trainer:
             # Backward pass
             self.optimizer.zero_grad()
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
-            self.optimizer.step()
+            
+            # Check for gradient issues
+            total_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+            
+            # Only step if gradients are valid
+            if torch.isfinite(loss) and torch.isfinite(total_norm):
+                self.optimizer.step()
+            else:
+                print(f"Warning: Invalid loss ({loss.item()}) or gradient norm ({total_norm}), skipping step")
 
             total_loss += loss.item()
             num_batches += 1
 
         avg_loss = total_loss / num_batches if num_batches > 0 else 0.0
-        return avg_loss
+        # Round to 6 decimal places to avoid floating point precision issues
+        return round(avg_loss, 6)
 
-    def validate(self, val_loader: DataLoader) -> float:
+    def validate(self, val_loader: DataLoader, compute_metrics_flag: bool = False) -> tuple:
         """Validate on validation set"""
         self.model.eval()
         total_loss = 0.0
         num_batches = 0
+        all_predictions = []
+        all_labels = []
 
         with torch.no_grad():
             for batch in val_loader:
@@ -125,8 +139,37 @@ class Trainer:
 
                 total_loss += loss.item()
                 num_batches += 1
+                
+                # Collect predictions and labels for metrics
+                if compute_metrics_flag:
+                    all_predictions.append(predictions)
+                    all_labels.append(batch["label"])
 
         avg_loss = total_loss / num_batches if num_batches > 0 else 0.0
+        # Don't round too aggressively - keep more precision for debugging
+        avg_loss = round(avg_loss, 8)
+        
+        # Compute metrics if requested
+        metrics = {}
+        if compute_metrics_flag and len(all_predictions) > 0:
+            # Concatenate all predictions and labels
+            if self.task_type == "donor_selection":
+                # For donor selection, labels are tensors
+                all_pred_scores = torch.cat([p["scores"] for p in all_predictions], dim=0)
+                all_pred_idx = torch.cat([p["selected_idx"] for p in all_predictions], dim=0)
+                all_labels_tensor = torch.cat(all_labels, dim=0)
+                
+                # Compute accuracy
+                correct = (all_pred_idx == all_labels_tensor).float()
+                metrics["accuracy"] = correct.mean().item()
+                
+                # Top-3 accuracy
+                top_3 = torch.topk(all_pred_scores, k=min(3, all_pred_scores.size(-1)), dim=-1).indices
+                top_3_correct = (top_3 == all_labels_tensor.unsqueeze(-1)).any(dim=-1).float()
+                metrics["top_3_accuracy"] = top_3_correct.mean().item()
+        
+        if compute_metrics_flag:
+            return (avg_loss, metrics)
         return avg_loss
 
     def _move_batch_to_device(self, batch: Dict) -> Dict:
@@ -187,8 +230,19 @@ class Trainer:
             train_loss = self.train_epoch(train_loader)
             self.train_losses.append(train_loss)
 
-            # Validate
-            val_loss = self.validate(val_loader)
+            # Validate (compute metrics every 5 epochs or on last epoch)
+            compute_metrics_this_epoch = (epoch % 5 == 0) or (epoch == num_epochs - 1)
+            if compute_metrics_this_epoch:
+                result = self.validate(val_loader, compute_metrics_flag=True)
+                if isinstance(result, tuple):
+                    val_loss, val_metrics = result
+                    if val_metrics:
+                        self.val_metrics_history.append(val_metrics)
+                        print(f"  Val Metrics: {', '.join([f'{k}={v:.4f}' for k, v in val_metrics.items()])}")
+                else:
+                    val_loss = result
+            else:
+                val_loss = self.validate(val_loader, compute_metrics_flag=False)
             self.val_losses.append(val_loss)
 
             # Learning rate scheduling
@@ -199,8 +253,11 @@ class Trainer:
             if is_best:
                 patience_counter = 0
                 self.save_checkpoint(epoch, val_loss, is_best=True)
+                print(f"✓ New best validation loss: {val_loss:.4f} (improved from {self.best_val_loss:.4f})")
             else:
                 patience_counter += 1
+                if patience_counter > 0:
+                    print(f"  No improvement for {patience_counter}/{early_stopping_patience} epochs")
 
             # Periodic checkpoint
             if epoch % save_every == 0:
@@ -208,11 +265,12 @@ class Trainer:
 
             # Early stopping
             if patience_counter >= early_stopping_patience:
-                print(f"Early stopping at epoch {epoch}")
+                print(f"\nEarly stopping at epoch {epoch+1} (no improvement for {early_stopping_patience} epochs)")
+                print(f"Best validation loss: {self.best_val_loss:.4f}")
                 break
 
             print(
-                f"Epoch {epoch+1}/{num_epochs} - Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}"
+                f"Epoch {epoch+1}/{num_epochs} - Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Best Val: {self.best_val_loss:.4f}, LR: {self.optimizer.param_groups[0]['lr']:.6f}"
             )
 
         return self.best_val_loss

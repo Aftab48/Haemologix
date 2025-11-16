@@ -41,10 +41,35 @@ class MultiTaskLoss(nn.Module):
         scores = predictions["scores"]  # [batch_size, num_candidates]
         selected_idx = predictions["selected_idx"]  # [batch_size]
 
+        # Ensure labels are within valid range
+        num_candidates = scores.size(1)
+        labels_clamped = torch.clamp(labels, 0, num_candidates - 1)
+        
         # Cross-entropy loss on selected candidate
-        loss = self.ce_loss(scores, labels)
+        # scores are logits, labels are class indices
+        ce_loss = self.ce_loss(scores, labels_clamped)
+        
+        # Ranking loss: encourage selected candidate to have higher score than others
+        # Get score of selected candidate
+        batch_size = scores.size(0)
+        selected_scores = scores.gather(1, labels_clamped.unsqueeze(1)).squeeze(1)  # [batch_size]
+        
+        # Create mask to exclude selected candidate
+        mask = torch.ones_like(scores, dtype=torch.bool)
+        mask.scatter_(1, labels_clamped.unsqueeze(1), False)
+        
+        # Get max score among non-selected candidates
+        other_scores = scores.masked_fill(~mask, float('-inf'))
+        max_other_scores = other_scores.max(dim=1)[0]  # [batch_size]
+        
+        # Margin-based ranking loss: selected should be at least margin higher
+        margin = 1.0
+        ranking_loss = torch.clamp(margin - (selected_scores - max_other_scores), min=0.0).mean()
+        
+        # Combined loss - increased ranking weight to force differentiation
+        total_loss = ce_loss + 2.0 * ranking_loss
 
-        return loss
+        return total_loss
 
     def compute_urgency_assessment_loss(
         self, predictions: Dict[str, torch.Tensor], labels: Dict[str, torch.Tensor]

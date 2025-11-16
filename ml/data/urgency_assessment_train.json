@@ -1,0 +1,4162 @@
+[
+  {
+    "id": "8b7a4834-2033-4aad-9cdb-b499e133ab01",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "AB+",
+      "timeOfDay": "2025-11-16T13:45:00.000Z",
+      "dailyUsage": 4.86,
+      "currentUnits": 43,
+      "daysRemaining": 8.85,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "182371-4865-1115-6155-966975827655",
+    "requestId": null,
+    "createdAt": "2025-08-18T10:59:48.518Z"
+  },
+  {
+    "id": "863367aa-5117-4c11-a223-4afbb4d6c392",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T05:33:00.000Z",
+      "dailyUsage": 1.29,
+      "currentUnits": 27,
+      "daysRemaining": 20.93,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "275272-6901-1750-7245-757702662008",
+    "requestId": null,
+    "createdAt": "2025-08-19T10:59:36.020Z"
+  },
+  {
+    "id": "03d81528-3ef0-462e-b244-a456a4a5408c",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T13:20:00.000Z",
+      "dailyUsage": 4.33,
+      "currentUnits": 27,
+      "daysRemaining": 6.23,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "825765-2000-4294-2426-667116170766",
+    "requestId": null,
+    "createdAt": "2025-08-19T10:59:39.604Z"
+  },
+  {
+    "id": "8644c3ed-a03e-4d51-b1be-ed02691b8ee5",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T06:26:00.000Z",
+      "dailyUsage": 3.02,
+      "currentUnits": 28,
+      "daysRemaining": 9.26,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "558832-3495-7444-7458-278719255498",
+    "requestId": null,
+    "createdAt": "2025-08-19T10:59:48.128Z"
+  },
+  {
+    "id": "a6c4d8a6-39b0-4ca9-bb5e-faf754d7c57a",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T07:24:00.000Z",
+      "dailyUsage": 1.12,
+      "currentUnits": 7,
+      "daysRemaining": 6.27,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.52
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "324886-8768-3911-9801-939219349239",
+    "requestId": null,
+    "createdAt": "2025-08-20T10:59:59.879Z"
+  },
+  {
+    "id": "a500f40b-67c0-48e4-a46f-8b32d6b86db0",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T09:12:00.000Z",
+      "dailyUsage": 4.86,
+      "currentUnits": 3,
+      "daysRemaining": 0.62,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 3,
+      "priority_score": 0.75
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "CRITICAL"
+    },
+    "agentDecisionId": "946966-4132-9243-3837-601596282040",
+    "requestId": null,
+    "createdAt": "2025-08-21T10:59:49.537Z"
+  },
+  {
+    "id": "949831ec-68e8-4277-ab44-663aaab4281b",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T10:08:00.000Z",
+      "dailyUsage": 2.03,
+      "currentUnits": 3,
+      "daysRemaining": 1.47,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 3,
+      "priority_score": 0.72
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "CRITICAL"
+    },
+    "agentDecisionId": "235526-2787-1764-5827-311513598535",
+    "requestId": null,
+    "createdAt": "2025-08-21T10:59:53.837Z"
+  },
+  {
+    "id": "aea71098-fe7c-44d8-9d3b-b9bde307583b",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T06:57:00.000Z",
+      "dailyUsage": 1.09,
+      "currentUnits": 47,
+      "daysRemaining": 42.99,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "750337-2216-7787-6610-814239600442",
+    "requestId": null,
+    "createdAt": "2025-08-22T10:59:59.060Z"
+  },
+  {
+    "id": "87ec4753-e1e0-440b-b11d-b7464ac5c813",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T11:04:00.000Z",
+      "dailyUsage": 2.14,
+      "currentUnits": 24,
+      "daysRemaining": 11.21,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "246995-7445-4817-1932-751261571435",
+    "requestId": null,
+    "createdAt": "2025-08-23T10:59:32.566Z"
+  },
+  {
+    "id": "76817674-cf68-4958-b7bb-13cdde9f92c5",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T11:49:00.000Z",
+      "dailyUsage": 1.23,
+      "currentUnits": 14,
+      "daysRemaining": 11.34,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "459216-2946-9197-2797-320415986076",
+    "requestId": null,
+    "createdAt": "2025-08-23T10:59:32.665Z"
+  },
+  {
+    "id": "eb0eb7ff-4fa5-4dea-9df5-8aa550a9be9e",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T15:39:00.000Z",
+      "dailyUsage": 4.65,
+      "currentUnits": 33,
+      "daysRemaining": 7.1,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "504289-6032-9069-1570-744438723986",
+    "requestId": null,
+    "createdAt": "2025-08-23T10:59:43.596Z"
+  },
+  {
+    "id": "69335a22-f328-43ae-b8b9-74e53af62782",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T02:31:00.000Z",
+      "dailyUsage": 4.89,
+      "currentUnits": 28,
+      "daysRemaining": 5.73,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.47
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "LOW"
+    },
+    "agentDecisionId": "743610-8968-2486-9609-453513187704",
+    "requestId": null,
+    "createdAt": "2025-08-23T10:59:44.124Z"
+  },
+  {
+    "id": "83ffe141-e371-4474-8e0e-33847242e1e5",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T03:52:00.000Z",
+      "dailyUsage": 3.62,
+      "currentUnits": 7,
+      "daysRemaining": 1.93,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "768594-1577-2183-5355-534199120845",
+    "requestId": null,
+    "createdAt": "2025-08-23T10:59:46.352Z"
+  },
+  {
+    "id": "fa0fa332-9709-44c8-ae75-f354abfd0245",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T12:23:00.000Z",
+      "dailyUsage": 1.34,
+      "currentUnits": 31,
+      "daysRemaining": 23.15,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "917220-8369-7225-4394-277624022775",
+    "requestId": null,
+    "createdAt": "2025-08-24T10:59:38.990Z"
+  },
+  {
+    "id": "f12049f4-aab8-4d74-b832-17de212b0cc0",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T05:15:00.000Z",
+      "dailyUsage": 2.94,
+      "currentUnits": 18,
+      "daysRemaining": 6.12,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "LOW"
+    },
+    "agentDecisionId": "147746-4268-5288-1851-986038095317",
+    "requestId": null,
+    "createdAt": "2025-08-25T10:59:43.495Z"
+  },
+  {
+    "id": "3b611a06-2e8c-45d0-82fa-51eb7d1c974a",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T10:22:00.000Z",
+      "dailyUsage": 1.84,
+      "currentUnits": 21,
+      "daysRemaining": 11.4,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "320091-8977-3239-8902-256040400830",
+    "requestId": null,
+    "createdAt": "2025-08-25T10:59:47.895Z"
+  },
+  {
+    "id": "0203cd92-00d2-46af-8df8-6bbd281bf33b",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T11:53:00.000Z",
+      "dailyUsage": 3.56,
+      "currentUnits": 42,
+      "daysRemaining": 11.81,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "463128-8222-7632-5988-962804173189",
+    "requestId": null,
+    "createdAt": "2025-08-25T10:59:49.138Z"
+  },
+  {
+    "id": "02874079-7c04-4f7a-89e2-ff04f451e57f",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T14:37:00.000Z",
+      "dailyUsage": 4.58,
+      "currentUnits": 38,
+      "daysRemaining": 8.3,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "914972-3499-6050-8143-607923251226",
+    "requestId": null,
+    "createdAt": "2025-08-26T10:59:45.847Z"
+  },
+  {
+    "id": "cb40f86f-4a70-49de-a175-0ceafc1e6471",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T02:38:00.000Z",
+      "dailyUsage": 4.34,
+      "currentUnits": 43,
+      "daysRemaining": 9.91,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "738422-8161-5944-8158-341658021578",
+    "requestId": null,
+    "createdAt": "2025-08-28T10:59:33.765Z"
+  },
+  {
+    "id": "bb0d41eb-5151-41e4-855e-fb0c33edfa84",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T12:35:00.000Z",
+      "dailyUsage": 1.9,
+      "currentUnits": 34,
+      "daysRemaining": 17.86,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "677406-9449-7146-2246-124323509900",
+    "requestId": null,
+    "createdAt": "2025-08-29T10:59:37.146Z"
+  },
+  {
+    "id": "d5ae9dec-4ae5-48b6-919a-9e72831f24a5",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T15:44:00.000Z",
+      "dailyUsage": 1.64,
+      "currentUnits": 12,
+      "daysRemaining": 7.34,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "463061-1462-4433-2871-223789360595",
+    "requestId": null,
+    "createdAt": "2025-08-29T10:59:45.030Z"
+  },
+  {
+    "id": "4387b6bf-7997-4eb9-b544-8cb5df08f8a9",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T14:36:00.000Z",
+      "dailyUsage": 3.98,
+      "currentUnits": 7,
+      "daysRemaining": 1.76,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "897470-9636-2181-3085-245937511979",
+    "requestId": null,
+    "createdAt": "2025-08-29T10:59:50.048Z"
+  },
+  {
+    "id": "c7970007-d240-4fe9-85d7-e4afed6fe7b6",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T05:06:00.000Z",
+      "dailyUsage": 1.23,
+      "currentUnits": 31,
+      "daysRemaining": 25.18,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "183936-7168-7904-7555-141623534442",
+    "requestId": null,
+    "createdAt": "2025-08-30T10:59:48.323Z"
+  },
+  {
+    "id": "780de46a-3d0f-4d08-b09f-9ea66b18111c",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T09:08:00.000Z",
+      "dailyUsage": 3.44,
+      "currentUnits": 22,
+      "daysRemaining": 6.4,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "660283-7068-2590-9723-313921931005",
+    "requestId": null,
+    "createdAt": "2025-08-30T10:59:49.236Z"
+  },
+  {
+    "id": "e7b26db6-518d-44fe-917b-cff2ca4de0e6",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "AB+",
+      "timeOfDay": "2025-11-16T11:19:00.000Z",
+      "dailyUsage": 3.77,
+      "currentUnits": 6,
+      "daysRemaining": 1.59,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "866814-9411-4684-8495-999461440154",
+    "requestId": null,
+    "createdAt": "2025-08-31T10:59:41.652Z"
+  },
+  {
+    "id": "b1d38078-0bf8-47da-8655-f1cc1191d9de",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T06:12:00.000Z",
+      "dailyUsage": 2.97,
+      "currentUnits": 48,
+      "daysRemaining": 16.19,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "639970-6349-7034-4049-826955590525",
+    "requestId": null,
+    "createdAt": "2025-08-31T10:59:42.982Z"
+  },
+  {
+    "id": "ad790dd4-b631-4fe7-900b-93124390147c",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T08:27:00.000Z",
+      "dailyUsage": 1.45,
+      "currentUnits": 26,
+      "daysRemaining": 17.94,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.47
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "152685-5565-5093-1182-775499287121",
+    "requestId": null,
+    "createdAt": "2025-08-31T10:59:43.290Z"
+  },
+  {
+    "id": "340cc31d-7bee-4be4-90d9-5d919082b4c1",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T06:14:00.000Z",
+      "dailyUsage": 4.41,
+      "currentUnits": 10,
+      "daysRemaining": 2.27,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.5
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "546716-5473-3235-5143-198967004277",
+    "requestId": null,
+    "createdAt": "2025-09-01T10:59:42.371Z"
+  },
+  {
+    "id": "e3767fcd-8242-4a5e-941a-1a78b241c00a",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T08:17:00.000Z",
+      "dailyUsage": 3.92,
+      "currentUnits": 35,
+      "daysRemaining": 8.92,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "791506-3075-1428-6352-116114450467",
+    "requestId": null,
+    "createdAt": "2025-09-01T10:59:51.686Z"
+  },
+  {
+    "id": "ce06b928-5919-45bf-ae9a-166a9a4fcc70",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T16:49:00.000Z",
+      "dailyUsage": 3.06,
+      "currentUnits": 36,
+      "daysRemaining": 11.77,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "952521-5944-3806-4312-149554039519",
+    "requestId": null,
+    "createdAt": "2025-09-01T10:59:55.885Z"
+  },
+  {
+    "id": "a199479a-ee64-49a2-a757-5c765449f21a",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T06:11:00.000Z",
+      "dailyUsage": 4.45,
+      "currentUnits": 30,
+      "daysRemaining": 6.75,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "698709-8003-2357-5354-229627242982",
+    "requestId": null,
+    "createdAt": "2025-09-02T10:59:41.855Z"
+  },
+  {
+    "id": "091ea939-e2da-4ba9-b01a-a4f615f950f3",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T16:08:00.000Z",
+      "dailyUsage": 4.49,
+      "currentUnits": 16,
+      "daysRemaining": 3.57,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "365208-4306-8695-6513-858818341838",
+    "requestId": null,
+    "createdAt": "2025-09-03T10:59:33.361Z"
+  },
+  {
+    "id": "33a244c4-5c0f-4c28-a0ab-ef0e4f593241",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T08:12:00.000Z",
+      "dailyUsage": 4.16,
+      "currentUnits": 48,
+      "daysRemaining": 11.55,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "113145-2257-1701-9623-268037582439",
+    "requestId": null,
+    "createdAt": "2025-09-03T10:59:33.662Z"
+  },
+  {
+    "id": "f8c8b234-f702-4cb5-8fbc-4c19a9a474cf",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T14:01:00.000Z",
+      "dailyUsage": 3.57,
+      "currentUnits": 39,
+      "daysRemaining": 10.92,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "945692-1239-7414-8046-985697015609",
+    "requestId": null,
+    "createdAt": "2025-09-03T10:59:36.224Z"
+  },
+  {
+    "id": "a5ce8a9b-40ec-4b8c-b1f0-2fbd3b56f790",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T13:08:00.000Z",
+      "dailyUsage": 4.34,
+      "currentUnits": 20,
+      "daysRemaining": 4.61,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "674342-2096-2024-7418-952423657842",
+    "requestId": null,
+    "createdAt": "2025-09-03T10:59:40.628Z"
+  },
+  {
+    "id": "a6642d55-3a9c-4ba3-8bd3-4d910a876ec7",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T05:12:00.000Z",
+      "dailyUsage": 4.5,
+      "currentUnits": 23,
+      "daysRemaining": 5.11,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "443317-4916-9635-8762-838908992309",
+    "requestId": null,
+    "createdAt": "2025-09-03T10:59:40.833Z"
+  },
+  {
+    "id": "0dd1baf2-690e-4402-b40b-30435ee864d7",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T13:51:00.000Z",
+      "dailyUsage": 4.5,
+      "currentUnits": 5,
+      "daysRemaining": 1.11,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "443477-8482-9606-7108-527235032848",
+    "requestId": null,
+    "createdAt": "2025-09-03T10:59:48.225Z"
+  },
+  {
+    "id": "889c9171-3473-4895-a135-673cdd21f72e",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B-",
+      "timeOfDay": "2025-11-16T11:41:00.000Z",
+      "dailyUsage": 3.84,
+      "currentUnits": 8,
+      "daysRemaining": 2.08,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.65
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "178917-8125-5117-8796-433752306172",
+    "requestId": null,
+    "createdAt": "2025-09-03T10:59:57.627Z"
+  },
+  {
+    "id": "9303340d-ff23-4f0b-8f6d-77a0905178ff",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T00:45:00.000Z",
+      "dailyUsage": 2.95,
+      "currentUnits": 2,
+      "daysRemaining": 0.68,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 3,
+      "priority_score": 0.75
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "CRITICAL"
+    },
+    "agentDecisionId": "190480-6185-7909-1380-882371301553",
+    "requestId": null,
+    "createdAt": "2025-09-03T10:59:58.241Z"
+  },
+  {
+    "id": "b13b43cf-df57-47b7-a1f4-f558063f2db6",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T11:25:00.000Z",
+      "dailyUsage": 1.81,
+      "currentUnits": 30,
+      "daysRemaining": 16.61,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "470075-6643-8614-5103-267652066072",
+    "requestId": null,
+    "createdAt": "2025-09-05T10:59:38.478Z"
+  },
+  {
+    "id": "f65cf16d-0415-49e0-8f99-c3d7c6294dcd",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T12:27:00.000Z",
+      "dailyUsage": 4.23,
+      "currentUnits": 43,
+      "daysRemaining": 10.15,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "LOW"
+    },
+    "agentDecisionId": "564140-2906-7412-5989-269804113073",
+    "requestId": null,
+    "createdAt": "2025-09-05T10:59:45.540Z"
+  },
+  {
+    "id": "d0e34bbc-2100-465e-a4cb-346a176486e2",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B-",
+      "timeOfDay": "2025-11-16T10:20:00.000Z",
+      "dailyUsage": 3.9,
+      "currentUnits": 17,
+      "daysRemaining": 4.36,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.47
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "477257-2642-4913-8853-499641070400",
+    "requestId": null,
+    "createdAt": "2025-09-05T10:59:46.667Z"
+  },
+  {
+    "id": "0ed6640b-5d53-4c84-b556-d9ef5c3685dc",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T12:29:00.000Z",
+      "dailyUsage": 3.23,
+      "currentUnits": 25,
+      "daysRemaining": 7.74,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "832888-2192-9446-5414-162302738420",
+    "requestId": null,
+    "createdAt": "2025-09-05T10:59:51.276Z"
+  },
+  {
+    "id": "0a2a971a-d311-4d99-80cd-19f89dc8b459",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T11:34:00.000Z",
+      "dailyUsage": 2.28,
+      "currentUnits": 14,
+      "daysRemaining": 6.15,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "113447-1037-2999-9646-849491713620",
+    "requestId": null,
+    "createdAt": "2025-09-07T10:59:34.389Z"
+  },
+  {
+    "id": "29e58e97-6507-4b9c-86cc-65fc0a4b07ac",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-15T21:36:00.000Z",
+      "dailyUsage": 3.86,
+      "currentUnits": 41,
+      "daysRemaining": 10.62,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "738701-8465-7837-8656-176555079314",
+    "requestId": null,
+    "createdAt": "2025-09-07T10:59:44.007Z"
+  },
+  {
+    "id": "2a8d499c-2a30-477a-865e-2a65dbb10614",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-15T20:37:00.000Z",
+      "dailyUsage": 4.2,
+      "currentUnits": 5,
+      "daysRemaining": 1.19,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "864917-9543-4013-7600-463521347421",
+    "requestId": null,
+    "createdAt": "2025-09-08T10:59:34.715Z"
+  },
+  {
+    "id": "e83a29f2-9c44-46da-8a91-be5325cda3a6",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T09:16:00.000Z",
+      "dailyUsage": 4.29,
+      "currentUnits": 21,
+      "daysRemaining": 4.9,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "609164-7324-3694-7659-148927675064",
+    "requestId": null,
+    "createdAt": "2025-09-08T10:59:36.429Z"
+  },
+  {
+    "id": "1444f693-7ade-4f84-aeec-dba155ff82ce",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T03:46:00.000Z",
+      "dailyUsage": 4.89,
+      "currentUnits": 42,
+      "daysRemaining": 8.59,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "296485-2644-7095-6129-789555486932",
+    "requestId": null,
+    "createdAt": "2025-09-08T10:59:41.448Z"
+  },
+  {
+    "id": "26c1e43d-301a-4948-938b-80b25542875c",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T06:48:00.000Z",
+      "dailyUsage": 4.45,
+      "currentUnits": 11,
+      "daysRemaining": 2.47,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.6
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "818902-8728-2316-5723-118026338069",
+    "requestId": null,
+    "createdAt": "2025-09-08T10:59:50.253Z"
+  },
+  {
+    "id": "d4b4d9c6-a78e-485b-b093-d5e7a8a77ac3",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T14:21:00.000Z",
+      "dailyUsage": 1.56,
+      "currentUnits": 42,
+      "daysRemaining": 26.91,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "291474-3057-9688-4156-849003486100",
+    "requestId": null,
+    "createdAt": "2025-09-08T10:59:51.484Z"
+  },
+  {
+    "id": "3c3f1c46-69ec-4f83-baa2-33752790c8af",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T06:52:00.000Z",
+      "dailyUsage": 2.07,
+      "currentUnits": 3,
+      "daysRemaining": 1.45,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.82
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "204929-6736-1553-6100-277914643927",
+    "requestId": null,
+    "createdAt": "2025-09-08T10:59:52.710Z"
+  },
+  {
+    "id": "71415e85-363d-4282-91c9-3e8a0d3901b9",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "AB+",
+      "timeOfDay": "2025-11-16T09:02:00.000Z",
+      "dailyUsage": 3.44,
+      "currentUnits": 37,
+      "daysRemaining": 10.77,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "546854-9664-3962-2290-342648099618",
+    "requestId": null,
+    "createdAt": "2025-09-09T10:59:58.548Z"
+  },
+  {
+    "id": "6db5acc3-4e7d-49a8-8902-3f430879b8e4",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-15T19:56:00.000Z",
+      "dailyUsage": 2.08,
+      "currentUnits": 29,
+      "daysRemaining": 13.93,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "973057-3661-9555-9864-783102502986",
+    "requestId": null,
+    "createdAt": "2025-09-10T10:59:32.369Z"
+  },
+  {
+    "id": "914d8d42-bc99-485e-b532-8b57257d7c4f",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T08:24:00.000Z",
+      "dailyUsage": 3.62,
+      "currentUnits": 17,
+      "daysRemaining": 4.7,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "627742-6058-8719-7186-663949661910",
+    "requestId": null,
+    "createdAt": "2025-09-10T10:59:47.386Z"
+  },
+  {
+    "id": "b6d6f506-780c-4ca4-b445-348eb1b4c940",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T07:30:00.000Z",
+      "dailyUsage": 4.7,
+      "currentUnits": 42,
+      "daysRemaining": 8.94,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "963985-9847-1431-5590-536202925854",
+    "requestId": null,
+    "createdAt": "2025-09-11T10:59:33.867Z"
+  },
+  {
+    "id": "c7b0dc6b-f047-4982-ba53-7117b7e7c275",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "AB+",
+      "timeOfDay": "2025-11-16T13:06:00.000Z",
+      "dailyUsage": 2.52,
+      "currentUnits": 0,
+      "daysRemaining": 0,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 3,
+      "priority_score": 0.8
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "CRITICAL"
+    },
+    "agentDecisionId": "238852-9360-7949-5834-175888957439",
+    "requestId": null,
+    "createdAt": "2025-09-11T10:59:47.486Z"
+  },
+  {
+    "id": "eb7718b4-8722-4a3d-b02a-a5436e2b618a",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T17:09:00.000Z",
+      "dailyUsage": 4.91,
+      "currentUnits": 30,
+      "daysRemaining": 6.11,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "373729-1102-7996-7417-135350386404",
+    "requestId": null,
+    "createdAt": "2025-09-13T10:59:35.609Z"
+  },
+  {
+    "id": "3243bf46-cb8e-4274-9cd1-3e8898a6e0e7",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T11:40:00.000Z",
+      "dailyUsage": 1.92,
+      "currentUnits": 0,
+      "daysRemaining": 0,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 3,
+      "priority_score": 0.8
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "CRITICAL"
+    },
+    "agentDecisionId": "810352-2166-3420-2640-469422365653",
+    "requestId": null,
+    "createdAt": "2025-09-13T10:59:37.453Z"
+  },
+  {
+    "id": "ac9b2d8b-5ea4-4596-8e11-dbb9ba090316",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T07:19:00.000Z",
+      "dailyUsage": 1.39,
+      "currentUnits": 9,
+      "daysRemaining": 6.47,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.52
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "716829-1347-2548-9004-610074655172",
+    "requestId": null,
+    "createdAt": "2025-09-13T10:59:39.399Z"
+  },
+  {
+    "id": "ca4a98fe-1f40-42e4-bacf-51e81c6e957b",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T11:29:00.000Z",
+      "dailyUsage": 1.47,
+      "currentUnits": 23,
+      "daysRemaining": 15.67,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.47
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "441183-2430-5082-8610-940778462540",
+    "requestId": null,
+    "createdAt": "2025-09-13T10:59:46.154Z"
+  },
+  {
+    "id": "136bc349-63e0-43db-8445-f9d20b0d4706",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T09:20:00.000Z",
+      "dailyUsage": 4.16,
+      "currentUnits": 16,
+      "daysRemaining": 3.85,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "LOW"
+    },
+    "agentDecisionId": "196877-3008-8776-2694-254178070879",
+    "requestId": null,
+    "createdAt": "2025-09-14T10:59:33.559Z"
+  },
+  {
+    "id": "c0cd23d4-1642-4dbe-84ea-43ee4a321cac",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T17:35:00.000Z",
+      "dailyUsage": 4.6,
+      "currentUnits": 43,
+      "daysRemaining": 9.34,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "433957-2157-2047-7682-885807363648",
+    "requestId": null,
+    "createdAt": "2025-09-14T10:59:35.713Z"
+  },
+  {
+    "id": "86cc1861-6844-4dc6-9532-521bc531a355",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T08:13:00.000Z",
+      "dailyUsage": 4.3,
+      "currentUnits": 29,
+      "daysRemaining": 6.74,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "410009-7320-2905-4536-122777139927",
+    "requestId": null,
+    "createdAt": "2025-09-15T10:59:37.248Z"
+  },
+  {
+    "id": "87da88cc-845a-4248-85cf-95cf939822f2",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "AB+",
+      "timeOfDay": "2025-11-16T05:49:00.000Z",
+      "dailyUsage": 2.63,
+      "currentUnits": 48,
+      "daysRemaining": 18.22,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "897987-6344-1900-6278-246987591402",
+    "requestId": null,
+    "createdAt": "2025-09-15T10:59:48.618Z"
+  },
+  {
+    "id": "116e103a-f693-48b0-b2ea-9185554985a4",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T10:12:00.000Z",
+      "dailyUsage": 3.63,
+      "currentUnits": 32,
+      "daysRemaining": 8.81,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "670599-3180-6171-5610-800376040461",
+    "requestId": null,
+    "createdAt": "2025-09-16T10:59:35.222Z"
+  },
+  {
+    "id": "d2109489-a1f7-4ec3-a295-5008846126f3",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T03:43:00.000Z",
+      "dailyUsage": 1.84,
+      "currentUnits": 12,
+      "daysRemaining": 6.51,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "LOW"
+    },
+    "agentDecisionId": "762259-4837-2335-7576-111534959596",
+    "requestId": null,
+    "createdAt": "2025-09-16T10:59:44.222Z"
+  },
+  {
+    "id": "3a892828-0eb3-4b30-9b3d-513ec89c1410",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T07:05:00.000Z",
+      "dailyUsage": 3.69,
+      "currentUnits": 27,
+      "daysRemaining": 7.31,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "607818-2712-4248-1289-876056144383",
+    "requestId": null,
+    "createdAt": "2025-09-16T10:59:46.564Z"
+  },
+  {
+    "id": "a6a71273-6376-4791-a569-3c88f8c49ac5",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T08:36:00.000Z",
+      "dailyUsage": 2.99,
+      "currentUnits": 18,
+      "daysRemaining": 6.03,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "855084-8417-9806-3511-427224443904",
+    "requestId": null,
+    "createdAt": "2025-09-16T10:59:50.970Z"
+  },
+  {
+    "id": "39b4e730-841b-40eb-bdf7-e831bb9d5534",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T06:16:00.000Z",
+      "dailyUsage": 1.57,
+      "currentUnits": 9,
+      "daysRemaining": 5.73,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.52
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "789166-3998-6657-5730-474606999216",
+    "requestId": null,
+    "createdAt": "2025-09-17T10:59:42.780Z"
+  },
+  {
+    "id": "b7b763c5-9f9a-4eac-b618-7ec69e3f2e74",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T09:33:00.000Z",
+      "dailyUsage": 1.05,
+      "currentUnits": 22,
+      "daysRemaining": 21.01,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "644742-5247-7489-5686-878304194221",
+    "requestId": null,
+    "createdAt": "2025-09-17T10:59:44.620Z"
+  },
+  {
+    "id": "5462af1e-7c25-4d1c-8bd5-f2ef6c307c14",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T06:21:00.000Z",
+      "dailyUsage": 2.45,
+      "currentUnits": 33,
+      "daysRemaining": 13.46,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "122925-2774-4160-5961-894900452241",
+    "requestId": null,
+    "createdAt": "2025-09-17T11:00:02.130Z"
+  },
+  {
+    "id": "77d5e4bc-8b2d-4574-af1b-ad992f4ac2a2",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T07:05:00.000Z",
+      "dailyUsage": 4.9,
+      "currentUnits": 47,
+      "daysRemaining": 9.6,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "286319-9036-9829-8768-936157287380",
+    "requestId": null,
+    "createdAt": "2025-09-18T10:59:39.808Z"
+  },
+  {
+    "id": "c4b5c7df-ca68-4ac8-94a3-c4d5565b1901",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T16:34:00.000Z",
+      "dailyUsage": 2.62,
+      "currentUnits": 2,
+      "daysRemaining": 0.76,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 3,
+      "priority_score": 0.75
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "CRITICAL"
+    },
+    "agentDecisionId": "170613-5366-2909-1139-373729350966",
+    "requestId": null,
+    "createdAt": "2025-09-18T10:59:42.265Z"
+  },
+  {
+    "id": "4578b429-6999-40bc-8331-164cc0d86e74",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T03:37:00.000Z",
+      "dailyUsage": 2.86,
+      "currentUnits": 37,
+      "daysRemaining": 12.93,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "548278-9258-6022-7658-237859972980",
+    "requestId": null,
+    "createdAt": "2025-09-19T10:59:56.397Z"
+  },
+  {
+    "id": "0ec631d7-1a42-462c-8c83-2acdda87373e",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T12:31:00.000Z",
+      "dailyUsage": 4.59,
+      "currentUnits": 26,
+      "daysRemaining": 5.67,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "611081-7599-6647-1301-212919018122",
+    "requestId": null,
+    "createdAt": "2025-09-19T10:59:57.933Z"
+  },
+  {
+    "id": "92392ba8-c6e8-4dec-b4e7-d038df543c0f",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "AB+",
+      "timeOfDay": "2025-11-16T04:52:00.000Z",
+      "dailyUsage": 1.15,
+      "currentUnits": 38,
+      "daysRemaining": 32.93,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "131909-9430-3834-5994-865435293338",
+    "requestId": null,
+    "createdAt": "2025-09-20T10:59:41.040Z"
+  },
+  {
+    "id": "90438abe-b4f9-43c9-8c65-7b9d895fe96f",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T08:20:00.000Z",
+      "dailyUsage": 3.28,
+      "currentUnits": 43,
+      "daysRemaining": 13.12,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "874086-1393-5584-1130-316747136430",
+    "requestId": null,
+    "createdAt": "2025-09-21T10:59:36.841Z"
+  },
+  {
+    "id": "2db7e64b-104b-4ac4-a710-accbc371fb0b",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T13:29:00.000Z",
+      "dailyUsage": 3.69,
+      "currentUnits": 6,
+      "daysRemaining": 1.63,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "332388-1350-4964-4939-435692123944",
+    "requestId": null,
+    "createdAt": "2025-09-21T10:59:41.140Z"
+  },
+  {
+    "id": "29a99eb7-3bd6-4c58-a8e2-e2410f5f4636",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "AB+",
+      "timeOfDay": "2025-11-16T13:09:00.000Z",
+      "dailyUsage": 1.9,
+      "currentUnits": 15,
+      "daysRemaining": 7.9,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "375804-4109-5110-8095-490118163176",
+    "requestId": null,
+    "createdAt": "2025-09-21T10:59:49.741Z"
+  },
+  {
+    "id": "71394e05-7d5a-44aa-a960-4a3b80a2f7dd",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T04:00:00.000Z",
+      "dailyUsage": 4.53,
+      "currentUnits": 33,
+      "daysRemaining": 7.29,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "303479-4593-9142-2901-265023553161",
+    "requestId": null,
+    "createdAt": "2025-09-21T11:00:00.084Z"
+  },
+  {
+    "id": "982c0ddf-0957-4531-aa81-e4d71763a288",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T10:31:00.000Z",
+      "dailyUsage": 4.77,
+      "currentUnits": 34,
+      "daysRemaining": 7.13,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "939692-8291-9193-1196-876926966927",
+    "requestId": null,
+    "createdAt": "2025-09-22T10:59:46.453Z"
+  },
+  {
+    "id": "af83e3f8-1489-4f8b-8eea-348f301e72c6",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T11:09:00.000Z",
+      "dailyUsage": 3.41,
+      "currentUnits": 31,
+      "daysRemaining": 9.08,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "446854-2170-7397-9960-583422873506",
+    "requestId": null,
+    "createdAt": "2025-09-22T10:59:57.730Z"
+  },
+  {
+    "id": "50d822f5-0ade-4450-a719-d389422e02f3",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T05:14:00.000Z",
+      "dailyUsage": 3.08,
+      "currentUnits": 50,
+      "daysRemaining": 16.24,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "590136-5722-5299-8670-116559491099",
+    "requestId": null,
+    "createdAt": "2025-09-23T10:59:46.871Z"
+  },
+  {
+    "id": "68d1cca5-ed26-444a-a7ac-895b92fccec0",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T04:21:00.000Z",
+      "dailyUsage": 2.56,
+      "currentUnits": 8,
+      "daysRemaining": 3.13,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.52
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "459125-2263-6678-6921-577704918306",
+    "requestId": null,
+    "createdAt": "2025-09-23T10:59:54.045Z"
+  },
+  {
+    "id": "5d228088-6e9a-4722-9489-d58522273434",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T07:32:00.000Z",
+      "dailyUsage": 2.07,
+      "currentUnits": 0,
+      "daysRemaining": 0,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 3,
+      "priority_score": 0.8
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "CRITICAL"
+    },
+    "agentDecisionId": "438717-9972-1483-8263-805939393267",
+    "requestId": null,
+    "createdAt": "2025-09-24T10:59:48.829Z"
+  },
+  {
+    "id": "37037c59-3f42-4fa9-a8af-d9f09a11c3ad",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T05:33:00.000Z",
+      "dailyUsage": 4.56,
+      "currentUnits": 2,
+      "daysRemaining": 0.44,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 3,
+      "priority_score": 0.75
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "CRITICAL"
+    },
+    "agentDecisionId": "882911-1872-1413-2862-349780121193",
+    "requestId": null,
+    "createdAt": "2025-09-25T10:59:34.487Z"
+  },
+  {
+    "id": "6c22724c-e697-4b9d-9cb5-1ba331c291c6",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T11:12:00.000Z",
+      "dailyUsage": 2.28,
+      "currentUnits": 31,
+      "daysRemaining": 13.59,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "560478-6813-2266-3510-896376235091",
+    "requestId": null,
+    "createdAt": "2025-09-25T10:59:59.367Z"
+  },
+  {
+    "id": "df5ecdc5-5e53-4ec9-a0e6-bb02771abba5",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T03:56:00.000Z",
+      "dailyUsage": 4.21,
+      "currentUnits": 24,
+      "daysRemaining": 5.7,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "LOW"
+    },
+    "agentDecisionId": "369897-1933-1867-1914-319827975219",
+    "requestId": null,
+    "createdAt": "2025-09-26T10:59:36.532Z"
+  },
+  {
+    "id": "efd78f91-e731-497a-8a68-2adbc0fc9b42",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T07:34:00.000Z",
+      "dailyUsage": 2.31,
+      "currentUnits": 49,
+      "daysRemaining": 21.23,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "751336-5170-6489-4969-768585263667",
+    "requestId": null,
+    "createdAt": "2025-09-26T10:59:37.863Z"
+  },
+  {
+    "id": "44ce824a-07be-497c-8d01-b31bd30b6dfe",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T15:50:00.000Z",
+      "dailyUsage": 4.47,
+      "currentUnits": 7,
+      "daysRemaining": 1.57,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "860843-3557-5618-1267-616607627578",
+    "requestId": null,
+    "createdAt": "2025-09-26T10:59:38.175Z"
+  },
+  {
+    "id": "44e1d24b-f770-47bb-95de-3b84bda97056",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T05:56:00.000Z",
+      "dailyUsage": 2.47,
+      "currentUnits": 0,
+      "daysRemaining": 0,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 3,
+      "priority_score": 0.8
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "CRITICAL"
+    },
+    "agentDecisionId": "659132-3639-7683-6959-832920027105",
+    "requestId": null,
+    "createdAt": "2025-09-27T10:59:58.958Z"
+  },
+  {
+    "id": "1cdf42e5-cd0e-4218-a70f-8b2b47c45874",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T03:32:00.000Z",
+      "dailyUsage": 1.6,
+      "currentUnits": 28,
+      "daysRemaining": 17.55,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "274233-5217-4227-2804-866857257883",
+    "requestId": null,
+    "createdAt": "2025-09-27T11:00:02.028Z"
+  },
+  {
+    "id": "4e8c205f-4ffd-449e-9084-a2e26a9833c9",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T08:28:00.000Z",
+      "dailyUsage": 2.95,
+      "currentUnits": 13,
+      "daysRemaining": 4.41,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "775487-4447-5674-6841-469947465289",
+    "requestId": null,
+    "createdAt": "2025-09-28T10:59:38.786Z"
+  },
+  {
+    "id": "d95e2073-b3ef-4107-980e-f88269aaca41",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-15T20:34:00.000Z",
+      "dailyUsage": 1.18,
+      "currentUnits": 40,
+      "daysRemaining": 34.03,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "683424-1738-6918-5591-984041480691",
+    "requestId": null,
+    "createdAt": "2025-09-29T10:59:57.114Z"
+  },
+  {
+    "id": "6ef7b314-168f-43f1-bad6-a41b1ee091bd",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T08:01:00.000Z",
+      "dailyUsage": 4.13,
+      "currentUnits": 8,
+      "daysRemaining": 1.94,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.67
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "273361-9607-5464-1558-466585992489",
+    "requestId": null,
+    "createdAt": "2025-09-30T10:59:32.960Z"
+  },
+  {
+    "id": "2bf40330-136e-4553-9f08-acd3bd4ddb36",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T07:58:00.000Z",
+      "dailyUsage": 3.77,
+      "currentUnits": 45,
+      "daysRemaining": 11.94,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "306331-3776-7830-3377-757632828599",
+    "requestId": null,
+    "createdAt": "2025-09-30T10:59:42.572Z"
+  },
+  {
+    "id": "148d7c02-b632-46ba-a051-8d3c0d2b75ea",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T07:27:00.000Z",
+      "dailyUsage": 3.51,
+      "currentUnits": 12,
+      "daysRemaining": 3.42,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "241357-3114-5395-6109-602968734374",
+    "requestId": null,
+    "createdAt": "2025-10-01T10:59:41.344Z"
+  },
+  {
+    "id": "c990e9e4-5da1-43d7-8538-7a788dbe3fc7",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T02:32:00.000Z",
+      "dailyUsage": 4.62,
+      "currentUnits": 6,
+      "daysRemaining": 1.3,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "216397-5514-8090-2443-874316860917",
+    "requestId": null,
+    "createdAt": "2025-10-01T10:59:48.421Z"
+  },
+  {
+    "id": "cdc41a54-cc94-4474-bd52-fc6594074ce8",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "AB+",
+      "timeOfDay": "2025-11-16T09:11:00.000Z",
+      "dailyUsage": 2.4,
+      "currentUnits": 25,
+      "daysRemaining": 10.42,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "467845-3594-1461-8005-644888649410",
+    "requestId": null,
+    "createdAt": "2025-10-01T10:59:50.459Z"
+  },
+  {
+    "id": "bf974e15-b6a7-4ba7-8850-a9dbc6c7eb78",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T07:13:00.000Z",
+      "dailyUsage": 3.37,
+      "currentUnits": 45,
+      "daysRemaining": 13.35,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "892656-3645-1002-9119-148192098997",
+    "requestId": null,
+    "createdAt": "2025-10-01T11:00:00.290Z"
+  },
+  {
+    "id": "a22dc702-7356-4b64-8122-a18cb23b902c",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T05:52:00.000Z",
+      "dailyUsage": 1.86,
+      "currentUnits": 37,
+      "daysRemaining": 19.9,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "100548-4520-3936-7053-900528788429",
+    "requestId": null,
+    "createdAt": "2025-10-03T10:59:33.257Z"
+  },
+  {
+    "id": "eabb59fe-a45a-4a8e-9edb-cb24305151eb",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "AB+",
+      "timeOfDay": "2025-11-16T12:22:00.000Z",
+      "dailyUsage": 3.31,
+      "currentUnits": 38,
+      "daysRemaining": 11.49,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "853385-3554-4341-9057-466266350579",
+    "requestId": null,
+    "createdAt": "2025-10-03T10:59:39.194Z"
+  },
+  {
+    "id": "e80ad14e-b79a-40ed-90e9-7fb7cdcd1039",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T06:58:00.000Z",
+      "dailyUsage": 4.51,
+      "currentUnits": 6,
+      "daysRemaining": 1.33,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "515731-4066-6872-1001-332140029084",
+    "requestId": null,
+    "createdAt": "2025-10-03T10:59:54.863Z"
+  },
+  {
+    "id": "e69c434e-9d0b-4653-bec6-45ff287dde1e",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T06:52:00.000Z",
+      "dailyUsage": 1.44,
+      "currentUnits": 30,
+      "daysRemaining": 20.83,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "954303-5254-7689-6510-920707764095",
+    "requestId": null,
+    "createdAt": "2025-10-04T10:59:32.861Z"
+  },
+  {
+    "id": "37ccf157-4918-43e2-a13a-4933f650052a",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T06:56:00.000Z",
+      "dailyUsage": 3.51,
+      "currentUnits": 7,
+      "daysRemaining": 2,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.67
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "601713-7357-4811-9223-618380997281",
+    "requestId": null,
+    "createdAt": "2025-10-04T10:59:33.059Z"
+  },
+  {
+    "id": "7b2db92d-456b-4663-a12b-33f8955ef38e",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T13:26:00.000Z",
+      "dailyUsage": 3.91,
+      "currentUnits": 40,
+      "daysRemaining": 10.23,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "922342-7791-7809-6783-335635511199",
+    "requestId": null,
+    "createdAt": "2025-10-04T10:59:35.917Z"
+  },
+  {
+    "id": "e2949641-26af-46d5-a800-ba63134519a9",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T08:32:00.000Z",
+      "dailyUsage": 3.37,
+      "currentUnits": 9,
+      "daysRemaining": 2.67,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.55
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "411751-7422-2723-5655-668398508188",
+    "requestId": null,
+    "createdAt": "2025-10-04T10:59:53.940Z"
+  },
+  {
+    "id": "3d083d10-a4b3-4fb9-a2d0-93618693e659",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T11:43:00.000Z",
+      "dailyUsage": 4.54,
+      "currentUnits": 46,
+      "daysRemaining": 10.14,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "LOW"
+    },
+    "agentDecisionId": "571372-7488-6832-8435-921939201385",
+    "requestId": null,
+    "createdAt": "2025-10-04T10:59:54.252Z"
+  },
+  {
+    "id": "e59baefa-cc80-4c44-9537-127eea9af01b",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T11:23:00.000Z",
+      "dailyUsage": 2.17,
+      "currentUnits": 30,
+      "daysRemaining": 13.83,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "980550-7658-2224-8004-528495400975",
+    "requestId": null,
+    "createdAt": "2025-10-05T10:59:41.754Z"
+  },
+  {
+    "id": "0f64e95c-6e3f-4e87-bfc6-af35709f6905",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T09:44:00.000Z",
+      "dailyUsage": 2.08,
+      "currentUnits": 9,
+      "daysRemaining": 4.33,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.62
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "290783-1680-8220-3667-190010173264",
+    "requestId": null,
+    "createdAt": "2025-10-05T10:59:46.770Z"
+  },
+  {
+    "id": "2cbc8f39-f6f3-4ed8-8fde-8f078d9ced3f",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T06:50:00.000Z",
+      "dailyUsage": 4.98,
+      "currentUnits": 33,
+      "daysRemaining": 6.62,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "249855-3010-5400-1612-549699922702",
+    "requestId": null,
+    "createdAt": "2025-10-05T10:59:49.040Z"
+  },
+  {
+    "id": "441f662f-1132-4690-98c1-2e941d185bc3",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T11:41:00.000Z",
+      "dailyUsage": 2.39,
+      "currentUnits": 34,
+      "daysRemaining": 14.23,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "841958-5902-8866-2466-187643747320",
+    "requestId": null,
+    "createdAt": "2025-10-06T10:59:34.072Z"
+  },
+  {
+    "id": "e27c5916-cff1-4fe9-8922-a780c19f284a",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O-",
+      "timeOfDay": "2025-11-16T03:49:00.000Z",
+      "dailyUsage": 2.18,
+      "currentUnits": 38,
+      "daysRemaining": 17.46,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "909153-8982-6360-3458-918923066579",
+    "requestId": null,
+    "createdAt": "2025-10-06T10:59:43.090Z"
+  },
+  {
+    "id": "680edab7-bb35-45b8-8f9f-4c1da76d2c58",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T12:02:00.000Z",
+      "dailyUsage": 4.25,
+      "currentUnits": 31,
+      "daysRemaining": 7.3,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "441568-3651-8465-1679-760510115523",
+    "requestId": null,
+    "createdAt": "2025-10-07T10:59:40.423Z"
+  },
+  {
+    "id": "36c78d30-6525-485a-9452-6ba3d34e6517",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "AB-",
+      "timeOfDay": "2025-11-16T09:40:00.000Z",
+      "dailyUsage": 1.72,
+      "currentUnits": 18,
+      "daysRemaining": 10.49,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "381596-3465-3311-9225-458945742234",
+    "requestId": null,
+    "createdAt": "2025-10-07T10:59:45.439Z"
+  },
+  {
+    "id": "0524d2d3-4dc7-4d01-aaef-911ade6269e9",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T06:02:00.000Z",
+      "dailyUsage": 3.52,
+      "currentUnits": 20,
+      "daysRemaining": 5.68,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "LOW"
+    },
+    "agentDecisionId": "591628-2872-3657-8439-103545837171",
+    "requestId": null,
+    "createdAt": "2025-10-07T10:59:48.941Z"
+  },
+  {
+    "id": "c8851261-2723-4330-b2fd-b2237f8cf0bd",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-15T22:57:00.000Z",
+      "dailyUsage": 3.23,
+      "currentUnits": 6,
+      "daysRemaining": 1.85,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "146751-1023-9451-3148-163828943391",
+    "requestId": null,
+    "createdAt": "2025-10-08T10:59:52.096Z"
+  },
+  {
+    "id": "0f734e5a-9c57-4e4d-9582-2a99c4f0595b",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T10:09:00.000Z",
+      "dailyUsage": 2.77,
+      "currentUnits": 37,
+      "daysRemaining": 13.37,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "534355-8376-4678-8927-565497809430",
+    "requestId": null,
+    "createdAt": "2025-10-09T10:59:34.291Z"
+  },
+  {
+    "id": "3ba3487c-c833-4b83-8374-3a02e2c48c27",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T15:28:00.000Z",
+      "dailyUsage": 3.41,
+      "currentUnits": 33,
+      "daysRemaining": 9.67,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "688826-3934-4584-2640-177096490017",
+    "requestId": null,
+    "createdAt": "2025-10-09T10:59:52.506Z"
+  },
+  {
+    "id": "58aac8ed-f236-4f65-a8f9-2a79110e7159",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "AB+",
+      "timeOfDay": "2025-11-16T04:35:00.000Z",
+      "dailyUsage": 2.76,
+      "currentUnits": 18,
+      "daysRemaining": 6.53,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "860381-1428-3674-2223-564589384327",
+    "requestId": null,
+    "createdAt": "2025-10-10T10:59:45.950Z"
+  },
+  {
+    "id": "f87ccb43-a425-4652-aa7c-e4f80a256d2f",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-15T19:33:00.000Z",
+      "dailyUsage": 2.55,
+      "currentUnits": 18,
+      "daysRemaining": 7.06,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "878728-7353-3362-9183-523699098054",
+    "requestId": null,
+    "createdAt": "2025-10-11T10:59:36.737Z"
+  },
+  {
+    "id": "81211365-4141-4ea0-9777-5a8a4e831cb8",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T15:48:00.000Z",
+      "dailyUsage": 1.21,
+      "currentUnits": 28,
+      "daysRemaining": 23.21,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "637902-2974-6935-8708-794448237446",
+    "requestId": null,
+    "createdAt": "2025-10-11T10:59:44.825Z"
+  },
+  {
+    "id": "53e2e7f4-1447-4b39-a263-254995a04e1f",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T11:33:00.000Z",
+      "dailyUsage": 3.02,
+      "currentUnits": 44,
+      "daysRemaining": 14.59,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "LOW"
+    },
+    "agentDecisionId": "273418-8805-2752-1310-826524158796",
+    "requestId": null,
+    "createdAt": "2025-10-13T10:59:42.879Z"
+  },
+  {
+    "id": "3765f71a-c6e0-4cb9-963b-0778255a87a7",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T11:24:00.000Z",
+      "dailyUsage": 4.21,
+      "currentUnits": 13,
+      "daysRemaining": 3.09,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "640019-2515-1964-3593-128371801223",
+    "requestId": null,
+    "createdAt": "2025-10-13T10:59:46.053Z"
+  },
+  {
+    "id": "af2b07cc-68a0-40f6-8b0f-69864b09ca57",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T13:25:00.000Z",
+      "dailyUsage": 2.9,
+      "currentUnits": 37,
+      "daysRemaining": 12.75,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "817587-5285-3663-9399-650103283118",
+    "requestId": null,
+    "createdAt": "2025-10-14T10:59:33.970Z"
+  },
+  {
+    "id": "8f7bae99-a385-4263-85b8-89836c7a0ac1",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T04:18:00.000Z",
+      "dailyUsage": 4.23,
+      "currentUnits": 12,
+      "daysRemaining": 2.84,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.4
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "116746-2701-8635-5006-994743764797",
+    "requestId": null,
+    "createdAt": "2025-10-14T10:59:36.326Z"
+  },
+  {
+    "id": "30973677-f947-4edf-86a0-eca39fc5eee3",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T05:34:00.000Z",
+      "dailyUsage": 2.52,
+      "currentUnits": 14,
+      "daysRemaining": 5.55,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "744111-1662-6613-7038-402259462238",
+    "requestId": null,
+    "createdAt": "2025-10-14T10:59:44.723Z"
+  },
+  {
+    "id": "b6a0c56e-b6ae-4b60-830c-499fb9743a28",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-15T21:51:00.000Z",
+      "dailyUsage": 3.25,
+      "currentUnits": 22,
+      "daysRemaining": 6.78,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "654941-5518-1080-6488-710214481591",
+    "requestId": null,
+    "createdAt": "2025-10-14T10:59:53.734Z"
+  },
+  {
+    "id": "374c4328-3f76-4aa4-aabf-2149182f7cf5",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T08:28:00.000Z",
+      "dailyUsage": 2.68,
+      "currentUnits": 22,
+      "daysRemaining": 8.22,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "904703-2574-9297-6218-857047452411",
+    "requestId": null,
+    "createdAt": "2025-10-14T10:59:57.524Z"
+  },
+  {
+    "id": "11b71eb1-e110-49f5-9d2d-39f6d56d64e1",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-15T23:09:00.000Z",
+      "dailyUsage": 4.34,
+      "currentUnits": 39,
+      "daysRemaining": 8.99,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "238093-8108-5166-3758-805613332365",
+    "requestId": null,
+    "createdAt": "2025-10-15T10:59:41.959Z"
+  },
+  {
+    "id": "985325ed-3072-4264-ac80-f24a5caa4491",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T04:05:00.000Z",
+      "dailyUsage": 2.29,
+      "currentUnits": 50,
+      "daysRemaining": 21.84,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "788502-1077-6669-9804-434586264390",
+    "requestId": null,
+    "createdAt": "2025-10-15T11:00:00.494Z"
+  },
+  {
+    "id": "38832cb1-0691-44b1-a44d-0fd55d87ef8d",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T10:27:00.000Z",
+      "dailyUsage": 3.8,
+      "currentUnits": 3,
+      "daysRemaining": 0.79,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 3,
+      "priority_score": 0.75
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "CRITICAL"
+    },
+    "agentDecisionId": "239214-9808-9832-1699-908449667251",
+    "requestId": null,
+    "createdAt": "2025-10-16T10:59:43.903Z"
+  },
+  {
+    "id": "adddbdc4-c9f1-4868-aa89-1ee781a3dc0d",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T03:44:00.000Z",
+      "dailyUsage": 3.01,
+      "currentUnits": 45,
+      "daysRemaining": 14.94,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "969854-6618-1065-8395-698824778598",
+    "requestId": null,
+    "createdAt": "2025-10-16T10:59:51.994Z"
+  },
+  {
+    "id": "c5f1b44c-df3b-4cd9-b1e5-f71a506bdd2b",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T12:59:00.000Z",
+      "dailyUsage": 2.36,
+      "currentUnits": 5,
+      "daysRemaining": 2.12,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.65
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "652427-4001-4402-8534-333826903474",
+    "requestId": null,
+    "createdAt": "2025-10-16T10:59:52.302Z"
+  },
+  {
+    "id": "7a3d3d57-95d9-4472-b278-fe0bbb04e06d",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T03:30:00.000Z",
+      "dailyUsage": 5,
+      "currentUnits": 35,
+      "daysRemaining": 7,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "763838-2300-7104-3176-581474767561",
+    "requestId": null,
+    "createdAt": "2025-10-17T10:59:43.801Z"
+  },
+  {
+    "id": "d0807565-8ecf-4f22-8ce5-b105c73ab890",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T04:06:00.000Z",
+      "dailyUsage": 1.65,
+      "currentUnits": 7,
+      "daysRemaining": 4.24,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.52
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "786953-6720-7137-4961-207068821917",
+    "requestId": null,
+    "createdAt": "2025-10-17T11:00:01.518Z"
+  },
+  {
+    "id": "54f475e1-0838-47b0-a18b-eae4ac931514",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B-",
+      "timeOfDay": "2025-11-16T05:00:00.000Z",
+      "dailyUsage": 1.43,
+      "currentUnits": 33,
+      "daysRemaining": 23.11,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.47
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "944448-1071-3837-2789-377934701378",
+    "requestId": null,
+    "createdAt": "2025-10-18T10:59:35.405Z"
+  },
+  {
+    "id": "5f0449ce-e250-423c-ac7d-2f65993cee59",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T01:05:00.000Z",
+      "dailyUsage": 2.01,
+      "currentUnits": 18,
+      "daysRemaining": 8.93,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "771110-7954-9085-8875-822688794687",
+    "requestId": null,
+    "createdAt": "2025-10-18T10:59:36.634Z"
+  },
+  {
+    "id": "996f672f-e773-4177-85d0-ad9185dcb5c1",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T07:14:00.000Z",
+      "dailyUsage": 1.13,
+      "currentUnits": 11,
+      "daysRemaining": 9.73,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.47
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "626018-1853-4668-4939-953996673211",
+    "requestId": null,
+    "createdAt": "2025-10-19T10:59:54.154Z"
+  },
+  {
+    "id": "09184ea9-3869-447d-9cc7-90724c7737ea",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-15T22:40:00.000Z",
+      "dailyUsage": 2.42,
+      "currentUnits": 7,
+      "daysRemaining": 2.89,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.55
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "CRITICAL"
+    },
+    "agentDecisionId": "224763-9711-7945-6375-717292374877",
+    "requestId": null,
+    "createdAt": "2025-10-19T10:59:55.784Z"
+  },
+  {
+    "id": "db9d799d-a18c-42b9-aa6b-21fe932572a7",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T10:11:00.000Z",
+      "dailyUsage": 2.92,
+      "currentUnits": 14,
+      "daysRemaining": 4.8,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "LOW"
+    },
+    "agentDecisionId": "643402-1851-7670-9576-513944484091",
+    "requestId": null,
+    "createdAt": "2025-10-20T10:59:32.763Z"
+  },
+  {
+    "id": "978a8454-db9e-49d8-8f44-4ef990364a56",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T05:51:00.000Z",
+      "dailyUsage": 2.33,
+      "currentUnits": 7,
+      "daysRemaining": 3,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.52
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "525686-3757-6253-3082-118901920543",
+    "requestId": null,
+    "createdAt": "2025-10-20T10:59:42.675Z"
+  },
+  {
+    "id": "64af2607-c094-457a-a1f1-f1931a860808",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T17:37:00.000Z",
+      "dailyUsage": 1.53,
+      "currentUnits": 44,
+      "daysRemaining": 28.84,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "501384-7090-5790-6245-334221152923",
+    "requestId": null,
+    "createdAt": "2025-10-20T10:59:52.813Z"
+  },
+  {
+    "id": "e356c389-a633-4519-8e8f-e376b1b7e432",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T04:00:00.000Z",
+      "dailyUsage": 4.84,
+      "currentUnits": 5,
+      "daysRemaining": 1.03,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "534097-9382-3544-5010-988816666404",
+    "requestId": null,
+    "createdAt": "2025-10-20T10:59:56.191Z"
+  },
+  {
+    "id": "d70d2dd6-89fc-4730-abc1-e2afaa42bc28",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T08:46:00.000Z",
+      "dailyUsage": 2.8,
+      "currentUnits": 5,
+      "daysRemaining": 1.78,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 2,
+      "priority_score": 0.57
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "663651-2966-8418-9048-426834401628",
+    "requestId": null,
+    "createdAt": "2025-10-20T10:59:58.754Z"
+  },
+  {
+    "id": "3f612bb9-2d16-406e-9ab2-c37376507bed",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T00:33:00.000Z",
+      "dailyUsage": 4.4,
+      "currentUnits": 43,
+      "daysRemaining": 9.77,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "117812-3392-3432-4420-366329347234",
+    "requestId": null,
+    "createdAt": "2025-10-21T10:59:50.867Z"
+  },
+  {
+    "id": "accae921-6554-4281-bae9-1640276b9580",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T10:07:00.000Z",
+      "dailyUsage": 4.69,
+      "currentUnits": 24,
+      "daysRemaining": 5.12,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "LOW"
+    },
+    "agentDecisionId": "975485-1193-6365-2129-615311056133",
+    "requestId": null,
+    "createdAt": "2025-10-21T10:59:53.531Z"
+  },
+  {
+    "id": "afb2f5dd-69af-4095-8c3d-0f5f3868556f",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B-",
+      "timeOfDay": "2025-11-15T19:19:00.000Z",
+      "dailyUsage": 4.65,
+      "currentUnits": 28,
+      "daysRemaining": 6.02,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.47
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "783178-6829-8076-9595-150597748815",
+    "requestId": null,
+    "createdAt": "2025-10-22T10:59:54.657Z"
+  },
+  {
+    "id": "572fa528-e99f-40e9-936a-5edec69ea8f2",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T14:26:00.000Z",
+      "dailyUsage": 2.43,
+      "currentUnits": 26,
+      "daysRemaining": 10.7,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "835644-7603-6999-8605-343778919647",
+    "requestId": null,
+    "createdAt": "2025-10-23T10:59:51.072Z"
+  },
+  {
+    "id": "abf39eea-2997-476a-9568-234e16958fc4",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A-",
+      "timeOfDay": "2025-11-16T09:38:00.000Z",
+      "dailyUsage": 3.65,
+      "currentUnits": 46,
+      "daysRemaining": 12.6,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.47
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "676130-3696-9316-4568-214172911137",
+    "requestId": null,
+    "createdAt": "2025-10-23T10:59:53.120Z"
+  },
+  {
+    "id": "5aef9194-635d-4ad9-bab0-abf63a2cdd5f",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T14:48:00.000Z",
+      "dailyUsage": 3.28,
+      "currentUnits": 16,
+      "daysRemaining": 4.87,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "HIGH"
+    },
+    "agentDecisionId": "908918-3233-5781-9912-686091726123",
+    "requestId": null,
+    "createdAt": "2025-10-24T10:59:33.157Z"
+  },
+  {
+    "id": "311e2563-48d7-4f0a-a687-56bebb8e2600",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T11:30:00.000Z",
+      "dailyUsage": 1.02,
+      "currentUnits": 42,
+      "daysRemaining": 40.99,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "692172-3980-6052-2694-736893860999",
+    "requestId": null,
+    "createdAt": "2025-10-24T10:59:53.324Z"
+  },
+  {
+    "id": "189a367a-19e3-4b21-8c8b-3d9e5ec2fdb4",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T15:49:00.000Z",
+      "dailyUsage": 4.41,
+      "currentUnits": 44,
+      "daysRemaining": 9.97,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "539708-7702-3552-7779-909171865953",
+    "requestId": null,
+    "createdAt": "2025-10-25T10:59:43.699Z"
+  },
+  {
+    "id": "be8df22b-e19e-4a3e-9176-82f57af11b3a",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T08:34:00.000Z",
+      "dailyUsage": 2.67,
+      "currentUnits": 14,
+      "daysRemaining": 5.25,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "931404-8682-5197-6726-558976531749",
+    "requestId": null,
+    "createdAt": "2025-10-25T11:00:01.825Z"
+  },
+  {
+    "id": "54eedbce-a078-4470-8f3e-a047a5771218",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "O+",
+      "timeOfDay": "2025-11-16T03:37:00.000Z",
+      "dailyUsage": 1.94,
+      "currentUnits": 34,
+      "daysRemaining": 17.57,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "413987-3957-4644-8325-529576030182",
+    "requestId": null,
+    "createdAt": "2025-10-26T10:59:34.612Z"
+  },
+  {
+    "id": "69509313-f180-4d05-a210-6c67a1c197bc",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "AB+",
+      "timeOfDay": "2025-11-16T05:35:00.000Z",
+      "dailyUsage": 4.6,
+      "currentUnits": 3,
+      "daysRemaining": 0.65,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 3,
+      "priority_score": 0.75
+    },
+    "outcome": {
+      "wasAccurate": false,
+      "actualUrgency": "CRITICAL"
+    },
+    "agentDecisionId": "268614-2050-3302-6844-948488185250",
+    "requestId": null,
+    "createdAt": "2025-10-26T10:59:44.415Z"
+  },
+  {
+    "id": "8b5862ee-949d-4ca0-97c6-c4bf8ae0e4bb",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "B+",
+      "timeOfDay": "2025-11-16T10:11:00.000Z",
+      "dailyUsage": 2.25,
+      "currentUnits": 42,
+      "daysRemaining": 18.63,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "109771-9951-5961-4689-964050895793",
+    "requestId": null,
+    "createdAt": "2025-10-26T10:59:49.434Z"
+  },
+  {
+    "id": "b6fa110e-8624-4745-b465-81af424270c8",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T04:53:00.000Z",
+      "dailyUsage": 1.87,
+      "currentUnits": 29,
+      "daysRemaining": 15.53,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "942974-5804-8981-2437-727550593237",
+    "requestId": null,
+    "createdAt": "2025-10-27T10:59:35.815Z"
+  },
+  {
+    "id": "b243b11c-42b8-4ee8-8c1c-19f83437ef43",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T07:46:00.000Z",
+      "dailyUsage": 1.44,
+      "currentUnits": 21,
+      "daysRemaining": 14.56,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "886926-5120-2949-6977-123127358918",
+    "requestId": null,
+    "createdAt": "2025-10-27T10:59:43.191Z"
+  },
+  {
+    "id": "e8d5e29a-42b8-4e43-b342-c88d4f4a3c17",
+    "taskType": "urgency_assessment",
+    "inputFeatures": {
+      "bloodType": "A+",
+      "timeOfDay": "2025-11-16T10:38:00.000Z",
+      "dailyUsage": 4.17,
+      "currentUnits": 22,
+      "daysRemaining": 5.28,
+      "hospitalContext": {
+        "city": "Mumbai",
+        "state": "Maharashtra"
+      }
+    },
+    "outputLabel": {
+      "urgency_class": 1,
+      "priority_score": 0.37
+    },
+    "outcome": {
+      "wasAccurate": true,
+      "actualUrgency": "MEDIUM"
+    },
+    "agentDecisionId": "162370-1904-5894-2181-524831311697",
+    "requestId": null,
+    "createdAt": "2025-10-28T10:59:33.460Z"
+  }
+]

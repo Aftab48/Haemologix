@@ -18,8 +18,8 @@ from .schemas import (
     PredictionResponse,
 )
 
-from ..models.haemologix_decision_network import HaemologixDecisionNetwork
-from ..data.preprocessing import DataPreprocessor
+from models.haemologix_decision_network import HaemologixDecisionNetwork
+from data.preprocessing import DataPreprocessor
 
 app = FastAPI(title="Haemologix ML API", version="1.0.0")
 

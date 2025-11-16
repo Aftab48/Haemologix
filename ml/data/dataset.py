@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 from typing import Dict, List, Any, Optional
 import numpy as np
 
-from .preprocessing import DataPreprocessor
+from data.preprocessing import DataPreprocessor
 
 
 class HaemologixDataset(Dataset):
@@ -56,10 +56,11 @@ class HaemologixDataset(Dataset):
         blood_type_idx = torch.tensor(processed["blood_type_idx"], dtype=torch.long)
         urgency_idx = torch.tensor(processed["urgency_idx"], dtype=torch.long)
 
+        # Always return a tensor for transport_idx (use 0 as default if None)
         transport_idx = (
             torch.tensor(processed["transport_idx"], dtype=torch.long)
             if processed["transport_idx"] is not None
-            else None
+            else torch.tensor(0, dtype=torch.long)
         )
 
         time_features = {
@@ -67,31 +68,41 @@ class HaemologixDataset(Dataset):
             for k, v in processed["time_features"].items()
         }
 
-        # Handle candidate/source features
-        candidate_features = None
-        source_features = None
-
-        if self.task_type == "donor_selection" and processed["candidate_features"]:
-            candidates = processed["candidate_features"]
-            # Pad to max_candidates
-            if len(candidates) < self.max_candidates:
-                candidates = candidates + [[0.0] * 5] * (
-                    self.max_candidates - len(candidates)
-                )
-            elif len(candidates) > self.max_candidates:
-                candidates = candidates[: self.max_candidates]
-
-            candidate_features = torch.tensor(candidates, dtype=torch.float32)
-
-        elif self.task_type == "inventory_selection" and processed["source_features"]:
-            sources = processed["source_features"]
-            # Pad to max_sources
-            if len(sources) < self.max_sources:
-                sources = sources + [[0.0] * 4] * (self.max_sources - len(sources))
-            elif len(sources) > self.max_sources:
-                sources = sources[: self.max_sources]
-
-            source_features = torch.tensor(sources, dtype=torch.float32)
+        # Handle candidate/source features - always return tensors (even if empty)
+        if self.task_type == "donor_selection":
+            candidates = processed.get("candidate_features")
+            if candidates and len(candidates) > 0:
+                # Pad to max_candidates
+                if len(candidates) < self.max_candidates:
+                    candidates = candidates + [[0.0] * 5] * (
+                        self.max_candidates - len(candidates)
+                    )
+                elif len(candidates) > self.max_candidates:
+                    candidates = candidates[: self.max_candidates]
+                candidate_features = torch.tensor(candidates, dtype=torch.float32)
+            else:
+                # Create empty tensor if no candidates
+                candidate_features = torch.zeros((self.max_candidates, 5), dtype=torch.float32)
+            # For donor_selection, source_features is not used but must be a tensor
+            source_features = torch.zeros((1, 4), dtype=torch.float32)
+        elif self.task_type == "inventory_selection":
+            sources = processed.get("source_features")
+            if sources and len(sources) > 0:
+                # Pad to max_sources
+                if len(sources) < self.max_sources:
+                    sources = sources + [[0.0] * 4] * (self.max_sources - len(sources))
+                elif len(sources) > self.max_sources:
+                    sources = sources[: self.max_sources]
+                source_features = torch.tensor(sources, dtype=torch.float32)
+            else:
+                # Create empty tensor if no sources
+                source_features = torch.zeros((self.max_sources, 4), dtype=torch.float32)
+            # For inventory_selection, candidate_features is not used but must be a tensor
+            candidate_features = torch.zeros((1, 5), dtype=torch.float32)
+        else:
+            # For other task types, create dummy tensors
+            candidate_features = torch.zeros((1, 5), dtype=torch.float32)
+            source_features = torch.zeros((1, 4), dtype=torch.float32)
 
         # Get label
         label = processed["label"]

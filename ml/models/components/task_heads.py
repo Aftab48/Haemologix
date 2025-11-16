@@ -14,7 +14,15 @@ class DonorSelectionHead(nn.Module):
         self.max_candidates = max_candidates
 
         # Cross-attention for candidate comparison
+        # Candidate features: [distance, eta, score, reliability, health] = 5 features
         self.candidate_encoder = nn.Sequential(
+            nn.Linear(5, hidden_dim),  # 5 candidate features
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+        )
+        
+        # Context encoder for reasoned features (input_dim = 256)
+        self.context_encoder = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
@@ -24,11 +32,13 @@ class DonorSelectionHead(nn.Module):
             embed_dim=hidden_dim, num_heads=4, batch_first=True
         )
 
-        # Ranking head
+        # Ranking head - outputs logits for each candidate
+        # Input: hidden_dim (from attention) + 5 (raw candidate features) = hidden_dim + 5
         self.ranking_head = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim // 2),
+            nn.Linear(hidden_dim + 5, hidden_dim // 2),  # Include raw candidate features
             nn.ReLU(),
-            nn.Linear(hidden_dim // 2, 1),  # Score for each candidate
+            nn.Dropout(0.2),  # Increased dropout for regularization
+            nn.Linear(hidden_dim // 2, 1),  # Logit score for each candidate
         )
 
     def forward(
@@ -49,21 +59,33 @@ class DonorSelectionHead(nn.Module):
 
         # Expand context for attention
         context = reasoned_features.unsqueeze(1).expand(-1, num_candidates, -1)
-        context_encoded = self.candidate_encoder(context)
+        context_encoded = self.context_encoder(context)
 
         # Cross-attention: candidates attend to context
         attended, _ = self.attention(encoded_candidates, context_encoded, context_encoded)
 
-        # Compute ranking scores
-        scores = self.ranking_head(attended).squeeze(-1)  # [batch_size, num_candidates]
+        # Combine attended features with raw candidate features for better differentiation
+        # attended: [batch_size, num_candidates, hidden_dim]
+        # candidate_features: [batch_size, num_candidates, 5]
+        attended_with_raw = torch.cat([attended, candidate_features], dim=-1)  # [batch_size, num_candidates, hidden_dim + 5]
 
-        # Get selected candidate index
-        selected_idx = torch.argmax(scores, dim=-1)
+        # Compute ranking scores
+        scores = self.ranking_head(attended_with_raw).squeeze(-1)  # [batch_size, num_candidates]
+
+        # Mask out padded candidates (those with all-zero features)
+        # A candidate is padded if its distance, eta, score, reliability, and health are all 0
+        candidate_mask = (candidate_features.abs().sum(dim=-1) > 1e-6)  # [batch_size, num_candidates]
+        
+        # Apply mask: set scores of padded candidates to very negative value
+        scores_masked = scores.masked_fill(~candidate_mask, float('-inf'))
+
+        # Get selected candidate index (only from real candidates)
+        selected_idx = torch.argmax(scores_masked, dim=-1)
 
         return {
-            "scores": scores,
+            "scores": scores_masked,
             "selected_idx": selected_idx,
-            "probabilities": F.softmax(scores, dim=-1),
+            "probabilities": F.softmax(scores_masked, dim=-1),
         }
 
 
@@ -118,21 +140,22 @@ class InventorySelectionHead(nn.Module):
         super().__init__()
         self.max_sources = max_sources
 
+        # Source features: [distance, expiry, quantity, final_score] = 4 features
         # Multi-factor scoring
         self.proximity_scorer = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim // 2),
+            nn.Linear(4, hidden_dim // 2),  # 4 source features
             nn.ReLU(),
             nn.Linear(hidden_dim // 2, 1),
         )
 
         self.expiry_scorer = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim // 2),
+            nn.Linear(4, hidden_dim // 2),  # 4 source features
             nn.ReLU(),
             nn.Linear(hidden_dim // 2, 1),
         )
 
         self.quantity_scorer = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim // 2),
+            nn.Linear(4, hidden_dim // 2),  # 4 source features
             nn.ReLU(),
             nn.Linear(hidden_dim // 2, 1),
         )
@@ -157,9 +180,11 @@ class InventorySelectionHead(nn.Module):
         """
         batch_size, num_sources, _ = source_features.size()
 
-        # Expand context
+        # Encode source features (4 features) and context (input_dim features) separately
+        # Project context to match source feature dimension for combination
         context = reasoned_features.unsqueeze(1).expand(-1, num_sources, -1)
-        combined = source_features + context  # Add context to source features
+        # Use source features directly (they're already 4D)
+        combined = source_features  # [batch, num_sources, 4]
 
         # Score each factor
         proximity_scores = self.proximity_scorer(combined).squeeze(-1)

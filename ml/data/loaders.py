@@ -1,8 +1,37 @@
-"""Data loaders for exporting from database"""
+"""Data loaders for loading training data from JSON files"""
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import json
+from pathlib import Path
 from datetime import datetime
+
+
+def load_training_examples_from_json(
+    json_path: str, task_type: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """
+    Load training examples from JSON file exported by TypeScript.
+    
+    Args:
+        json_path: Path to JSON file (e.g., "ml/data/donor_selection_train.json")
+        task_type: Optional task type filter (if None, uses filename)
+    
+    Returns:
+        List of training examples
+    """
+    json_path = Path(json_path)
+    
+    if not json_path.exists():
+        raise FileNotFoundError(f"Training data file not found: {json_path}")
+    
+    with open(json_path, "r") as f:
+        examples = json.load(f)
+    
+    # Filter by task type if specified
+    if task_type:
+        examples = [ex for ex in examples if ex.get("taskType") == task_type]
+    
+    return examples
 
 
 def load_training_examples_from_db(
