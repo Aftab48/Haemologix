@@ -45,3 +45,35 @@ Thumbs.db
 venv/
 __pycache__/
 *.pyc
+
+# ML Training Data (generated from database)
+ml/data/*_train.json
+ml/data/*_val.json
+ml/data/*_test.json
+
+# ML Model Checkpoints
+ml/checkpoints/*.pt
+ml/checkpoints/*.pth
+
+# ML Environment files
+ml/.env.ml
+ml/.env.ml.local
+
+# Python cache in ML directory
+ml/**/__pycache__/
+ml/**/*.pyc
+ml/**/*.pyo
+ml/**/*.pyd
+
+# ML Training logs and outputs
+ml/logs/
+ml/runs/
+ml/*.log
+
+# Jupyter Notebook checkpoints
+ml/.ipynb_checkpoints/
+
+# ML model exports
+ml/models/exported/
+ml/models/*.onnx
+ml/models/*.tflite
