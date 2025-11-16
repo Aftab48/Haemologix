@@ -215,6 +215,10 @@ export default function AdminDashboard() {
     "ALL"
   );
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
   // Verification filter state
   const [verificationTab, setVerificationTab] = useState<
     "auto-verified" | "manual" | "suspended"
@@ -260,6 +264,17 @@ export default function AdminDashboard() {
 
     return matchesRole && matchesStatus && matchesSearch;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, roleFilter, statusFilter, verificationTab]);
 
   const [selectedUser, setSelectedUser] = useState<NormalizedUser | null>(null);
 
@@ -744,7 +759,7 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredUsers.map((user) => (
+                      {paginatedUsers.map((user) => (
                         <tr
                           key={user.id}
                           className="border-b border-white/10 hover:bg-white/5 transition-all duration-300"
@@ -860,9 +875,67 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6">
+                <div className="text-sm text-text-dark/70">
+                  Showing {startIndex + 1} to {Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} users
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  >
+                    Previous
+                  </Button>
+                  <div className="flex items-center gap-2">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={
+                            currentPage === pageNum
+                              ? "bg-yellow-600 hover:bg-yellow-700 text-white"
+                              : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                          }
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* PHONE */}
             <div className="space-y-4 lg:hidden">
-              {filteredUsers.map((user) => (
+              {paginatedUsers.map((user) => (
                 <Card
                   key={user.id}
                   className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"

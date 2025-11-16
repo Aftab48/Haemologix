@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Upload, CheckCircle, ArrowLeft, ArrowRight } from "lucide-react";
+import { Upload, CheckCircle, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import {
   checkIfDonorApplied,
@@ -89,6 +89,7 @@ export default function DonorRegistration() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const totalSteps = 6;
   const progress = ((currentStep - 1) / totalSteps) * 100;
@@ -133,6 +134,7 @@ export default function DonorRegistration() {
         if (!formData.dateOfBirth)
           newErrors.dateOfBirth = "Date of birth is required";
         if (!formData.gender) newErrors.gender = "Gender is required";
+        if (!formData.bloodGroup) newErrors.bloodGroup = "Blood group is required";
 
         // age validation (18-65 years)
         if (formData.dateOfBirth) {
@@ -185,27 +187,12 @@ export default function DonorRegistration() {
         break;
 
       case 4:
-        if (!formData.hivTest)
-          newErrors.hivTest = "HIV test result is required";
-        if (!formData.hepatitisBTest)
-          newErrors.hepatitisBTest = "Hepatitis B test result is required";
-        if (!formData.hepatitisCTest)
-          newErrors.hepatitisCTest = "Hepatitis C test result is required";
-        if (!formData.syphilisTest)
-          newErrors.syphilisTest = "Syphilis test result is required";
-        if (!formData.malariaTest)
-          newErrors.malariaTest = "Malaria test result is required";
-        if (!formData.hemoglobin)
-          newErrors.hemoglobin = "Hemoglobin level is required";
-        if (!formData.bloodGroup)
-          newErrors.bloodGroup = "Blood group is required";
+        // Step 4 is fully optional - no validation required
         break;
 
       case 5:
-        if (!formData.bloodTestReport)
-          newErrors.bloodTestReport = "Blood test report is required";
+        // Only ID proof is required
         if (!formData.idProof) newErrors.idProof = "ID proof is required";
-        if (!formData.medicalCertificate) newErrors.medicalCertificate = "Medical certificate is required";
         break;
 
       case 6:
@@ -237,12 +224,14 @@ export default function DonorRegistration() {
   const handleSubmit = async () => {
     if (!validateStep(currentStep)) return;
 
+    setIsSubmitting(true);
     try {
       // Step 1: Submit donor registration (includes file uploads and AI verification)
       const result = await submitDonorRegistration(formData);
 
       if (!result.success) {
         console.error("Donor registration failed:", result.error);
+        setIsSubmitting(false);
         return;
       }
       
@@ -259,6 +248,7 @@ export default function DonorRegistration() {
       setIsSubmitted(true);
     } catch (err) {
       console.error("Error in submission flow:", err);
+      setIsSubmitting(false);
     }
   };
 
@@ -280,35 +270,35 @@ export default function DonorRegistration() {
               </div>
             </div>
 
-            <h1 className="text-3xl font-bold text-white mb-4">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">
               Registration Successful!
             </h1>
-            <p className="text-xl text-gray-200 mb-6">
+            <p className="text-xl text-gray-700 mb-6">
               Thank you for your interest in becoming a blood donor. Your
               details have been submitted successfully.
             </p>
 
             <div className="bg-white/5 rounded-lg p-6 mb-8 border border-white/10">
-              <h3 className="text-lg font-semibold text-white mb-3">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
                 What happens next?
               </h3>
               <div className="space-y-3 text-left">
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                  <span className="text-gray-200">
+                  <span className="text-gray-700">
                     Our medical team will review your application within 24-48
                     hours
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                  <span className="text-gray-200">
+                  <span className="text-gray-700">
                     You'll receive an email confirmation with your donor ID
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                  <span className="text-gray-200">
+                  <span className="text-gray-700">
                     If approved, you'll be notified about nearby blood donation
                     requests
                   </span>
@@ -325,7 +315,7 @@ export default function DonorRegistration() {
               <Link href="/">
                 <Button
                   variant="outline"
-                  className="border-white/30 text-white hover:bg-white/20 px-8 py-3 bg-transparent"
+                  className="border-gray-300 text-gray-900 hover:bg-gray-100 px-8 py-3 bg-transparent"
                 >
                   Back to Home
                 </Button>
@@ -345,20 +335,37 @@ export default function DonorRegistration() {
         alt="Background"
       />
 
+      {/* Loading Overlay */}
+      {isSubmitting && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <Card className="w-full max-w-md glass-morphism border border-accent/30 text-gray-900">
+            <CardContent className="p-8 text-center">
+              <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Submitting Registration
+              </h3>
+              <p className="text-gray-700">
+                Please wait while we process your registration, send confirmation emails, and SMS...
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <div className="container mx-auto max-w-4xl relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4"
+            className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             Back To Home
           </Link>
-          <h1 className="text-4xl font-bold text-white mb-2">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
             Donor Registration
           </h1>
-          <p className="text-xl text-gray-200">
+          <p className="text-xl text-gray-700">
             Help save lives by becoming a verified blood donor
           </p>
         </div>
@@ -367,10 +374,10 @@ export default function DonorRegistration() {
         <Card className="mb-8 glass-morphism border border-white/20">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-white font-medium">
+              <span className="text-gray-900 font-medium">
                 Step {currentStep} of {totalSteps}
               </span>
-              <span className="text-white/80">
+              <span className="text-gray-700">
                 {Math.round(progress)}% Complete
               </span>
             </div>
@@ -418,10 +425,10 @@ export default function DonorRegistration() {
                       <span className="font-bold">{step.number}</span>
                     )}
                   </div>
-                  <div className="text-xs text-white font-medium">
+                  <div className="text-xs text-gray-900 font-medium">
                     {step.title}
                   </div>
-                  <div className="text-xs text-white/60 hidden md:block">
+                  <div className="text-xs text-gray-600 hidden md:block">
                     {step.description}
                   </div>
                 </div>
@@ -431,9 +438,9 @@ export default function DonorRegistration() {
         </Card>
 
         {/* Form Content */}
-        <Card className="glass-morphism border border-accent/30 card-hover text-white">
+        <Card className="glass-morphism border border-accent/30 card-hover text-gray-900">
           <CardHeader>
-            <CardTitle className="text-white">
+            <CardTitle className="text-gray-900">
               {currentStep === 1 && "Personal Information"}
               {currentStep === 2 && "Physical Requirements"}
               {currentStep === 3 && "Medical History"}
@@ -441,15 +448,15 @@ export default function DonorRegistration() {
               {currentStep === 5 && "Document Upload"}
               {currentStep === 6 && "Consent & Agreement"}
             </CardTitle>
-            <CardDescription className="text-gray-200">
+            <CardDescription className="text-gray-700">
               {currentStep === 1 &&
                 "Please provide your basic personal details"}
               {currentStep === 2 &&
                 "Weight and BMI requirements for donation eligibility"}
               {currentStep === 3 &&
                 "Previous donation history and medical conditions"}
-              {currentStep === 4 && "Disease screening and blood test results"}
-              {currentStep === 5 && "Upload required medical documents"}
+              {currentStep === 4 && "Disease screening and blood test results (optional)"}
+              {currentStep === 5 && "Upload documents (ID Proof required)"}
               {currentStep === 6 && "Review and accept terms and conditions"}
             </CardDescription>
           </CardHeader>
@@ -460,13 +467,13 @@ export default function DonorRegistration() {
               <div className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">First Name *</Label>
+                    <Label className="text-gray-900">First Name *</Label>
                     <Input
                       value={formData.firstName}
                       onChange={(e) =>
                         updateFormData("firstName", e.target.value)
                       }
-                      className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                       placeholder="Enter your first name"
                     />
                     {errors.firstName && (
@@ -474,13 +481,13 @@ export default function DonorRegistration() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">Last Name *</Label>
+                    <Label className="text-gray-900">Last Name *</Label>
                     <Input
                       value={formData.lastName}
                       onChange={(e) =>
                         updateFormData("lastName", e.target.value)
                       }
-                      className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                       placeholder="Enter your last name"
                     />
                     {errors.lastName && (
@@ -491,12 +498,12 @@ export default function DonorRegistration() {
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">Email Address *</Label>
+                    <Label className="text-gray-900">Email Address *</Label>
                     <Input
                       type="email"
                       value={formData.email}
                       onChange={(e) => updateFormData("email", e.target.value)}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                       placeholder="Enter your email"
                     />
                     {errors.email && (
@@ -504,11 +511,11 @@ export default function DonorRegistration() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">Phone Number *</Label>
+                    <Label className="text-gray-900">Phone Number *</Label>
                     <Input
                       value={formData.phone}
                       onChange={(e) => updateFormData("phone", e.target.value)}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                       placeholder="Enter your phone number"
                     />
                     {errors.phone && (
@@ -519,7 +526,7 @@ export default function DonorRegistration() {
 
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">
+                    <Label className="text-gray-900">
                       Date of Birth * (Age: 18-65)
                     </Label>
                     <Input
@@ -528,7 +535,7 @@ export default function DonorRegistration() {
                       onChange={(e) =>
                         updateFormData("dateOfBirth", e.target.value)
                       }
-                      className="bg-white/5 border-white/20 text-white"
+                      className="bg-white/5 border-white/20 text-gray-900"
                     />
                     {errors.dateOfBirth && (
                       <p className="text-red-400 text-sm">
@@ -537,15 +544,15 @@ export default function DonorRegistration() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">Gender *</Label>
+                    <Label className="text-gray-900">Gender *</Label>
                     <Select
                       value={formData.gender}
                       onValueChange={(value) => updateFormData("gender", value)}
                     >
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                      <SelectTrigger className="bg-white/5 border-white/20 text-gray-900">
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
-                      <SelectContent className="bg-gray-800 text-white border-gray-700">
+                      <SelectContent className="bg-white text-gray-900 border-gray-300">
                         <SelectItem value="male">Male</SelectItem>
                         <SelectItem value="female">Female</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
@@ -556,17 +563,17 @@ export default function DonorRegistration() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">Blood Type</Label>
+                    <Label className="text-gray-900">Blood Group & Rh Factor *</Label>
                     <Select
                       value={formData.bloodGroup}
                       onValueChange={(value) =>
                         updateFormData("bloodGroup", value)
                       }
                     >
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                        <SelectValue placeholder="Select blood type" />
+                      <SelectTrigger className="bg-white/5 border-white/20 text-gray-900">
+                        <SelectValue placeholder="Select blood group" />
                       </SelectTrigger>
-                      <SelectContent className="bg-gray-800 text-white border-gray-700">
+                      <SelectContent className="bg-white text-gray-900 border-gray-300">
                         <SelectItem value="A+">A+</SelectItem>
                         <SelectItem value="A-">A-</SelectItem>
                         <SelectItem value="B+">B+</SelectItem>
@@ -577,11 +584,16 @@ export default function DonorRegistration() {
                         <SelectItem value="O-">O-</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.bloodGroup && (
+                      <p className="text-red-400 text-sm">
+                        {errors.bloodGroup}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-white">Complete Address</Label>
+                  <Label className="text-gray-900">Complete Address</Label>
                   <Textarea
                     value={formData.address}
                     onChange={(e) => updateFormData("address", e.target.value)}
@@ -589,6 +601,31 @@ export default function DonorRegistration() {
                     placeholder="Enter your complete address"
                     rows={3}
                   />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-gray-900">Emergency Contact Name</Label>
+                    <Input
+                      value={formData.emergencyContact}
+                      onChange={(e) =>
+                        updateFormData("emergencyContact", e.target.value)
+                      }
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
+                      placeholder="Enter emergency contact name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-gray-900">Emergency Contact Phone</Label>
+                    <Input
+                      value={formData.emergencyPhone}
+                      onChange={(e) =>
+                        updateFormData("emergencyPhone", e.target.value)
+                      }
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
+                      placeholder="Enter emergency contact phone"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -598,12 +635,12 @@ export default function DonorRegistration() {
               <div className="space-y-6">
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">Weight (kg) *</Label>
+                    <Label className="text-gray-900">Weight (kg) *</Label>
                     <Input
                       type="number"
                       value={formData.weight}
                       onChange={(e) => updateFormData("weight", e.target.value)}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                       placeholder="Enter weight in kg"
                       min="30"
                       max="200"
@@ -613,12 +650,12 @@ export default function DonorRegistration() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">Height (cm) *</Label>
+                    <Label className="text-gray-900">Height (cm) *</Label>
                     <Input
                       type="number"
                       value={formData.height}
                       onChange={(e) => updateFormData("height", e.target.value)}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                       placeholder="Enter height in cm"
                       min="100"
                       max="250"
@@ -628,10 +665,10 @@ export default function DonorRegistration() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">BMI (Auto-calculated)</Label>
+                    <Label className="text-gray-900">BMI (Auto-calculated)</Label>
                     <Input
                       value={formData.bmi}
-                      className="bg-white/5 border-white/20 text-white"
+                      className="bg-white/5 border-white/20 text-gray-900"
                       placeholder="Auto-calculated"
                       disabled
                     />
@@ -663,14 +700,14 @@ export default function DonorRegistration() {
                       }
                     }}
                   />
-                  <Label htmlFor="neverDonated" className="text-white">
+                  <Label htmlFor="neverDonated" className="text-gray-900">
                     Never donated before
                   </Label>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">
+                    <Label className="text-gray-900">
                       Last Blood Donation Date *
                     </Label>
                     <Input
@@ -680,7 +717,7 @@ export default function DonorRegistration() {
                       onChange={(e) =>
                         updateFormData("lastDonation", e.target.value)
                       }
-                      className="bg-white/5 border-white/20 text-white"
+                      className="bg-white/5 border-white/20 text-gray-900"
                     />
                     {errors.lastDonation && (
                       <p className="text-red-400 text-sm">
@@ -690,7 +727,7 @@ export default function DonorRegistration() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-white">
+                    <Label className="text-gray-900">
                       Total Previous Blood Donations *
                     </Label>
                     <Select
@@ -700,10 +737,10 @@ export default function DonorRegistration() {
                         updateFormData("donationCount", value)
                       }
                     >
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                      <SelectTrigger className="bg-white/5 border-white/20 text-gray-900">
                         <SelectValue placeholder="Select count" />
                       </SelectTrigger>
-                      <SelectContent className="bg-gray-800 text-white border-gray-700">
+                      <SelectContent className="bg-white text-gray-900 border-gray-300">
                         <SelectItem value="0">First time donor</SelectItem>
                         <SelectItem value="1-5">1-5 times</SelectItem>
                         <SelectItem value="6-10">6-10 times</SelectItem>
@@ -724,19 +761,19 @@ export default function DonorRegistration() {
             {/* Step 4: Health Screening */}
             {currentStep === 4 && (
               <div className="space-y-6">
-                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
-                  <h3 className="font-semibold text-red-300 mb-2">
-                    Infectious Disease Screening (Mandatory):
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
+                  <h3 className="font-semibold text-blue-400 mb-2">
+                    Infectious Disease Screening (Optional):
                   </h3>
-                  <p className="text-sm text-red-200">
-                    All tests must be NEGATIVE for donation eligibility
+                  <p className="text-sm text-blue-300">
+                    You can provide these test results if available. All fields in this step are optional.
                   </p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <Label className="text-white">
-                      HIV 1 & 2 Test Result *
+                    <Label className="text-gray-900">
+                      HIV 1 & 2 Test Result
                     </Label>
                     <RadioGroup
                       value={formData.hivTest}
@@ -751,7 +788,7 @@ export default function DonorRegistration() {
                           id="hiv-neg"
                           className="border-white/30 text-white"
                         />
-                        <Label htmlFor="hiv-neg" className="text-white">
+                        <Label htmlFor="hiv-neg" className="text-gray-900">
                           Negative
                         </Label>
                       </div>
@@ -761,7 +798,7 @@ export default function DonorRegistration() {
                           id="hiv-pos"
                           className="border-white/30 text-white"
                         />
-                        <Label htmlFor="hiv-pos" className="text-white">
+                        <Label htmlFor="hiv-pos" className="text-gray-900">
                           Positive
                         </Label>
                       </div>
@@ -772,8 +809,8 @@ export default function DonorRegistration() {
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-white">
-                      Hepatitis B Surface Antigen (HBsAg) *
+                    <Label className="text-gray-900">
+                      Hepatitis B Surface Antigen (HBsAg)
                     </Label>
                     <RadioGroup
                       value={formData.hepatitisBTest}
@@ -788,7 +825,7 @@ export default function DonorRegistration() {
                           id="hepb-neg"
                           className="border-white/30 text-white"
                         />
-                        <Label htmlFor="hepb-neg" className="text-white">
+                        <Label htmlFor="hepb-neg" className="text-gray-900">
                           Negative
                         </Label>
                       </div>
@@ -798,7 +835,7 @@ export default function DonorRegistration() {
                           id="hepb-pos"
                           className="border-white/30 text-white"
                         />
-                        <Label htmlFor="hepb-pos" className="text-white">
+                        <Label htmlFor="hepb-pos" className="text-gray-900">
                           Positive
                         </Label>
                       </div>
@@ -811,8 +848,8 @@ export default function DonorRegistration() {
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-white">
-                      Hepatitis C Virus (Anti-HCV) *
+                    <Label className="text-gray-900">
+                      Hepatitis C Virus (Anti-HCV)
                     </Label>
                     <RadioGroup
                       value={formData.hepatitisCTest}
@@ -827,7 +864,7 @@ export default function DonorRegistration() {
                           id="hepc-neg"
                           className="border-white/30 text-white"
                         />
-                        <Label htmlFor="hepc-neg" className="text-white">
+                        <Label htmlFor="hepc-neg" className="text-gray-900">
                           Negative
                         </Label>
                       </div>
@@ -837,7 +874,7 @@ export default function DonorRegistration() {
                           id="hepc-pos"
                           className="border-white/30 text-white"
                         />
-                        <Label htmlFor="hepc-pos" className="text-white">
+                        <Label htmlFor="hepc-pos" className="text-gray-900">
                           Positive
                         </Label>
                       </div>
@@ -850,7 +887,7 @@ export default function DonorRegistration() {
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-white">Syphilis (VDRL/RPR) *</Label>
+                    <Label className="text-gray-900">Syphilis (VDRL/RPR)</Label>
                     <RadioGroup
                       value={formData.syphilisTest}
                       onValueChange={(value) =>
@@ -864,7 +901,7 @@ export default function DonorRegistration() {
                           id="syphilis-neg"
                           className="border-white/30 text-white"
                         />
-                        <Label htmlFor="syphilis-neg" className="text-white">
+                        <Label htmlFor="syphilis-neg" className="text-gray-900">
                           Negative
                         </Label>
                       </div>
@@ -874,7 +911,7 @@ export default function DonorRegistration() {
                           id="syphilis-pos"
                           className="border-white/30 text-white"
                         />
-                        <Label htmlFor="syphilis-pos" className="text-white">
+                        <Label htmlFor="syphilis-pos" className="text-gray-900">
                           Positive
                         </Label>
                       </div>
@@ -887,7 +924,7 @@ export default function DonorRegistration() {
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-white">Malaria Test *</Label>
+                    <Label className="text-gray-900">Malaria Test</Label>
                     <RadioGroup
                       value={formData.malariaTest}
                       onValueChange={(value) =>
@@ -901,7 +938,7 @@ export default function DonorRegistration() {
                           id="malaria-neg"
                           className="border-white/30 text-white"
                         />
-                        <Label htmlFor="malaria-neg" className="text-white">
+                        <Label htmlFor="malaria-neg" className="text-gray-900">
                           Negative
                         </Label>
                       </div>
@@ -911,7 +948,7 @@ export default function DonorRegistration() {
                           id="malaria-pos"
                           className="border-white/30 text-white"
                         />
-                        <Label htmlFor="malaria-pos" className="text-white">
+                        <Label htmlFor="malaria-pos" className="text-gray-900">
                           Positive
                         </Label>
                       </div>
@@ -923,53 +960,23 @@ export default function DonorRegistration() {
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-white">
-                      Blood Group & Rh Factor *
-                    </Label>
-                    <Select
-                      value={formData.bloodGroup}
-                      onValueChange={(value) =>
-                        updateFormData("bloodGroup", value)
-                      }
-                    >
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                        <SelectValue placeholder="Select blood group" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 text-white border-gray-700">
-                        <SelectItem value="A+">A+</SelectItem>
-                        <SelectItem value="A-">A-</SelectItem>
-                        <SelectItem value="B+">B+</SelectItem>
-                        <SelectItem value="B-">B-</SelectItem>
-                        <SelectItem value="AB+">AB+</SelectItem>
-                        <SelectItem value="AB-">AB-</SelectItem>
-                        <SelectItem value="O+">O+</SelectItem>
-                        <SelectItem value="O-">O-</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.bloodGroup && (
-                      <p className="text-red-400 text-sm">
-                        {errors.bloodGroup}
-                      </p>
-                    )}
-                  </div>
                 </div>
 
                 <div className="bg-white/5 border border-white/20 rounded-lg p-4">
-                  <h3 className="font-semibold text-white mb-4">
+                  <h3 className="font-semibold text-gray-900 mb-4">
                     General Health Parameters:
                   </h3>
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-white">
-                        Hemoglobin (Hb) - ≥ 12.5 g/dL *
+                      <Label className="text-gray-900">
+                        Hemoglobin (Hb) - ≥ 12.5 g/dL
                       </Label>
                       <Input
                         value={formData.hemoglobin}
                         onChange={(e) =>
                           updateFormData("hemoglobin", e.target.value)
                         }
-                        className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                        className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                         placeholder="e.g., 13.2"
                       />
                       {errors.hemoglobin && (
@@ -980,7 +987,7 @@ export default function DonorRegistration() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-white">
+                      <Label className="text-gray-900">
                         Platelet Count (Within normal range)
                       </Label>
                       <Input
@@ -988,13 +995,13 @@ export default function DonorRegistration() {
                         onChange={(e) =>
                           updateFormData("plateletCount", e.target.value)
                         }
-                        className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                        className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                         placeholder="e.g., 250,000"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-white">
+                      <Label className="text-gray-900">
                         WBC Count (Within normal range)
                       </Label>
                       <Input
@@ -1002,7 +1009,7 @@ export default function DonorRegistration() {
                         onChange={(e) =>
                           updateFormData("wbcCount", e.target.value)
                         }
-                        className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                        className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                         placeholder="e.g., 7,000"
                       />
                     </div>
@@ -1015,15 +1022,15 @@ export default function DonorRegistration() {
             {currentStep === 5 && (
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <Label className="text-white">
-                    Blood Test Report * (within 90 days)
+                  <Label className="text-gray-900">
+                    Blood Test Report (within 90 days) - Optional
                   </Label>
                   <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-white/40 transition-colors">
-                    <Upload className="w-8 h-8 text-white/60 mx-auto mb-2" />
-                    <p className="text-white/80 mb-2">
+                    <Upload className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+                    <p className="text-gray-700 mb-2">
                       Click to upload or drag and drop
                     </p>
-                    <p className="text-xs text-white/60">
+                    <p className="text-xs text-gray-600">
                       PDF, JPG, PNG up to 10MB
                     </p>
                     <input
@@ -1039,8 +1046,9 @@ export default function DonorRegistration() {
                       id="bloodTest"
                     />
                     <Button
+                      type="button"
                       variant="outline"
-                      className="mt-3 border-white/30 text-white hover:bg-white/20 bg-transparent"
+                      className="mt-3 border-gray-300 text-gray-900 hover:bg-gray-100 bg-transparent"
                       onClick={() =>
                         document.getElementById("bloodTest")?.click()
                       }
@@ -1048,7 +1056,7 @@ export default function DonorRegistration() {
                       Choose File
                     </Button>
                     {formData.bloodTestReport && (
-                      <p className="text-green-400 text-sm mt-2">
+                      <p className="text-green-900 text-sm mt-2">
                         ✓ {formData.bloodTestReport.name}
                       </p>
                     )}
@@ -1061,11 +1069,14 @@ export default function DonorRegistration() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-white">Identity Proof *</Label>
+                  <Label className="text-gray-900">Identity Proof *</Label>
+                  <p className="text-xs text-gray-600 mb-2">
+                    Required: Aadhar, Passport, or Driver's License
+                  </p>
                   <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-white/40 transition-colors">
-                    <Upload className="w-8 h-8 text-white/60 mx-auto mb-2" />
-                    <p className="text-white/80 mb-2">Upload ID proof</p>
-                    <p className="text-xs text-white/60">
+                    <Upload className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+                    <p className="text-gray-700 mb-2">Upload ID proof</p>
+                    <p className="text-xs text-gray-600">
                       Aadhar, Passport, License
                     </p>
                     <input
@@ -1081,8 +1092,9 @@ export default function DonorRegistration() {
                       id="identity"
                     />
                     <Button
+                      type="button"
                       variant="outline"
-                      className="mt-3 border-white/30 text-white hover:bg-white/20 bg-transparent"
+                      className="mt-3 border-gray-300 text-gray-900 hover:bg-gray-100 bg-transparent"
                       onClick={() =>
                         document.getElementById("identity")?.click()
                       }
@@ -1090,7 +1102,7 @@ export default function DonorRegistration() {
                       Choose File
                     </Button>
                     {formData.idProof && (
-                      <p className="text-green-400 text-sm mt-2">
+                      <p className="text-green-900 text-sm mt-2">
                         ✓ {formData.idProof.name}
                       </p>
                     )}
@@ -1101,13 +1113,13 @@ export default function DonorRegistration() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-white">Medical Certificate *</Label>
+                  <Label className="text-gray-900">Medical Certificate - Optional</Label>
                   <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-white/40 transition-colors">
-                    <Upload className="w-8 h-8 text-white/60 mx-auto mb-2" />
-                    <p className="text-white/80 mb-2">
+                    <Upload className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+                    <p className="text-gray-700 mb-2">
                       Upload Medical Certificate
                     </p>
-                    <p className="text-xs text-white/60">
+                    <p className="text-xs text-gray-600">
                       Aadhar, Passport, License
                     </p>
                     <input
@@ -1123,8 +1135,9 @@ export default function DonorRegistration() {
                       id="medical"
                     />
                     <Button
+                      type="button"
                       variant="outline"
-                      className="mt-3 border-white/30 text-white hover:bg-white/20 bg-transparent"
+                      className="mt-3 border-gray-300 text-gray-900 hover:bg-gray-100 bg-transparent"
                       onClick={() =>
                         document.getElementById("medical")?.click()
                       }
@@ -1132,7 +1145,7 @@ export default function DonorRegistration() {
                       Choose File
                     </Button>
                     {formData.medicalCertificate && (
-                      <p className="text-green-400 text-sm mt-2">
+                      <p className="text-green-900 text-sm mt-2">
                         ✓ {formData.medicalCertificate.name}
                       </p>
                     )}
@@ -1162,11 +1175,11 @@ export default function DonorRegistration() {
                     <div className="space-y-1">
                       <Label
                         htmlFor="consent-data"
-                        className="text-white font-medium"
+                        className="text-gray-900 font-medium"
                       >
                         Data Processing Consent *
                       </Label>
-                      <p className="text-sm text-white/80">
+                      <p className="text-sm text-gray-700">
                         I consent to the processing of my personal and medical
                         data for blood donation purposes.
                       </p>
@@ -1190,11 +1203,11 @@ export default function DonorRegistration() {
                     <div className="space-y-1">
                       <Label
                         htmlFor="consent-medical"
-                        className="text-white font-medium"
+                        className="text-gray-900 font-medium"
                       >
                         Medical Screening Consent *
                       </Label>
-                      <p className="text-sm text-white/80">
+                      <p className="text-sm text-gray-700">
                         I consent to medical screening and health verification
                         procedures.
                       </p>
@@ -1218,11 +1231,11 @@ export default function DonorRegistration() {
                     <div className="space-y-1">
                       <Label
                         htmlFor="terms-conditions"
-                        className="text-white font-medium"
+                        className="text-gray-900 font-medium"
                       >
                         Terms & Conditions Agreement *
                       </Label>
-                      <p className="text-sm text-white/80">
+                      <p className="text-sm text-gray-700">
                         I have read and agree to the Terms of Service and
                         Privacy Policy.
                       </p>
@@ -1243,7 +1256,7 @@ export default function DonorRegistration() {
                 variant="outline"
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="border-white/30 text-white hover:bg-white/20 disabled:opacity-50 bg-transparent"
+                className="border-gray-300 text-gray-900 hover:bg-gray-100 disabled:opacity-50 bg-transparent"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Previous
@@ -1251,13 +1264,23 @@ export default function DonorRegistration() {
 
               <Button
                 onClick={currentStep === totalSteps ? handleSubmit : nextStep}
-                className="gradient-ruby hover:opacity-90 text-white shadow-lg hover:shadow-primary/50 transition-all duration-300"
+                disabled={isSubmitting}
+                className="gradient-ruby hover:opacity-90 text-white shadow-lg hover:shadow-primary/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {currentStep === totalSteps
-                  ? "Submit Registration"
-                  : "Next Step"}
-                {currentStep < totalSteps && (
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    {currentStep === totalSteps
+                      ? "Submit Registration"
+                      : "Next Step"}
+                    {currentStep < totalSteps && (
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    )}
+                  </>
                 )}
               </Button>
             </div>

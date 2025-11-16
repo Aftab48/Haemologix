@@ -46,20 +46,17 @@ import {
 } from "@/components/ui/select";
 import Image from "next/image";
 import GradientBackground from "@/components/GradientBackground";
+import { fetchUserDataById } from "@/lib/actions/user.actions";
+import { getAllAvailableAlerts } from "@/lib/actions/alerts.actions";
 
 export default function DonorDashboard() {
-  //const [dbUser, setDbUser] = useState<any>(null);
-  //const [user, setUser] = useState<DonorData | null>(null);
-  const [isAvailable, setIsAvailable] = useState(true);
+  // Demo donor ID
+  const DEMO_DONOR_ID = "4b9f499a-f928-4133-8dcb-378199d8418f";
 
-  const user = {
-    id: "1233",
-    name: "Aftab Alam",
-    email: "mdalam4884@gmail.com",
-    bloodGroup: "O+",
-    dateOfBirth: "2005-08-14",
-    lastDonation: "",
-  };
+  const [user, setUser] = useState<DonorData | null>(null);
+  const [isAvailable, setIsAvailable] = useState(true);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [isLoadingAlerts, setIsLoadingAlerts] = useState(true);
 
   // useEffect(() => {
   //   const fetchUser = async () => {
@@ -92,174 +89,57 @@ export default function DonorDashboard() {
   //   fetchUser();
   // }, [loggedInUser]);
 
+  // Fetch user data on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setIsLoadingUser(true);
+        const userData = await fetchUserDataById(DEMO_DONOR_ID, "donor");
+        if (userData && userData.userType === "donor") {
+          const donorData = userData as any; // Type assertion for donor data
+          setUser({
+            ...donorData,
+            dateOfBirth: donorData.dateOfBirth
+              ? new Date(donorData.dateOfBirth).toISOString()
+              : "",
+            lastDonation: donorData.lastDonation
+              ? new Date(donorData.lastDonation).toISOString()
+              : undefined,
+          } as DonorData);
+        }
+      } catch (err) {
+        console.error("[Demo Donor Dashboard] error fetching user:", err);
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   const [alertFilter, setAlertFilter] = useState<
     "All" | "Blood" | "Platelets" | "Plasma"
   >("All");
 
-  const [activeAlerts, setActiveAlerts] = useState([
-    {
-      id: 1,
-      hospitalName: "City General Hospital",
-      bloodType: "O+",
-      urgency: "Critical",
-      distance: "2.3 km",
-      timePosted: "15 minutes ago",
-      unitsNeeded: 3,
-      description:
-        "Emergency surgery patient needs immediate blood transfusion",
-      location: "Downtown Medical District",
-      contactPhone: "+1-555-0123",
-      responded: false,
-    },
-    {
-      id: 2,
-      hospitalName: "St. Mary's Medical Center",
-      bloodType: "O+",
-      urgency: "High",
-      distance: "4.7 km",
-      timePosted: "1 hour ago",
-      unitsNeeded: 2,
-      description: "Accident victim requires blood for surgery",
-      location: "North Side",
-      contactPhone: "+1-555-0456",
-      responded: false,
-    },
-    {
-      id: 3,
-      hospitalName: "Regional Blood Bank",
-      bloodType: "A-",
-      urgency: "Medium",
-      distance: "6.2 km",
-      timePosted: "2 hours ago",
-      unitsNeeded: 4,
-      description: "Scheduled surgery blood requirement",
-      location: "West End",
-      contactPhone: "+1-555-0789",
-      responded: false,
-    },
-    {
-      id: 4,
-      hospitalName: "Regional Blood Bank",
-      bloodType: "Platelets",
-      urgency: "Critical",
-      distance: "4 km",
-      timePosted: "10 hours ago",
-      unitsNeeded: 3,
-      description: "Urgent platelets required for surgery",
-      location: "Regional Blood Bank",
-      contactPhone: "+1-555-0000",
-      responded: false,
-    },
-    {
-      id: 5,
-      hospitalName: "Green Valley Clinic",
-      bloodType: "Platelets",
-      urgency: "Critical",
-      distance: "9 km",
-      timePosted: "7 hours ago",
-      unitsNeeded: 2,
-      description: "Urgent platelets needed for patient recovery",
-      location: "Green Valley Clinic",
-      contactPhone: "+1-555-0001",
-      responded: false,
-    },
+  const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
 
-    {
-      id: 6,
-      hospitalName: "Green Valley Clinic",
-      bloodType: "O-",
-      urgency: "Low",
-      distance: "8.4 km",
-      timePosted: "3 hours ago",
-      unitsNeeded: 1,
-      description: "Routine blood transfusion scheduled",
-      location: "Green Valley",
-      contactPhone: "+1-555-0345",
-      responded: false,
-    },
-    {
-      id: 7,
-      hospitalName: "St. Mary’s Hospital",
-      bloodType: "Plasma",
-      urgency: "High",
-      distance: "4.8 km",
-      timePosted: "10 minutes ago",
-      unitsNeeded: 5,
-      description:
-        "Severe burn patient requires plasma transfusion for stabilization",
-      location: "Eastside Health Campus",
-      contactPhone: "+1-555-0456",
-      responded: false,
-    },
-    {
-      id: 8,
-      hospitalName: "Green Valley Medical Center",
-      bloodType: "Plasma",
-      urgency: "Critical",
-      distance: "7.2 km",
-      timePosted: "25 minutes ago",
-      unitsNeeded: 2,
-      description:
-        "Trauma ward requesting urgent plasma for multiple accident victims",
-      location: "Green Valley District",
-      contactPhone: "+1-555-0789",
-      responded: false,
-    },
-    {
-      id: 9,
-      hospitalName: "Westview General Hospital",
-      bloodType: "Plasma",
-      urgency: "Moderate",
-      distance: "3.5 km",
-      timePosted: "40 minutes ago",
-      unitsNeeded: 4,
-      description:
-        "Plasma required for a patient undergoing treatment for liver disease",
-      location: "Westview Central",
-      contactPhone: "+1-555-0921",
-      responded: false,
-    },
-    {
-      id: 10,
-      hospitalName: "Northside Trauma Center",
-      bloodType: "Plasma",
-      urgency: "Critical",
-      distance: "5.1 km",
-      timePosted: "5 minutes ago",
-      unitsNeeded: 6,
-      description:
-        "Emergency plasma needed in ICU for dengue shock syndrome patient",
-      location: "Northside Industrial Area",
-      contactPhone: "+1-555-0345",
-      responded: false,
-    },
-    {
-      id: 11,
-      hospitalName: "Amri Hospital",
-      bloodType: "Platelets",
-      urgency: "Low",
-      distance: "8 km",
-      timePosted: "15 ago",
-      unitsNeeded: 2,
-      description: "Urgent platelets needed for patient recovery",
-      location: "Amri Hospital",
-      contactPhone: "+1-555-0001",
-      responded: false,
-    },
-    {
-      id: 12,
-      hospitalName: "Apollo City Hospital",
-      bloodType: "Platelets",
-      urgency: "High",
-      distance: "2 km",
-      timePosted: "30 mins ago",
-      unitsNeeded: 2,
-      description: "Urgent platelets needed for patient recovery",
-      location: "Apollo City Hospital",
-      contactPhone: "+1-555-0001",
-      responded: false,
-    },
-  ]);
+  // Fetch alerts on mount
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        setIsLoadingAlerts(true);
+        const alerts = await getAllAvailableAlerts();
+        setActiveAlerts(alerts);
+      } catch (err) {
+        console.error("[Demo Donor Dashboard] error loading alerts:", err);
+      } finally {
+        setIsLoadingAlerts(false);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
+
   const [donationHistory, setDonationHistory] = useState([
     {
       id: 1,
@@ -451,7 +331,12 @@ export default function DonorDashboard() {
                   Donor Dashboard
                 </h1>
                 <p className="text-sm text-text-dark/80">
-                  Welcome back, {user?.name || user?.email.split("@")[0]}
+                  Welcome back,{" "}
+                  {isLoadingUser
+                    ? "Loading..."
+                    : user
+                      ? `${user.firstName} ${user.lastName}`
+                      : "Demo Donor"}
                 </p>
               </div>
             </div>
@@ -954,7 +839,11 @@ export default function DonorDashboard() {
                     <label className="text-sm font-medium text-text-dark/70">
                       Full Name
                     </label>
-                    <p className="text-text-dark">{user?.name || "John Donor"}</p>
+                    <p className="text-text-dark">
+                      {user
+                        ? `${user.firstName} ${user.lastName}`
+                        : "Demo Donor"}
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-text-dark/70">

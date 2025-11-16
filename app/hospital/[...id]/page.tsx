@@ -297,6 +297,9 @@ export default function HospitalDashboard() {
   //   if (currentAlert?.id) fetchResponses();
   // }, [currentAlert]);
 
+  const router = useRouter();
+  const { user: loggedInUser } = useUser();
+  
   const [newAlert, setNewAlert] = useState({
     type: "",
     bloodType: "",
@@ -305,13 +308,10 @@ export default function HospitalDashboard() {
     description: "",
     radius: "10",
   });
-  const router = useRouter();
 
   const [dbUser, setDbUser] = useState<any>(null);
 
   const [user, setUser] = useState<HospitalData | null>(null);
-
-  const { user: loggedInUser } = useUser();
   const [hospitalID, setHospitalID] = useState("");
   useEffect(() => {
     const fetchUser = async () => {
@@ -321,6 +321,13 @@ export default function HospitalDashboard() {
       try {
         const res = await getCurrentUser(email);
         console.log("[Dashboard] server action response:", res);
+        
+        // Check if user is approved
+        if (res.role === "HOSPITAL" && res.user && res.user.status !== "APPROVED") {
+          router.push("/waitlist");
+          return;
+        }
+        
         setDbUser(res);
       } catch (err) {
         console.error("[Dashboard] error calling getCurrentUser:", err);
@@ -328,7 +335,7 @@ export default function HospitalDashboard() {
     };
 
     fetchUser();
-  }, [loggedInUser]);
+  }, [loggedInUser, router]);
 
   useEffect(() => {
     if (dbUser?.role === "HOSPITAL" && dbUser.user) {

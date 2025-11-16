@@ -115,3 +115,42 @@ export async function getAlertResponseStats(alertId: string) {
     donorResponses: formattedDonors, // 👈 already frontend-safe
   };
 }
+
+// Fetch all available alerts for donors (not filtered by hospital)
+export async function getAllAvailableAlerts() {
+  try {
+    const alerts = await db.alert.findMany({
+      where: {
+        status: {
+          in: ["PENDING", "NOTIFIED", "MATCHED"], // Only active alerts
+        },
+      },
+      include: {
+        hospital: true,
+        responses: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Transform to donor-friendly format
+    return alerts.map((a) => ({
+      id: a.id,
+      hospitalName: a.hospital?.hospitalName || "Unknown Hospital",
+      bloodType: a.bloodType,
+      urgency: a.urgency === "CRITICAL" ? "Critical" : a.urgency === "HIGH" ? "High" : a.urgency === "MEDIUM" ? "Medium" : "Low",
+      unitsNeeded: parseInt(a.unitsNeeded) || 0,
+      description: a.description || "",
+      location: a.hospital?.hospitalAddress || "",
+      contactPhone: a.hospital?.contactPhone || "",
+      timePosted: formatLastActivity(a.createdAt, false),
+      distance: "0 km", // TODO: Calculate distance based on donor location
+      responded: false, // TODO: Check if current donor has responded
+      hospitalId: a.hospitalId,
+      latitude: a.latitude,
+      longitude: a.longitude,
+    }));
+  } catch (err) {
+    console.error("[getAllAvailableAlerts] error:", err);
+    throw err;
+  }
+}

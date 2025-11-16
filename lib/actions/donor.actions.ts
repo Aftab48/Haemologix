@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { getCoordinatesFromAddress } from "../geocoding";
-import { generatePresignedUrl, uploadDonorFile } from "./awsupload.actions";
+import { uploadDonorFile } from "./awsupload.actions";
 import { verifyDonorDocuments } from "./verification.actions";
 
 export async function submitDonorRegistration(formData: DonorData) {
@@ -45,15 +45,15 @@ export async function submitDonorRegistration(formData: DonorData) {
         vaccinationDetails: formData.vaccinationDetails,
         medicalConditions: formData.medicalConditions,
         medications: formData.medications,
-        hivTest: formData.hivTest,
-        hepatitisBTest: formData.hepatitisBTest,
-        hepatitisCTest: formData.hepatitisCTest,
-        syphilisTest: formData.syphilisTest,
-        malariaTest: formData.malariaTest,
-        hemoglobin: formData.hemoglobin,
-        bloodGroup: formData.bloodGroup,
-        plateletCount: formData.plateletCount,
-        wbcCount: formData.wbcCount,
+        hivTest: formData.hivTest || "",
+        hepatitisBTest: formData.hepatitisBTest || "",
+        hepatitisCTest: formData.hepatitisCTest || "",
+        syphilisTest: formData.syphilisTest || "",
+        malariaTest: formData.malariaTest || "",
+        hemoglobin: formData.hemoglobin || "",
+        bloodGroup: formData.bloodGroup || "",
+        plateletCount: formData.plateletCount || "",
+        wbcCount: formData.wbcCount || "",
         dataProcessingConsent: formData.dataProcessingConsent,
         medicalScreeningConsent: formData.medicalScreeningConsent,
         termsAccepted: formData.termsAccepted,
@@ -143,15 +143,15 @@ export async function updateDonorRegistration(donorId: string, formData: DonorDa
         vaccinationDetails: formData.vaccinationDetails,
         medicalConditions: formData.medicalConditions,
         medications: formData.medications,
-        hivTest: formData.hivTest,
-        hepatitisBTest: formData.hepatitisBTest,
-        hepatitisCTest: formData.hepatitisCTest,
-        syphilisTest: formData.syphilisTest,
-        malariaTest: formData.malariaTest,
-        hemoglobin: formData.hemoglobin,
-        bloodGroup: formData.bloodGroup,
-        plateletCount: formData.plateletCount,
-        wbcCount: formData.wbcCount,
+        hivTest: formData.hivTest || "",
+        hepatitisBTest: formData.hepatitisBTest || "",
+        hepatitisCTest: formData.hepatitisCTest || "",
+        syphilisTest: formData.syphilisTest || "",
+        malariaTest: formData.malariaTest || "",
+        hemoglobin: formData.hemoglobin || "",
+        bloodGroup: formData.bloodGroup || "",
+        plateletCount: formData.plateletCount || "",
+        wbcCount: formData.wbcCount || "",
         dataProcessingConsent: formData.dataProcessingConsent,
         medicalScreeningConsent: formData.medicalScreeningConsent,
         termsAccepted: formData.termsAccepted,
@@ -186,8 +186,9 @@ export async function updateDonorRegistration(donorId: string, formData: DonorDa
   }
 }
 
-export async function fetchAllDonors() {
+export async function fetchAllDonors(includeFiles: boolean = false) {
   try {
+    // Always fetch all data - file URLs are now direct S3 URLs (no presigned URL generation needed)
     const donors = await db.donorRegistration.findMany();
     return donors;
   } catch (error) {
@@ -196,28 +197,16 @@ export async function fetchAllDonors() {
   }
 }
 
-export async function fetchDonorById(donorId: string) {
+export async function fetchDonorById(donorId: string, includeFiles: boolean = true) {
   try {
+    // Return all data - file URLs are now direct S3 URLs (no presigned URL generation needed)
     const donor = await db.donorRegistration.findUnique({
       where: { id: donorId },
     });
     if (!donor) return null;
 
-    // Generate presigned URLs for file fields
-    const bloodTestReportUrl = await generatePresignedUrl(
-      donor.bloodTestReport
-    );
-    const idProofUrl = await generatePresignedUrl(donor.idProof);
-    const medicalCertificateUrl = await generatePresignedUrl(
-      donor.medicalCertificate
-    );
-
-    return {
-      ...donor,
-      bloodTestReport: bloodTestReportUrl,
-      idProof: idProofUrl,
-      medicalCertificate: medicalCertificateUrl,
-    };
+    // Return direct S3 URLs (no presigned URL generation needed since RLS is disabled)
+    return donor;
   } catch (error) {
     console.error("Error fetching donor by ID:", error);
     return null;

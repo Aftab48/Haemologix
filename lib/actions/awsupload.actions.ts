@@ -1,10 +1,8 @@
 import { db } from "@/db";
 import {
   S3Client,
-  GetObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION!,
@@ -53,29 +51,6 @@ export async function uploadDonorFile(
     throw new Error("File upload failed: " + (err as Error).message);
   }
 }
-
-export async function generatePresignedUrl(url: string | null) {
-  if (!url) return null;
-
-  try {
-    // Return as-is if already signed
-    if (url.includes("X-Amz-Signature")) return url;
-
-    // Extract S3 object key safely
-    const key = new URL(url).pathname.slice(1);
-
-    const command = new GetObjectCommand({
-      Bucket: process.env.S3_BUCKET_NAME!,
-      Key: key,
-    });
-
-    return await getSignedUrl(s3, command, { expiresIn: 900 }); // 15 minutes
-  } catch (err) {
-    console.error("Error generating presigned URL:", err);
-    return null;
-  }
-}
-
 
 export async function uploadHospitalFile(
   field: HospitalFileField,

@@ -30,6 +30,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { getCurrentUser } from "@/lib/actions/user.actions";
+import { getAllAvailableAlerts } from "@/lib/actions/alerts.actions";
 import {
   BloodTypeFormat,
   calculateNextEligible,
@@ -39,12 +40,15 @@ import {
 } from "@/lib/utils";
 import Image from "next/image";
 import GradientBackground from "@/components/GradientBackground";
+import { Loader2 } from "lucide-react";
 
 export default function DonorDashboard() {
   const { user: loggedInUser } = useUser();
+  const router = useRouter();
   const [dbUser, setDbUser] = useState<any>(null);
   const [user, setUser] = useState<DonorData | null>(null);
   const [isAvailable, setIsAvailable] = useState(true);
+  const [alertsLoading, setAlertsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -55,6 +59,12 @@ export default function DonorDashboard() {
         const res = await getCurrentUser(email);
 
         if (res.role === "DONOR") {
+          // Check if user is approved
+          if (res.user && (res.user as any).status !== "APPROVED") {
+            router.push("/waitlist");
+            return;
+          }
+
           setUser({
             ...res.user,
             dateOfBirth: res.user.dateOfBirth
@@ -63,7 +73,7 @@ export default function DonorDashboard() {
             lastDonation: res.user.lastDonation
               ? formatLastActivity(res.user.lastDonation)
               : undefined,
-          });
+          } as DonorData & { id?: string });
         } else {
           setUser(null);
         }
@@ -75,89 +85,82 @@ export default function DonorDashboard() {
     };
 
     fetchUser();
-  }, [loggedInUser]);
+  }, [loggedInUser, router]);
 
-  const [activeAlerts, setActiveAlerts] = useState([
-    {
-      id: 1,
-      hospitalName: "City General Hospital",
-      bloodType: "O+",
-      urgency: "Critical",
-      distance: "2.3 km",
-      timePosted: "15 minutes ago",
-      unitsNeeded: 3,
-      description:
-        "Emergency surgery patient needs immediate blood transfusion",
-      location: "Downtown Medical District",
-      contactPhone: "+1-555-0123",
-      responded: false,
-    },
-    {
-      id: 2,
-      hospitalName: "St. Mary's Medical Center",
-      bloodType: "O+",
-      urgency: "High",
-      distance: "4.7 km",
-      timePosted: "1 hour ago",
-      unitsNeeded: 2,
-      description: "Accident victim requires blood for surgery",
-      location: "North Side",
-      contactPhone: "+1-555-0456",
-      responded: false,
-    },
-    {
-      id: 3,
-      hospitalName: "Regional Blood Bank",
-      bloodType: "A-",
-      urgency: "Medium",
-      distance: "6.2 km",
-      timePosted: "2 hours ago",
-      unitsNeeded: 4,
-      description: "Scheduled surgery blood requirement",
-      location: "West End",
-      contactPhone: "+1-555-0789",
-      responded: false,
-    },
-    {
-      id: 4,
-      hospitalName: "Community Hospital",
-      bloodType: "B+",
-      urgency: "Critical",
-      distance: "3.5 km",
-      timePosted: "30 minutes ago",
-      unitsNeeded: 5,
-      description: "Severe trauma patient needs urgent blood transfusion",
-      location: "Eastside",
-      contactPhone: "+1-555-0234",
-      responded: false,
-    },
-    {
-      id: 5,
-      hospitalName: "Downtown Medical Center",
-      bloodType: "AB+",
-      urgency: "High",
-      distance: "5.1 km",
-      timePosted: "45 minutes ago",
-      unitsNeeded: 2,
-      description: "Blood needed for cancer patient treatment",
-      location: "Central Business District",
-      contactPhone: "+1-555-0567",
-      responded: false,
-    },
-    {
-      id: 6,
-      hospitalName: "Green Valley Clinic",
-      bloodType: "O-",
-      urgency: "Low",
-      distance: "8.4 km",
-      timePosted: "3 hours ago",
-      unitsNeeded: 1,
-      description: "Routine blood transfusion scheduled",
-      location: "Green Valley",
-      contactPhone: "+1-555-0345",
-      responded: false,
-    },
-  ]);
+  const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
+
+  // Fetch active alerts
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      if (!user && !dbUser) return;
+      
+      setAlertsLoading(true);
+      try {
+        const alerts = await getAllAvailableAlerts();
+        const donorId = (user as any)?.id || dbUser?.user?.id;
+        
+        // Calculate distance and check if donor has responded
+        const alertsWithDistance = alerts.map((alert: any) => {
+          let distance = "0 km";
+          let responded = false;
+
+          // Calculate distance if both locations are available
+          if (
+            alert.latitude &&
+            alert.longitude &&
+            (user as any)?.latitude &&
+            (user as any)?.longitude
+          ) {
+            const lat1 = parseFloat((user as any).latitude);
+            const lon1 = parseFloat((user as any).longitude);
+            const lat2 = parseFloat(alert.latitude);
+            const lon2 = parseFloat(alert.longitude);
+
+            // Haversine formula to calculate distance
+            const R = 6371; // Earth's radius in km
+            const dLat = ((lat2 - lat1) * Math.PI) / 180;
+            const dLon = ((lon2 - lon1) * Math.PI) / 180;
+            const a =
+              Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos((lat1 * Math.PI) / 180) *
+                Math.cos((lat2 * Math.PI) / 180) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const calculatedDistance = R * c;
+            distance = `${calculatedDistance.toFixed(1)} km`;
+          }
+
+          // Check if donor has responded (this would need to check AlertResponse table)
+          // For now, we'll check if there's a response in the alert object
+          if (alert.responses && donorId) {
+            responded = alert.responses.some(
+              (r: any) => r.donorId === donorId
+            );
+          }
+
+          return {
+            ...alert,
+            distance,
+            responded,
+          };
+        });
+
+        setActiveAlerts(alertsWithDistance);
+      } catch (err) {
+        console.error("[Dashboard] error fetching alerts:", err);
+        setActiveAlerts([]);
+      } finally {
+        setAlertsLoading(false);
+      }
+    };
+
+    fetchAlerts();
+    
+    // Refresh alerts every 30 seconds
+    const interval = setInterval(fetchAlerts, 30000);
+    return () => clearInterval(interval);
+  }, [user, dbUser]);
   const [donationHistory, setDonationHistory] = useState([
     {
       id: 1,
@@ -285,20 +288,53 @@ export default function DonorDashboard() {
     livesSaved: 36,
     eligibilityStatus: "Eligible",
   });
-  const router = useRouter();
 
   const [buttonResponse, setButtonResponse] = useState<
     "accept" | "decline" | null
   >(null);
 
-  const handleAlertResponse = (alertId: number) => {
-    setActiveAlerts((alerts) =>
-      alerts.map((alert) =>
-        alert.id === alertId
-          ? { ...alert, responded: true, response: buttonResponse }
-          : alert
-      )
-    );
+  const handleAlertResponse = async (alertId: string, status: "accept" | "decline") => {
+    const donorId = (user as any)?.id || dbUser?.user?.id;
+    if (!donorId) {
+      console.error("Donor ID not found");
+      return;
+    }
+
+    try {
+      // Call the API to process the response
+      const response = await fetch("/api/donor/respond", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          donor_id: donorId,
+          request_id: alertId,
+          status: status === "accept" ? "accepted" : "declined",
+          eta_minutes: status === "accept" ? 45 : undefined,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Update local state
+        setActiveAlerts((alerts) =>
+          alerts.map((alert) =>
+            alert.id === alertId
+              ? { ...alert, responded: true, response: status }
+              : alert
+          )
+        );
+        setButtonResponse(status);
+      } else {
+        console.error("Failed to process response:", result.error);
+        alert(`Failed to ${status} request: ${result.error}`);
+      }
+    } catch (error) {
+      console.error("Error processing response:", error);
+      alert(`Error processing response. Please try again.`);
+    }
   };
 
   const getUrgencyColor = (urgency: string) => {
@@ -567,7 +603,19 @@ export default function DonorDashboard() {
               </Button>
             </div>
 
-            {!isAvailable ? (
+            {alertsLoading ? (
+              <Card className="glass-morphism border border-accent/30 card-hover text-white">
+                <CardContent className="p-12 text-center">
+                  <Loader2 className="w-12 h-12 text-gray-400 mx-auto mb-4 animate-spin" />
+                  <h3 className="text-lg font-medium text-text-dark mb-2">
+                    Loading Alerts...
+                  </h3>
+                  <p className="text-text-dark/80">
+                    Fetching active blood requests from hospitals.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : !isAvailable ? (
               <Card className="glass-morphism border border-accent/30 card-hover text-white">
                 <CardContent className="p-12 text-center">
                   <XCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -646,8 +694,7 @@ export default function DonorDashboard() {
                           <div className="flex gap-3">
                             <Button
                               onClick={() => {
-                                setButtonResponse("accept");
-                                handleAlertResponse(alert.id);
+                                handleAlertResponse(alert.id, "accept");
                               }}
                               className="bg-green-600 hover:bg-green-700 text-white"
                               disabled={
@@ -663,8 +710,7 @@ export default function DonorDashboard() {
                             <Button
                               variant="outline"
                               onClick={() => {
-                                setButtonResponse("decline");
-                                handleAlertResponse(alert.id);
+                                handleAlertResponse(alert.id, "decline");
                               }}
                               className="bg-white/20 text-white border-white/30 hover:bg-white/30"
                               disabled={
@@ -839,6 +885,9 @@ export default function DonorDashboard() {
                   <Button
                     variant="outline"
                     className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
+                    onClick={() => {
+                      router.push("/donor/profile/edit");
+                    }}
                   >
                     <User className="w-4 h-4 mr-2" />
                     Edit Profile

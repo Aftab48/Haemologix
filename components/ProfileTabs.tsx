@@ -221,57 +221,66 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
               value = "N/A";
             }
 
+            // Render file types differently to avoid div inside p
+            const renderFileValue = () => {
+              if (!value || value === "N/A" || typeof value !== "string") {
+                return <span className="text-sm font-semibold text-text-dark mt-1">Not Uploaded</span>;
+              }
+              
+              const fileUrl: string = value;
+              const extension = fileUrl
+                .split(".")
+                .pop()
+                ?.toLowerCase();
+
+              if (extension === "jpg" || extension === "jpeg" || extension === "png") {
+                return (
+                  <div className="mt-1 w-full">
+                    <div className="relative w-full aspect-square min-h-[200px] rounded-md border overflow-hidden bg-gray-100">
+                      <Image
+                        src={fileUrl}
+                        alt={field.label}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-contain"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+                );
+              } else if (extension === "pdf") {
+                return (
+                  <a
+                    href={fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-semibold text-blue-500 underline mt-1 block"
+                  >
+                    View PDF
+                  </a>
+                );
+              } else {
+                return <span className="text-sm font-semibold text-text-dark mt-1">Not Uploaded</span>;
+              }
+            };
+
             return (
               <div
                 key={field.key}
                 className="bg-white rounded-xl shadow p-4 border transition-shadow duration-300 hover:shadow-xl hover:shadow-blue-400/70"
               >
                 <p className="text-xs text-text-dark/70">{field.label}</p>
-                <p className="text-sm font-semibold text-text-dark mt-1">
-                  {field.type === "boolean"
-                    ? value
-                      ? "✅ Yes"
-                      : "❌ No"
-                    : field.type === "file"
-                    ? value !== "N/A"
-                      ? (() => {
-                          const fileUrl: string = value;
-                          const extension = fileUrl
-                            .split(".")
-                            .pop()
-                            ?.toLowerCase();
-
-                          if (
-                            extension === "jpg" ||
-                            extension === "jpeg" ||
-                            extension === "png"
-                          ) {
-                            return (
-                              <img
-                                src={fileUrl}
-                                alt={field.label}
-                                
-                                className="rounded-md w-64 h-64 border"
-                              />
-                            );
-                          } else if (extension === "pdf") {
-                            return (
-                              <a
-                                href={fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-500 underline"
-                              >
-                                View PDF
-                              </a>
-                            );
-                          } else {
-                            return "Not Uploaded";
-                          }
-                        })()
-                      : "Not Uploaded"
-                    : value || "N/A"}
-                </p>
+                {field.type === "file" ? (
+                  renderFileValue()
+                ) : (
+                  <p className="text-sm font-semibold text-text-dark mt-1">
+                    {field.type === "boolean"
+                      ? value
+                        ? "✅ Yes"
+                        : "❌ No"
+                      : value || "N/A"}
+                  </p>
+                )}
               </div>
             );
           })}

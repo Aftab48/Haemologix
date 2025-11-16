@@ -194,6 +194,7 @@ export default function DonorEditPage() {
         if (!formData.phone) newErrors.phone = "Phone is required";
         if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
         if (!formData.gender) newErrors.gender = "Gender is required";
+        if (!formData.bloodGroup) newErrors.bloodGroup = "Blood group is required";
 
         if (formData.dateOfBirth) {
           const today = new Date();
@@ -237,13 +238,7 @@ export default function DonorEditPage() {
         break;
 
       case 4:
-        if (!formData.hivTest) newErrors.hivTest = "HIV test result is required";
-        if (!formData.hepatitisBTest) newErrors.hepatitisBTest = "Hepatitis B test result is required";
-        if (!formData.hepatitisCTest) newErrors.hepatitisCTest = "Hepatitis C test result is required";
-        if (!formData.syphilisTest) newErrors.syphilisTest = "Syphilis test result is required";
-        if (!formData.malariaTest) newErrors.malariaTest = "Malaria test result is required";
-        if (!formData.hemoglobin) newErrors.hemoglobin = "Hemoglobin level is required";
-        if (!formData.bloodGroup) newErrors.bloodGroup = "Blood group is required";
+        // Step 4 is fully optional - no validation required
         break;
 
       case 5:
@@ -300,7 +295,7 @@ export default function DonorEditPage() {
   if (loading) {
     return (
       <GradientBackground className="flex items-center justify-center p-4">
-        <div className="text-white text-2xl">Loading your information...</div>
+        <div className="text-gray-900 text-2xl">Loading your information...</div>
       </GradientBackground>
     );
   }
@@ -314,7 +309,7 @@ export default function DonorEditPage() {
           alt="Background"
         />
 
-        <Card className="w-full max-w-2xl glass-morphism border border-accent/30 card-hover text-white relative z-10">
+        <Card className="w-full max-w-2xl glass-morphism border border-accent/30 card-hover text-gray-900 relative z-10">
           <CardContent className="p-12 text-center">
             <div className="mb-8">
               <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -322,33 +317,33 @@ export default function DonorEditPage() {
               </div>
             </div>
 
-            <h1 className="text-3xl font-bold text-white mb-4">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">
               Information Updated Successfully!
             </h1>
-            <p className="text-xl text-gray-200 mb-6">
+            <p className="text-xl text-gray-700 mb-6">
               Your updated information has been submitted for re-verification.
             </p>
 
             <div className="bg-white/5 rounded-lg p-6 mb-8 border border-white/10">
-              <h3 className="text-lg font-semibold text-white mb-3">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
                 What happens next?
               </h3>
               <div className="space-y-3 text-left">
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                  <span className="text-gray-200">
+                  <span className="text-gray-700">
                     Our AI system will re-verify your documents
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                  <span className="text-gray-200">
+                  <span className="text-gray-700">
                     If verification passes, admin will review your application
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                  <span className="text-gray-200">
+                  <span className="text-gray-700">
                     You'll receive an email with the verification result
                   </span>
                 </div>
@@ -364,7 +359,7 @@ export default function DonorEditPage() {
               <Link href="/">
                 <Button
                   variant="outline"
-                  className="border-white/30 text-white hover:bg-white/20 px-8 py-3 bg-transparent"
+                  className="border-gray-300 text-gray-900 hover:bg-gray-100 px-8 py-3 bg-transparent"
                 >
                   Back to Home
                 </Button>
@@ -389,15 +384,15 @@ export default function DonorEditPage() {
         <div className="text-center mb-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4"
+            className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             Back To Home
           </Link>
-          <h1 className="text-4xl font-bold text-white mb-2">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
             Update Your Information
           </h1>
-          <p className="text-xl text-gray-200">
+          <p className="text-xl text-gray-700">
             Correct any mismatched information to pass verification
           </p>
         </div>
@@ -408,11 +403,11 @@ export default function DonorEditPage() {
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-3">
                 <AlertTriangle className="w-6 h-6 text-yellow-400" />
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className="text-lg font-semibold text-gray-900">
                   Verification Attempt {donorInfo.verificationAttempts + 1}/3
                 </h3>
               </div>
-              <p className="text-gray-200 mb-2">
+              <p className="text-gray-700 mb-2">
                 Please carefully review and correct any information that doesn't match your documents.
               </p>
               <p className="text-yellow-300 text-sm font-semibold">
@@ -428,10 +423,10 @@ export default function DonorEditPage() {
         <Card className="mb-8 glass-morphism border border-accent/30">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-white font-medium">
+              <span className="text-gray-900 font-medium">
                 Step {currentStep} of {totalSteps}
               </span>
-              <span className="text-white/80">
+              <span className="text-gray-700">
                 {Math.round(progress)}% Complete
               </span>
             </div>
@@ -462,7 +457,7 @@ export default function DonorEditPage() {
                         ? "bg-green-500 text-white shadow-lg shadow-green-500/50"
                         : step.number === currentStep
                         ? "bg-yellow-600 text-white shadow-lg shadow-yellow-500/50"
-                        : "bg-white/20 text-white/60"
+                        : "bg-white/20 text-gray-600"
                     }`}
                   >
                     {step.number < currentStep ? (
@@ -471,10 +466,10 @@ export default function DonorEditPage() {
                       <span className="font-bold">{step.number}</span>
                     )}
                   </div>
-                  <div className="text-xs text-white font-medium">
+                  <div className="text-xs text-gray-900 font-medium">
                     {step.title}
                   </div>
-                  <div className="text-xs text-white/60 hidden md:block">
+                  <div className="text-xs text-gray-600 hidden md:block">
                     {step.description}
                   </div>
                 </div>
@@ -484,9 +479,9 @@ export default function DonorEditPage() {
         </Card>
 
         {/* Form Content - Reusing the same steps as registration */}
-        <Card className="glass-morphism border border-accent/30 card-hover text-white">
+        <Card className="glass-morphism border border-accent/30 card-hover text-gray-900">
           <CardHeader>
-            <CardTitle className="text-white">
+            <CardTitle className="text-gray-900">
               {currentStep === 1 && "Personal Information"}
               {currentStep === 2 && "Physical Requirements"}
               {currentStep === 3 && "Medical History"}
@@ -494,11 +489,11 @@ export default function DonorEditPage() {
               {currentStep === 5 && "Document Upload"}
               {currentStep === 6 && "Consent & Agreement"}
             </CardTitle>
-            <CardDescription className="text-gray-200">
+            <CardDescription className="text-gray-700">
               {currentStep === 1 && "Update your basic personal details"}
               {currentStep === 2 && "Update weight and BMI information"}
               {currentStep === 3 && "Update medical history"}
-              {currentStep === 4 && "Update disease screening results"}
+              {currentStep === 4 && "Update disease screening results (optional)"}
               {currentStep === 5 && "Re-upload documents if needed (optional)"}
               {currentStep === 6 && "Review and confirm"}
             </CardDescription>
@@ -510,11 +505,11 @@ export default function DonorEditPage() {
               <div className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">First Name *</Label>
+                    <Label className="text-gray-900">First Name *</Label>
                     <Input
                       value={formData.firstName}
                       onChange={(e) => updateFormData("firstName", e.target.value)}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                       placeholder="Enter your first name"
                     />
                     {errors.firstName && (
@@ -522,11 +517,11 @@ export default function DonorEditPage() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">Last Name *</Label>
+                    <Label className="text-gray-900">Last Name *</Label>
                     <Input
                       value={formData.lastName}
                       onChange={(e) => updateFormData("lastName", e.target.value)}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                       placeholder="Enter your last name"
                     />
                     {errors.lastName && (
@@ -537,12 +532,12 @@ export default function DonorEditPage() {
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">Email Address *</Label>
+                    <Label className="text-gray-900">Email Address *</Label>
                     <Input
                       type="email"
                       value={formData.email}
                       onChange={(e) => updateFormData("email", e.target.value)}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                       placeholder="Enter your email"
                     />
                     {errors.email && (
@@ -550,11 +545,11 @@ export default function DonorEditPage() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">Phone Number *</Label>
+                    <Label className="text-gray-900">Phone Number *</Label>
                     <Input
                       value={formData.phone}
                       onChange={(e) => updateFormData("phone", e.target.value)}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                       placeholder="Enter your phone number"
                     />
                     {errors.phone && (
@@ -565,27 +560,27 @@ export default function DonorEditPage() {
 
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">Date of Birth * (Age: 18-65)</Label>
+                    <Label className="text-gray-900">Date of Birth * (Age: 18-65)</Label>
                     <Input
                       type="date"
                       value={formData.dateOfBirth}
                       onChange={(e) => updateFormData("dateOfBirth", e.target.value)}
-                      className="bg-white/5 border-white/20 text-white"
+                      className="bg-white/5 border-white/20 text-gray-900"
                     />
                     {errors.dateOfBirth && (
                       <p className="text-red-400 text-sm">{errors.dateOfBirth}</p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">Gender *</Label>
+                    <Label className="text-gray-900">Gender *</Label>
                     <Select
                       value={formData.gender}
                       onValueChange={(value) => updateFormData("gender", value)}
                     >
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                      <SelectTrigger className="bg-white/5 border-white/20 text-gray-900">
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
-                      <SelectContent className="bg-gray-800 text-white border-gray-700">
+                      <SelectContent className="bg-white text-gray-900 border-gray-300">
                         <SelectItem value="male">Male</SelectItem>
                         <SelectItem value="female">Female</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
@@ -596,15 +591,17 @@ export default function DonorEditPage() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">Blood Type</Label>
+                    <Label className="text-gray-900">Blood Group & Rh Factor *</Label>
                     <Select
                       value={formData.bloodGroup}
-                      onValueChange={(value) => updateFormData("bloodGroup", value)}
+                      onValueChange={(value) =>
+                        updateFormData("bloodGroup", value)
+                      }
                     >
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                        <SelectValue placeholder="Select blood type" />
+                      <SelectTrigger className="bg-white/5 border-white/20 text-gray-900">
+                        <SelectValue placeholder="Select blood group" />
                       </SelectTrigger>
-                      <SelectContent className="bg-gray-800 text-white border-gray-700">
+                      <SelectContent className="bg-white text-gray-900 border-gray-300">
                         <SelectItem value="A+">A+</SelectItem>
                         <SelectItem value="A-">A-</SelectItem>
                         <SelectItem value="B+">B+</SelectItem>
@@ -615,11 +612,16 @@ export default function DonorEditPage() {
                         <SelectItem value="O-">O-</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.bloodGroup && (
+                      <p className="text-red-400 text-sm">
+                        {errors.bloodGroup}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-white">Complete Address</Label>
+                  <Label className="text-gray-900">Complete Address</Label>
                   <Textarea
                     value={formData.address}
                     onChange={(e) => updateFormData("address", e.target.value)}
@@ -627,6 +629,31 @@ export default function DonorEditPage() {
                     placeholder="Enter your complete address"
                     rows={3}
                   />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-gray-900">Emergency Contact Name</Label>
+                    <Input
+                      value={formData.emergencyContact}
+                      onChange={(e) =>
+                        updateFormData("emergencyContact", e.target.value)
+                      }
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
+                      placeholder="Enter emergency contact name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-gray-900">Emergency Contact Phone</Label>
+                    <Input
+                      value={formData.emergencyPhone}
+                      onChange={(e) =>
+                        updateFormData("emergencyPhone", e.target.value)
+                      }
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
+                      placeholder="Enter emergency contact phone"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -636,12 +663,12 @@ export default function DonorEditPage() {
               <div className="space-y-6">
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">Weight (kg) *</Label>
+                    <Label className="text-gray-900">Weight (kg) *</Label>
                     <Input
                       type="number"
                       value={formData.weight}
                       onChange={(e) => updateFormData("weight", e.target.value)}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                       placeholder="Enter weight in kg"
                       min="30"
                       max="200"
@@ -651,12 +678,12 @@ export default function DonorEditPage() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">Height (cm) *</Label>
+                    <Label className="text-gray-900">Height (cm) *</Label>
                     <Input
                       type="number"
                       value={formData.height}
                       onChange={(e) => updateFormData("height", e.target.value)}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                      className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                       placeholder="Enter height in cm"
                       min="100"
                       max="250"
@@ -666,10 +693,10 @@ export default function DonorEditPage() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">BMI (Auto-calculated)</Label>
+                    <Label className="text-gray-900">BMI (Auto-calculated)</Label>
                     <Input
                       value={formData.bmi}
-                      className="bg-white/5 border-white/20 text-white"
+                      className="bg-white/5 border-white/20 text-gray-900"
                       placeholder="Auto-calculated"
                       disabled
                     />
@@ -699,20 +726,20 @@ export default function DonorEditPage() {
                       }
                     }}
                   />
-                  <Label htmlFor="neverDonated" className="text-white">
+                  <Label htmlFor="neverDonated" className="text-gray-900">
                     Never donated before
                   </Label>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">Last Blood Donation Date *</Label>
+                    <Label className="text-gray-900">Last Blood Donation Date *</Label>
                     <Input
                       type="date"
                       value={formData.lastDonation}
                       disabled={formData.neverDonated}
                       onChange={(e) => updateFormData("lastDonation", e.target.value)}
-                      className="bg-white/5 border-white/20 text-white"
+                      className="bg-white/5 border-white/20 text-gray-900"
                     />
                     {errors.lastDonation && (
                       <p className="text-red-400 text-sm">{errors.lastDonation}</p>
@@ -720,16 +747,16 @@ export default function DonorEditPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-white">Total Previous Blood Donations *</Label>
+                    <Label className="text-gray-900">Total Previous Blood Donations *</Label>
                     <Select
                       value={formData.donationCount}
                       disabled={formData.neverDonated}
                       onValueChange={(value) => updateFormData("donationCount", value)}
                     >
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                      <SelectTrigger className="bg-white/5 border-white/20 text-gray-900">
                         <SelectValue placeholder="Select count" />
                       </SelectTrigger>
-                      <SelectContent className="bg-gray-800 text-white border-gray-700">
+                      <SelectContent className="bg-white text-gray-900 border-gray-300">
                         <SelectItem value="0">First time donor</SelectItem>
                         <SelectItem value="1-5">1-5 times</SelectItem>
                         <SelectItem value="6-10">6-10 times</SelectItem>
@@ -748,18 +775,18 @@ export default function DonorEditPage() {
             {/* Step 4: Health Screening */}
             {currentStep === 4 && (
               <div className="space-y-6">
-                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
-                  <h3 className="font-semibold text-red-300 mb-2">
-                    Infectious Disease Screening (Mandatory):
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
+                  <h3 className="font-semibold text-blue-300 mb-2">
+                    Infectious Disease Screening (Optional):
                   </h3>
-                  <p className="text-sm text-red-200">
-                    All tests must be NEGATIVE for donation eligibility
+                  <p className="text-sm text-blue-200">
+                    You can provide these test results if available. All fields in this step are optional.
                   </p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <Label className="text-white">HIV 1 & 2 Test Result *</Label>
+                    <Label className="text-gray-900">HIV 1 & 2 Test Result</Label>
                     <RadioGroup
                       value={formData.hivTest}
                       onValueChange={(value) => updateFormData("hivTest", value)}
@@ -769,9 +796,9 @@ export default function DonorEditPage() {
                         <RadioGroupItem
                           value="negative"
                           id="hiv-neg"
-                          className="border-white/30 text-white"
+                          className="border-gray-300 text-gray-900"
                         />
-                        <Label htmlFor="hiv-neg" className="text-white">
+                        <Label htmlFor="hiv-neg" className="text-gray-900">
                           Negative
                         </Label>
                       </div>
@@ -779,9 +806,9 @@ export default function DonorEditPage() {
                         <RadioGroupItem
                           value="positive"
                           id="hiv-pos"
-                          className="border-white/30 text-white"
+                          className="border-gray-300 text-gray-900"
                         />
-                        <Label htmlFor="hiv-pos" className="text-white">
+                        <Label htmlFor="hiv-pos" className="text-gray-900">
                           Positive
                         </Label>
                       </div>
@@ -792,7 +819,7 @@ export default function DonorEditPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-white">Hepatitis B Surface Antigen (HBsAg) *</Label>
+                    <Label className="text-gray-900">Hepatitis B Surface Antigen (HBsAg)</Label>
                     <RadioGroup
                       value={formData.hepatitisBTest}
                       onValueChange={(value) => updateFormData("hepatitisBTest", value)}
@@ -802,9 +829,9 @@ export default function DonorEditPage() {
                         <RadioGroupItem
                           value="negative"
                           id="hepb-neg"
-                          className="border-white/30 text-white"
+                          className="border-gray-300 text-gray-900"
                         />
-                        <Label htmlFor="hepb-neg" className="text-white">
+                        <Label htmlFor="hepb-neg" className="text-gray-900">
                           Negative
                         </Label>
                       </div>
@@ -812,9 +839,9 @@ export default function DonorEditPage() {
                         <RadioGroupItem
                           value="positive"
                           id="hepb-pos"
-                          className="border-white/30 text-white"
+                          className="border-gray-300 text-gray-900"
                         />
-                        <Label htmlFor="hepb-pos" className="text-white">
+                        <Label htmlFor="hepb-pos" className="text-gray-900">
                           Positive
                         </Label>
                       </div>
@@ -825,7 +852,7 @@ export default function DonorEditPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-white">Hepatitis C Virus (Anti-HCV) *</Label>
+                    <Label className="text-gray-900">Hepatitis C Virus (Anti-HCV)</Label>
                     <RadioGroup
                       value={formData.hepatitisCTest}
                       onValueChange={(value) => updateFormData("hepatitisCTest", value)}
@@ -835,9 +862,9 @@ export default function DonorEditPage() {
                         <RadioGroupItem
                           value="negative"
                           id="hepc-neg"
-                          className="border-white/30 text-white"
+                          className="border-gray-300 text-gray-900"
                         />
-                        <Label htmlFor="hepc-neg" className="text-white">
+                        <Label htmlFor="hepc-neg" className="text-gray-900">
                           Negative
                         </Label>
                       </div>
@@ -845,9 +872,9 @@ export default function DonorEditPage() {
                         <RadioGroupItem
                           value="positive"
                           id="hepc-pos"
-                          className="border-white/30 text-white"
+                          className="border-gray-300 text-gray-900"
                         />
-                        <Label htmlFor="hepc-pos" className="text-white">
+                        <Label htmlFor="hepc-pos" className="text-gray-900">
                           Positive
                         </Label>
                       </div>
@@ -858,7 +885,7 @@ export default function DonorEditPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-white">Syphilis (VDRL/RPR) *</Label>
+                    <Label className="text-gray-900">Syphilis (VDRL/RPR)</Label>
                     <RadioGroup
                       value={formData.syphilisTest}
                       onValueChange={(value) => updateFormData("syphilisTest", value)}
@@ -868,9 +895,9 @@ export default function DonorEditPage() {
                         <RadioGroupItem
                           value="negative"
                           id="syphilis-neg"
-                          className="border-white/30 text-white"
+                          className="border-gray-300 text-gray-900"
                         />
-                        <Label htmlFor="syphilis-neg" className="text-white">
+                        <Label htmlFor="syphilis-neg" className="text-gray-900">
                           Negative
                         </Label>
                       </div>
@@ -878,9 +905,9 @@ export default function DonorEditPage() {
                         <RadioGroupItem
                           value="positive"
                           id="syphilis-pos"
-                          className="border-white/30 text-white"
+                          className="border-gray-300 text-gray-900"
                         />
-                        <Label htmlFor="syphilis-pos" className="text-white">
+                        <Label htmlFor="syphilis-pos" className="text-gray-900">
                           Positive
                         </Label>
                       </div>
@@ -891,7 +918,7 @@ export default function DonorEditPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <Label className="text-white">Malaria Test *</Label>
+                    <Label className="text-gray-900">Malaria Test</Label>
                     <RadioGroup
                       value={formData.malariaTest}
                       onValueChange={(value) => updateFormData("malariaTest", value)}
@@ -901,9 +928,9 @@ export default function DonorEditPage() {
                         <RadioGroupItem
                           value="negative"
                           id="malaria-neg"
-                          className="border-white/30 text-white"
+                          className="border-gray-300 text-gray-900"
                         />
-                        <Label htmlFor="malaria-neg" className="text-white">
+                        <Label htmlFor="malaria-neg" className="text-gray-900">
                           Negative
                         </Label>
                       </div>
@@ -911,9 +938,9 @@ export default function DonorEditPage() {
                         <RadioGroupItem
                           value="positive"
                           id="malaria-pos"
-                          className="border-white/30 text-white"
+                          className="border-gray-300 text-gray-900"
                         />
-                        <Label htmlFor="malaria-pos" className="text-white">
+                        <Label htmlFor="malaria-pos" className="text-gray-900">
                           Positive
                         </Label>
                       </div>
@@ -923,43 +950,19 @@ export default function DonorEditPage() {
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-white">Blood Group & Rh Factor *</Label>
-                    <Select
-                      value={formData.bloodGroup}
-                      onValueChange={(value) => updateFormData("bloodGroup", value)}
-                    >
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                        <SelectValue placeholder="Select blood group" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 text-white border-gray-700">
-                        <SelectItem value="A+">A+</SelectItem>
-                        <SelectItem value="A-">A-</SelectItem>
-                        <SelectItem value="B+">B+</SelectItem>
-                        <SelectItem value="B-">B-</SelectItem>
-                        <SelectItem value="AB+">AB+</SelectItem>
-                        <SelectItem value="AB-">AB-</SelectItem>
-                        <SelectItem value="O+">O+</SelectItem>
-                        <SelectItem value="O-">O-</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {errors.bloodGroup && (
-                      <p className="text-red-400 text-sm">{errors.bloodGroup}</p>
-                    )}
-                  </div>
                 </div>
 
                 <div className="bg-white/5 border border-white/20 rounded-lg p-4">
-                  <h3 className="font-semibold text-white mb-4">
+                  <h3 className="font-semibold text-gray-900 mb-4">
                     General Health Parameters:
                   </h3>
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-white">Hemoglobin (Hb) - ≥ 12.5 g/dL *</Label>
+                      <Label className="text-gray-900">Hemoglobin (Hb) - ≥ 12.5 g/dL</Label>
                       <Input
                         value={formData.hemoglobin}
                         onChange={(e) => updateFormData("hemoglobin", e.target.value)}
-                        className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                        className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                         placeholder="e.g., 13.2"
                       />
                       {errors.hemoglobin && (
@@ -968,21 +971,21 @@ export default function DonorEditPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-white">Platelet Count (Within normal range)</Label>
+                      <Label className="text-gray-900">Platelet Count (Within normal range)</Label>
                       <Input
                         value={formData.plateletCount}
                         onChange={(e) => updateFormData("plateletCount", e.target.value)}
-                        className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                        className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                         placeholder="e.g., 250,000"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-white">WBC Count (Within normal range)</Label>
+                      <Label className="text-gray-900">WBC Count (Within normal range)</Label>
                       <Input
                         value={formData.wbcCount}
                         onChange={(e) => updateFormData("wbcCount", e.target.value)}
-                        className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                        className="bg-white/5 border-white/20 text-gray-900 placeholder:text-gray-500"
                         placeholder="e.g., 7,000"
                       />
                     </div>
@@ -1005,11 +1008,11 @@ export default function DonorEditPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-white">Blood Test Report (Optional)</Label>
+                  <Label className="text-gray-900">Blood Test Report (Optional)</Label>
                   <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-white/40 transition-colors">
-                    <Upload className="w-8 h-8 text-white/60 mx-auto mb-2" />
-                    <p className="text-white/80 mb-2">Click to upload new document (optional)</p>
-                    <p className="text-xs text-white/60">PDF, JPG, PNG up to 10MB</p>
+                    <Upload className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+                    <p className="text-gray-700 mb-2">Click to upload new document (optional)</p>
+                    <p className="text-xs text-gray-600">PDF, JPG, PNG up to 10MB</p>
                     <input
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
@@ -1019,7 +1022,7 @@ export default function DonorEditPage() {
                     />
                     <Button
                       variant="outline"
-                      className="mt-3 border-white/30 text-white hover:bg-white/20 bg-transparent"
+                      className="mt-3 border-gray-300 text-gray-900 hover:bg-gray-100 bg-transparent"
                       onClick={() => document.getElementById("bloodTest")?.click()}
                     >
                       Choose File
@@ -1033,11 +1036,11 @@ export default function DonorEditPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-white">Identity Proof (Optional)</Label>
+                  <Label className="text-gray-900">Identity Proof (Optional)</Label>
                   <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-white/40 transition-colors">
-                    <Upload className="w-8 h-8 text-white/60 mx-auto mb-2" />
-                    <p className="text-white/80 mb-2">Upload new ID proof (optional)</p>
-                    <p className="text-xs text-white/60">Aadhar, Passport, License</p>
+                    <Upload className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+                    <p className="text-gray-700 mb-2">Upload new ID proof (optional)</p>
+                    <p className="text-xs text-gray-600">Aadhar, Passport, License</p>
                     <input
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
@@ -1047,7 +1050,7 @@ export default function DonorEditPage() {
                     />
                     <Button
                       variant="outline"
-                      className="mt-3 border-white/30 text-white hover:bg-white/20 bg-transparent"
+                      className="mt-3 border-gray-300 text-gray-900 hover:bg-gray-100 bg-transparent"
                       onClick={() => document.getElementById("identity")?.click()}
                     >
                       Choose File
@@ -1061,11 +1064,11 @@ export default function DonorEditPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-white">Medical Certificate (Optional)</Label>
+                  <Label className="text-gray-900">Medical Certificate (Optional)</Label>
                   <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-white/40 transition-colors">
-                    <Upload className="w-8 h-8 text-white/60 mx-auto mb-2" />
-                    <p className="text-white/80 mb-2">Upload new medical certificate (optional)</p>
-                    <p className="text-xs text-white/60">PDF, JPG, PNG up to 10MB</p>
+                    <Upload className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+                    <p className="text-gray-700 mb-2">Upload new medical certificate (optional)</p>
+                    <p className="text-xs text-gray-600">PDF, JPG, PNG up to 10MB</p>
                     <input
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
@@ -1075,7 +1078,7 @@ export default function DonorEditPage() {
                     />
                     <Button
                       variant="outline"
-                      className="mt-3 border-white/30 text-white hover:bg-white/20 bg-transparent"
+                      className="mt-3 border-gray-300 text-gray-900 hover:bg-gray-100 bg-transparent"
                       onClick={() => document.getElementById("medical")?.click()}
                     >
                       Choose File
@@ -1102,10 +1105,10 @@ export default function DonorEditPage() {
                       className="border-white/30 data-[state=checked]:bg-yellow-600 data-[state=checked]:border-yellow-600 mt-1"
                     />
                     <div className="space-y-1">
-                      <Label htmlFor="consent-data" className="text-white font-medium">
+                      <Label htmlFor="consent-data" className="text-gray-900 font-medium">
                         Data Processing Consent *
                       </Label>
-                      <p className="text-sm text-white/80">
+                      <p className="text-sm text-gray-700">
                         I consent to the processing of my personal and medical data for blood donation purposes.
                       </p>
                     </div>
@@ -1122,10 +1125,10 @@ export default function DonorEditPage() {
                       className="border-white/30 data-[state=checked]:bg-yellow-600 data-[state=checked]:border-yellow-600 mt-1"
                     />
                     <div className="space-y-1">
-                      <Label htmlFor="consent-medical" className="text-white font-medium">
+                      <Label htmlFor="consent-medical" className="text-gray-900 font-medium">
                         Medical Screening Consent *
                       </Label>
-                      <p className="text-sm text-white/80">
+                      <p className="text-sm text-gray-700">
                         I consent to medical screening and health verification procedures.
                       </p>
                     </div>
@@ -1142,10 +1145,10 @@ export default function DonorEditPage() {
                       className="border-white/30 data-[state=checked]:bg-yellow-600 data-[state=checked]:border-yellow-600 mt-1"
                     />
                     <div className="space-y-1">
-                      <Label htmlFor="terms-conditions" className="text-white font-medium">
+                      <Label htmlFor="terms-conditions" className="text-gray-900 font-medium">
                         Terms & Conditions Agreement *
                       </Label>
-                      <p className="text-sm text-white/80">
+                      <p className="text-sm text-gray-700">
                         I have read and agree to the Terms of Service and Privacy Policy.
                       </p>
                     </div>
@@ -1163,7 +1166,7 @@ export default function DonorEditPage() {
                 variant="outline"
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="border-white/30 text-white hover:bg-white/20 disabled:opacity-50 bg-transparent"
+                className="border-gray-300 text-gray-900 hover:bg-gray-100 disabled:opacity-50 bg-transparent"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Previous

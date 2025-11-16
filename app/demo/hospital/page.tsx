@@ -52,6 +52,9 @@ import { useRouter } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { formatLastActivity } from "@/lib/utils";
 import GradientBackground from "@/components/GradientBackground";
+import { fetchUserDataById } from "@/lib/actions/user.actions";
+import { getAlerts } from "@/lib/actions/alerts.actions";
+import { fetchHospitalInventory } from "@/lib/actions/hospital.actions";
 
 type Donor = {
   id: number;
@@ -66,114 +69,118 @@ type Donor = {
 };
 
 export default function HospitalDashboard() {
-  const user = {
-    id: "151206",
-    name: "City General Hospital",
-    email: "mdalam4884@gmail.com",
-    role: "Hospital",
-  };
+  // Demo hospital ID
+  const DEMO_HOSPITAL_ID = "371e7b56-c11a-4cbf-8300-757526221233";
 
+  const [user, setUser] = useState<HospitalData | null>(null);
   const [showCreateAlert, setShowCreateAlert] = useState(false);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [isLoadingInventory, setIsLoadingInventory] = useState(true);
+  const [isLoadingAlerts, setIsLoadingAlerts] = useState(true);
 
-  const [bloodInventory, setBloodInventory] = useState([
-    { type: "A+", current: 15, minimum: 20 },
-    { type: "A-", current: 8, minimum: 10 },
-    { type: "B+", current: 25, minimum: 15 },
-    { type: "B-", current: 5, minimum: 8 },
-    { type: "AB+", current: 12, minimum: 10 },
-    { type: "AB-", current: 3, minimum: 5 },
-    { type: "O+", current: 8, minimum: 25 },
-    { type: "O-", current: 6, minimum: 15 },
-    { type: "Plasma", current: 30, minimum: 40 },
-    { type: "Platelets", current: 12, minimum: 20 },
-  ]);
+  const [bloodInventory, setBloodInventory] = useState<InventoryItem[]>([]);
+  const [hasInventoryData, setHasInventoryData] = useState(false);
 
   const [isInvModalOpen, setIsInvModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   type AlertWithType = Alerts & { type?: AlertType | string };
-  const [activeAlerts, setActiveAlerts] = useState<AlertWithType[]>([
-    {
-      id: "mock-plasma-1",
-      type: "Plasma",
-      bloodType: null,
-      urgency: "CRITICAL",
-      unitsNeeded: "3",
-      radius: "10",
-      description: "Urgent plasma required for surgery",
-      hospitalId: "mock-hospital",
-      createdAt: formatLastActivity(new Date(), false),
-      responses: 0,
-      confirmed: 0,
-    },
-    {
-      id: "mock-plasma-2",
-      type: "Plasma",
-      bloodType: null,
-      urgency: "CRITICAL",
-      unitsNeeded: "2",
-      radius: "15",
-      description: "Plasma donation needed for patient recovery",
-      hospitalId: "mock-hospital",
-      createdAt: formatLastActivity(new Date(), false),
-      responses: 0,
-      confirmed: 0,
-    },
-    {
-      id: "mock-platelets-1",
-      type: "platelets",
-      bloodType: null,
-      urgency: "CRITICAL",
-      unitsNeeded: "3",
-      radius: "10",
-      description: "Urgent platelets required for surgery",
-      hospitalId: "mock-hospital",
-      createdAt: formatLastActivity(new Date(), false),
-      responses: 0,
-      confirmed: 0,
-    },
-    {
-      id: "mock-platelets-2",
-      type: "platelets",
-      bloodType: null,
-      urgency: "CRITICAL",
-      unitsNeeded: "2",
-      radius: "15",
-      description: "Urgent platelets needed for patient recovery",
-      hospitalId: "mock-hospital",
-      createdAt: formatLastActivity(new Date(), false),
-      responses: 0,
-      confirmed: 0,
-    },
-    {
-      id: "1",
-      bloodType: "O+",
-      urgency: "CRITICAL",
-      unitsNeeded: "3",
-      description:
-        "Emergency surgery patient needs immediate blood transfusion",
-      createdAt: "15 minutes ago",
-      hospitalId: "mock-hospital",
-      radius: "15",
-      responses: 12,
-      confirmed: 3,
-      status: "Active",
-    },
-    {
-      id: "2",
-      bloodType: "A-",
-      urgency: "HIGH",
-      unitsNeeded: "2",
-      hospitalId: "mock-hospital",
-      radius: "20",
-      description: "Accident victim requires blood for surgery",
-      createdAt: "1 hour ago",
-      responses: 8,
-      confirmed: 2,
-      status: "Active",
-    },
-  ]);
+  const [activeAlerts, setActiveAlerts] = useState<AlertWithType[]>([]);
+
+  // Fetch user data on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setIsLoadingUser(true);
+        const userData = await fetchUserDataById(DEMO_HOSPITAL_ID, "hospital");
+        if (userData && userData.userType === "hospital") {
+          const hospitalData = userData as any; // Type assertion for hospital data
+          setUser({
+            ...hospitalData,
+            licenseExpiryDate: hospitalData.licenseExpiryDate
+              ? new Date(hospitalData.licenseExpiryDate).toISOString()
+              : "",
+            nocExpiryDate: hospitalData.nocExpiryDate
+              ? new Date(hospitalData.nocExpiryDate).toISOString()
+              : "",
+          } as HospitalData);
+        }
+      } catch (err) {
+        console.error("[Demo Hospital Dashboard] error fetching user:", err);
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  // Fetch alerts on mount
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        setIsLoadingAlerts(true);
+        const res = await getAlerts(DEMO_HOSPITAL_ID);
+        setActiveAlerts(res as AlertWithType[]);
+      } catch (err) {
+        console.error("[Demo Hospital Dashboard] error loading alerts:", err);
+      } finally {
+        setIsLoadingAlerts(false);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
+
+  // Fetch inventory data on mount
+  useEffect(() => {
+    const fetchInventory = async () => {
+      setIsLoadingInventory(true);
+      try {
+        const inventory = await fetchHospitalInventory(DEMO_HOSPITAL_ID);
+        if (inventory && inventory.length > 0) {
+          setBloodInventory(inventory);
+          setHasInventoryData(true);
+        } else {
+          // Fallback to default inventory if none exists
+          setBloodInventory([
+            { type: "A+", current: 0, minimum: 20 },
+            { type: "A-", current: 0, minimum: 10 },
+            { type: "B+", current: 0, minimum: 15 },
+            { type: "B-", current: 0, minimum: 8 },
+            { type: "AB+", current: 0, minimum: 10 },
+            { type: "AB-", current: 0, minimum: 5 },
+            { type: "O+", current: 0, minimum: 25 },
+            { type: "O-", current: 0, minimum: 15 },
+            { type: "Plasma", current: 0, minimum: 40 },
+            { type: "Platelets", current: 0, minimum: 20 },
+          ]);
+          setHasInventoryData(false);
+        }
+      } catch (err) {
+        console.error("[Demo Hospital Dashboard] error loading inventory:", err);
+        setBloodInventory([
+          { type: "A+", current: 0, minimum: 20 },
+          { type: "A-", current: 0, minimum: 10 },
+          { type: "B+", current: 0, minimum: 15 },
+          { type: "B-", current: 0, minimum: 8 },
+          { type: "AB+", current: 0, minimum: 10 },
+          { type: "AB-", current: 0, minimum: 5 },
+          { type: "O+", current: 0, minimum: 25 },
+          { type: "O-", current: 0, minimum: 15 },
+          { type: "Plasma", current: 0, minimum: 40 },
+          { type: "Platelets", current: 0, minimum: 20 },
+        ]);
+        setHasInventoryData(false);
+      } finally {
+        setIsLoadingInventory(false);
+      }
+    };
+
+    fetchInventory();
+  }, []);
+
   const [donorResponses, setDonorResponses] = useState<DonorUI[]>([
     {
       id: "1",
@@ -357,7 +364,7 @@ export default function HospitalDashboard() {
       unitsNeeded: newAlert.unitsNeeded,
       radius: newAlert.radius! as Radius,
       description: newAlert.description,
-      hospitalId: "mock-hospital",
+      hospitalId: DEMO_HOSPITAL_ID,
       createdAt: new Date().toLocaleString(),
       responses: 0,
       confirmed: 0,
@@ -490,7 +497,11 @@ export default function HospitalDashboard() {
                 <h1 className="text-xl font-bold text-text-dark">
                   Hospital Dashboard
                 </h1>
-                <p className="text-sm text-text-dark/80">{user?.name}</p>
+                <p className="text-sm text-text-dark/80">
+                  {isLoadingUser
+                    ? "Loading..."
+                    : user?.hospitalName || "Demo Hospital"}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">

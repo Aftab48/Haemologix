@@ -276,3 +276,303 @@
     display: none !important;
   }
 }
+
+/* Clerk Authentication Component Styling */
+/* Target Clerk's internal classes to match website theme */
+
+/* Main container and card */
+.cl-rootBox,
+.cl-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(233, 216, 166, 0.3) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 20px 40px rgba(155, 34, 38, 0.15) !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+.cl-main {
+  padding: 2rem !important;
+}
+
+/* Headers and titles */
+.cl-headerTitle,
+.cl-headerTitle h1,
+.cl-headerTitle h2 {
+  font-family: 'Outfit', sans-serif !important;
+  font-weight: 700 !important;
+  color: hsl(var(--text-dark)) !important;
+  font-size: 1.875rem !important;
+  line-height: 2.25rem !important;
+}
+
+.cl-headerSubtitle,
+.cl-headerSubtitle p {
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.875rem !important;
+}
+
+/* Form buttons - Primary */
+.cl-formButtonPrimary,
+.cl-buttonPrimary {
+  background: hsl(var(--primary)) !important;
+  background-color: #9B2226 !important;
+  color: white !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 600 !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1.5rem !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none !important;
+}
+
+.cl-formButtonPrimary:hover,
+.cl-buttonPrimary:hover {
+  background: #7a1a1d !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(155, 34, 38, 0.3) !important;
+}
+
+.cl-formButtonPrimary:active,
+.cl-buttonPrimary:active {
+  transform: translateY(0);
+}
+
+.cl-formButtonPrimary:focus,
+.cl-buttonPrimary:focus {
+  outline: 2px solid #9B2226 !important;
+  outline-offset: 2px !important;
+}
+
+/* Form buttons - Secondary */
+.cl-formButtonSecondary,
+.cl-buttonSecondary {
+  background: hsl(var(--secondary)) !important;
+  background-color: #005F73 !important;
+  color: white !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 600 !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1.5rem !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none !important;
+}
+
+.cl-formButtonSecondary:hover,
+.cl-buttonSecondary:hover {
+  background: #004a5a !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 95, 115, 0.3) !important;
+}
+
+/* Input fields */
+.cl-input,
+.cl-inputField {
+  background: hsl(var(--input)) !important;
+  background-color: rgba(233, 216, 166, 0.5) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-color: rgba(233, 216, 166, 0.7) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1rem !important;
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--text-dark)) !important;
+  font-size: 0.875rem !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.cl-input:focus,
+.cl-inputField:focus {
+  outline: none !important;
+  border-color: hsl(var(--primary)) !important;
+  border-color: #9B2226 !important;
+  box-shadow: 0 0 0 3px rgba(155, 34, 38, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.cl-input::placeholder,
+.cl-inputField::placeholder {
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 0.7 !important;
+}
+
+/* Form field labels */
+.cl-formFieldLabel,
+.cl-label {
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 600 !important;
+  color: hsl(var(--text-dark)) !important;
+  font-size: 0.875rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Links */
+.cl-footerActionLink,
+.cl-link,
+.cl-anchor {
+  color: hsl(var(--primary)) !important;
+  color: #9B2226 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.cl-footerActionLink:hover,
+.cl-link:hover,
+.cl-anchor:hover {
+  color: #7a1a1d !important;
+  text-decoration: underline !important;
+}
+
+/* Social buttons */
+.cl-socialButtonsBlockButton,
+.cl-socialButton {
+  background: white !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-color: rgba(233, 216, 166, 0.7) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1rem !important;
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--text-dark)) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.cl-socialButtonsBlockButton:hover,
+.cl-socialButton:hover {
+  background: hsl(var(--accent)) !important;
+  background-color: rgba(148, 210, 189, 0.2) !important;
+  border-color: hsl(var(--accent)) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(148, 210, 189, 0.3) !important;
+}
+
+/* Dividers */
+.cl-dividerLine {
+  background: hsl(var(--border)) !important;
+  background-color: rgba(233, 216, 166, 0.7) !important;
+  height: 1px !important;
+}
+
+.cl-dividerText {
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.875rem !important;
+}
+
+/* Form field error messages */
+.cl-fieldError,
+.cl-alertText {
+  color: hsl(var(--destructive)) !important;
+  color: #9B2226 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 0.875rem !important;
+}
+
+/* Form field success messages */
+.cl-fieldSuccess {
+  color: hsl(var(--accent-foreground)) !important;
+  color: #005F73 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 0.875rem !important;
+}
+
+/* Footer text */
+.cl-footerText,
+.cl-footerText p {
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.875rem !important;
+}
+
+/* Identity preview and user button */
+.cl-userButtonBox,
+.cl-userButtonTrigger {
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+/* Form actions */
+.cl-formActions {
+  margin-top: 1.5rem !important;
+}
+
+/* Form fields container */
+.cl-formFieldInput {
+  margin-bottom: 1rem !important;
+}
+
+/* Loading states */
+.cl-spinner {
+  border-color: hsl(var(--primary)) !important;
+  border-top-color: transparent !important;
+}
+
+/* Checkbox and radio buttons */
+.cl-checkboxInput,
+.cl-radioInput {
+  accent-color: hsl(var(--primary)) !important;
+  accent-color: #9B2226 !important;
+}
+
+/* Select dropdowns */
+.cl-selectButton,
+.cl-select {
+  background: hsl(var(--input)) !important;
+  background-color: rgba(233, 216, 166, 0.5) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-color: rgba(233, 216, 166, 0.7) !important;
+  border-radius: 0.75rem !important;
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--text-dark)) !important;
+}
+
+.cl-selectButton:focus,
+.cl-select:focus {
+  outline: none !important;
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: 0 0 0 3px rgba(155, 34, 38, 0.1) !important;
+}
+
+/* OTP input fields */
+.cl-otpInputField {
+  background: hsl(var(--input)) !important;
+  background-color: rgba(233, 216, 166, 0.5) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-color: rgba(233, 216, 166, 0.7) !important;
+  border-radius: 0.5rem !important;
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--text-dark)) !important;
+}
+
+.cl-otpInputField:focus {
+  outline: none !important;
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: 0 0 0 3px rgba(155, 34, 38, 0.1) !important;
+}
+
+/* Modal and overlay */
+.cl-modalContent,
+.cl-modal {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 0.75rem !important;
+}
+
+/* Breadcrumb navigation */
+.cl-breadcrumbItem {
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.cl-breadcrumbItemActive {
+  color: hsl(var(--text-dark)) !important;
+  font-weight: 600 !important;
+}
+
+/* Ensure proper z-index for Clerk components */
+.cl-rootBox {
+  position: relative;
+  z-index: 10;
+}

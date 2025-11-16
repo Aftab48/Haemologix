@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { getCoordinatesFromAddress } from "../geocoding";
-import { generatePresignedUrl, uploadHospitalFile } from "./awsupload.actions";
+import { uploadHospitalFile } from "./awsupload.actions";
 
 export async function createHospital(hospitalData: HospitalData) {
   try {
@@ -97,8 +97,10 @@ export async function createHospital(hospitalData: HospitalData) {
   }
 }
 
-export async function fetchAllHospitals() {
+export async function fetchAllHospitals(includeFiles: boolean = false) {
   try {
+    // Always fetch all data including alerts and counts
+    // File URLs are now direct S3 URLs (no presigned URL generation needed)
     const hospitals = await db.hospitalRegistration.findMany({
       include: {
         alerts: true, // if you need full alert data
@@ -112,29 +114,16 @@ export async function fetchAllHospitals() {
   }
 }
 
-export async function fetchHospitalById(hospitalId: string) {
+export async function fetchHospitalById(hospitalId: string, includeFiles: boolean = true) {
   try {
+    // Return all data - file URLs are now direct S3 URLs (no presigned URL generation needed)
     const hospital = await db.hospitalRegistration.findUnique({
       where: { id: hospitalId },
     });
     if (!hospital) return null;
-    // Generate presigned URLs for file fields
-    const bloodBankLicenseDocUrl = await generatePresignedUrl(
-      hospital.bloodBankLicenseDoc
-    );
-    const hospitalRegistrationCertUrl = await generatePresignedUrl(
-      hospital.hospitalRegistrationCert
-    );
-    const authorizedRepIdProofUrl = await generatePresignedUrl(
-      hospital.authorizedRepIdProof
-    );
 
-    return {
-      ...hospital,
-      bloodBankLicenseDoc: bloodBankLicenseDocUrl,
-      hospitalRegistrationCert: hospitalRegistrationCertUrl,
-      authorizedRepIdProof: authorizedRepIdProofUrl,
-    };
+    // Return direct S3 URLs (no presigned URL generation needed since RLS is disabled)
+    return hospital;
   } catch (error) {
     console.error("Error fetching hospital by ID:", error);
     return null;

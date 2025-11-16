@@ -24,21 +24,23 @@ interface DonorData {
   medicalConditions: string;
   medications: string;
 
-  // Health Screening
-  hivTest: string;
-  hepatitisBTest: string;
-  hepatitisCTest: string;
-  syphilisTest: string;
-  malariaTest: string;
-  hemoglobin: string;
+  // Health Screening (all optional)
+  hivTest?: string;
+  hepatitisBTest?: string;
+  hepatitisCTest?: string;
+  syphilisTest?: string;
+  malariaTest?: string;
+  hemoglobin?: string;
+  plateletCount?: string;
+  wbcCount?: string;
+  
+  // Blood Group (required, moved to Personal Info)
   bloodGroup: string;
-  plateletCount: string;
-  wbcCount: string;
 
   // Documents
-  bloodTestReport: File | null;
+  bloodTestReport?: File | null;
   idProof: File | null;
-  medicalCertificate: File | null;
+  medicalCertificate?: File | null;
 
   // Consent
   dataProcessingConsent: boolean;
