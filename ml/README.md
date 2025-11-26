@@ -92,6 +92,7 @@ ml/
 │   ├── train.py
 │   ├── export_data.py
 │   ├── evaluate.py
+│   ├── eda.py          # Exploratory Data Analysis
 │   └── export_model.py
 └── utils/             # Utilities
     ├── metrics.py
@@ -114,6 +115,38 @@ ml/
    ```bash
    python ml/scripts/train.py
    ```
+
+### Exploratory Data Analysis (EDA)
+
+Before training, it's recommended to analyze your training data to understand distributions, identify issues, and ensure data quality.
+
+1. **Run EDA on all task types:**
+   ```bash
+   cd ml
+   python scripts/eda.py
+   ```
+
+2. **Run EDA on a specific task type:**
+   ```bash
+   python scripts/eda.py --task-type donor_selection
+   ```
+
+3. **Customize output locations:**
+   ```bash
+   python scripts/eda.py --data-dir ml/data --output-dir ml/eda_output --report ml/EDA_REPORT.md
+   ```
+
+The EDA script will:
+- Analyze data size and train/val splits
+- Examine feature distributions (numerical and categorical)
+- Analyze label distributions
+- Check for class imbalances
+- Generate visualization plots
+- Create a summary report
+
+Outputs:
+- Visualizations saved to `ml/eda_output/` (default)
+- Summary report saved to `ml/EDA_REPORT.md` (default)
 
 ### Inference
 
