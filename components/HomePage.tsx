@@ -170,10 +170,16 @@ const HomePage = () => {
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="/#features"
+              href="/team"
               className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
             >
-              Features
+              Team
+            </Link>
+            <Link
+              href="/pricing"
+              className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
+            >
+              Pricing
             </Link>
             <Link
               href="/impact"

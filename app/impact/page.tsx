@@ -285,10 +285,16 @@ export default function ImpactAndProspects() {
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="/#features"
+              href="/team"
               className="text-text-dark font-dm-sans hover:text-secondary transition-colors"
             >
-              Features
+              Team
+            </Link>
+            <Link
+              href="/pricing"
+              className="text-text-dark font-dm-sans hover:text-secondary transition-colors"
+            >
+              Pricing
             </Link>
             <Link
               href="/impact"
