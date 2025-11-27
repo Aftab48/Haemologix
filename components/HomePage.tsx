@@ -151,6 +151,68 @@ const HomePage = () => {
           backgroundSize: '180px 180px'
         }}
       />
+      {/* Structured Data (JSON-LD) for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                "@id": "https://haemologix.in/#organization",
+                name: "HaemoLogix",
+                alternateName: "haemologix",
+                url: "https://haemologix.in",
+                logo: "https://haemologix.in/logo.png",
+                description:
+                  "Real-time blood donation platform connecting hospitals with blood donors through emergency alerts and geolocation matching.",
+                sameAs: [],
+                contactPoint: {
+                  "@type": "ContactPoint",
+                  contactType: "Customer Service",
+                  availableLanguage: ["English", "Hindi"],
+                },
+              },
+              {
+                "@type": "WebSite",
+                "@id": "https://haemologix.in/#website",
+                url: "https://haemologix.in",
+                name: "HaemoLogix",
+                description:
+                  "Emergency blood shortage alert and donor mobilization system connecting hospitals with eligible donors.",
+                publisher: {
+                  "@id": "https://haemologix.in/#organization",
+                },
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: {
+                    "@type": "EntryPoint",
+                    urlTemplate: "https://haemologix.in/search?q={search_term_string}",
+                  },
+                  "query-input": "required name=search_term_string",
+                },
+              },
+              {
+                "@type": "Service",
+                "@id": "https://haemologix.in/#service",
+                name: "Blood Donation Platform",
+                description:
+                  "Real-time blood donation platform for emergency blood requests, donor registration, and blood bank management.",
+                provider: {
+                  "@id": "https://haemologix.in/#organization",
+                },
+                areaServed: {
+                  "@type": "Country",
+                  name: "India",
+                },
+                serviceType: "Blood Donation Platform",
+                category: "Healthcare",
+              },
+            ],
+          }),
+        }}
+      />
       {/* Header */}
       <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-mist-green/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center glass-morphism">
         <div className="container mx-auto px-2 md:px-4 py-2 md:py-4 flex items-center justify-between gap-px rounded bg-transparent">
@@ -772,12 +834,12 @@ const HomePage = () => {
               <h4 className="font-outfit font-semibold mb-4 text-background">Legal</h4>
               <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
-                  <Link href="#" className="hover:text-accent transition-colors">
+                  <Link href="/privacy-policy" className="hover:text-accent transition-colors">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-accent transition-colors">
+                  <Link href="/terms-and-conditions" className="hover:text-accent transition-colors">
                     Terms of Service
                   </Link>
                 </li>

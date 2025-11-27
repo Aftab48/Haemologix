@@ -422,3 +422,73 @@ export async function sendDonorNotSelectedEmail(data: {
     return { success: false, error: err.message };
   }
 }
+
+/**
+ * Send contact form notification to admin
+ */
+export async function sendContactAdminNotification(data: {
+  name: string;
+  email: string;
+  message: string;
+}) {
+  let html = await loadEmailTemplate("contactAdminNotification.html");
+  html = applyTemplate(html, {
+    name: data.name,
+    email: data.email,
+    message: data.message.replace(/\n/g, "<br>"),
+  });
+
+  const adminEmail = process.env.CONTACT_ADMIN_EMAIL || "haemologix@gmail.com";
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"HaemoLogix" <${process.env.SMTP_USER}>`,
+      to: adminEmail,
+      subject: `New Contact Form Submission from ${data.name}`,
+      html,
+    });
+
+    console.log(`[Email] Contact admin notification sent to ${adminEmail}:`, info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (err: any) {
+    console.error("❌ Contact admin notification email error:", {
+      message: err.message,
+      code: err.code,
+    });
+    throw new Error(`Failed to send contact admin notification: ${err.message}`);
+  }
+}
+
+/**
+ * Send contact form confirmation to user
+ */
+export async function sendContactUserConfirmation(data: {
+  name: string;
+  email: string;
+  message: string;
+}) {
+  let html = await loadEmailTemplate("contactUserConfirmation.html");
+  html = applyTemplate(html, {
+    name: data.name,
+    message: data.message.replace(/\n/g, "<br>"),
+  });
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"HaemoLogix" <${process.env.SMTP_USER}>`,
+      to: data.email,
+      subject: "Thank you for contacting HaemoLogix",
+      html,
+    });
+
+    console.log(`[Email] Contact user confirmation sent to ${data.email}:`, info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (err: any) {
+    console.error("❌ Contact user confirmation email error:", {
+      message: err.message,
+      code: err.code,
+      to: data.email,
+    });
+    throw new Error(`Failed to send contact user confirmation: ${err.message}`);
+  }
+}

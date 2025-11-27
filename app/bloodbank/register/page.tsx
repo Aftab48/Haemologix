@@ -1499,8 +1499,15 @@ export default function BloodBankRegistration() {
                         Terms & Conditions Agreement *
                       </Label>
                       <p className="text-sm text-white/80">
-                        I have read and agree to the Terms of Service, Privacy
-                        Policy, and Blood Bank Network Partnership Agreement.
+                        I have read and agree to the{" "}
+                        <Link href="/terms-and-conditions" className="text-primary hover:underline">
+                          Terms of Service
+                        </Link>
+                        ,{" "}
+                        <Link href="/privacy-policy" className="text-primary hover:underline">
+                          Privacy Policy
+                        </Link>
+                        , and Blood Bank Network Partnership Agreement.
                       </p>
                     </div>
                   </div>

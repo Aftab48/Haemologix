@@ -1149,7 +1149,15 @@ export default function DonorEditPage() {
                         Terms & Conditions Agreement *
                       </Label>
                       <p className="text-sm text-gray-700">
-                        I have read and agree to the Terms of Service and Privacy Policy.
+                        I have read and agree to the{" "}
+                        <Link href="/terms-and-conditions" className="text-primary hover:underline">
+                          Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link href="/privacy-policy" className="text-primary hover:underline">
+                          Privacy Policy
+                        </Link>
+                        .
                       </p>
                     </div>
                   </div>

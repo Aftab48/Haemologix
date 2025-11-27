@@ -1,0 +1,216 @@
+# Terms and Conditions
+
+**Last Updated: November 2025**
+
+## Agreement to Terms
+
+By accessing or using Haemologix ("we," "our," or "us"), our blood donation platform and services (the "Service"), you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, you may not access or use the Service.
+
+## Service Description
+
+Haemologix is a real-time blood donation platform that connects verified hospitals and blood banks with eligible blood donors. Our Service facilitates:
+
+- Emergency blood alerts and requests
+- Donor registration and verification
+- Blood inventory management
+- Geolocation-based donor matching
+- Donation history tracking
+- Multi-role dashboards for donors, hospitals, and administrators
+
+## Eligibility Requirements
+
+### Age Requirement
+You must be at least 18 years of age to use the Service. By using the Service, you represent and warrant that you are 18 years or older.
+
+### Donor Eligibility
+To register as a blood donor, you must meet the following criteria:
+- Age between 18 and 65 years
+- Minimum weight of 50 kg
+- Good general health
+- No medical conditions that would disqualify you from donating blood
+- Willingness to provide accurate medical information and undergo health screenings
+
+### Hospital/Blood Bank Eligibility
+To register as a hospital or blood bank, you must:
+- Be a licensed medical facility
+- Provide valid registration and license documents
+- Have authorization to request blood donations
+- Maintain compliance with medical and regulatory standards
+
+### Account Requirements
+- You must provide accurate, current, and complete information during registration
+- You are responsible for maintaining the confidentiality of your account credentials
+- You must notify us immediately of any unauthorized access to your account
+- You are responsible for all activities that occur under your account
+
+## User Responsibilities
+
+### Accurate Information
+- You must provide accurate and truthful information, especially regarding medical history, blood type, and eligibility status
+- You must update your information promptly if it changes
+- Providing false or misleading information may result in account termination and legal liability
+
+### Medical Information
+- You are responsible for ensuring the accuracy of your medical information
+- You must not provide information about medical conditions that would disqualify you from donating
+- You understand that inaccurate medical information may pose risks to recipients
+
+### Compliance with Laws
+- You must comply with all applicable laws, regulations, and medical standards
+- You must not use the Service for any illegal or unauthorized purpose
+- You must respect the privacy and rights of other users
+
+### Emergency Alerts
+- When accepting a donation request, you commit to fulfilling the donation if medically eligible
+- You understand that emergency blood requests are time-sensitive and may be life-critical
+- Failure to honor accepted requests may result in account restrictions
+
+## Prohibited Activities
+
+You agree NOT to:
+
+1. **False Information**: Provide false, inaccurate, or misleading information
+2. **Unauthorized Access**: Attempt to gain unauthorized access to the Service or other users' accounts
+3. **System Interference**: Interfere with, disrupt, or damage the Service or servers
+4. **Spam or Abuse**: Send unsolicited communications, spam, or harass other users
+5. **Commercial Use**: Use the Service for commercial purposes without authorization
+6. **Data Scraping**: Scrape, collect, or harvest data from the Service
+7. **Reverse Engineering**: Reverse engineer, decompile, or disassemble the Service
+8. **Impersonation**: Impersonate any person or entity or misrepresent your affiliation
+9. **Medical Misrepresentation**: Misrepresent your medical condition or eligibility status
+10. **Violation of Rights**: Violate any intellectual property rights or privacy rights
+
+## Medical Disclaimers
+
+### Not a Medical Service
+Haemologix is a technology platform that facilitates connections between donors and hospitals. We are NOT a medical service provider and do NOT:
+
+- Provide medical advice, diagnosis, or treatment
+- Guarantee the safety or suitability of blood donations
+- Verify the medical accuracy of user-provided information
+- Assume responsibility for medical outcomes
+
+### User Responsibility
+- Users are solely responsible for verifying medical information and eligibility
+- Hospitals and blood banks are responsible for conducting appropriate medical screenings
+- Donors are responsible for accurately reporting their medical history and current health status
+
+### No Medical Guarantees
+- We do not guarantee the availability of donors or blood units
+- We do not guarantee the success of blood donation matches
+- We do not guarantee the quality, safety, or compatibility of blood donations
+
+## Liability Limitations
+
+### Limitation of Liability
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, HAEMOLOGIX SHALL NOT BE LIABLE FOR:
+
+- Any indirect, incidental, special, consequential, or punitive damages
+- Loss of profits, revenue, data, or business opportunities
+- Medical complications or adverse outcomes related to blood donations
+- Failure to match donors with hospitals or fulfill emergency requests
+- Unauthorized access to or disclosure of your information
+- Service interruptions, errors, or technical failures
+
+### Maximum Liability
+Our total liability for any claims arising from the Service shall not exceed the amount you paid to us in the 12 months preceding the claim, or $100, whichever is greater.
+
+### Indemnification
+You agree to indemnify and hold harmless Haemologix, its officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses arising from:
+- Your use of the Service
+- Your violation of these Terms
+- Your violation of any rights of another party
+- Your provision of inaccurate or false information
+
+## Intellectual Property
+
+### Our Rights
+- The Service, including all content, features, and functionality, is owned by Haemologix
+- Our trademarks, logos, and brand names are our exclusive property
+- All software, code, and technology are protected by copyright and other intellectual property laws
+
+### Your Content
+- You retain ownership of content you submit to the Service
+- By submitting content, you grant us a license to use, display, and distribute your content as necessary to provide the Service
+- You represent that you have the right to grant such license
+
+## Account Termination
+
+### Termination by You
+You may terminate your account at any time by contacting us or using account deletion features.
+
+### Termination by Us
+We may suspend or terminate your account if:
+- You violate these Terms or our policies
+- You provide false or misleading information
+- You engage in fraudulent, abusive, or illegal activities
+- You fail to comply with medical or regulatory requirements
+- We determine termination is necessary for legal or safety reasons
+
+### Effect of Termination
+Upon termination:
+- Your right to use the Service will immediately cease
+- We may delete or retain your information as required by law
+- Provisions that by their nature should survive termination will remain in effect
+
+## Emergency Alert System
+
+### Hospital Responsibilities
+- Hospitals must verify the urgency and legitimacy of blood requests
+- Hospitals are responsible for conducting appropriate medical screenings of donors
+- Hospitals must comply with all medical and regulatory requirements
+
+### Donor Responsibilities
+- Donors should only accept requests they can reasonably fulfill
+- Donors must respond promptly to emergency alerts
+- Donors must honor their commitments to donate when medically eligible
+
+### System Limitations
+- We do not guarantee immediate donor availability
+- Emergency alerts are subject to donor availability and response
+- We are not responsible for delays in blood donation fulfillment
+
+## Dispute Resolution
+
+### Governing Law
+These Terms shall be governed by and construed in accordance with the laws of [Your Jurisdiction], without regard to conflict of law principles.
+
+### Dispute Resolution Process
+1. **Informal Resolution**: Parties agree to attempt informal resolution of disputes
+2. **Mediation**: If informal resolution fails, disputes shall be resolved through mediation
+3. **Arbitration**: If mediation fails, disputes shall be resolved through binding arbitration
+4. **Exceptions**: Certain disputes may be resolved in court, including intellectual property disputes
+
+### Class Action Waiver
+You agree that disputes will be resolved individually and waive the right to participate in class action lawsuits.
+
+## Changes to Terms
+
+We may modify these Terms at any time. We will notify you of material changes by:
+- Posting the updated Terms on this page
+- Updating the "Last Updated" date
+- Sending email notifications for significant changes
+
+Your continued use of the Service after changes become effective constitutes acceptance of the updated Terms.
+
+## Severability
+
+If any provision of these Terms is found to be unenforceable or invalid, that provision shall be limited or eliminated to the minimum extent necessary, and the remaining provisions shall remain in full force and effect.
+
+## Entire Agreement
+
+These Terms, together with our Privacy Policy, constitute the entire agreement between you and Haemologix regarding the Service and supersede all prior agreements and understandings.
+
+## Contact Information
+
+If you have questions about these Terms, please contact us:
+
+**Haemologix Legal Team**
+- Email: haemologix@gmail.in
+- Website: https://haemologix.in/contact
+- Address: remote
+
+---
+
+*These Terms and Conditions are effective as of November 2025 and apply to all users of the Haemologix platform.*
+

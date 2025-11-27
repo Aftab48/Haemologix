@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Heart, Phone, MapPin, Clock, Mail, Send } from "lucide-react";
+import { Heart, Phone, MapPin, Clock, Mail, Send, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import {
   SignedIn,
@@ -26,11 +26,55 @@ export default function ContactPage() {
     message: "",
     acceptTerms: false,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: "success" | "error" | null;
+    message: string;
+  }>({ type: null, message: "" });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted:", formData);
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: "" });
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSubmitStatus({
+          type: "success",
+          message: data.message || "Thank you for contacting us! We'll get back to you soon.",
+        });
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          message: "",
+          acceptTerms: false,
+        });
+      } else {
+        setSubmitStatus({
+          type: "error",
+          message: data.error || "Something went wrong. Please try again.",
+        });
+      }
+    } catch (error) {
+      console.error("Error submitting contact form:", error);
+      setSubmitStatus({
+        type: "error",
+        message: "Failed to send message. Please try again later or contact us directly.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -212,19 +256,40 @@ export default function ContactPage() {
                   />
                   <Label htmlFor="terms" className="text-sm text-gray-600">
                     I accept the{" "}
-                    <Link href="#" className="text-red-600 hover:underline">
+                    <Link href="/terms-and-conditions" className="text-red-600 hover:underline">
                       Terms of Service
                     </Link>
                   </Label>
                 </div>
 
+                {submitStatus.type && (
+                  <div
+                    className={`p-4 rounded-xl ${
+                      submitStatus.type === "success"
+                        ? "bg-green-50 border border-green-200 text-green-800"
+                        : "bg-red-50 border border-red-200 text-red-800"
+                    }`}
+                  >
+                    <p className="font-medium">{submitStatus.message}</p>
+                  </div>
+                )}
+
                 <Button
                   type="submit"
-                  disabled={!formData.acceptTerms}
+                  disabled={!formData.acceptTerms || isSubmitting}
                   className="w-full gradient-ruby hover:opacity-90 text-white font-outfit font-semibold py-3 rounded-xl h-12 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-primary/50"
                 >
-                  <Send className="w-4 h-4 mr-2" />
-                  SUBMIT
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      SENDING...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      SUBMIT
+                    </>
+                  )}
                 </Button>
               </form>
             </div>
@@ -239,9 +304,19 @@ export default function ContactPage() {
                   <Phone className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-4">CALL US</h3>
-                <div className="space-y-2">
-                  <p className="text-white/90">+91 9903776046</p>
-                  <p className="text-white/90">+91 9874712191</p>
+                <div className="space-y-3">
+                  <a
+                    href="tel:+919903776046"
+                    className="block text-white/90 hover:text-white transition-colors font-medium"
+                  >
+                    +91 9903776046
+                  </a>
+                  <a
+                    href="tel:+919874712191"
+                    className="block text-white/90 hover:text-white transition-colors font-medium"
+                  >
+                    +91 9874712191
+                  </a>
                 </div>
               </CardContent>
             </Card>
@@ -280,41 +355,83 @@ export default function ContactPage() {
             <h2 className="text-3xl font-bold text-text-dark mb-8">
               Other Ways to Reach Us
             </h2>
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              <Card className="glass-morphism border border-slate-300/20 hover:bg-white/20 transition-all duration-300">
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {/* Email Support Card */}
+              <Card className="glass-morphism border border-slate-300/20 hover:bg-white/20 transition-all duration-300 hover:shadow-lg">
                 <CardContent className="p-6 text-center">
                   <Mail className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-text-dark mb-2">
                     Email Support
                   </h3>
-                  <p className="text-text-dark/80 mb-4">
+                  <p className="text-text-dark/80 mb-4 text-sm">
                     Get detailed responses to your inquiries
                   </p>
-                  <div className="space-y-2">
-                    <p className="text-text-dark">
-                      Emergency: emergency@haemologix.com
-                    </p>
-                    <p className="text-text-dark">
-                      General: support@haemologix.com
-                    </p>
+                  <div className="space-y-3">
+                    <a
+                      href="mailto:haemologix@gmail.com"
+                      className="block text-text-dark hover:text-primary transition-colors font-medium"
+                    >
+                      haemologix@gmail.com
+                    </a>
+                    <a
+                      href="mailto:support@haemologix.in"
+                      className="block text-text-dark/80 hover:text-primary transition-colors text-sm"
+                    >
+                      support@haemologix.in
+                    </a>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="glass-morphism border border-slate-300/20 hover:bg-white/20 transition-all duration-300">
+              {/* Phone Support Card */}
+              <Card className="glass-morphism border border-slate-300/20 hover:bg-white/20 transition-all duration-300 hover:shadow-lg">
                 <CardContent className="p-6 text-center">
-                  <Heart className="w-12 h-12 text-red-400 mx-auto mb-4" />
+                  <Phone className="w-12 h-12 text-red-600 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-text-dark mb-2">
-                    Emergency Hotline
+                    Call Us
                   </h3>
-                  <p className="text-text-dark/80 mb-4">
+                  <p className="text-text-dark/80 mb-4 text-sm">
                     24/7 emergency blood request support
                   </p>
-                  <div className="space-y-2">
-                    <p className="text-text-dark text-2xl font-bold">
-                      1-800-BLOOD-NOW
+                  <div className="space-y-3">
+                    <a
+                      href="tel:+919903776046"
+                      className="block text-text-dark hover:text-primary transition-colors font-medium"
+                    >
+                      +91 9903776046
+                    </a>
+                    <a
+                      href="tel:+919874712191"
+                      className="block text-text-dark/80 hover:text-primary transition-colors text-sm"
+                    >
+                      +91 9874712191
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* WhatsApp Support Card */}
+              <Card className="glass-morphism border border-slate-300/20 hover:bg-white/20 transition-all duration-300 hover:shadow-lg">
+                <CardContent className="p-6 text-center">
+                  <MessageCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-text-dark mb-2">
+                    WhatsApp
+                  </h3>
+                  <p className="text-text-dark/80 mb-4 text-sm">
+                    Quick support via WhatsApp
+                  </p>
+                  <div className="space-y-3">
+                    <a
+                      href="https://wa.me/919903776046"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-text-dark hover:text-green-600 transition-colors font-medium"
+                    >
+                      Chat on WhatsApp
+                    </a>
+                    <p className="text-text-dark/60 text-xs">
+                      +91 9903776046
                     </p>
-                    <p className="text-text-dark/80">(1-800-256-6369)</p>
                   </div>
                 </CardContent>
               </Card>
@@ -382,12 +499,12 @@ export default function ContactPage() {
               <h4 className="font-outfit font-semibold mb-4 text-background">Legal</h4>
               <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="/privacy-policy" className="hover:text-white">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="/terms-and-conditions" className="hover:text-white">
                     Terms of Service
                   </Link>
                 </li>

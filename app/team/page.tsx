@@ -254,12 +254,12 @@ export default function TeamPage() {
               <h4 className="font-outfit font-semibold mb-4 text-background">Legal</h4>
               <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="/privacy-policy" className="hover:text-white">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="/terms-and-conditions" className="hover:text-white">
                     Terms of Service
                   </Link>
                 </li>
