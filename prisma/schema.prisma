@@ -7,6 +7,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Donor {
+  id                  String            @id @default(uuid())
+  name                String
+  phone               String
+  email               String            @unique
+  address             String
+  city                String
+  state               String
+  pincode             String
+  dateOfBirth         DateTime
+  weight              String
+  height              String
+  bmi                 String
+  hasDonatedBefore    Boolean           @default(false)
+  lastDonationDate    DateTime?
+  diseases            String?
+  clerkUserId         String?
+  donorRegistrationId String?
+  status              ApprovalStatus    @default(PENDING)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  donorRegistration   DonorRegistration? @relation(fields: [donorRegistrationId], references: [id])
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
 model DonorRegistration {
   id                      String          @id @default(uuid())
   firstName               String
@@ -55,6 +83,7 @@ model DonorRegistration {
   approvals               Approval[]      @relation("DonorApprovals")
   verifications           DonorVerification[]
   responseHistory         DonorResponseHistory[] @relation("DonorHistory")
+  onboardDonors           Donor[]
 }
 
 model HospitalRegistration {

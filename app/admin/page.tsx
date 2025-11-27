@@ -17,6 +17,11 @@ import {
   fetchAllHospitals,
   fetchHospitalById,
 } from "@/lib/actions/hospital.actions";
+import {
+  fetchAllOnboardDonors,
+  approveOnboardDonor,
+  rejectOnboardDonor,
+} from "@/lib/actions/donor-onboard.actions";
 
 import {
   Select,
@@ -192,6 +197,19 @@ export default function AdminDashboard() {
   type HospitalType = Awaited<ReturnType<typeof fetchAllHospitals>>[number];
 
   const [hospitals, setHospitals] = useState<HospitalType[]>([]);
+
+  // Onboard donors state
+  const [onboardDonors, setOnboardDonors] = useState<any[]>([]);
+  const [onboardDonorSearch, setOnboardDonorSearch] = useState("");
+  const [onboardDonorStatusFilter, setOnboardDonorStatusFilter] = useState<"ALL" | "PENDING" | "APPROVED" | "REJECTED">("ALL");
+
+  useEffect(() => {
+    const fetchOnboardDonors = async () => {
+      const donors = await fetchAllOnboardDonors();
+      setOnboardDonors(donors);
+    };
+    fetchOnboardDonors();
+  }, []);
 
   const fetchHospitals = async () => {
     const hospitalsData = await fetchAllHospitals();
@@ -373,6 +391,7 @@ export default function AdminDashboard() {
 
   const tabOptions = [
     { value: "users", label: "User Management" },
+    { value: "donors", label: "Donors" },
     { value: "agentic", label: "Agentic AI Dashboard" },
     { value: "activity", label: "AI Agent Logs" },
     { value: "llm-reasoning", label: "LLM Reasoning" },
@@ -605,7 +624,7 @@ export default function AdminDashboard() {
               </SelectContent>
             </Select>
           </div>
-          <TabsList className="lg:grid w-full grid-cols-5 glass-morphism border hidden border-white/20">
+          <TabsList className="lg:grid w-full grid-cols-6 glass-morphism border hidden border-white/20">
             {tabOptions.map((tab) => (
               <TabsTrigger
                 key={tab.value}
@@ -1024,6 +1043,166 @@ export default function AdminDashboard() {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          {/* Donors Tab */}
+          <TabsContent value="donors" className="space-y-6">
+            <div className="flex flex-col lg:flex-row gap-y-3 items-center justify-between">
+              <h2 className="text-2xl font-bold text-text-dark">Onboard Donors</h2>
+              <div className="flex flex-col lg:flex-row gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search donors..."
+                    value={onboardDonorSearch}
+                    onChange={(e) => setOnboardDonorSearch(e.target.value)}
+                    className="pl-10 w-64 bg-white/5 border-white/20 text-text-dark placeholder:text-gray-400 focus-visible:ring-yellow-600"
+                  />
+                </div>
+                <Select
+                  value={onboardDonorStatusFilter}
+                  onValueChange={(value) => setOnboardDonorStatusFilter(value as any)}
+                >
+                  <SelectTrigger className="w-40 bg-white/5 border-white/20 text-text-dark">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 text-white border-gray-700">
+                    <SelectItem value="ALL">All Status</SelectItem>
+                    <SelectItem value="PENDING">Pending</SelectItem>
+                    <SelectItem value="APPROVED">Approved</SelectItem>
+                    <SelectItem value="REJECTED">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Filtered donors */}
+            {(() => {
+              const filtered = onboardDonors.filter((donor) => {
+                const matchesSearch =
+                  donor.name.toLowerCase().includes(onboardDonorSearch.toLowerCase()) ||
+                  donor.email.toLowerCase().includes(onboardDonorSearch.toLowerCase()) ||
+                  donor.phone.includes(onboardDonorSearch);
+                const matchesStatus =
+                  onboardDonorStatusFilter === "ALL" || donor.status === onboardDonorStatusFilter;
+                return matchesSearch && matchesStatus;
+              });
+
+              return (
+                <Card className="glass-morphism border border-white/20 text-text-dark">
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-white/5 border-b border-white/20">
+                          <tr>
+                            <th className="text-left p-4 font-medium text-text-dark">Name</th>
+                            <th className="text-left p-4 font-medium text-text-dark">Email</th>
+                            <th className="text-left p-4 font-medium text-text-dark">Phone</th>
+                            <th className="text-left p-4 font-medium text-text-dark">Location</th>
+                            <th className="text-left p-4 font-medium text-text-dark">Status</th>
+                            <th className="text-left p-4 font-medium text-text-dark">Created</th>
+                            <th className="text-left p-4 font-medium text-text-dark">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filtered.length === 0 ? (
+                            <tr>
+                              <td colSpan={7} className="p-8 text-center text-text-dark/70">
+                                No donors found
+                              </td>
+                            </tr>
+                          ) : (
+                            filtered.map((donor) => (
+                              <tr
+                                key={donor.id}
+                                className="border-b border-white/10 hover:bg-white/5 transition-all duration-300"
+                              >
+                                <td className="p-4">
+                                  <p className="font-medium text-text-dark">{donor.name}</p>
+                                </td>
+                                <td className="p-4">
+                                  <p className="text-sm text-text-dark/70">{donor.email}</p>
+                                </td>
+                                <td className="p-4">
+                                  <p className="text-sm text-text-dark/70">{donor.phone}</p>
+                                </td>
+                                <td className="p-4">
+                                  <p className="text-sm text-text-dark/70">
+                                    {donor.city}, {donor.state}
+                                  </p>
+                                </td>
+                                <td className="p-4">
+                                  <Badge
+                                    variant="outline"
+                                    className={
+                                      donor.status === "APPROVED"
+                                        ? "bg-green-500/20 border-green-500 text-green-300"
+                                        : donor.status === "REJECTED"
+                                        ? "bg-red-500/20 border-red-500 text-red-300"
+                                        : "bg-yellow-500/20 border-yellow-500 text-yellow-300"
+                                    }
+                                  >
+                                    {donor.status}
+                                  </Badge>
+                                </td>
+                                <td className="p-4 text-sm text-text-dark/70">
+                                  {new Date(donor.createdAt).toLocaleDateString()}
+                                </td>
+                                <td className="p-4">
+                                  {donor.status === "PENDING" ? (
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                        onClick={async () => {
+                                          const result = await approveOnboardDonor(donor.id);
+                                          if (result.success) {
+                                            const updated = await fetchAllOnboardDonors();
+                                            setOnboardDonors(updated);
+                                          }
+                                        }}
+                                      >
+                                        <CheckCircle className="w-3 h-3 mr-1" />
+                                        Approve
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="bg-transparent hover:bg-red-600/20 border-red-500 text-red-500"
+                                        onClick={async () => {
+                                          const result = await rejectOnboardDonor(donor.id);
+                                          if (result.success) {
+                                            const updated = await fetchAllOnboardDonors();
+                                            setOnboardDonors(updated);
+                                          }
+                                        }}
+                                      >
+                                        <XCircle className="w-3 h-3 mr-1" />
+                                        Reject
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <span
+                                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                        donor.status === "APPROVED"
+                                          ? "bg-green-100 text-green-800"
+                                          : "bg-red-100 text-red-800"
+                                      }`}
+                                    >
+                                      {donor.status === "APPROVED" ? "Approved ✅" : "Rejected ❌"}
+                                    </span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
           </TabsContent>
 
           {/* Hospital Verification Tab */}

@@ -492,3 +492,43 @@ export async function sendContactUserConfirmation(data: {
     throw new Error(`Failed to send contact user confirmation: ${err.message}`);
   }
 }
+
+/**
+ * Send welcome email to onboard donor with login credentials
+ */
+export async function sendDonorOnboardWelcomeEmail(
+  to: string,
+  name: string,
+  email: string,
+  password: string
+) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const signInUrl = `${baseUrl}/auth/sign-in`;
+
+  let html = await loadEmailTemplate("donorOnboardWelcome.html");
+  html = applyTemplate(html, {
+    name,
+    email,
+    password,
+    signInUrl,
+  });
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Haemologix" <${process.env.SMTP_USER}>`,
+      to,
+      subject: "Welcome to HaemoLogix - Your Account Details",
+      html,
+    });
+
+    console.log(`[Email] Donor onboard welcome email sent to ${to}:`, info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (err: any) {
+    console.error("❌ Donor onboard welcome email error:", {
+      message: err.message,
+      code: err.code,
+      to,
+    });
+    throw new Error(`Failed to send donor onboard welcome email: ${err.message}`);
+  }
+}

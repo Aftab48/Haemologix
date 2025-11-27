@@ -256,3 +256,19 @@ type CurrentUserResponse = DonorUser | HospitalUser | NoUser;
 type DonorFileField = "bloodTestReport" | "idProof" | "medicalCertificate";
 
 type HospitalFileField = "bloodBankLicenseDoc" | "hospitalRegistrationCert" | "authorizedRepIdProof";
+
+interface DonorOnboardData {
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  dateOfBirth: string;
+  weight: string;
+  height: string;
+  hasDonatedBefore: boolean;
+  lastDonationDate?: string;
+  diseases?: string;
+}
