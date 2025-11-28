@@ -17,6 +17,8 @@ model Donor {
   state               String
   pincode             String
   dateOfBirth         DateTime
+  gender              String
+  bloodGroup          String
   weight              String
   height              String
   bmi                 String

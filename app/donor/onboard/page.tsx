@@ -9,6 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import GradientBackground from "@/components/GradientBackground";
 import { donorOnboardSchema, type DonorOnboardFormData } from "@/lib/validations/donor-onboard.schema";
@@ -172,6 +179,51 @@ export default function DonorOnboardPage() {
                     />
                     {errors.email && (
                       <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="gender">Gender *</Label>
+                    <Select
+                      onValueChange={(value) => setValue("gender", value, { shouldValidate: true })}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.gender && (
+                      <p className="text-red-500 text-sm mt-1">{errors.gender.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="bloodGroup">Blood Group *</Label>
+                    <Select
+                      onValueChange={(value) => setValue("bloodGroup", value, { shouldValidate: true })}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select blood group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A+">A+</SelectItem>
+                        <SelectItem value="A-">A-</SelectItem>
+                        <SelectItem value="B+">B+</SelectItem>
+                        <SelectItem value="B-">B-</SelectItem>
+                        <SelectItem value="AB+">AB+</SelectItem>
+                        <SelectItem value="AB-">AB-</SelectItem>
+                        <SelectItem value="O+">O+</SelectItem>
+                        <SelectItem value="O-">O-</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.bloodGroup && (
+                      <p className="text-red-500 text-sm mt-1">{errors.bloodGroup.message}</p>
                     )}
                   </div>
                 </div>

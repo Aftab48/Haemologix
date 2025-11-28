@@ -266,6 +266,8 @@ interface DonorOnboardData {
   state: string;
   pincode: string;
   dateOfBirth: string;
+  gender: string;
+  bloodGroup: string;
   weight: string;
   height: string;
   hasDonatedBefore: boolean;

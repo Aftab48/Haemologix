@@ -30,6 +30,15 @@ export const donorOnboardSchema = z
         message: "Age must be between 18 and 65 years",
       }
     ),
+    gender: z.string().min(1, "Gender is required"),
+    bloodGroup: z
+      .string()
+      .refine(
+        (val) => ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].includes(val),
+        {
+          message: "Please select a valid blood group",
+        }
+      ),
     weight: z
       .string()
       .refine(

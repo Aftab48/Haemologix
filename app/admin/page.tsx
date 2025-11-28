@@ -1098,6 +1098,7 @@ export default function AdminDashboard() {
                             <th className="text-left p-4 font-medium text-text-dark">Name</th>
                             <th className="text-left p-4 font-medium text-text-dark">Email</th>
                             <th className="text-left p-4 font-medium text-text-dark">Phone</th>
+                            <th className="text-left p-4 font-medium text-text-dark">Blood Group</th>
                             <th className="text-left p-4 font-medium text-text-dark">Location</th>
                             <th className="text-left p-4 font-medium text-text-dark">Status</th>
                             <th className="text-left p-4 font-medium text-text-dark">Created</th>
@@ -1107,7 +1108,7 @@ export default function AdminDashboard() {
                         <tbody>
                           {filtered.length === 0 ? (
                             <tr>
-                              <td colSpan={7} className="p-8 text-center text-text-dark/70">
+                              <td colSpan={8} className="p-8 text-center text-text-dark/70">
                                 No donors found
                               </td>
                             </tr>
@@ -1125,6 +1126,18 @@ export default function AdminDashboard() {
                                 </td>
                                 <td className="p-4">
                                   <p className="text-sm text-text-dark/70">{donor.phone}</p>
+                                </td>
+                                <td className="p-4">
+                                  {donor.bloodGroup ? (
+                                    <Badge
+                                      variant="outline"
+                                      className="bg-white/5 border-white/20 text-text-dark"
+                                    >
+                                      {donor.bloodGroup}
+                                    </Badge>
+                                  ) : (
+                                    <span className="text-sm text-text-dark/50">N/A</span>
+                                  )}
                                 </td>
                                 <td className="p-4">
                                   <p className="text-sm text-text-dark/70">

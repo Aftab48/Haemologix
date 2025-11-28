@@ -96,21 +96,74 @@ export async function getCurrentUser(
   if (!email) return { role: null, user: null };
 
   try {
-    // donor
-    const donor = await db.donorRegistration.findUnique({
+    // Check DonorRegistration first (full registration)
+    const donorRegistration = await db.donorRegistration.findUnique({
       where: { email },
     });
 
-    if (donor) {
+    if (donorRegistration) {
       return {
         role: "DONOR",
         user: {
-          ...donor,
-          dateOfBirth: donor.dateOfBirth ? donor.dateOfBirth.toISOString() : "",
-          lastDonation: donor.lastDonation
-            ? donor.lastDonation.toISOString()
+          ...donorRegistration,
+          dateOfBirth: donorRegistration.dateOfBirth ? donorRegistration.dateOfBirth.toISOString() : "",
+          lastDonation: donorRegistration.lastDonation
+            ? donorRegistration.lastDonation.toISOString()
             : null,
         } as DonorData,
+      };
+    }
+
+    // Check Donor table (onboard donors)
+    const onboardDonor = await db.donor.findUnique({
+      where: { email },
+    });
+
+    if (onboardDonor) {
+      // Convert onboard donor to DonorData format
+      const nameParts = onboardDonor.name.split(" ");
+      return {
+        role: "DONOR",
+        user: {
+          firstName: nameParts[0] || onboardDonor.name,
+          lastName: nameParts.slice(1).join(" ") || "",
+          email: onboardDonor.email,
+          phone: onboardDonor.phone,
+          dateOfBirth: onboardDonor.dateOfBirth ? onboardDonor.dateOfBirth.toISOString() : "",
+          gender: onboardDonor.gender,
+          address: onboardDonor.address,
+          emergencyContact: "",
+          emergencyPhone: "",
+          weight: onboardDonor.weight,
+          height: onboardDonor.height,
+          bmi: onboardDonor.bmi,
+          lastDonation: onboardDonor.lastDonationDate
+            ? onboardDonor.lastDonationDate.toISOString()
+            : undefined,
+          donationCount: undefined,
+          neverDonated: !onboardDonor.hasDonatedBefore,
+          recentVaccinations: false,
+          vaccinationDetails: "",
+          medicalConditions: onboardDonor.diseases || "",
+          medications: "",
+          hivTest: "",
+          hepatitisBTest: "",
+          hepatitisCTest: "",
+          syphilisTest: "",
+          malariaTest: "",
+          hemoglobin: "",
+          bloodGroup: onboardDonor.bloodGroup,
+          plateletCount: "",
+          wbcCount: "",
+          bloodTestReport: null,
+          idProof: null,
+          medicalCertificate: null,
+          dataProcessingConsent: true,
+          medicalScreeningConsent: true,
+          termsAccepted: true,
+          status: onboardDonor.status,
+          id: onboardDonor.id,
+        } as DonorData & { id: string; status: string },
       };
     }
 

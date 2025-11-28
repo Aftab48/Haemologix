@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { clerkClient } from "@clerk/nextjs/server";
 import { donorOnboardSchema, type DonorOnboardFormData } from "@/lib/validations/donor-onboard.schema";
 import { sendDonorOnboardWelcomeEmail } from "@/lib/actions/mails.actions";
+import { sendApplicationApprovedEmail, sendApplicationRejectedEmail } from "@/lib/actions/mails.actions";
+import { processOnboardDonorVerification } from "@/lib/agents/onboardDonorVerification";
 
 /**
  * Generate a random secure password that meets Clerk requirements
@@ -130,7 +132,7 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
       console.warn("Continuing without Clerk user creation");
     }
 
-    // Create Donor record in database
+    // Create Donor record in database (initially PENDING)
     const newDonor = await db.donor.create({
       data: {
         name: validatedData.name,
@@ -141,6 +143,8 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
         state: validatedData.state,
         pincode: validatedData.pincode,
         dateOfBirth: new Date(validatedData.dateOfBirth),
+        gender: validatedData.gender,
+        bloodGroup: validatedData.bloodGroup,
         weight: validatedData.weight,
         height: validatedData.height,
         bmi: bmi,
@@ -154,7 +158,7 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
       },
     });
 
-    // Send welcome email with login credentials (only if Clerk user was created)
+    // Send welcome email with login credentials first (if Clerk user was created)
     if (clerkUser) {
       try {
         await sendDonorOnboardWelcomeEmail(
@@ -165,8 +169,58 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
         );
       } catch (emailError) {
         console.error("Failed to send welcome email:", emailError);
-        // Don't fail the whole operation if email fails
+        // Continue even if email fails
       }
+    }
+
+    // Auto-verify and approve/reject the donor
+    const verificationResult = await processOnboardDonorVerification(newDonor.id);
+
+    if (verificationResult.success && verificationResult.approved) {
+      // Donor approved - send approval email
+      try {
+        await sendApplicationApprovedEmail(validatedData.email, validatedData.name);
+      } catch (emailError) {
+        console.error("Failed to send approval email:", emailError);
+      }
+
+      return {
+        success: true,
+        donorId: newDonor.id,
+        message: "Donor registration approved! Please check your email for login credentials and approval confirmation.",
+        status: "APPROVED",
+      };
+    } else if (verificationResult.success && !verificationResult.approved) {
+      // Donor rejected - send rejection email
+      try {
+        await sendApplicationRejectedEmail(
+          validatedData.email,
+          validatedData.name,
+          verificationResult.failedCriteria?.map((c) => ({
+            field: c.criterion,
+            entered: c.value,
+            extracted: c.value,
+            reason: c.reason,
+          }))
+        );
+      } catch (emailError) {
+        console.error("Failed to send rejection email:", emailError);
+      }
+
+      return {
+        success: true,
+        donorId: newDonor.id,
+        message: `Registration received. Your application was reviewed but not approved. Reason: ${verificationResult.reason}. Please check your email for details.`,
+        status: "REJECTED",
+      };
+    } else {
+      // Verification failed - keep as PENDING for manual review
+      return {
+        success: true,
+        donorId: newDonor.id,
+        message: "Registration submitted. Your application is pending review. Please check your email for login credentials.",
+        status: "PENDING",
+      };
     }
 
     return {
@@ -227,6 +281,14 @@ export async function approveOnboardDonor(donorId: string) {
       data: { status: "APPROVED" },
     });
 
+    // Send approval email
+    try {
+      await sendApplicationApprovedEmail(donor.email, donor.name);
+    } catch (emailError) {
+      console.error("Failed to send approval email:", emailError);
+      // Don't fail the approval if email fails
+    }
+
     return {
       success: true,
       donor,
@@ -249,6 +311,14 @@ export async function rejectOnboardDonor(donorId: string) {
       where: { id: donorId },
       data: { status: "REJECTED" },
     });
+
+    // Send rejection email
+    try {
+      await sendApplicationRejectedEmail(donor.email, donor.name);
+    } catch (emailError) {
+      console.error("Failed to send rejection email:", emailError);
+      // Don't fail the rejection if email fails
+    }
 
     return {
       success: true,

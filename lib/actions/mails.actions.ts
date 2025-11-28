@@ -77,25 +77,30 @@ export async function sendApplicationRejectedEmail(
 ) {
   let html = await loadEmailTemplate("rejectedDonor.html");
   
-  // Build mismatch details if provided
+  // Build mismatch/eligibility failure details if provided
   let mismatchDetails = "";
   if (mismatches && mismatches.length > 0) {
     mismatchDetails = mismatches
       .map(
         (m) =>
-          `<li><strong>${m.field}:</strong> Expected "${m.entered}", Found "${m.extracted}" - ${m.reason}</li>`
+          `<li><strong>${m.field}:</strong> ${m.value || m.entered} - ${m.reason || "Does not meet requirements"}</li>`
       )
       .join("");
     mismatchDetails = `<ul>${mismatchDetails}</ul>`;
   }
 
-  html = applyTemplate(html, { name, mismatchDetails: mismatchDetails || "Please review your documents." });
+  html = applyTemplate(html, { 
+    name, 
+    mismatchDetails: mismatchDetails || "Your application did not meet the eligibility criteria. Please review the requirements and try again after addressing the issues." 
+  });
 
   try {
     const info = await transporter.sendMail({
       from: `"Haemologix" <${process.env.SMTP_USER}>`,
       to,
-      subject: "Document Verification Failed - Please Retry",
+      subject: mismatches && mismatches.length > 0 
+        ? "Application Not Approved - Eligibility Criteria" 
+        : "Document Verification Failed - Please Retry",
       html,
     });
 
