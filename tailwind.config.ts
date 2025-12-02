@@ -70,8 +70,10 @@ const config: Config = {
   			}
   		},
   		fontFamily: {
-  			'outfit': ['Outfit', 'sans-serif'],
+  			'segment-a': ['Segment A', 'sans-serif'],
+  			'playfair-display': ['Playfair Display', 'serif'],
   			'dm-sans': ['DM Sans', 'sans-serif'],
+  			'outfit': ['Segment A', 'sans-serif'], /* Backward compatibility - maps to Segment A */
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
