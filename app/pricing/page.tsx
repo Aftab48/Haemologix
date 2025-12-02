@@ -3,90 +3,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Link from "next/link";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from "@clerk/nextjs";
-import Image from "next/image";
 import GradientBackground from "@/components/GradientBackground";
+import Header from "@/components/Header";
 import { CheckCircle2, ArrowRight, Rocket, Heart, Building2, Crown } from "lucide-react";
 
 export default function PricingPage() {
   return (
     <GradientBackground>
       {/* Header */}
-      <header className="backdrop-blur-lg sticky top-4 mx-4 md:mx-8 lg:mx-16 z-50 border border-mist-green/40 rounded-2xl shadow-lg px-6 py-3 flex justify-between items-center glass-morphism">
-        <div className="container mx-auto px-2 md:px-4 py-2 md:py-4 flex items-center justify-between gap-px rounded bg-transparent">
-          <div className="flex items-center gap-2">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-primary/10 border-2 border-primary animate-glow">
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                width={48}
-                height={48}
-                className="rounded-full"
-              />
-            </div>
-            <Link href={"/"} className="text-xl font-outfit font-bold text-primary">
-              {"HaemoLogix"}
-            </Link>
-          </div>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link
-              href="/team"
-              className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
-            >
-              Team
-            </Link>
-            <Link
-              href="/pricing"
-              className="hover:text-secondary transition-colors text-primary font-dm-sans font-medium"
-            >
-              Pricing
-            </Link>
-            <Link
-              href="/impact"
-              className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
-            >
-              Impact
-            </Link>
-            <Link
-              href="/contact"
-              className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
-            >
-              Contact
-            </Link>
-            <Link
-              href="/pilot"
-              className="hover:text-secondary transition-colors text-text-dark font-dm-sans font-medium"
-            >
-              Pilot
-            </Link>
-          </nav>
-          <div className="flex items-center gap-1 md:gap-3">
-            <SignedOut>
-              <SignInButton>
-                <Button className="gradient-oxygen hover:opacity-90 text-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer transition-all">
-                  Sign In
-                </Button>
-              </SignInButton>
-              <div className="hidden lg:block">
-                <SignUpButton>
-                  <Button className="gradient-ruby hover:opacity-90 text-white rounded-full font-medium text-sm sm:text-base h-8 sm:h-10 px-4 sm:px-5 cursor-pointer transition-all">
-                    Sign Up
-                  </Button>
-                </SignUpButton>
-              </div>
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </div>
-        </div>
-      </header>
+      <Header activePage="pricing" />
 
       {/* Hero Section */}
       <section className="py-20 px-4 bg-white/5 backdrop-blur-[2px]">
@@ -105,9 +30,9 @@ export default function PricingPage() {
       {/* Pricing Tiers */}
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16 items-stretch">
             {/* Pilot Program */}
-            <Card className="glass-morphism relative">
+            <Card className="glass-morphism relative grid grid-rows-[auto_1fr_auto] h-full min-h-[28rem]">
               <CardHeader className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Rocket className="w-8 h-8 text-blue-600" />
@@ -119,7 +44,7 @@ export default function PricingPage() {
                 </div>
                 <CardDescription className="mt-2">Testing & Validation</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="flex flex-col flex-1 space-y-4 px-6">
                 <div>
                   <p className="text-sm font-semibold text-text-dark mb-2">Ideal For:</p>
                   <p className="text-sm text-text-dark/80">Hospitals in 7-14 day evaluation</p>
@@ -153,17 +78,19 @@ export default function PricingPage() {
                     </li>
                   </ul>
                 </div>
+              </CardContent>
+              <div className="px-6 pb-6">
                 <Link href="/pilot" className="block">
-                  <Button className="w-full gradient-oxygen hover:opacity-90 text-white font-outfit font-semibold py-6 rounded-xl transition-all">
+                  <Button className="w-full h-12 gradient-oxygen hover:opacity-90 text-white font-outfit font-semibold rounded-xl transition-all whitespace-nowrap">
                     Get Started
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>
-              </CardContent>
+              </div>
             </Card>
 
             {/* Free Tier */}
-            <Card className="glass-morphism relative">
+            <Card className="glass-morphism relative grid grid-rows-[auto_1fr_auto] h-full min-h-[28rem]">
               <CardHeader className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Heart className="w-8 h-8 text-green-600" />
@@ -174,7 +101,7 @@ export default function PricingPage() {
                 </div>
                 <CardDescription className="mt-2">Entry Hospitals & NGOs</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="flex flex-col flex-1 space-y-4 px-6">
                 <div>
                   <p className="text-sm font-semibold text-text-dark mb-2">Ideal For:</p>
                   <p className="text-sm text-text-dark/80">Rural hospitals, small NGOs, blood camps</p>
@@ -208,23 +135,25 @@ export default function PricingPage() {
                     </li>
                   </ul>
                 </div>
+              </CardContent>
+              <div className="px-6 pb-6">
                 <Link href="/contact" className="block">
-                  <Button className="w-full gradient-mist hover:opacity-90 text-text-dark font-outfit font-semibold py-6 rounded-xl transition-all">
+                  <Button className="w-full h-12 gradient-mist hover:opacity-90 text-text-dark font-outfit font-semibold rounded-xl transition-all whitespace-nowrap">
                     Get Started
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>
-              </CardContent>
+              </div>
             </Card>
 
             {/* Premium Tier */}
-            <Card className="glass-morphism border-2 border-primary relative">
+            <Card className="glass-morphism border-2 border-primary relative grid grid-rows-[auto_1fr_auto] h-full min-h-[28rem]">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-primary text-white px-4 py-1 rounded-full text-sm font-semibold">
                   Most Popular
                 </span>
               </div>
-              <CardHeader className="text-center pt-6">
+              <CardHeader className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Building2 className="w-8 h-8 text-primary" />
                 </div>
@@ -235,7 +164,7 @@ export default function PricingPage() {
                 </div>
                 <CardDescription className="mt-2">Growing Hospitals & Blood Banks</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="flex flex-col flex-1 space-y-4 px-6">
                 <div>
                   <p className="text-sm font-semibold text-text-dark mb-2">Ideal For:</p>
                   <p className="text-sm text-text-dark/80">Mid-level hospitals, district blood centers</p>
@@ -288,17 +217,19 @@ export default function PricingPage() {
                   <p className="text-xs font-semibold text-text-dark mb-1">Overage Pricing:</p>
                   <p className="text-xs text-text-dark/80">₹0.25/verification, ₹0.50/SMS, ₹0.05/email, ₹1,500/hr support</p>
                 </div>
+              </CardContent>
+              <div className="px-6 pb-6">
                 <Link href="/contact" className="block">
-                  <Button className="w-full gradient-ruby hover:opacity-90 text-white font-outfit font-semibold py-6 rounded-xl transition-all shadow-lg">
+                  <Button className="w-full h-12 gradient-ruby hover:opacity-90 text-white font-outfit font-semibold rounded-xl transition-all shadow-lg whitespace-nowrap">
                     Get Started
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>
-              </CardContent>
+              </div>
             </Card>
 
             {/* Enterprise Tier */}
-            <Card className="glass-morphism relative">
+            <Card className="glass-morphism relative grid grid-rows-[auto_1fr_auto] h-full min-h-[28rem]">
               <CardHeader className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Crown className="w-8 h-8 text-yellow-600" />
@@ -309,7 +240,7 @@ export default function PricingPage() {
                 </div>
                 <CardDescription className="mt-2">Hospital Networks & Public Health</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="flex flex-col flex-1 space-y-4 px-6">
                 <div>
                   <p className="text-sm font-semibold text-text-dark mb-2">Ideal For:</p>
                   <p className="text-sm text-text-dark/80">State health departments, hospital chains, CSR projects</p>
@@ -357,86 +288,88 @@ export default function PricingPage() {
                   <p className="text-xs text-text-dark/80 mt-1">Annual contract: ₹6-9 lakh/year</p>
                   <p className="text-xs text-text-dark/80 mt-1">+ Implementation fee: ₹1-2 lakh</p>
                 </div>
+              </CardContent>
+              <div className="px-6 pb-6">
                 <Link href="/contact" className="block">
-                  <Button className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:opacity-90 text-white font-outfit font-semibold py-6 rounded-xl transition-all">
+                  <Button className="w-full h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:opacity-90 text-white font-outfit font-semibold rounded-xl transition-all whitespace-nowrap">
                     Contact Sales
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>
-              </CardContent>
+              </div>
             </Card>
           </div>
 
           {/* Comparison Table Section */}
           <div className="mt-16">
             <h2 className="text-3xl font-bold text-center mb-8 text-text-dark">Feature Comparison</h2>
-            <div className="glass-morphism rounded-2xl p-6 overflow-x-auto">
-              <table className="w-full text-left">
+            <div className="glass-morphism rounded-2xl p-6 m-3 overflow-x-auto">
+              <table className="w-full text-left border-separate">
                 <thead>
                   <tr className="border-b border-mist-green/40">
-                    <th className="pb-4 text-text-dark font-semibold">Feature</th>
-                    <th className="pb-4 text-center text-text-dark font-semibold">Pilot</th>
-                    <th className="pb-4 text-center text-text-dark font-semibold">Free</th>
-                    <th className="pb-4 text-center text-primary font-semibold">Premium</th>
-                    <th className="pb-4 text-center text-text-dark font-semibold">Enterprise</th>
+                    <th className="px-6 pb-4 text-text-dark font-semibold">Feature</th>
+                    <th className="px-6 pb-4 text-center text-text-dark font-semibold">Pilot</th>
+                    <th className="px-6 pb-4 text-center text-text-dark font-semibold">Free</th>
+                    <th className="px-6 pb-4 text-center text-primary font-semibold">Premium</th>
+                    <th className="px-6 pb-4 text-center text-text-dark font-semibold">Enterprise</th>
                   </tr>
                 </thead>
-                <tbody className="space-y-4">
+                <tbody className="space-y-6 ">
                   <tr className="border-b border-mist-green/20">
-                    <td className="py-3 text-text-dark/80">AI Donor Verification</td>
-                    <td className="py-3 text-center text-text-dark/80">30 (trial)</td>
-                    <td className="py-3 text-center text-text-dark/80">30/month</td>
-                    <td className="py-3 text-center text-text-dark/80">1,200/month</td>
-                    <td className="py-3 text-center text-text-dark/80">Unlimited</td>
+                    <td className="py-3 px-6 text-text-dark/80">AI Donor Verification</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">30 (trial)</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">30/month</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">1,200/month</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Unlimited</td>
                   </tr>
                   <tr className="border-b border-mist-green/20">
-                    <td className="py-3 text-text-dark/80">Blood Requests</td>
-                    <td className="py-3 text-center text-text-dark/80">2 (trial)</td>
-                    <td className="py-3 text-center text-text-dark/80">1/month</td>
-                    <td className="py-3 text-center text-text-dark/80">Unlimited</td>
-                    <td className="py-3 text-center text-text-dark/80">Unlimited</td>
+                    <td className="py-3 px-6 text-text-dark/80">Blood Requests</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">2 (trial)</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">1/month</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Unlimited</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Unlimited</td>
                   </tr>
                   <tr className="border-b border-mist-green/20">
-                    <td className="py-3 text-text-dark/80">SMS Alerts</td>
-                    <td className="py-3 text-center text-text-dark/80">Limited</td>
-                    <td className="py-3 text-center text-text-dark/80">30/month</td>
-                    <td className="py-3 text-center text-text-dark/80">1,000/month</td>
-                    <td className="py-3 text-center text-text-dark/80">Unlimited</td>
+                    <td className="py-3 px-6 text-text-dark/80">SMS Alerts</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Limited</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">30/month</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">1,000/month</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Unlimited</td>
                   </tr>
                   <tr className="border-b border-mist-green/20">
-                    <td className="py-3 text-text-dark/80">Email Alerts</td>
-                    <td className="py-3 text-center text-text-dark/80">Limited</td>
-                    <td className="py-3 text-center text-text-dark/80">30/month</td>
-                    <td className="py-3 text-center text-text-dark/80">500/month</td>
-                    <td className="py-3 text-center text-text-dark/80">Unlimited</td>
+                    <td className="py-3 px-6 text-text-dark/80">Email Alerts</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Limited</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">30/month</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">500/month</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Unlimited</td>
                   </tr>
                   <tr className="border-b border-mist-green/20">
-                    <td className="py-3 text-text-dark/80">Advanced Analytics</td>
-                    <td className="py-3 text-center text-text-dark/80">Basic</td>
-                    <td className="py-3 text-center text-text-dark/80">Basic</td>
-                    <td className="py-3 text-center text-text-dark/80">✓</td>
-                    <td className="py-3 text-center text-text-dark/80">Custom</td>
+                    <td className="py-3 px-6 text-text-dark/80">Advanced Analytics</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Basic</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Basic</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">✓</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Custom</td>
                   </tr>
                   <tr className="border-b border-mist-green/20">
-                    <td className="py-3 text-text-dark/80">API Integration</td>
-                    <td className="py-3 text-center text-text-dark/80">-</td>
-                    <td className="py-3 text-center text-text-dark/80">-</td>
-                    <td className="py-3 text-center text-text-dark/80">✓</td>
-                    <td className="py-3 text-center text-text-dark/80">Custom</td>
+                    <td className="py-3 px-6 text-text-dark/80">API Integration</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">-</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">-</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">✓</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Custom</td>
                   </tr>
                   <tr className="border-b border-mist-green/20">
-                    <td className="py-3 text-text-dark/80">Support</td>
-                    <td className="py-3 text-center text-text-dark/80">Optional</td>
-                    <td className="py-3 text-center text-text-dark/80">Community</td>
-                    <td className="py-3 text-center text-text-dark/80">2 hrs/month</td>
-                    <td className="py-3 text-center text-text-dark/80">Dedicated</td>
+                    <td className="py-3 px-6 text-text-dark/80">Support</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Optional</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Community</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">2 hrs/month</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">Dedicated</td>
                   </tr>
                   <tr>
-                    <td className="py-3 text-text-dark/80">White-labeling</td>
-                    <td className="py-3 text-center text-text-dark/80">-</td>
-                    <td className="py-3 text-center text-text-dark/80">-</td>
-                    <td className="py-3 text-center text-text-dark/80">-</td>
-                    <td className="py-3 text-center text-text-dark/80">✓</td>
+                    <td className="py-3 px-6 text-text-dark/80">White-labeling</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">-</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">-</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">-</td>
+                    <td className="py-3 px-6 text-center text-text-dark/80">✓</td>
                   </tr>
                 </tbody>
               </table>
@@ -447,7 +380,7 @@ export default function PricingPage() {
           <div className="mt-16 text-center">
             <Card className="glass-morphism border-2 border-primary max-w-3xl mx-auto">
               <CardContent>
-                <h2 className="text-3xl font-bold mb-4 text-text-dark">
+                <h2 className="text-3xl font-bold mb-4 text-text-dark p-4">
                   Not sure which plan is right for you?
                 </h2>
                 <p className="text-lg text-text-dark/80 mb-8">
@@ -552,4 +485,3 @@ export default function PricingPage() {
     </GradientBackground>
   );
 }
-
