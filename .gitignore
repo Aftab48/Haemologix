@@ -77,3 +77,5 @@ ml/.ipynb_checkpoints/
 ml/models/exported/
 ml/models/*.onnx
 ml/models/*.tflite
+# clerk configuration (can include secrets)
+/.clerk/
