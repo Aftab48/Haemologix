@@ -104,17 +104,24 @@ export async function GET(req: NextRequest) {
     // Calculate statistics
     const stats = {
       totalEvents: analytics.length,
-      qrScans: analytics.filter((a: any) => a.eventType === "qr_scan").length,
-      pageViews: analytics.filter((a: any) => a.eventType === "page_view")
+      qrScans: analytics.filter((a: any) => a.eventType === "qr_scan" || a.eventType === "donor_qr_scan").length,
+      pageViews: analytics.filter((a: any) => a.eventType === "page_view" || a.eventType === "donor_page_view")
         .length,
       formSubmissions: analytics.filter(
-        (a: any) => a.eventType === "form_submission"
+        (a: any) => a.eventType === "form_submission" || a.eventType === "donor_form_submission"
       ).length,
+      donorQrScans: analytics.filter((a: any) => a.eventType === "donor_qr_scan").length,
+      donorPageViews: analytics.filter((a: any) => a.eventType === "donor_page_view").length,
+      donorFormSubmissions: analytics.filter((a: any) => a.eventType === "donor_form_submission").length,
+      pilotQrScans: analytics.filter((a: any) => a.eventType === "qr_scan").length,
+      pilotPageViews: analytics.filter((a: any) => a.eventType === "page_view").length,
+      pilotFormSubmissions: analytics.filter((a: any) => a.eventType === "form_submission").length,
       byUtmMedium: {} as Record<string, number>,
       byDate: {} as Record<string, number>,
+      byEventType: {} as Record<string, number>,
     };
 
-    // Group by UTM medium
+    // Group by UTM medium, date, and event type
     analytics.forEach((a: any) => {
       const medium = a.utmMedium || "direct";
       stats.byUtmMedium[medium] = (stats.byUtmMedium[medium] || 0) + 1;
@@ -122,6 +129,10 @@ export async function GET(req: NextRequest) {
       // Group by date
       const date = new Date(a.createdAt).toISOString().split("T")[0];
       stats.byDate[date] = (stats.byDate[date] || 0) + 1;
+
+      // Group by event type
+      const eventType = a.eventType || "unknown";
+      stats.byEventType[eventType] = (stats.byEventType[eventType] || 0) + 1;
     });
 
     return NextResponse.json({

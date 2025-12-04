@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,73 @@ import { donorOnboardSchema, type DonorOnboardFormData } from "@/lib/validations
 import { submitDonorOnboardForm } from "@/lib/actions/donor-onboard.actions";
 
 export default function DonorOnboardPage() {
+  // Track page view and QR scan with UTM parameters
+  useEffect(() => {
+    const trackAnalytics = async () => {
+      if (typeof window === "undefined") return;
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const utmSource = urlParams.get("utm_source");
+      const utmMedium = urlParams.get("utm_medium");
+      const utmCampaign = urlParams.get("utm_campaign");
+      const utmContent = urlParams.get("utm_content");
+
+      // Track QR scan if utm_medium is qrcode
+      if (utmMedium === "qrcode") {
+        try {
+          await fetch("/api/pilot-analytics", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              eventType: "donor_qr_scan",
+              utmSource,
+              utmMedium,
+              utmCampaign,
+              utmContent,
+              referrer: document.referrer || undefined,
+              metadata: {
+                path: window.location.pathname,
+                fullUrl: window.location.href,
+                qrLocation: utmContent || "unknown",
+              },
+            }),
+          });
+        } catch (error) {
+          console.error("Error tracking QR scan:", error);
+        }
+      }
+
+      // Track page view if there are UTM parameters
+      if (utmSource || utmMedium || utmCampaign || utmContent) {
+        try {
+          await fetch("/api/pilot-analytics", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              eventType: "donor_page_view",
+              utmSource,
+              utmMedium,
+              utmCampaign,
+              utmContent,
+              referrer: document.referrer || undefined,
+              metadata: {
+                path: window.location.pathname,
+                fullUrl: window.location.href,
+              },
+            }),
+          });
+        } catch (error) {
+          console.error("Error tracking page view:", error);
+        }
+      }
+    };
+
+    trackAnalytics();
+  }, []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
     success: boolean;
@@ -68,6 +135,34 @@ export default function DonorOnboardPage() {
       const result = await submitDonorOnboardForm(data);
 
       if (result.success) {
+        // Track form submission
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          await fetch("/api/pilot-analytics", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              eventType: "donor_form_submission",
+              utmSource: urlParams.get("utm_source") || undefined,
+              utmMedium: urlParams.get("utm_medium") || undefined,
+              utmCampaign: urlParams.get("utm_campaign") || undefined,
+              utmContent: urlParams.get("utm_content") || undefined,
+              referrer: document.referrer || undefined,
+              metadata: {
+                path: window.location.pathname,
+                formData: {
+                  email: data.email,
+                  bloodGroup: data.bloodGroup,
+                },
+              },
+            }),
+          });
+        } catch (error) {
+          console.error("Error tracking form submission:", error);
+        }
+
         setSubmitStatus({
           success: true,
           message: result.message || "Registration submitted successfully! Please check your email for login credentials.",

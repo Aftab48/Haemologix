@@ -9,7 +9,15 @@ import path from "path";
 
 async function generateDonorOnboardQR() {
   try {
-    const url = "https://www.haemologix.in/donor/onboard";
+    // Build URL with UTM parameters for tracking
+    const baseUrl = "https://www.haemologix.in/donor/onboard";
+    const utmParams = new URLSearchParams({
+      utm_source: "qr_code",
+      utm_medium: "qrcode",
+      utm_campaign: "donor_drive",
+    });
+    const url = `${baseUrl}?${utmParams.toString()}`;
+    
     const publicDir = path.join(process.cwd(), "public");
     const qrPath = path.join(publicDir, "qr-donor-onboard.png");
 
@@ -28,6 +36,7 @@ async function generateDonorOnboardQR() {
     console.log(`📁 Saved to: ${qrPath}`);
     console.log(`🔗 URL: ${url}`);
     console.log(`🌐 Access at: /qr-donor-onboard.png`);
+    console.log(`📊 UTM Parameters: utm_source=qr_code, utm_medium=qrcode, utm_campaign=donor_drive`);
   } catch (error) {
     console.error("❌ Error generating QR code:", error);
     process.exit(1);
