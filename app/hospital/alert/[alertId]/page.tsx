@@ -21,6 +21,9 @@ import {
   Truck,
   Brain,
   RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -44,6 +47,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import LLMReasoningCard from "@/components/LLMReasoningCard";
+import DonorLocationMap from "@/components/DonorLocationMap";
 
 export default function AlertDetailsPage() {
   const params = useParams();
@@ -66,6 +70,7 @@ export default function AlertDetailsPage() {
   const [externalDonorEmail, setExternalDonorEmail] = useState("");
   const [otherDetails, setOtherDetails] = useState("");
   const [isClosingAlert, setIsClosingAlert] = useState(false);
+  const [selectedDonorIndex, setSelectedDonorIndex] = useState(0);
 
   const fetchAlertDetails = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -96,6 +101,19 @@ export default function AlertDetailsPage() {
       fetchAlertDetails();
     }
   }, [alertId]);
+
+  // Reset selected donor index when donor responses change
+  useEffect(() => {
+    const acceptedDonors = donorResponses.filter(
+      (response) =>
+        (response.status === "CONFIRMED" || response.confirmed === true) &&
+        response.donor.latitude &&
+        response.donor.longitude
+    );
+    if (selectedDonorIndex >= acceptedDonors.length && acceptedDonors.length > 0) {
+      setSelectedDonorIndex(0);
+    }
+  }, [donorResponses, selectedDonorIndex]);
 
   // Auto-refresh every 5 seconds
   useEffect(() => {
@@ -866,6 +884,131 @@ export default function AlertDetailsPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Donor Locations Map */}
+        {(() => {
+          // Filter accepted donors with valid coordinates
+          const acceptedDonors = donorResponses.filter(
+            (response) =>
+              (response.status === "CONFIRMED" || response.confirmed === true) &&
+              response.donor.latitude &&
+              response.donor.longitude &&
+              !isNaN(parseFloat(response.donor.latitude)) &&
+              !isNaN(parseFloat(response.donor.longitude)) &&
+              alertData?.hospital?.latitude &&
+              alertData?.hospital?.longitude
+          );
+
+          if (acceptedDonors.length === 0) {
+            return null;
+          }
+
+          const currentDonor = acceptedDonors[selectedDonorIndex] || acceptedDonors[0];
+
+          return (
+            <Card className="glass-morphism border border-accent/30 text-white mb-6">
+              <CardHeader>
+                <CardTitle className="text-text-dark flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  Donor Locations ({acceptedDonors.length})
+                </CardTitle>
+                <CardDescription className="text-text-dark/80">
+                  Live locations of donors who have accepted this request
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* Donor Selector Carousel */}
+                {acceptedDonors.length > 1 && (
+                  <div className="mb-4 flex items-center justify-between gap-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setSelectedDonorIndex(
+                          selectedDonorIndex === 0
+                            ? acceptedDonors.length - 1
+                            : selectedDonorIndex - 1
+                        )
+                      }
+                      className="border-white/20 hover:bg-white/20 text-white"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-2" />
+                      Previous
+                    </Button>
+
+                    <div className="flex-1 text-center">
+                      <p className="text-text-dark font-medium">
+                        {currentDonor.donor.firstName} {currentDonor.donor.lastName}
+                      </p>
+                      <p className="text-sm text-text-dark/70">
+                        {selectedDonorIndex + 1} of {acceptedDonors.length}
+                      </p>
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setSelectedDonorIndex(
+                          selectedDonorIndex === acceptedDonors.length - 1
+                            ? 0
+                            : selectedDonorIndex + 1
+                        )
+                      }
+                      className="border-white/20 hover:bg-white/20 text-white"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                )}
+
+                {/* Map */}
+                {currentDonor && (
+                  <div className="rounded-lg overflow-hidden border border-white/20">
+                    <DonorLocationMap
+                      donor={{
+                        id: currentDonor.donor.id,
+                        name: `${currentDonor.donor.firstName} ${currentDonor.donor.lastName}`,
+                        latitude: currentDonor.donor.latitude,
+                        longitude: currentDonor.donor.longitude,
+                        phone: currentDonor.donor.phone,
+                        bloodGroup: currentDonor.donor.bloodGroup,
+                      }}
+                      hospital={{
+                        latitude: alertData.hospital.latitude,
+                        longitude: alertData.hospital.longitude,
+                        name: alertData.hospital.hospitalName,
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Donor List (if multiple) */}
+                {acceptedDonors.length > 1 && (
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <p className="text-sm text-text-dark/70 mb-2">All Accepted Donors:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {acceptedDonors.map((donor, index) => (
+                        <button
+                          key={donor.id}
+                          onClick={() => setSelectedDonorIndex(index)}
+                          className={`px-3 py-1 rounded-md text-sm transition-colors ${
+                            index === selectedDonorIndex
+                              ? "bg-green-600 text-white"
+                              : "bg-white/5 text-text-dark hover:bg-white/10"
+                          }`}
+                        >
+                          {donor.donor.firstName} {donor.donor.lastName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Inventory Match */}
         {inventoryMatch && (
