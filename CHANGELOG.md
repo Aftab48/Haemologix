@@ -5,6 +5,15 @@ All notable changes to HaemoLogix will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2025-12-13
+
+### Added
+- Foundational documentation (CHANGELOG, CODE_OF_CONDUCT, CONTRIBUTING, LICENSE, SECURITY)
+- Updated logo
+
+### Changed
+- Dependencies update
+
 ## [0.5.1] - 2025-12-12
 
 ### Added
@@ -28,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Email template rendering issues
 - Map marker clustering performance
 
-## [0.5.0] - 2024-12-01
+## [0.5.0] - 2025-12-01
 
 ### Added
 - AI Agent System with 6 specialized agents:
@@ -53,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Admin passkey protection
 - Secure file upload with validation
 
-## [0.4.0] - 2024-11-15
+## [0.4.0] - 2025-11-15
 
 ### Added
 - Hospital registration with verification workflow
@@ -69,7 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved form validation with Zod schemas
 - Enhanced UI/UX with Tailwind CSS
 
-## [0.3.0] - 2024-10-20
+## [0.3.0] - 2025-10-20
 
 ### Added
 - Basic blood request system
@@ -77,7 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hospital profile pages
 - Simple notification system
 
-## [0.2.0] - 2024-09-15
+## [0.2.0] - 2025-09-15
 
 ### Added
 - Initial Next.js app structure
@@ -85,7 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Landing page design
 - Database schema design
 
-## [0.1.0] - 2024-08-01
+## [0.1.0] - 2025-08-01
 
 ### Added
 - Project initialization
@@ -121,4 +130,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ ] WHO compliance and certification
 - [ ] International expansion
 - [ ] Open API for third-party integrations
-
