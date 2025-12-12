@@ -20,7 +20,7 @@ Hospitals raise an alert, donors accept in one tap, and donations are tracked wi
 
 ## 🌟 Quick Links
 
-- 🌐 **[Live Application](https://haemologix.vercel.app/)** - Try HaemoLogix now
+- 🌐 **[Live Application](https://www.haemologix.in/)** - Try HaemoLogix now
 - 🎥 **[Demo Video](https://drive.google.com/file/d/1J2HxKUBMzTC8Zidqs-vPCLRcGkeqh7h1/view?usp=sharing)** - Watch it in action
 - 📊 **[Presentation](https://drive.google.com/file/d/1QtRjX7OYC2_TUQ3WXf6yub0sMvHlnyjs/view?usp=sharing)** - Project overview
 - 📖 **[Documentation](docs/)** - Detailed guides
