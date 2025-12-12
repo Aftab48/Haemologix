@@ -1,11 +1,11 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import GradientBackground from "@/components/GradientBackground";
 
 export default function PostLogin() {
-  const Menudata: { title: String }[] = [
+  const Menudata: { title: string }[] = [
     { title: "Donor" },
     { title: "Hospital/Blood Bank" },
     { title: "Admin" },

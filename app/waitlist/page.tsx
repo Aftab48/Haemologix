@@ -5,7 +5,7 @@ import { CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import GradientBackground from "@/components/GradientBackground";
 
-const waitlistPage = () => {
+const WaitlistPage = () => {
   const router = useRouter();
 
   return (
@@ -48,4 +48,4 @@ const waitlistPage = () => {
   );
 };
 
-export default waitlistPage;
+export default WaitlistPage;

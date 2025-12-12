@@ -5,7 +5,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --turbopack",
-    "lint": "next lint",
+    "lint": "eslint .",
     "start": "next start",
     "postinstall": "prisma generate",
     "generate:data": "tsx scripts/generateSyntheticData.ts",

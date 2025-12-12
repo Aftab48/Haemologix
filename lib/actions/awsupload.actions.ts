@@ -20,7 +20,7 @@ export async function uploadDonorFile(
   if (!file || !donorId) throw new Error("Missing upload data");
   if (file.size > 10 * 1024 * 1024) throw new Error("File too large");
 
-  let uploadFile = file;
+  const uploadFile = file;
 
   if (!["image/jpeg", "image/png", "application/pdf"].includes(uploadFile.type)) {
     throw new Error("Unsupported file type");
@@ -60,7 +60,7 @@ export async function uploadHospitalFile(
   if (!file || !hospitalId) throw new Error("Missing upload data");
   if (file.size > 10 * 1024 * 1024) throw new Error("File too large");
 
-  let uploadFile = file;
+  const uploadFile = file;
 
   if (
     !["image/jpeg", "image/png", "application/pdf"].includes(uploadFile.type)
