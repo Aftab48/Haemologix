@@ -1,4 +1,6 @@
 interface DonorData {
+  id?: string;
+  status?: string;
   // Personal Information
   firstName: string;
   lastName: string;
@@ -49,6 +51,8 @@ interface DonorData {
 }
 
 interface HospitalData {
+  id?: string;
+  status?: string;
   // Legal & Regulatory Requirements
   bloodBankLicense: string;
   licenseExpiryDate: string;

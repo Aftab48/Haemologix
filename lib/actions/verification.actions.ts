@@ -412,7 +412,7 @@ async function processDocument(
         status: result.passed ? "MATCHED_FOR_ADMIN" : "AUTO_REJECTED",
         confidence: result.confidence,
         extractedFields: result.extractedFields,
-        mismatchFields: result.mismatches,
+        mismatchFields: result.mismatches as any,
       },
     });
 

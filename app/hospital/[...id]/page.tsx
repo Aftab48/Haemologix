@@ -31,7 +31,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Building,
   Plus,
   AlertTriangle,
   Users,
@@ -40,38 +39,23 @@ import {
   Clock,
   Phone,
   CheckCircle,
-  XCircle,
   Eye,
   BarChart3,
   Share2,
   Search,
-  Download,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 import {
   createAlert,
-  getAlertResponseStats,
   getAlerts,
 } from "@/lib/actions/alerts.actions";
 import { getCurrentUser } from "@/lib/actions/user.actions";
 import { fetchHospitalInventory, updateHospitalInventory } from "@/lib/actions/hospital.actions";
-import { formatLastActivity } from "@/lib/utils";
 import Image from "next/image";
 import GradientBackground from "@/components/GradientBackground";
 
-type Donor = {
-  id: number;
-  alertId: number;
-  donorName: string;
-  bloodType: string;
-  distance: string;
-  phone: string;
-  status: string;
-  eta: string;
-  lastDonation: string;
-};
 
 export default function HospitalDashboard() {
   const [showCreateAlert, setShowCreateAlert] = useState(false);
@@ -237,16 +221,6 @@ export default function HospitalDashboard() {
     },
   ];
 
-  const mockBloodInventory: InventoryItem[] = [
-    { type: "A+", current: 15, minimum: 20 },
-    { type: "A-", current: 8, minimum: 10 },
-    { type: "B+", current: 25, minimum: 15 },
-    { type: "B-", current: 5, minimum: 8 },
-    { type: "AB+", current: 12, minimum: 10 },
-    { type: "AB-", current: 3, minimum: 5 },
-    { type: "O+", current: 8, minimum: 25 },
-    { type: "O-", current: 6, minimum: 15 },
-  ];
 
   const [donorResponses, setDonorResponses] = useState<DonorUI[]>(mockDonorResponses);
 
@@ -268,7 +242,6 @@ export default function HospitalDashboard() {
 
   const [activeAlerts, setActiveAlerts] = useState<AlertWithType[]>([]);
   // const [donorResponses, setDonorResponses] = useState<DonorUI[]>([]);
-  const [currentAlert, setCurrentAlert] = useState<AlertWithType | null>(null);
 
   // useEffect(() => {
   //   if (activeAlerts.length > 0 && !currentAlert) {
@@ -309,7 +282,7 @@ export default function HospitalDashboard() {
     radius: "10",
   });
 
-  const [dbUser, setDbUser] = useState<any>(null);
+  const [dbUser, setDbUser] = useState<CurrentUserResponse | null>(null);
 
   const [user, setUser] = useState<HospitalData | null>(null);
   const [hospitalID, setHospitalID] = useState("");
@@ -340,7 +313,8 @@ export default function HospitalDashboard() {
   useEffect(() => {
     if (dbUser?.role === "HOSPITAL" && dbUser.user) {
       console.log("[Dashboard] user is a hospital:", dbUser.user.id);
-      setHospitalID(dbUser.user.id);
+      setHospitalID(dbUser.user.id || "");
+      setUser(dbUser.user);
     }
   }, [dbUser]);
 
@@ -762,6 +736,7 @@ export default function HospitalDashboard() {
     <GradientBackground className="flex flex-col">
       <img
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
+        alt="Background"
         className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
       />
       {/* Header */}
@@ -1289,7 +1264,9 @@ export default function HospitalDashboard() {
               <div className="flex items-center gap-3">
                 <Select
                   value={alertStatusFilter}
-                  onValueChange={(value: any) => setAlertStatusFilter(value)}
+                  onValueChange={(value) =>
+                    setAlertStatusFilter(value as "all" | "active" | "closed")
+                  }
                 >
                   <SelectTrigger className="w-40 bg-white/5 border-white/20 text-text-dark">
                     <SelectValue />
