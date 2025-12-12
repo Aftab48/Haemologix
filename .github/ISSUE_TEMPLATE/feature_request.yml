@@ -1,0 +1,111 @@
+name: Feature Request
+description: Suggest an idea for HaemoLogix
+title: "[Feature]: "
+labels: ["enhancement", "needs-review"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Your ideas help make HaemoLogix better for everyone. 🩸
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: I'm always frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like
+      placeholder: I would like to see...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Have you considered any alternative solutions or features?
+      placeholder: An alternative could be...
+
+  - type: dropdown
+    id: user-role
+    attributes:
+      label: Which User Role Benefits?
+      description: Which user type would benefit most from this feature?
+      multiple: true
+      options:
+        - Donor
+        - Hospital
+        - Admin
+        - All Users
+        - System/Backend
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority (Your Opinion)
+      description: How important is this feature to you?
+      options:
+        - Critical - Blocking my use of HaemoLogix
+        - High - Would significantly improve my experience
+        - Medium - Nice to have
+        - Low - Minor improvement
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case / User Story
+      description: Describe a specific scenario where this feature would be useful
+      placeholder: |
+        As a [role], I want to [action], so that [benefit]
+        
+        Example: As a hospital administrator, I want to schedule recurring blood alerts, so that I can ensure consistent supply for regular procedures.
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups or Examples
+      description: If you have mockups, wireframes, or examples from other apps, please share them
+      placeholder: Drag and drop images or provide links
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Expected Impact
+      description: How many users would benefit? What's the potential impact?
+      placeholder: This would help...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples about the feature request
+      placeholder: Any additional information
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      description: Before submitting, please confirm
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: This feature aligns with HaemoLogix's mission of efficient blood donation
+          required: true
+        - label: I am willing to help test this feature if implemented
+          required: false
+
