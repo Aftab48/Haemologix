@@ -57,13 +57,46 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Set build environment variables
+        shell: bash
+        run: |
+          # Note: Clerk validates key format during build, so real test keys from Clerk dashboard are required
+          # Get test keys from: https://dashboard.clerk.com/last-active?path=api-keys
+          if [ -z "${{ secrets.CI_CLERK_PUBLISHABLE_KEY }}" ]; then
+            echo "❌ Error: CI_CLERK_PUBLISHABLE_KEY secret is required for build."
+            echo "Please set it in GitHub Settings > Secrets and variables > Actions"
+            echo "Get a test key from: https://dashboard.clerk.com/last-active?path=api-keys"
+            exit 1
+          else
+            echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.CI_CLERK_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
+          fi
+          
+          if [ -z "${{ secrets.CI_CLERK_SECRET_KEY }}" ]; then
+            echo "❌ Error: CI_CLERK_SECRET_KEY secret is required for build."
+            echo "Please set it in GitHub Settings > Secrets and variables > Actions"
+            exit 1
+          else
+            echo "CLERK_SECRET_KEY=${{ secrets.CI_CLERK_SECRET_KEY }}" >> $GITHUB_ENV
+          fi
+          
+          if [ -z "${{ secrets.CI_CLERK_SECRET_KEY }}" ]; then
+            echo "CLERK_SECRET_KEY=sk_test_placeholder_for_ci_build_only" >> $GITHUB_ENV
+          else
+            echo "CLERK_SECRET_KEY=${{ secrets.CI_CLERK_SECRET_KEY }}" >> $GITHUB_ENV
+          fi
+          
+          if [ -z "${{ secrets.CI_DATABASE_URL }}" ]; then
+            echo "DATABASE_URL=postgresql://ci_user:ci_password@localhost:5432/ci_database?sslmode=disable" >> $GITHUB_ENV
+          else
+            echo "DATABASE_URL=${{ secrets.CI_DATABASE_URL }}" >> $GITHUB_ENV
+          fi
+          
+          if [ -z "${{ secrets.CI_GOOGLE_MAPS_API_KEY }}" ]; then
+            echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=CI_PLACEHOLDER_GOOGLE_MAPS_KEY" >> $GITHUB_ENV
+          else
+            echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.CI_GOOGLE_MAPS_API_KEY }}" >> $GITHUB_ENV
+          fi
+
       - name: Build Project
         run: npm run build
-        env:
-          # Use placeholder keys for build to avoid errors if build accesses envs
-          # Real keys are not needed for build unless it statically generates pages with data
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ci-placeholder-clerk-publishable-key-not-real-do-not-use
-          CLERK_SECRET_KEY: ci-placeholder-clerk-secret-key-not-real-do-not-use
-          DATABASE_URL: postgresql://ci_user:ci_password@localhost:5432/ci_database?sslmode=disable
-          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ci-placeholder-google-maps-api-key-not-real-do-not-use
 

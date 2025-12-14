@@ -13,10 +13,29 @@ HaemoLogix uses **GitHub Actions** for continuous integration, security scanning
 
 ## 🔑 Required Secrets
 
-To enable the Vercel Preview workflow, you must add the following **Repository Secrets** in GitHub Settings:
+### For CI Build Workflow
+
+To enable the CI build workflow, you **must** add the following **Repository Secrets** in GitHub Settings:
 
 1. Go to **Settings** → **Secrets and variables** → **Actions**.
-2. Add the following secrets:
+2. Click **New repository secret** and add each secret:
+
+| Secret Name | Required | Description | Where to Find |
+|-------------|----------|-------------|---------------|
+| `CI_CLERK_PUBLISHABLE_KEY` | ✅ **Required** | Clerk Publishable Key (test key is fine for CI) | [Clerk Dashboard](https://dashboard.clerk.com/last-active?path=api-keys) - Use a **test** key (starts with `pk_test_`) |
+| `CI_CLERK_SECRET_KEY` | ✅ **Required** | Clerk Secret Key (test key is fine for CI) | [Clerk Dashboard](https://dashboard.clerk.com/last-active?path=api-keys) - Use a **test** key (starts with `sk_test_`) |
+| `CI_DATABASE_URL` | ⚠️ Optional | PostgreSQL connection string (dummy is fine for build) | Format: `postgresql://user:pass@host:port/db?sslmode=disable` |
+| `CI_GOOGLE_MAPS_API_KEY` | ⚠️ Optional | Google Maps API Key | [Google Cloud Console](https://console.cloud.google.com/) or use placeholder |
+
+**Important Notes**:
+- **Clerk keys are REQUIRED** - Clerk validates key format during build, so you must use real test keys from your Clerk dashboard
+- Test keys are safe for CI - they won't affect production and are designed for development/testing
+- If secrets are not set, the build will fail with a clear error message
+- You can create a free Clerk account and use test keys specifically for CI builds
+
+### For Vercel Preview Workflow
+
+To enable the Vercel Preview workflow, add these additional secrets:
 
 | Secret Name | Description | Where to Find |
 |-------------|-------------|---------------|
