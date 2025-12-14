@@ -6,6 +6,7 @@
     "build": "next build",
     "dev": "next dev --turbopack",
     "lint": "eslint .",
+    "test": "npm run lint && tsc --noEmit",
     "start": "next start",
     "postinstall": "prisma generate",
     "generate:data": "tsx scripts/generateSyntheticData.ts",

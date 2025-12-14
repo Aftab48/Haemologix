@@ -62,8 +62,8 @@ jobs:
         env:
           # Use placeholder keys for build to avoid errors if build accesses envs
           # Real keys are not needed for build unless it statically generates pages with data
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_placeholder
-          CLERK_SECRET_KEY: sk_test_placeholder
-          DATABASE_URL: postgres://placeholder:placeholder@localhost:5432/placeholder
-          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: placeholder
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ci-placeholder-clerk-publishable-key-not-real-do-not-use
+          CLERK_SECRET_KEY: ci-placeholder-clerk-secret-key-not-real-do-not-use
+          DATABASE_URL: postgresql://ci_user:ci_password@localhost:5432/ci_database?sslmode=disable
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ci-placeholder-google-maps-api-key-not-real-do-not-use
 
