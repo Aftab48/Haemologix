@@ -392,12 +392,19 @@ function DonorWebDashboard() {
               <Button
                 variant="outline"
                 size="sm"
+                aria-label="View notifications"
                 className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-              >
-                <Bell className="w-4 h-4 mr-2" />
-                Notifications
-                <Badge className="ml-2 gradient-ruby text-white">2</Badge>
-              </Button>
+>
+                <Bell className="w-4 h-4 mr-2" aria-hidden="true" />
+                <span>Notifications</span>
+                <Badge
+                className="ml-2 gradient-ruby text-white"
+                aria-label="2 unread notifications"
+    >
+                2
+                </Badge>
+             </Button>
+
               <UserButton />
             </div>
           </div>
@@ -569,21 +576,26 @@ function DonorWebDashboard() {
         </Card>
 
         <Tabs defaultValue="alerts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 glass-morphism border border-accent/30">
+          <TabsList
+            className="grid w-full grid-cols-3 glass-morphism border border-accent/30"
+             aria-label="Donor dashboard sections"
+                    >
             <TabsTrigger
               value="alerts"
-              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+             aria-controls="alerts-panel"
+             className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               Active Alerts ({activeAlerts.length})
             </TabsTrigger>
             <TabsTrigger
               value="history"
+              aria-controls="history-panel"
               className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               Donation History
             </TabsTrigger>
             <TabsTrigger
-              value="profile"
+              value="profile"aria-controls="profile-panel"
               className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               Profile Settings
@@ -591,7 +603,10 @@ function DonorWebDashboard() {
           </TabsList>
 
           {/* Active Alerts Tab */}
-          <TabsContent value="alerts" className="space-y-6">
+          <TabsContent value="alerts"id="alerts-panel"
+            role="tabpanel"
+            tabIndex={0}
+            className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-text-dark">
                 Emergency Blood Requests
