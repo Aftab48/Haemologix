@@ -493,3 +493,19 @@ model ModelPrediction {
   @@index([taskType, createdAt])
   @@index([requestId])
 }
+
+enum UserRole {
+  ADMIN
+  HOSPITAL
+  DONOR
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String    @unique
+  password      String
+  role          UserRole  @default(DONOR)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
