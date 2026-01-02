@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { checkRole } from "@/utils/roles"; 
+import { checkRole } from "../../../utils/roles"; 
 
 export default async function AdminDashboard() {
   const isAdmin = await checkRole("admin");

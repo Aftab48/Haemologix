@@ -504,8 +504,22 @@ model User {
   id            String    @id @default(uuid())
   name          String?
   email         String    @unique
-  password      String
+  clerkId String   @unique
+  password      String?
   role          UserRole  @default(DONOR)
+  donations Donation[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model Donation {
+  id        String   @id @default(uuid())
+  amount    Int
+  status    String   @default("PENDING") // Or use an Enum if you have one
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
