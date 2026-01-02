@@ -79,12 +79,6 @@ jobs:
             echo "CLERK_SECRET_KEY=${{ secrets.CI_CLERK_SECRET_KEY }}" >> $GITHUB_ENV
           fi
           
-          if [ -z "${{ secrets.CI_CLERK_SECRET_KEY }}" ]; then
-            echo "CLERK_SECRET_KEY=sk_test_placeholder_for_ci_build_only" >> $GITHUB_ENV
-          else
-            echo "CLERK_SECRET_KEY=${{ secrets.CI_CLERK_SECRET_KEY }}" >> $GITHUB_ENV
-          fi
-          
           if [ -z "${{ secrets.CI_DATABASE_URL }}" ]; then
             echo "DATABASE_URL=postgresql://ci_user:ci_password@localhost:5432/ci_database?sslmode=disable" >> $GITHUB_ENV
           else
