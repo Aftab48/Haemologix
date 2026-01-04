@@ -104,7 +104,8 @@
           </a>
         </div>
       </div>
-      <div class="footer">© 2025 HaemoLogix — Lifesaving Network</div>
+      <div class="footer">© <span id="year"></span> Haemologix Pvt. Ltd. — Lifesaving Network</div>
+      <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
     </div>
   </body>
 </html>
