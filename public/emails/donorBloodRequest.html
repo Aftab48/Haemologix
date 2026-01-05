@@ -168,7 +168,8 @@
         </p>
       </div>
       <div class="footer">
-        © 2025 Haemologix — Intelligent Blood Donation Network<br />
+        © <span id="year"></span> Haemologix Pvt. Ltd. — Intelligent Blood Donation Network<br />
+      <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
         You're receiving this because you're an approved donor with matching
         blood type.
       </div>
