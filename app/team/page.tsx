@@ -198,7 +198,7 @@ export default function TeamPage() {
           </div>
           <div className="border-t border-background/30 mt-8 pt-8 text-center text-background/70 font-dm-sans">
             <p>
-              &copy; 2024 HaemoLogix. All rights reserved. Built for saving
+              &copy; {new Date().getFullYear()} Haemologix Pvt. Ltd. All rights reserved. Built for saving
               lives.
             </p>
           </div>

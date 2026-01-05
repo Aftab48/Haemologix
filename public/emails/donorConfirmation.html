@@ -85,7 +85,8 @@
         </div>
       </div>
       <div class="footer">
-        © 2025 HaemoLogix — Connecting Life, One Drop at a Time
+        © <span id="year"></span> Haemologix Pvt. Ltd. — Connecting Life, One Drop at a Time
+      <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
       </div>
     </div>
   </body>

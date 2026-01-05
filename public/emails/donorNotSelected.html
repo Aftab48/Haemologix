@@ -108,9 +108,10 @@
         </p>
       </div>
       <div class="footer">
-        © 2025 Haemologix — Intelligent Blood Donation Network<br />
+        © <span id="year"></span> Haemologix Pvt. Ltd. — Intelligent Blood Donation Network<br />
         Every response counts. Stay ready, stay caring.
       </div>
+      <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
     </div>
   </body>
 </html>

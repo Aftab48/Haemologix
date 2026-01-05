@@ -375,6 +375,6 @@ If HaemoLogix helps your organization or inspires your project, please:
 
 **[Try HaemoLogix Now](https://haemologix.vercel.app/)** | **[Documentation](docs/)** | **[Contributing](CONTRIBUTING.md)**
 
-Made with ❤️ for humanity | Copyright © 2025 Haemologix Private Limited | [MIT License](LICENSE)
+Made with ❤️ for humanity | Copyright © 2026 Haemologix Pvt. Ltd. | [MIT License](LICENSE)
 
 </div>
