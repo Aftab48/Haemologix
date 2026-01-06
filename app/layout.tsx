@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
+import AccessibilityAnnouncerProvider from "@/app/providers/AccessibilityAnnouncerProvider";
+
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://haemologix.in"),
@@ -82,7 +84,9 @@ export default function RootLayout({
       <html className="scroll-smooth" lang="en">
         <body className="font-dm-sans antialiased">
           <Analytics />
-          {children}
+          <AccessibilityAnnouncerProvider>
+            {children}
+          </AccessibilityAnnouncerProvider>
         </body>
       </html>
     </ClerkProvider>
