@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ArrowUp } from "lucide-react";
 import { Heart, Shield, Activity, Droplet, Droplets } from "lucide-react";
 import Link from "next/link";
 import {
@@ -789,6 +790,16 @@ const HomePage = () => {
               &copy; {new Date().getFullYear()} Haemologix Pvt. Ltd. All rights reserved. Built for saving
               lives.
             </p>
+          </div>
+          {/* Back to Top */}
+          <div className="flex justify-center mt-6">
+              <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="flex items-center gap-1 text-sm text-background/60 hover:text-white transition"
+              >
+                <ArrowUp className="w-4 h-4" />
+                        Back to Top
+              </button>
           </div>
         </div>
       </footer>

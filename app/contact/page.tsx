@@ -7,7 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Heart, Phone, MapPin, Clock, Mail, Send, MessageCircle } from "lucide-react";
+import { 
+  Heart, 
+  Phone, 
+  MapPin, 
+  Clock, 
+  Mail, 
+  Send, 
+  MessageCircle,
+  Layers,
+  Headphones,
+  ShieldCheck,
+  ArrowUp 
+} from "lucide-react";
+
 import Link from "next/link";
 import GradientBackground from "@/components/GradientBackground";
 import Header from "@/components/Header";
@@ -381,10 +394,18 @@ export default function ContactPage() {
               </p>
             </div>
             <div>
-              <h4 className="font-outfit font-semibold mb-4 text-background">Platform</h4>
+              <h4 className="flex items-center gap-2 font-outfit font-semibold mb-4 text-background">
+                <Layers className="w-4 h-4" />
+                Platform
+              </h4>
+
               <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
-                  <Link href="/donor" className="hover:text-white">
+                  <Link
+                    href="/donor"
+                    className="transition-colors duration-200 hover:text-white hover:underline underline-offset-4"
+                  >
+
                     Donor Dashboard
                   </Link>
                 </li>
@@ -401,7 +422,11 @@ export default function ContactPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-outfit font-semibold mb-4 text-background">Support</h4>
+              <h4 className="flex items-center gap-2 font-outfit font-semibold mb-4 text-background">
+                <Headphones className="w-4 h-4" />
+                Support
+              </h4>
+
               <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
                   <Link href="#" className="hover:text-white">
@@ -421,8 +446,12 @@ export default function ContactPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-outfit font-semibold mb-4 text-background">Legal</h4>
-              <ul className="space-y-2 text-background/80 font-dm-sans">
+              <h4 className="flex items-center gap-2 font-outfit font-semibold mb-4 text-background">
+                <ShieldCheck className="w-4 h-4" />
+                Legal
+              </h4>
+
+              <ul className="space-y-3 leading-relaxed text-background/80 font-dm-sans">
                 <li>
                   <Link href="/privacy-policy" className="hover:text-white">
                     Privacy Policy
@@ -447,6 +476,19 @@ export default function ContactPage() {
               lives.
             </p>
           </div>
+          {/* Back to Top */}
+          <div className="flex justify-center mt-6">
+            <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex items-center gap-1 text-sm text-background/60 hover:text-white transition"
+            >
+              <ArrowUp className="w-4 h-4" />
+              Back to Top
+            </button>
+          </div>
+
+
+
         </div>
       </footer>
     </GradientBackground>
