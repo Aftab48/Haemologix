@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
+import ScrollToTop from "@/components/ScrollToTop";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://haemologix.in"),
@@ -83,6 +84,7 @@ export default function RootLayout({
         <body className="font-dm-sans antialiased">
           <Analytics />
           {children}
+          <ScrollToTop />
         </body>
       </html>
     </ClerkProvider>

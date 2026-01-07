@@ -22,6 +22,7 @@ import Link from "next/link";
 import Image from "next/image";
 import GradientBackground from "@/components/GradientBackground";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { usePageView } from "@/hooks/usePageView";
 
 interface PilotFormData {
@@ -36,7 +37,7 @@ interface PilotFormData {
 export default function PilotPage() {
   const { trackEvent } = usePageView("/pilot", true);
   const formRef = useRef<HTMLDivElement>(null);
-  
+
   // Track page view with UTM parameters
   useEffect(() => {
     const trackPageView = async () => {
@@ -152,7 +153,7 @@ export default function PilotPage() {
           message: data.message || "Pilot request submitted successfully!",
         });
         trackEvent("form_submission", { status: "success" });
-        
+
         // Track form submission with UTM parameters
         const urlParams = new URLSearchParams(window.location.search);
         try {
@@ -177,7 +178,7 @@ export default function PilotPage() {
         } catch (error) {
           console.error("Error tracking form submission:", error);
         }
-        
+
         // Reset form
         setFormData({
           hospitalName: "",
@@ -538,35 +539,34 @@ export default function PilotPage() {
                   <Label className="text-text-dark font-semibold">
                     Has Blood Bank? *
                   </Label>
-                    <RadioGroup
-                      value={formData.hasBloodBank}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, hasBloodBank: value })
-                      }
-                      className="flex gap-6 mt-3"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="yes" id="yes" />
-                        <Label htmlFor="yes" className="font-normal cursor-pointer">
-                          Yes
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="no" id="no" />
-                        <Label htmlFor="no" className="font-normal cursor-pointer">
-                          No
-                        </Label>
-                      </div>
-                    </RadioGroup>
+                  <RadioGroup
+                    value={formData.hasBloodBank}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, hasBloodBank: value })
+                    }
+                    className="flex gap-6 mt-3"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="yes" id="yes" />
+                      <Label htmlFor="yes" className="font-normal cursor-pointer">
+                        Yes
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="no" id="no" />
+                      <Label htmlFor="no" className="font-normal cursor-pointer">
+                        No
+                      </Label>
+                    </div>
+                  </RadioGroup>
                 </div>
 
                 {submitStatus.type && (
                   <div
-                    className={`p-4 rounded-lg ${
-                      submitStatus.type === "success"
-                        ? "bg-green-50 text-green-800 border border-green-200"
-                        : "bg-red-50 text-red-800 border border-red-200"
-                    }`}
+                    className={`p-4 rounded-lg ${submitStatus.type === "success"
+                      ? "bg-green-50 text-green-800 border border-green-200"
+                      : "bg-red-50 text-red-800 border border-red-200"
+                      }`}
                   >
                     {submitStatus.message}
                   </div>
@@ -607,9 +607,8 @@ export default function PilotPage() {
                       {faq.question}
                     </CardTitle>
                     <ChevronDown
-                      className={`w-5 h-5 text-text-dark transition-transform ${
-                        openFaq === index ? "rotate-180" : ""
-                      }`}
+                      className={`w-5 h-5 text-text-dark transition-transform ${openFaq === index ? "rotate-180" : ""
+                        }`}
                     />
                   </div>
                 </CardHeader>
@@ -669,6 +668,7 @@ export default function PilotPage() {
           </Card>
         </div>
       </section>
+      <Footer />
     </GradientBackground>
   );
 }
