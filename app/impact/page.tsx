@@ -44,7 +44,6 @@ import {
 } from "@/components/ui/select";
 import GradientBackground from "@/components/GradientBackground";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
 export default function ImpactAndProspects() {
   const [activeTab, setActiveTab] = useState("current-impact");
@@ -673,12 +672,13 @@ export default function ImpactAndProspects() {
                     <div key={index} className="flex gap-6">
                       <div className="flex flex-col items-center">
                         <div
-                          className={`w-4 h-4 rounded-full ${phase.status === "completed"
-                            ? "bg-green-500"
-                            : phase.status === "in-progress"
+                          className={`w-4 h-4 rounded-full ${
+                            phase.status === "completed"
+                              ? "bg-green-500"
+                              : phase.status === "in-progress"
                               ? "bg-blue-500"
                               : "bg-gray-300"
-                            }`}
+                          }`}
                         />
                         {index < technologyRoadmap.length - 1 && (
                           <div className="w-0.5 h-16 bg-gray-200 mt-2" />
@@ -694,8 +694,8 @@ export default function ImpactAndProspects() {
                               phase.status === "completed"
                                 ? "bg-green-100 text-green-800"
                                 : phase.status === "in-progress"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-gray-100 text-gray-800"
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-gray-100 text-gray-800"
                             }
                           >
                             {phase.status.replace("-", " ")}
@@ -711,10 +711,11 @@ export default function ImpactAndProspects() {
                               className="flex items-center gap-2"
                             >
                               <CheckCircle
-                                className={`w-4 h-4 ${phase.status === "completed"
-                                  ? "text-green-500"
-                                  : "text-gray-400"
-                                  }`}
+                                className={`w-4 h-4 ${
+                                  phase.status === "completed"
+                                    ? "text-green-500"
+                                    : "text-gray-400"
+                                }`}
                               />
                               <span className="text-sm text-text-dark">{feature}</span>
                             </div>
@@ -848,8 +849,8 @@ export default function ImpactAndProspects() {
                               item.priority === "Critical"
                                 ? "bg-red-100 text-red-800"
                                 : item.priority === "High"
-                                  ? "bg-orange-100 text-orange-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                ? "bg-orange-100 text-orange-800"
+                                : "bg-yellow-100 text-yellow-800"
                             }
                           >
                             {item.priority} Priority
@@ -966,7 +967,6 @@ export default function ImpactAndProspects() {
           </CardContent>
         </Card>
       </div>
-      <Footer />
     </GradientBackground>
   );
 }

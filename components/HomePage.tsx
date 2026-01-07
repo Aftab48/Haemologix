@@ -21,7 +21,6 @@ import { getCurrentUser } from "@/lib/actions/user.actions";
 import Image from "next/image";
 import { gsap, slideInUp, fadeIn, staggerIn, scrollReveal } from "@/lib/gsap-utils";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
 const HomePage = () => {
   const [activeFeature, setActiveFeature] = useState(0);
@@ -41,7 +40,7 @@ const HomePage = () => {
       router.push(path);
       return;
     }
-
+    
     if (!isSignedIn) {
       router.push("/auth/sign-up");
     } else {
@@ -96,7 +95,7 @@ const HomePage = () => {
         const statCards = statsRef.current.querySelectorAll('.stat-card');
         // Set initial visible state first
         gsap.set(statCards, { opacity: 1, scale: 1 });
-
+        
         // Then animate from the initial state
         gsap.from(statCards, {
           scale: 0.8,
@@ -145,7 +144,7 @@ const HomePage = () => {
       `
     }}>
       {/* Noise Overlay */}
-      <div
+      <div 
         className="fixed inset-0 opacity-60 mix-blend-overlay pointer-events-none"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
@@ -347,10 +346,11 @@ const HomePage = () => {
               {features.map((feature, index) => (
                 <Card
                   key={index}
-                  className={`cursor-pointer transition-all duration-300 h-full glass-morphism border shadow-lg hover:shadow-accent/50 hover:shadow-2xl hover:border-accent/60 card-hover ${activeFeature === index
-                    ? "border-primary shadow-lg bg-white/40 scale-105"
-                    : "border-mist-green/40"
-                    }`}
+                  className={`cursor-pointer transition-all duration-300 h-full glass-morphism border shadow-lg hover:shadow-accent/50 hover:shadow-2xl hover:border-accent/60 card-hover ${
+                    activeFeature === index
+                      ? "border-primary shadow-lg bg-white/40 scale-105"
+                      : "border-mist-green/40"
+                  }`}
                   onClick={() => setActiveFeature(index)}
                 >
                   <CardContent className="p-4 h-full flex flex-col">
@@ -524,9 +524,11 @@ const HomePage = () => {
                     key={index}
                     className="flipster-item absolute w-64 h-72 transition-all duration-1000 ease-in-out"
                     style={{
-                      transform: `translateX(${offset * 300}px) rotateY(${offset * 35
-                        }deg) translateZ(${isCenter ? "80px" : Math.abs(offset) * -60 + "px"
-                        })`,
+                      transform: `translateX(${offset * 300}px) rotateY(${
+                        offset * 35
+                      }deg) translateZ(${
+                        isCenter ? "80px" : Math.abs(offset) * -60 + "px"
+                      })`,
                       zIndex: isCenter ? 10 : 10 - Math.abs(offset),
                       opacity: Math.abs(offset) > 2 ? 0 : 1,
                       animation: `flipster-flow 28s linear infinite`,
@@ -534,10 +536,11 @@ const HomePage = () => {
                     }}
                   >
                     <div
-                      className={`w-full h-full border-2 rounded-2xl shadow-2xl transition-all duration-500 overflow-hidden group glass-morphism ${isCenter
-                        ? "shadow-primary/60 border-primary scale-110 animate-glow"
-                        : "border-mist-green hover:shadow-accent/40 hover:border-accent"
-                        }`}
+                      className={`w-full h-full border-2 rounded-2xl shadow-2xl transition-all duration-500 overflow-hidden group glass-morphism ${
+                        isCenter
+                          ? "shadow-primary/60 border-primary scale-110 animate-glow"
+                          : "border-mist-green hover:shadow-accent/40 hover:border-accent"
+                      }`}
                     >
                       <div className="relative h-44 overflow-hidden rounded-t-2xl">
                         <img
@@ -549,23 +552,25 @@ const HomePage = () => {
                       </div>
                       <div className="p-4 text-center bg-white/80 backdrop-blur-sm">
                         <h3
-                          className={`text-base font-outfit font-semibold mb-2 transition-colors duration-300 ${isCenter
-                            ? "text-primary"
-                            : "text-text-dark group-hover:text-secondary"
-                            }`}
+                          className={`text-base font-outfit font-semibold mb-2 transition-colors duration-300 ${
+                            isCenter
+                              ? "text-primary"
+                              : "text-text-dark group-hover:text-secondary"
+                          }`}
                         >
                           {item.title}
                         </h3>
                         <div className="flex justify-center">
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-dm-sans font-medium ${item.type === "hospital"
-                              ? "bg-secondary/20 text-secondary"
-                              : item.type === "donors"
+                            className={`px-2 py-1 rounded-full text-xs font-dm-sans font-medium ${
+                              item.type === "hospital"
+                                ? "bg-secondary/20 text-secondary"
+                                : item.type === "donors"
                                 ? "bg-accent/30 text-text-dark"
                                 : item.type === "event"
-                                  ? "bg-primary/20 text-primary"
-                                  : "bg-mist-green/40 text-text-dark"
-                              }`}
+                                ? "bg-primary/20 text-primary"
+                                : "bg-mist-green/40 text-text-dark"
+                            }`}
                           >
                             {item.type.charAt(0).toUpperCase() +
                               item.type.slice(1)}
@@ -702,8 +707,91 @@ const HomePage = () => {
       </section>
 
       {/* Footer */}
-      {/* Footer */}
-      <Footer />
+      <footer
+        className="text-text-dark py-12 my-0 px-4 mx-0 bg-text-dark/95 backdrop-blur-md relative z-10"
+      >
+        <div className="container mx-auto">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Heart className="w-6 h-6 text-primary" />
+                <span className="text-xl font-outfit font-bold text-background">
+                  Haemologix
+                </span>
+              </div>
+              <p className="text-background/80 font-dm-sans">
+                Connecting lives through technology and compassion.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-outfit font-semibold mb-4 text-background">Platform</h4>
+              <ul className="space-y-2 text-background/80 font-dm-sans">
+                <li>
+                  <Link href="/donor" className="hover:text-accent transition-colors">
+                    Donor Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/hospital" className="hover:text-accent transition-colors">
+                    Hospital Portal
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/admin" className="hover:text-accent transition-colors">
+                    Admin Panel
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-outfit font-semibold mb-4 text-background">Support</h4>
+              <ul className="space-y-2 text-background/80 font-dm-sans">
+                <li>
+                  <Link href="#" className="hover:text-accent transition-colors">
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-accent transition-colors">
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-accent transition-colors">
+                    Emergency
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-outfit font-semibold mb-4 text-background">Legal</h4>
+              <ul className="space-y-2 text-background/80 font-dm-sans">
+                <li>
+                  <Link href="/privacy-policy" className="hover:text-accent transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms-and-conditions" className="hover:text-accent transition-colors">
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-accent transition-colors">
+                    HIPAA Compliance
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-background/30 mt-8 pt-8 text-center text-background/70 font-dm-sans">
+            <p>
+              &copy; {new Date().getFullYear()} Haemologix Pvt. Ltd. All rights reserved. Built for saving
+              lives.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

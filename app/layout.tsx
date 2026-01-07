@@ -3,7 +3,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
+<<<<<<< HEAD
+=======
 import ScrollToTop from "@/components/ScrollToTop";
+>>>>>>> bfc40e2 (Scroll To Top Button Added)
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://haemologix.in"),
@@ -84,7 +87,10 @@ export default function RootLayout({
         <body className="font-dm-sans antialiased">
           <Analytics />
           {children}
+<<<<<<< HEAD
+=======
           <ScrollToTop />
+>>>>>>> bfc40e2 (Scroll To Top Button Added)
         </body>
       </html>
     </ClerkProvider>
