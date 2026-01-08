@@ -1,0 +1,77 @@
+name: Mark Stale Issues and PRs
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Mark Stale Issues and PRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark Stale Issues and PRs
+        uses: actions/stale@v9
+        with:
+          # Issues configuration
+          stale-issue-message: |
+            👋 This issue has been automatically marked as stale because it has not had recent activity.
+
+            It will be closed if no further activity occurs within **7 days**. Thank you for your contributions to HaemoLogix! 🩸
+
+            If this issue is still relevant, please:
+            - Add a comment to keep it active
+            - Update it with any new information
+            - Close it if it's been resolved
+
+            ---
+            *This is an automated message. If you believe this was done in error, please comment.*
+          close-issue-message: |
+            🔒 This issue has been automatically closed due to inactivity.
+
+            If you believe this issue is still relevant, please feel free to reopen it or create a new issue with updated information.
+
+            Thank you for your interest in HaemoLogix! 🩸
+          stale-issue-label: 'stale'
+          days-before-issue-stale: 60
+          days-before-issue-close: 7
+          
+          # PR configuration
+          stale-pr-message: |
+            👋 This pull request has been automatically marked as stale because it has not had recent activity.
+
+            It will be closed if no further activity occurs within **7 days**. Thank you for your contributions to HaemoLogix! 🩸
+
+            If this PR is still relevant, please:
+            - Add a comment to keep it active
+            - Push new commits or address review feedback
+            - Close it if it's no longer needed
+
+            ---
+            *This is an automated message. If you believe this was done in error, please comment.*
+          close-pr-message: |
+            🔒 This pull request has been automatically closed due to inactivity.
+
+            If you'd like to continue working on this, please feel free to reopen it or create a new PR.
+
+            Thank you for your interest in contributing to HaemoLogix! 🩸
+          stale-pr-label: 'stale'
+          days-before-pr-stale: 30
+          days-before-pr-close: 7
+          
+          # Exemptions
+          exempt-issue-labels: 'pinned,security,good first issue,help wanted'
+          exempt-pr-labels: 'pinned,security,work in progress'
+          exempt-all-issue-milestones: false
+          exempt-all-pr-milestones: false
+          
+          # Operations
+          operations-per-run: 30
+          ascending: true
+          remove-stale-when-updated: true
+          delete-branch: false
