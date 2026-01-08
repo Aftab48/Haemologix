@@ -19,12 +19,22 @@ type Props = {
 
 export function UserModal({ userId, userType, onClose }: Props) {
   const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      const data = await fetchUserDataById(userId, userType);
-      setUserData(data);
-    })();
+    const fetchUser = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchUserDataById(userId, userType);
+        setUserData(data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
   }, [userId, userType]);
 
   return (
@@ -36,66 +46,67 @@ export function UserModal({ userId, userType, onClose }: Props) {
           </DialogTitle>
         </DialogHeader>
 
-        {userData ? (
-          userType === "donor" ? (
-            <>
-              <p className="text-text-dark">
-                <strong>Name:</strong>{" "}
-                {`${userData.firstName} ${userData.lastName}`}
-              </p>
-              <p className="text-text-dark">
-                <strong>Email:</strong> {userData.email}
-              </p>
-              <p className="text-text-dark">
-                <strong>Blood Group:</strong> {userData.bloodGroup}
-              </p>
-              <p className="text-text-dark">
-                <strong>Contact:</strong> {userData.phone}
-              </p>
-              <p className="text-text-dark">
-                <strong>Last Donation:</strong>{" "}
-                {formatLastActivity(userData.lastDonation) || "N/A"}
-              </p>
-              <Link
-                href={`/admin/users/${userType}/${userData.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline mt-4 block text-center"
-              >
-                View Full Profile
-              </Link>
-            </>
-          ) : (
-            <>
-              <p className="text-text-dark">
-                <strong>Hospital Name:</strong> {userData.hospitalName}
-              </p>
-              <p className="text-text-dark">
-                <strong>Email:</strong> {userData.contactEmail}
-              </p>
-              <p className="text-text-dark">
-                <strong>Address:</strong>{" "}
-                {`${userData.hospitalAddress}, ${userData.city}, ${userData.state} - ${userData.pincode}`}
-              </p>
+        {/* Loading State */}
+        {loading && (
+          <p className="text-text-dark animate-pulse">
+            Loading user details...
+          </p>
+        )}
 
-              <p className="text-text-dark">
-                <strong>License:</strong> {userData.bloodBankLicense}
-              </p>
-              <p className="text-text-dark">
-                <strong>Active Alerts:</strong> {userData.alerts?.length || 0}
-              </p>
-              <Link
-                href={`/admin/users/${userType}/${userData.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline mt-4 block text-center"
-              >
-                View Full Profile
-              </Link>
-            </>
-          )
-        ) : (
-          <p className="text-text-dark">Loading...</p>
+        {/* Data Loaded */}
+        {!loading && userData && (
+          <>
+            {userType === "donor" ? (
+              <>
+                <p className="text-text-dark">
+                  <strong>Name:</strong>{" "}
+                  {`${userData.firstName} ${userData.lastName}`}
+                </p>
+                <p className="text-text-dark">
+                  <strong>Email:</strong> {userData.email}
+                </p>
+                <p className="text-text-dark">
+                  <strong>Blood Group:</strong> {userData.bloodGroup}
+                </p>
+                <p className="text-text-dark">
+                  <strong>Contact:</strong> {userData.phone}
+                </p>
+                <p className="text-text-dark">
+                  <strong>Last Donation:</strong>{" "}
+                  {formatLastActivity(userData.lastDonation) || "N/A"}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-text-dark">
+                  <strong>Hospital Name:</strong> {userData.hospitalName}
+                </p>
+                <p className="text-text-dark">
+                  <strong>Email:</strong> {userData.contactEmail}
+                </p>
+                <p className="text-text-dark">
+                  <strong>Address:</strong>{" "}
+                  {`${userData.hospitalAddress}, ${userData.city}, ${userData.state} - ${userData.pincode}`}
+                </p>
+                <p className="text-text-dark">
+                  <strong>License:</strong> {userData.bloodBankLicense}
+                </p>
+                <p className="text-text-dark">
+                  <strong>Active Alerts:</strong>{" "}
+                  {userData.alerts?.length || 0}
+                </p>
+              </>
+            )}
+
+            <Link
+              href={`/admin/users/${userType}/${userData.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline mt-4 block text-center"
+            >
+              View Full Profile
+            </Link>
+          </>
         )}
       </DialogContent>
     </Dialog>
