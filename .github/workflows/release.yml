@@ -131,11 +131,12 @@ jobs:
           NOTES+="**Documentation:** [docs/](https://github.com/${{ github.repository }}/tree/main/docs)\n\n"
           NOTES+="Thank you to all contributors! 🙏\n"
           
-          # Save to file and output
+          # Save to file
           echo "$NOTES" > release_notes.md
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          echo "$NOTES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          
+          # Output for GitHub Actions (escape newlines)
+          NOTES_ESCAPED=$(echo "$NOTES" | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/"/\\"/g')
+          echo "notes=$NOTES_ESCAPED" >> $GITHUB_OUTPUT
           
           echo "Release notes generated:"
           echo "$NOTES"
@@ -197,16 +198,35 @@ jobs:
           git commit -m "chore: update CHANGELOG and version for ${{ steps.version.outputs.tag }}" || exit 0
           git push || exit 0
 
+      - name: Read release notes
+        id: read_notes
+        run: |
+          NOTES=$(cat release_notes.md)
+          # Escape for JSON
+          NOTES_JSON=$(echo "$NOTES" | jq -Rs .)
+          echo "notes_json=$NOTES_JSON" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/github-script@v7
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          release_name: "HaemoLogix ${{ steps.version.outputs.version }}"
-          body: ${{ steps.release_notes.outputs.notes }}
-          draft: false
-          prerelease: ${{ contains(steps.version.outputs.version, '-') }}
+          script: |
+            const fs = require('fs');
+            const version = '${{ steps.version.outputs.version }}';
+            const tag = '${{ steps.version.outputs.tag }}';
+            const notes = fs.readFileSync('release_notes.md', 'utf8');
+            const isPrerelease = version.includes('-') || version.includes('alpha') || version.includes('beta') || version.includes('rc');
+            
+            const release = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tag,
+              name: `HaemoLogix ${version}`,
+              body: notes,
+              draft: false,
+              prerelease: isPrerelease,
+            });
+            
+            console.log(`✅ Created release: ${release.data.html_url}`);
 
       - name: Create release summary
         run: |
