@@ -7,8 +7,7 @@ interface AnnouncerContextValue {
   announce: (message: string, mode?: AnnounceMode) => void;
 }
 
-export const AnnouncerContext =
-  createContext<AnnouncerContextValue | null>(null);
+export const AnnouncerContext = createContext<AnnouncerContextValue | null>(null);
 
 export function useAnnouncer() {
   const context = useContext(AnnouncerContext);

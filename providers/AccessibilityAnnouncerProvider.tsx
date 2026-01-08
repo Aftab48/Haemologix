@@ -2,8 +2,8 @@
 
 import { useState, useCallback } from "react";
 import type { ReactNode } from "react";
-import { AnnouncerContext } from "@/lib/accessibility/announcer";
-import type { AnnounceMode } from "@/lib/accessibility/types";
+import { AnnouncerContext } from "@/utils/accessibility/announcer";
+import type { AnnounceMode } from "@/utils/accessibility/types";
 
 interface Props {
   children: ReactNode;
