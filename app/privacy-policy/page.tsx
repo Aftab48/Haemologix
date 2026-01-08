@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import GradientBackground from "@/components/GradientBackground";
 import Header from "@/components/Header";
+import { ArrowUp } from "lucide-react";
 import { Heart } from "lucide-react";
 
 export default function PrivacyPolicyPage() {
@@ -478,6 +479,17 @@ export default function PrivacyPolicyPage() {
               lives.
             </p>
           </div>
+          {/* Back to Top */}
+                    <div className="flex justify-center mt-6">
+                      <button
+                      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                      className="flex items-center gap-1 text-sm text-background/60 hover:text-white transition"
+                      >
+                        <ArrowUp className="w-4 h-4" />
+                            Back to Top
+                      </button>
+                    </div>
+          
         </div>
       </footer>
     </GradientBackground>
