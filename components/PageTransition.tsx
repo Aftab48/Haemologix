@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import { gsap } from 'gsap';
 
 interface PageTransitionProps {
@@ -9,16 +10,23 @@ interface PageTransitionProps {
 
 export default function PageTransition({ children }: PageTransitionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Simulate brief loading stage
   useEffect(() => {
-    if (containerRef.current) {
-      // Fade in animation on page load
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300); // small delay for perceived smoothness
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // GSAP animation after loading
+  useEffect(() => {
+    if (!isLoading && containerRef.current) {
       gsap.fromTo(
         containerRef.current,
-        {
-          opacity: 0,
-          y: 20,
-        },
+        { opacity: 0, y: 20 },
         {
           opacity: 1,
           y: 0,
@@ -27,7 +35,12 @@ export default function PageTransition({ children }: PageTransitionProps) {
         }
       );
     }
-  }, []);
+  }, [isLoading]);
+
+  // 🔑 GLOBAL PAGE LOADING STAGE
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <div ref={containerRef} className="min-h-screen">
@@ -35,4 +48,3 @@ export default function PageTransition({ children }: PageTransitionProps) {
     </div>
   );
 }
-
