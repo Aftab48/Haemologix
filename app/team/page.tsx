@@ -6,6 +6,7 @@ import Link from "next/link";
 import GradientBackground from "@/components/GradientBackground";
 import Header from "@/components/Header";
 import { ArrowUp } from "lucide-react";
+import ScrollReveal from "@/components/ScrollReveal";
 
 import { Users, Heart, Target, Zap } from "lucide-react";
 
@@ -18,63 +19,73 @@ export default function TeamPage() {
       {/* Hero Section */}
       <section className="py-20 px-4 bg-white/5 backdrop-blur-[2px]">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-text-dark">
-              Our Team
-            </h1>
-            <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
-              Meet the passionate individuals working to revolutionize blood donation coordination through technology and innovation.
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-16">
+              <h1 className="text-5xl md:text-6xl font-bold mb-6 text-text-dark">
+                Our Team
+              </h1>
+              <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
+                Meet the passionate individuals working to revolutionize blood donation coordination through technology and innovation.
+              </p>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* Company Overview Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4 text-text-dark">About HaemoLogix</h2>
-            <p className="text-lg text-text-dark/80 max-w-3xl mx-auto">
-              We are a dedicated team committed to saving lives through intelligent automation and seamless coordination.
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4 text-text-dark">About HaemoLogix</h2>
+              <p className="text-lg text-text-dark/80 max-w-3xl mx-auto">
+                We are a dedicated team committed to saving lives through intelligent automation and seamless coordination.
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <Card className="glass-morphism">
-              <CardHeader className="text-center">
-                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Target className="w-8 h-8 text-primary" />
-                </div>
-                <CardTitle>Our Mission</CardTitle>
-                <CardDescription>
-                  To eliminate blood shortage crises by connecting donors with hospitals through AI-powered coordination and real-time matching.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <ScrollReveal delay={0.1} direction="left">
+              <Card className="glass-morphism h-full">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Target className="w-8 h-8 text-primary" />
+                  </div>
+                  <CardTitle>Our Mission</CardTitle>
+                  <CardDescription>
+                    To eliminate blood shortage crises by connecting donors with hospitals through AI-powered coordination and real-time matching.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </ScrollReveal>
 
-            <Card className="glass-morphism">
-              <CardHeader className="text-center">
-                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Heart className="w-8 h-8 text-primary" />
-                </div>
-                <CardTitle>Our Values</CardTitle>
-                <CardDescription>
-                  Compassion, innovation, and reliability drive everything we do. Every feature is designed with lives in mind.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <ScrollReveal delay={0.2} direction="up">
+              <Card className="glass-morphism h-full">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Heart className="w-8 h-8 text-primary" />
+                  </div>
+                  <CardTitle>Our Values</CardTitle>
+                  <CardDescription>
+                    Compassion, innovation, and reliability drive everything we do. Every feature is designed with lives in mind.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </ScrollReveal>
 
-            <Card className="glass-morphism">
-              <CardHeader className="text-center">
-                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Zap className="w-8 h-8 text-primary" />
-                </div>
-                <CardTitle>Our Story</CardTitle>
-                <CardDescription>
-                  Born from the urgent need to solve blood shortage challenges, HaemoLogix combines cutting-edge AI with human-centered design.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <ScrollReveal delay={0.3} direction="right">
+              <Card className="glass-morphism h-full">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Zap className="w-8 h-8 text-primary" />
+                  </div>
+                  <CardTitle>Our Story</CardTitle>
+                  <CardDescription>
+                    Born from the urgent need to solve blood shortage challenges, HaemoLogix combines cutting-edge AI with human-centered design.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -82,43 +93,49 @@ export default function TeamPage() {
       {/* Team Members Section */}
       <section className="py-16 px-4 bg-white/5 backdrop-blur-[2px]">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4 text-text-dark">Meet Our Team</h2>
-            <p className="text-lg text-text-dark/80 max-w-2xl mx-auto">
-              The talented individuals behind HaemoLogix
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4 text-text-dark">Meet Our Team</h2>
+              <p className="text-lg text-text-dark/80 max-w-2xl mx-auto">
+                The talented individuals behind HaemoLogix
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Placeholder Team Member Cards */}
-            {[1, 2, 3, 4, 5, 6].map((member) => (
-              <Card key={member} className="glass-morphism">
-                <CardHeader className="text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-12 h-12 text-primary" />
-                  </div>
-                  <CardTitle>Team Member {member}</CardTitle>
-                  <CardDescription className="text-primary font-medium">Role Title</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-center">
-                    Brief bio and description of their contribution to HaemoLogix will appear here.
-                  </p>
-                </CardContent>
-              </Card>
+            {[1, 2, 3, 4, 5, 6].map((member, index) => (
+              <ScrollReveal key={member} delay={index * 0.1}>
+                <Card className="glass-morphism h-full">
+                  <CardHeader className="text-center">
+                    <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-12 h-12 text-primary" />
+                    </div>
+                    <CardTitle>Team Member {member}</CardTitle>
+                    <CardDescription className="text-primary font-medium">Role Title</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-center">
+                      Brief bio and description of their contribution to HaemoLogix will appear here.
+                    </p>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
             ))}
           </div>
 
-          <div className="text-center mt-12">
-            <p className="text-text-dark/80 mb-6">
-              Want to join our mission? We're always looking for passionate individuals.
-            </p>
-            <Link href="/contact">
-              <Button className="gradient-ruby hover:opacity-90 text-white font-outfit font-semibold py-6 px-8 rounded-xl text-lg shadow-lg hover:shadow-primary/50 transition-all duration-300">
-                Get in Touch
-              </Button>
-            </Link>
-          </div>
+          <ScrollReveal delay={0.4}>
+            <div className="text-center mt-12">
+              <p className="text-text-dark/80 mb-6">
+                Want to join our mission? We're always looking for passionate individuals.
+              </p>
+              <Link href="/contact">
+                <Button className="gradient-ruby hover:opacity-90 text-white font-outfit font-semibold py-6 px-8 rounded-xl text-lg shadow-lg hover:shadow-primary/50 transition-all duration-300">
+                  Get in Touch
+                </Button>
+              </Link>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -219,4 +236,3 @@ export default function TeamPage() {
     </GradientBackground>
   );
 }
-
