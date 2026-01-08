@@ -5,12 +5,16 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
 const authToken = process.env.TWILIO_AUTH_TOKEN as string;
 const twilioPhone = process.env.TWILIO_PHONE_NUMBER as string;
 
-if (!accountSid || !authToken || !twilioPhone) {
-  throw new Error("❌ Missing Twilio environment variables!");
+const isTwilioConfigured = !!(accountSid && authToken && twilioPhone);
+
+if (!isTwilioConfigured) {
+  console.warn("⚠️  Missing Twilio environment variables! SMS functionality will be disabled.");
 }
 
-// Create Twilio client
-export const twilioClient = twilio(accountSid, authToken);
+// Create Twilio client (conditional)
+export const twilioClient = isTwilioConfigured
+  ? twilio(accountSid, authToken)
+  : (null as any);
 
 function normalizePhoneNumber(phone: string): string {
   // Remove spaces, dashes, etc.
@@ -34,6 +38,11 @@ function normalizePhoneNumber(phone: string): string {
 
 // Helper wrapper for sending SMS
 export async function sendSMS(to: string, body: string) {
+  if (!isTwilioConfigured) {
+    console.warn(`[Mock SMS] To: ${to}, Body: ${body}`);
+    return { success: true, sid: "mock-sid-env-missing" };
+  }
+
   try {
     const formatted = normalizePhoneNumber(to);
     const message = await twilioClient.messages.create({
