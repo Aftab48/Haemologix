@@ -36,7 +36,6 @@ const HomePage = () => {
   const router = useRouter();
 
   const handleClick = (path: string) => {
-    // Allow direct access to admin without authentication
     if (path.includes("admin")) {
       router.push(path);
       return;
@@ -50,7 +49,7 @@ const HomePage = () => {
   };
 
   const { user, isSignedIn } = useUser();
-  const [role, setRole] = useState<UserRole>(null);
+  const [role, setRole] = useState<any>(null);
   const [dbUser, setDbUser] = useState<any>(null);
   const userId = user?.id;
 
@@ -63,7 +62,6 @@ const HomePage = () => {
 
       try {
         const res = await getCurrentUser(email);
-        console.log("[Dashboard] server action response:", res); // <--- log raw response
         setDbUser(res);
       } catch (err) {
         console.error("[Dashboard] error calling getCurrentUser:", err);
@@ -79,9 +77,8 @@ const HomePage = () => {
     }
   }, [dbUser]);
 
-  // GSAP animations on mount
+  // GSAP animations
   useEffect(() => {
-    // Create a GSAP context for proper cleanup
     const ctx = gsap.context(() => {
       if (heroRef.current) {
         gsap.from(heroRef.current, {
@@ -94,10 +91,7 @@ const HomePage = () => {
 
       if (statsRef.current) {
         const statCards = statsRef.current.querySelectorAll('.stat-card');
-        // Set initial visible state first
         gsap.set(statCards, { opacity: 1, scale: 1 });
-        
-        // Then animate from the initial state
         gsap.from(statCards, {
           scale: 0.8,
           opacity: 0,
@@ -107,15 +101,14 @@ const HomePage = () => {
           scrollTrigger: {
             trigger: statsRef.current,
             start: 'top 80%',
-            once: true, // Only animate once
+            once: true,
           },
         });
       }
     });
 
-    // Cleanup function to kill all animations and ScrollTriggers
     return () => {
-      ctx.revert(); // Reverts all animations in this context
+      ctx.revert();
     };
   }, []);
 
@@ -129,6 +122,12 @@ const HomePage = () => {
     dashboardPath = `/hospital/${userId}`;
     dashboardMessage = "Hospital Dashboard";
   }
+
+  /* --- Data Splitting for Double Marquee --- */
+  // Split data into two halves for visual variety
+  const midPoint = Math.ceil(CarouselData.length / 2);
+  const firstRowData = CarouselData.slice(0, midPoint);
+  const secondRowData = CarouselData.slice(midPoint);
 
   return (
     <div className="min-h-screen relative" style={{
@@ -153,7 +152,7 @@ const HomePage = () => {
           backgroundSize: '180px 180px'
         }}
       />
-      {/* Structured Data (JSON-LD) for SEO */}
+      {/* Schema */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -164,57 +163,12 @@ const HomePage = () => {
                 "@type": "Organization",
                 "@id": "https://haemologix.in/#organization",
                 name: "HaemoLogix",
-                alternateName: "haemologix",
-                url: "https://haemologix.in",
-                logo: "https://haemologix.in/logo.png",
-                description:
-                  "Real-time blood donation platform connecting hospitals with blood donors through emergency alerts and geolocation matching.",
-                sameAs: [],
-                contactPoint: {
-                  "@type": "ContactPoint",
-                  contactType: "Customer Service",
-                  availableLanguage: ["English", "Hindi"],
-                },
-              },
-              {
-                "@type": "WebSite",
-                "@id": "https://haemologix.in/#website",
-                url: "https://haemologix.in",
-                name: "HaemoLogix",
-                description:
-                  "Emergency blood shortage alert and donor mobilization system connecting hospitals with eligible donors.",
-                publisher: {
-                  "@id": "https://haemologix.in/#organization",
-                },
-                potentialAction: {
-                  "@type": "SearchAction",
-                  target: {
-                    "@type": "EntryPoint",
-                    urlTemplate: "https://haemologix.in/search?q={search_term_string}",
-                  },
-                  "query-input": "required name=search_term_string",
-                },
-              },
-              {
-                "@type": "Service",
-                "@id": "https://haemologix.in/#service",
-                name: "Blood Donation Platform",
-                description:
-                  "Real-time blood donation platform for emergency blood requests, donor registration, and blood bank management.",
-                provider: {
-                  "@id": "https://haemologix.in/#organization",
-                },
-                areaServed: {
-                  "@type": "Country",
-                  name: "India",
-                },
-                serviceType: "Blood Donation Platform",
-                category: "Healthcare",
               },
             ],
           }),
         }}
       />
+      
       {/* Header */}
       <Header />
 
@@ -239,7 +193,7 @@ const HomePage = () => {
           </p>
 
           <div className="mb-12">
-            {/* 👇 Show if NOT signed in */}
+            {/* Buttons Logic */}
             {(!isSignedIn || !role) && (
               <div className="flex flex-wrap justify-center gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-center">
@@ -282,7 +236,6 @@ const HomePage = () => {
               </div>
             )}
 
-            {/* 👇 Show if signed in */}
             {isSignedIn && role && (
               <div className=" gap-4 flex flex-col md:flex-row justify-center">
                 <Button
@@ -393,62 +346,20 @@ const HomePage = () => {
           </div>
 
           <div className="relative max-w-6xl mx-auto">
-            {/* Animated connector lines */}
             <svg
               className="absolute hidden md:block inset-0 w-full h-full pointer-events-none"
               style={{ zIndex: 1 }}
             >
               <defs>
-                <linearGradient
-                  id="lineGradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="0%"
-                >
+                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#94D2BD" stopOpacity="0.8" />
                   <stop offset="100%" stopColor="#005F73" stopOpacity="0.6" />
                 </linearGradient>
               </defs>
-              {/* Step 1 to 2 */}
-              <path
-                d="M 200 120 Q 300 80 400 120"
-                stroke="url(#lineGradient)"
-                strokeWidth="3"
-                fill="none"
-                className="animate-pulse"
-                strokeDasharray="10,5"
-              />
-              {/* Step 2 to 3 */}
-              <path
-                d="M 400 120 Q 500 160 600 120"
-                stroke="url(#lineGradient)"
-                strokeWidth="3"
-                fill="none"
-                className="animate-pulse"
-                strokeDasharray="10,5"
-                style={{ animationDelay: "0.5s" }}
-              />
-              {/* Step 3 to 4 */}
-              <path
-                d="M 600 120 Q 700 80 800 120"
-                stroke="url(#lineGradient)"
-                strokeWidth="3"
-                fill="none"
-                className="animate-pulse"
-                strokeDasharray="10,5"
-                style={{ animationDelay: "1s" }}
-              />
-              {/* Step 4 to 5 */}
-              <path
-                d="M 800 120 Q 900 160 1000 120"
-                stroke="url(#lineGradient)"
-                strokeWidth="3"
-                fill="none"
-                className="animate-pulse"
-                strokeDasharray="10,5"
-                style={{ animationDelay: "1.5s" }}
-              />
+              <path d="M 200 120 Q 300 80 400 120" stroke="url(#lineGradient)" strokeWidth="3" fill="none" className="animate-pulse" strokeDasharray="10,5" />
+              <path d="M 400 120 Q 500 160 600 120" stroke="url(#lineGradient)" strokeWidth="3" fill="none" className="animate-pulse" strokeDasharray="10,5" style={{ animationDelay: "0.5s" }} />
+              <path d="M 600 120 Q 700 80 800 120" stroke="url(#lineGradient)" strokeWidth="3" fill="none" className="animate-pulse" strokeDasharray="10,5" style={{ animationDelay: "1s" }} />
+              <path d="M 800 120 Q 900 160 1000 120" stroke="url(#lineGradient)" strokeWidth="3" fill="none" className="animate-pulse" strokeDasharray="10,5" style={{ animationDelay: "1.5s" }} />
             </svg>
 
             <div
@@ -482,25 +393,15 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-
         <style jsx>{`
-          @keyframes fadeInUp {
-            from {
-              opacity: 0;
-              transform: translateY(30px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         `}</style>
       </section>
 
-      {/* Partners & Community Section */}
-      <section className="py-30 px-4 bg-white/5 backdrop-blur-[2px] relative overflow-hidden z-10">
-        <div className="container mx-auto">
-          <div className="text-center mb-20">
+      {/* Partners & Community Section - UPDATED: STYLISH DOUBLE MARQUEE */}
+      <section className="py-24 bg-white/5 backdrop-blur-[2px] relative overflow-hidden z-10">
+        <div className="container mx-auto mb-16">
+          <div className="text-center">
             <h2 className="text-4xl font-outfit font-bold mb-4 text-primary mt-11">
               Our Community Impact
             </h2>
@@ -508,150 +409,122 @@ const HomePage = () => {
               Trusted by hospitals, loved by donors, saving lives together.
             </p>
           </div>
+        </div>
 
-          <div className="bgrelative w-full h-96 flex items-center justify-center mb-20">
-            <div
-              className="flipster-carousel relative w-full max-w-5xl h-full flex items-center justify-center perspective-1200 mx-auto"
-              style={{ width: "70%" }}
-            >
-              {CarouselData.map((item, index) => {
-                const totalCards = 7;
-                const centerIndex = Math.floor(totalCards / 2);
-                const offset = index - centerIndex;
-                const isCenter = index === centerIndex;
+        {/* Marquee Wrapper with Tilt Effect */}
+        <div className="relative w-full overflow-hidden transform -rotate-1 scale-105">
+          {/* Gradient Masks */}
+          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white/10 to-transparent z-20 pointer-events-none blur-xl" />
+          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-white/10 to-transparent z-20 pointer-events-none blur-xl" />
 
-                return (
-                  <div
-                    key={index}
-                    className="flipster-item absolute w-64 h-72 transition-all duration-1000 ease-in-out"
-                    style={{
-                      transform: `translateX(${offset * 300}px) rotateY(${
-                        offset * 35
-                      }deg) translateZ(${
-                        isCenter ? "80px" : Math.abs(offset) * -60 + "px"
-                      })`,
-                      zIndex: isCenter ? 10 : 10 - Math.abs(offset),
-                      opacity: Math.abs(offset) > 2 ? 0 : 1,
-                      animation: `flipster-flow 28s linear infinite`,
-                      animationDelay: `${index * -4}s`,
-                    }}
-                  >
-                    <div
-                      className={`w-full h-full border-2 rounded-2xl shadow-2xl transition-all duration-500 overflow-hidden group glass-morphism ${
-                        isCenter
-                          ? "shadow-primary/60 border-primary scale-110 animate-glow"
-                          : "border-mist-green hover:shadow-accent/40 hover:border-accent"
-                      }`}
-                    >
-                      <div className="relative h-44 overflow-hidden rounded-t-2xl">
-                        <img
-                          src={item.image || "/placeholder.svg"}
-                          alt={item.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent"></div>
-                      </div>
-                      <div className="p-4 text-center bg-white/80 backdrop-blur-sm">
-                        <h3
-                          className={`text-base font-outfit font-semibold mb-2 transition-colors duration-300 ${
-                            isCenter
-                              ? "text-primary"
-                              : "text-text-dark group-hover:text-secondary"
-                          }`}
-                        >
+          {/* ROW 1: Moves Left */}
+          <div className="flex w-full mb-6">
+            <div className="flex animate-scroll-left hover:pause gap-6">
+              {[...firstRowData, ...firstRowData, ...firstRowData].map((item, index) => (
+                <div
+                  key={`row1-${index}`}
+                  className="flex-shrink-0 w-72 h-44 relative rounded-xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-primary/50 transition-all duration-500"
+                >
+                  <img
+                    src={item.image || "/placeholder.svg"}
+                    alt={item.title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  {/* Glass Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                  
+                  {/* Content */}
+                  <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 block ${
+                          item.type === "hospital" ? "text-secondary" : item.type === "donors" ? "text-accent" : "text-primary"
+                        }`}>
+                          {item.type}
+                        </span>
+                        <h3 className="text-white font-outfit font-bold text-lg leading-tight">
                           {item.title}
                         </h3>
-                        <div className="flex justify-center">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-dm-sans font-medium ${
-                              item.type === "hospital"
-                                ? "bg-secondary/20 text-secondary"
-                                : item.type === "donors"
-                                ? "bg-accent/30 text-text-dark"
-                                : item.type === "event"
-                                ? "bg-primary/20 text-primary"
-                                : "bg-mist-green/40 text-text-dark"
-                            }`}
-                          >
-                            {item.type.charAt(0).toUpperCase() +
-                              item.type.slice(1)}
-                          </span>
+                      </div>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+                          <ArrowUp className="w-4 h-4 rotate-45" />
                         </div>
                       </div>
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Stats overlay */}
+          {/* ROW 2: Moves Right */}
+          <div className="flex w-full">
+            <div className="flex animate-scroll-right hover:pause gap-6">
+              {[...secondRowData, ...secondRowData, ...secondRowData].map((item, index) => (
+                <div
+                  key={`row2-${index}`}
+                  className="flex-shrink-0 w-72 h-44 relative rounded-xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-secondary/50 transition-all duration-500"
+                >
+                  <img
+                    src={item.image || "/placeholder.svg"}
+                    alt={item.title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  {/* Glass Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                  
+                  {/* Content */}
+                  <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                     <div className="flex justify-between items-end">
+                      <div>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 block ${
+                          item.type === "hospital" ? "text-secondary" : item.type === "donors" ? "text-accent" : "text-primary"
+                        }`}>
+                          {item.type}
+                        </span>
+                        <h3 className="text-white font-outfit font-bold text-lg leading-tight">
+                          {item.title}
+                        </h3>
+                      </div>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+                          <ArrowUp className="w-4 h-4 rotate-45" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <style jsx>{`
-          .perspective-1200 {
-            perspective: 1200px;
+          .hover\:pause:hover {
+            animation-play-state: paused;
+          }
+          
+          @keyframes scroll-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          
+          @keyframes scroll-right {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+          }
+          
+          .animate-scroll-left {
+            animation: scroll-left 50s linear infinite;
+            display: flex;
+            width: max-content; 
           }
 
-          @keyframes flipster-flow {
-            0% {
-              transform: translateX(-900px) rotateY(-105deg) translateZ(-240px);
-              opacity: 0;
-            }
-            10% {
-              transform: translateX(-600px) rotateY(-70deg) translateZ(-180px);
-              opacity: 0.7;
-            }
-            20% {
-              transform: translateX(-300px) rotateY(-35deg) translateZ(-60px);
-              opacity: 1;
-            }
-            30% {
-              transform: translateX(0px) rotateY(0deg) translateZ(80px);
-              opacity: 1;
-            }
-            45% {
-              transform: translateX(0px) rotateY(0deg) translateZ(80px);
-              opacity: 1;
-            }
-            55% {
-              transform: translateX(300px) rotateY(35deg) translateZ(-60px);
-              opacity: 1;
-            }
-            70% {
-              transform: translateX(600px) rotateY(70deg) translateZ(-180px);
-              opacity: 0.7;
-            }
-            85% {
-              transform: translateX(900px) rotateY(105deg) translateZ(-240px);
-              opacity: 0;
-            }
-            100% {
-              transform: translateX(1200px) rotateY(140deg) translateZ(-300px);
-              opacity: 0;
-            }
-          }
-
-          .flipster-item:nth-child(1) {
-            animation-delay: 0s;
-          }
-          .flipster-item:nth-child(2) {
-            animation-delay: -4s;
-          }
-          .flipster-item:nth-child(3) {
-            animation-delay: -8s;
-          }
-          .flipster-item:nth-child(4) {
-            animation-delay: -12s;
-          }
-          .flipster-item:nth-child(5) {
-            animation-delay: -16s;
-          }
-          .flipster-item:nth-child(6) {
-            animation-delay: -20s;
-          }
-          .flipster-item:nth-child(7) {
-            animation-delay: -24s;
+          .animate-scroll-right {
+            animation: scroll-right 50s linear infinite;
+            display: flex;
+            width: max-content; 
           }
         `}</style>
       </section>
