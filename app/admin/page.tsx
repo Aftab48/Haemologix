@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import AdminWebDashboard from "./AdminWeb";
 import AdminMobileDashboard from "./AdminMobile";
 
+// Opt out of static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function AdminDashboard() {
   const [isMobile, setIsMobile] = useState(false);
 

@@ -24,15 +24,6 @@ import {
 } from "lucide-react";
 
 // Agent types and their configs (6 agents)
-const [loading, setLoading] = useState(true);
-const [data, setData] = useState<any[]>([]);
-useEffect(() => {
-  setTimeout(() => {
-    setData([]); // simulate empty data
-    setLoading(false);
-  }, 1000);
-}, []);
-
 const agentConfigs = {
   HOSPITAL: {
     name: "Hospital Agent",
@@ -159,14 +150,14 @@ export default function AgenticDashboard() {
         return <Clock className="w-4 h-4 text-yellow-400 animate-pulse" />;
     }
   };
+
   if (loading) {
-  return <LoadingSkeleton />;
+    return <LoadingSkeleton />;
   }
 
-  if (!loading && data.length === 0) {
-  return <EmptyState message="No records found" />;
+  if (!loading && activities.length === 0) {
+    return <EmptyState message="No agent activities found" />;
   }
-
 
   return (
     <div className="space-y-6">
