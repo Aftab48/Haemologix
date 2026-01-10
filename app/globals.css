@@ -84,6 +84,7 @@
   }
 }
 
+
 /* Custom animations */
 @keyframes pulse-red {
   0%, 100% {
@@ -209,6 +210,13 @@
   background: linear-gradient(90deg, transparent, rgba(148, 210, 189, 0.3), transparent);
   animation: oxygen-flow 3s ease-in-out infinite;
 }
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 
 /* Smooth transitions */
 .transition-all {
@@ -254,8 +262,27 @@
 /* Accessibility improvements */
 .focus-visible:focus {
   outline: 2px solid #9B2226;
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
+
+/* Text readability on gradients */
+.gradient-text-overlay {
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+}
+/* Improved keyboard focus visibility (Accessibility) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #9B2226; /* Deep Ruby */
+  outline-offset: 3px;
+}
+
 
 /* Gradient backgrounds */
 .gradient-ruby {
