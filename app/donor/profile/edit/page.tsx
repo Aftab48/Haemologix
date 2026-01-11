@@ -41,6 +41,7 @@ interface ProfileFormData {
   weight: string;
   height: string;
   bloodGroup: string;
+  availableForEmergency: boolean;
 }
 
 export default function ProfileEditPage() {
@@ -63,6 +64,8 @@ export default function ProfileEditPage() {
     weight: "",
     height: "",
     bloodGroup: "",
+    availableForEmergency: true,
+
   });
   const [donorId, setDonorId] = useState<string | null>(null);
 
@@ -99,6 +102,7 @@ export default function ProfileEditPage() {
             weight: user.weight || "",
             height: user.height || "",
             bloodGroup: user.bloodGroup || "",
+            availableForEmergency: user.availableForEmergency ?? true,
           });
         } else {
           router.push("/");
@@ -503,7 +507,33 @@ export default function ProfileEditPage() {
                     </p>
                   </div>
                 )}
+
+                {/* Emergency Availability */}
+<div className="space-y-2">
+  <Label className="text-gray-900 font-semibold">
+    Available for Emergency Requests
+  </Label>
+
+  <div className="flex items-center gap-2">
+    <input
+      type="checkbox"
+      checked={formData.availableForEmergency}
+      onChange={(e) =>
+        setFormData({
+          ...formData,
+          availableForEmergency: e.target.checked,
+        })
+      }
+    />
+    <span className="text-sm text-muted-foreground">
+      Turn off if you are temporarily unavailable
+    </span>
+  </div>
+</div>
+
               </div>
+              
+              
 
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">

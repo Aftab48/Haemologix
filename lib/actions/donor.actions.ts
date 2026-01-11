@@ -59,6 +59,8 @@ export async function submitDonorRegistration(formData: DonorData) {
         termsAccepted: formData.termsAccepted,
         latitude,
         longitude,
+        availableForEmergency: formData.availableForEmergency ?? true,
+
       },
     });
     
@@ -157,6 +159,7 @@ export async function updateDonorRegistration(donorId: string, formData: DonorDa
         termsAccepted: formData.termsAccepted,
         latitude,
         longitude,
+        availableForEmergency: formData.availableForEmergency,
       },
     });
 
