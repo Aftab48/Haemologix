@@ -81,12 +81,16 @@ model DonorRegistration {
   updatedAt               DateTime        @updatedAt
   latitude                String?
   longitude               String?
+  availableForEmergency Boolean @default(true)
   responses               AlertResponse[]
   approvals               Approval[]      @relation("DonorApprovals")
   verifications           DonorVerification[]
   responseHistory         DonorResponseHistory[] @relation("DonorHistory")
   onboardDonors           Donor[]
 }
+
+
+
 
 model HospitalRegistration {
   id                            String         @id @default(uuid())

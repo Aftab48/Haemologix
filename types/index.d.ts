@@ -11,6 +11,8 @@ interface DonorData {
   address: string;
   emergencyContact: string;
   emergencyPhone: string;
+  availableForEmergency?: boolean;
+
 
   // Physical Requirements
   weight: string;
