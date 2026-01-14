@@ -182,6 +182,7 @@ const HomePage = () => {
           <Badge className="mb-4 animate-pulse-red bg-primary/20 text-primary border-primary hover:bg-primary/30 transition-colors">
             🚨 Emergency Blood Donation Platform
           </Badge>
+        
           <h1 className="text-5xl md:text-6xl font-outfit font-bold mb-6 leading-tight text-primary animate-fade-in">
             Save Lives with
             <span className="block text-secondary mt-2">Real-Time Blood Alerts</span>
