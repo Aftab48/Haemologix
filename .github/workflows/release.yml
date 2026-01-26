@@ -1,0 +1,241 @@
+name: Release Automation
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on semantic version tags (e.g., v0.5.2, v1.0.0)
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 0.5.2)'
+        required: true
+        type: string
+      release_type:
+        description: 'Type of release'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Fetch all history for changelog generation
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            # Ensure version doesn't have 'v' prefix
+            VERSION=${VERSION#v}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          else
+            # Extract version from tag (e.g., v0.5.2 -> 0.5.2)
+            TAG=${GITHUB_REF#refs/tags/}
+            VERSION=${TAG#v}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+          fi
+          echo "Version: $VERSION"
+          echo "Tag: $TAG"
+
+      - name: Get previous tag
+        id: previous_tag
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREVIOUS_TAG" ]; then
+            PREVIOUS_TAG=$(git rev-list --max-parents=0 HEAD)
+          fi
+          echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+          echo "Previous tag: $PREVIOUS_TAG"
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          PREVIOUS_TAG="${{ steps.previous_tag.outputs.previous_tag }}"
+          CURRENT_TAG="${{ steps.version.outputs.tag }}"
+          
+          # Get commits since previous tag
+          if [[ "$PREVIOUS_TAG" =~ ^[0-9a-f]{40}$ ]]; then
+            # If previous tag is a commit hash, get all commits
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          else
+            COMMITS=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          fi
+          
+          # Categorize commits
+          FEATURES=$(echo "$COMMITS" | grep -iE "^(feat|feature|add)" || true)
+          FIXES=$(echo "$COMMITS" | grep -iE "^(fix|bug|patch)" || true)
+          DOCS=$(echo "$COMMITS" | grep -iE "^(docs|doc|readme)" || true)
+          REFACTOR=$(echo "$COMMITS" | grep -iE "^(refactor|chore|style)" || true)
+          PERF=$(echo "$COMMITS" | grep -iE "^(perf|performance)" || true)
+          SECURITY=$(echo "$COMMITS" | grep -iE "^(security|sec)" || true)
+          OTHER=$(echo "$COMMITS" | grep -vE "^(feat|feature|add|fix|bug|patch|docs|doc|readme|refactor|chore|style|perf|performance|security|sec)" || true)
+          
+          # Build release notes
+          NOTES="# 🩸 HaemoLogix Release ${{ steps.version.outputs.version }}\n\n"
+          NOTES+="**Release Date:** $(date +'%Y-%m-%d')\n\n"
+          
+          if [ -n "$FEATURES" ]; then
+            NOTES+="## ✨ Added\n\n$FEATURES\n\n"
+          fi
+          
+          if [ -n "$FIXES" ]; then
+            NOTES+="## 🐛 Fixed\n\n$FIXES\n\n"
+          fi
+          
+          if [ -n "$PERF" ]; then
+            NOTES+="## ⚡ Performance\n\n$PERF\n\n"
+          fi
+          
+          if [ -n "$REFACTOR" ]; then
+            NOTES+="## ♻️ Changed\n\n$REFACTOR\n\n"
+          fi
+          
+          if [ -n "$DOCS" ]; then
+            NOTES+="## 📝 Documentation\n\n$DOCS\n\n"
+          fi
+          
+          if [ -n "$SECURITY" ]; then
+            NOTES+="## 🔒 Security\n\n$SECURITY\n\n"
+          fi
+          
+          if [ -n "$OTHER" ]; then
+            NOTES+="## 📦 Other Changes\n\n$OTHER\n\n"
+          fi
+          
+          # Add footer
+          NOTES+="---\n\n"
+          NOTES+="**Full Changelog:** https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${CURRENT_TAG}\n\n"
+          NOTES+="**Installation:** See [README.md](https://github.com/${{ github.repository }}/blob/main/README.md#getting-started)\n\n"
+          NOTES+="**Documentation:** [docs/](https://github.com/${{ github.repository }}/tree/main/docs)\n\n"
+          NOTES+="Thank you to all contributors! 🙏\n"
+          
+          # Save to file
+          echo "$NOTES" > release_notes.md
+          
+          # Output for GitHub Actions (escape newlines)
+          NOTES_ESCAPED=$(echo "$NOTES" | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/"/\\"/g')
+          echo "notes=$NOTES_ESCAPED" >> $GITHUB_OUTPUT
+          
+          echo "Release notes generated:"
+          echo "$NOTES"
+
+      - name: Update CHANGELOG.md
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DATE=$(date +'%Y-%m-%d')
+          
+          # Read current CHANGELOG
+          CHANGELOG=$(cat CHANGELOG.md)
+          
+          # Extract release notes section
+          RELEASE_NOTES=$(cat release_notes.md)
+          
+          # Create new entry
+          NEW_ENTRY="## [$VERSION] - $DATE\n\n"
+          
+          # Extract categorized sections from release notes
+          if echo "$RELEASE_NOTES" | grep -q "## ✨ Added"; then
+            NEW_ENTRY+="### Added\n"
+            NEW_ENTRY+=$(echo "$RELEASE_NOTES" | sed -n '/## ✨ Added/,/##/p' | sed '/^##/d' | sed 's/^- /- /')
+            NEW_ENTRY+="\n"
+          fi
+          
+          if echo "$RELEASE_NOTES" | grep -q "## 🐛 Fixed"; then
+            NEW_ENTRY+="### Fixed\n"
+            NEW_ENTRY+=$(echo "$RELEASE_NOTES" | sed -n '/## 🐛 Fixed/,/##/p' | sed '/^##/d' | sed 's/^- /- /')
+            NEW_ENTRY+="\n"
+          fi
+          
+          if echo "$RELEASE_NOTES" | grep -q "## ⚡ Performance"; then
+            NEW_ENTRY+="### Changed\n"
+            NEW_ENTRY+=$(echo "$RELEASE_NOTES" | sed -n '/## ⚡ Performance/,/##/p' | sed '/^##/d' | sed 's/^- /- /')
+            NEW_ENTRY+="\n"
+          fi
+          
+          if echo "$RELEASE_NOTES" | grep -q "## ♻️ Changed"; then
+            NEW_ENTRY+="### Changed\n"
+            NEW_ENTRY+=$(echo "$RELEASE_NOTES" | sed -n '/## ♻️ Changed/,/##/p' | sed '/^##/d' | sed 's/^- /- /')
+            NEW_ENTRY+="\n"
+          fi
+          
+          # Insert after the header (after line 6)
+          UPDATED_CHANGELOG=$(echo "$CHANGELOG" | sed "6a\\$NEW_ENTRY")
+          echo "$UPDATED_CHANGELOG" > CHANGELOG.md
+
+      - name: Update package.json version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          npm version $VERSION --no-git-tag-version
+          echo "Updated package.json to version $VERSION"
+
+      - name: Commit CHANGELOG and package.json updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md package.json
+          git commit -m "chore: update CHANGELOG and version for ${{ steps.version.outputs.tag }}" || exit 0
+          git push || exit 0
+
+      - name: Read release notes
+        id: read_notes
+        run: |
+          NOTES=$(cat release_notes.md)
+          # Escape for JSON
+          NOTES_JSON=$(echo "$NOTES" | jq -Rs .)
+          echo "notes_json=$NOTES_JSON" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const version = '${{ steps.version.outputs.version }}';
+            const tag = '${{ steps.version.outputs.tag }}';
+            const notes = fs.readFileSync('release_notes.md', 'utf8');
+            const isPrerelease = version.includes('-') || version.includes('alpha') || version.includes('beta') || version.includes('rc');
+            
+            const release = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tag,
+              name: `HaemoLogix ${version}`,
+              body: notes,
+              draft: false,
+              prerelease: isPrerelease,
+            });
+            
+            console.log(`✅ Created release: ${release.data.html_url}`);
+
+      - name: Create release summary
+        run: |
+          echo "## 🎉 Release Created Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Release Notes:** [View Release](https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "- Review the release notes" >> $GITHUB_STEP_SUMMARY
+          echo "- Update production deployment" >> $GITHUB_STEP_SUMMARY
+          echo "- Announce the release to users" >> $GITHUB_STEP_SUMMARY

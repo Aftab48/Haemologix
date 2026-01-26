@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Welcome to HaemoLogix - Your Account Details</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #7f1d1d, #7f1d1d 50%, #ca8a04 100%);
+        color: white;
+        text-align: center;
+        padding: 25px 15px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 26px;
+      }
+      .content {
+        padding: 25px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .content h2 {
+        color: #7f1d1d;
+      }
+      .credentials-box {
+        background-color: #f3f4f6;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .credentials-box label {
+        font-weight: bold;
+        color: #7f1d1d;
+        display: block;
+        margin-bottom: 5px;
+      }
+      .credentials-box .value {
+        font-family: monospace;
+        background-color: #ffffff;
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        word-break: break-all;
+      }
+      .button-container {
+        text-align: center;
+        margin: 25px 0;
+      }
+      .button {
+        display: inline-block;
+        background: linear-gradient(135deg, #7f1d1d, #7f1d1d 50%, #ca8a04 100%);
+        color: white !important;
+        padding: 14px 28px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 16px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .warning-box {
+        background-color: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888888;
+        padding: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>🎉 Welcome to HaemoLogix!</h1>
+      </div>
+      <div class="content">
+        <h2>Dear {{name}},</h2>
+        <p>
+          Thank you for registering with HaemoLogix! Your account has been successfully created.
+        </p>
+        <p>
+          Your registration is currently <strong>pending approval</strong>. Once approved by our team, 
+          you will have full access to blood donation alerts and can help save lives in your community.
+        </p>
+        
+        <div class="credentials-box">
+          <h3 style="margin-top: 0; color: #7f1d1d;">Your Login Credentials</h3>
+          <label>Email:</label>
+          <div class="value">{{email}}</div>
+          
+          <label>Password:</label>
+          <div class="value">{{password}}</div>
+        </div>
+
+        <div class="warning-box">
+          <strong>⚠️ Important Security Notice:</strong>
+          <p style="margin: 10px 0 0 0;">
+            Please change your password immediately after your first login for security purposes.
+          </p>
+        </div>
+
+        <p>
+          You can use these credentials to sign in to your account and check your registration status.
+        </p>
+
+        <div class="button-container">
+          <a href="{{signInUrl}}" class="button" target="_blank">Sign In to Your Account</a>
+        </div>
+
+        <p>
+          If you have any questions or need assistance, please don't hesitate to contact our support team.
+        </p>
+        <p>Thank you for being a part of our life-saving mission! ❤️</p>
+      </div>
+      <div class="footer">
+        © <span id="year"></span> Haemologix Pvt. Ltd. — Connecting Life, One Drop at a Time
+      <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,74 @@
+# Auto-labeling configuration for issues and PRs
+# Based on file paths and content
+
+# Frontend changes
+frontend:
+  - app/**/*.tsx
+  - app/**/*.jsx
+  - components/**/*.tsx
+  - components/**/*.jsx
+  - styles/**/*.css
+  - public/**/*
+
+# Backend changes
+backend:
+  - app/api/**/*
+  - lib/**/*.ts
+  - lib/**/*.js
+  - middleware.ts
+
+# Agent system
+agent-system:
+  - lib/agents/**/*
+  - lib/actions/**/*agent*
+  - '**/*agent*.ts'
+  - '**/*agent*.js'
+  - '**/Agent*.ts'
+  - '**/Agent*.js'
+
+# Machine Learning
+machine-learning:
+  - ml/**/*
+  - '**/*.py'
+
+# Database
+database:
+  - prisma/**/*
+  - db/**/*
+  - '**/*.sql'
+
+# Documentation
+documentation:
+  - '**/*.md'
+  - docs/**/*
+  - Documentations/**/*
+
+# Testing
+testing:
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.spec.ts'
+  - '**/*.spec.tsx'
+  - '**/__tests__/**/*'
+
+# CI/CD
+ci-cd:
+  - .github/workflows/**/*
+  - .github/**/*.yml
+  - .github/**/*.yaml
+
+# Configuration
+config:
+  - '**/*.config.*'
+  - '**/*.json'
+  - '**/package.json'
+  - '**/tsconfig.json'
+  - '**/tailwind.config.*'
+  - '**/next.config.*'
+
+# Security
+security:
+  - '**/SECURITY.md'
+  - '**/*security*'
+  - '**/*auth*'
+  - '**/*permission*'

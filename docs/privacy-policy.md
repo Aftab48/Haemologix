@@ -1,0 +1,158 @@
+# Privacy Policy
+
+**Last Updated: November 2025**
+
+## Introduction
+
+Haemologix ("we," "our," or "us") is committed to protecting your privacy and ensuring the security of your personal and medical information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our blood donation platform and services (the "Service").
+
+By using our Service, you agree to the collection and use of information in accordance with this Privacy Policy.
+
+## Information We Collect
+
+### Personal Information
+- Name, email address, phone number
+- Date of birth and age verification
+- Physical address and location data
+- Government-issued identification documents
+- Profile photographs
+
+### Medical Information
+- Blood type and group
+- Medical history and eligibility status
+- Hemoglobin levels
+- Health screening results (HIV, Hepatitis B/C, Syphilis, Malaria)
+- Donation history and records
+- Weight and physical measurements
+- Medical certificates and documents
+
+### Usage Data
+- Device information (IP address, browser type, operating system)
+- Usage patterns and interactions with the Service
+- Location data for geolocation matching
+- Log files and analytics data
+
+### Communication Data
+- Messages and communications with hospitals, blood banks, and donors
+- Emergency alert responses
+- Support requests and inquiries
+
+## How We Use Your Information
+
+We use the collected information for the following purposes:
+
+1. **Service Provision**: To connect hospitals with eligible blood donors, manage blood inventory, and facilitate emergency blood alerts
+2. **User Authentication**: To verify your identity and manage your account through Clerk authentication services
+3. **Medical Matching**: To match blood type compatibility and eligibility for donations
+4. **Geolocation Services**: To find nearby donors and blood banks using location data
+5. **Notifications**: To send SMS alerts via Twilio and email notifications for emergency blood requests
+6. **Analytics**: To improve our Service, analyze usage patterns, and enhance user experience
+7. **Compliance**: To comply with legal obligations, including HIPAA requirements and medical data protection laws
+8. **Security**: To detect and prevent fraud, abuse, and unauthorized access
+
+## Data Sharing and Disclosure
+
+### With Hospitals and Blood Banks
+- We share your blood type, location, and eligibility status with verified hospitals and blood banks when they create emergency alerts
+- Your contact information is shared only when you accept a donation request
+
+### With Third-Party Service Providers
+- **Clerk**: For user authentication and account management
+- **Twilio**: For SMS notifications and alerts
+- **AWS S3**: For secure storage of documents and medical records
+- **NeonDB**: For database hosting and data storage
+- **Vercel**: For application hosting and infrastructure
+
+### Legal Requirements
+We may disclose your information if required by law, court order, or government regulation, including:
+- Compliance with HIPAA and medical data protection laws
+- Response to legal processes or government requests
+- Protection of rights, property, or safety of users or the public
+
+### Business Transfers
+In the event of a merger, acquisition, or sale of assets, your information may be transferred to the acquiring entity.
+
+## HIPAA Compliance
+
+Haemologix is committed to maintaining HIPAA compliance for protected health information (PHI). We implement:
+
+- Administrative safeguards: Access controls, workforce training, and security policies
+- Physical safeguards: Secure data centers and facility access controls
+- Technical safeguards: Encryption, audit controls, and integrity controls
+- Business Associate Agreements (BAAs) with third-party service providers handling PHI
+
+## Data Security
+
+We implement industry-standard security measures to protect your information:
+
+- **Encryption**: Data in transit (TLS/SSL) and at rest (AES encryption)
+- **Access Controls**: Role-based access controls and authentication requirements
+- **Secure Storage**: Data stored in secure, compliant cloud infrastructure
+- **Regular Audits**: Security assessments and vulnerability testing
+- **Data Backup**: Regular backups with disaster recovery procedures
+
+However, no method of transmission over the Internet or electronic storage is 100% secure. While we strive to protect your information, we cannot guarantee absolute security.
+
+## Your Rights and Choices
+
+You have the following rights regarding your personal information:
+
+1. **Access**: Request access to your personal and medical information
+2. **Correction**: Request correction of inaccurate or incomplete information
+3. **Deletion**: Request deletion of your account and associated data
+4. **Portability**: Request a copy of your data in a portable format
+5. **Opt-Out**: Opt-out of non-essential communications and marketing
+6. **Account Settings**: Update your profile information and preferences through your account dashboard
+
+To exercise these rights, please contact us at the information provided below.
+
+## Data Retention
+
+We retain your information for as long as necessary to:
+- Provide the Service and fulfill the purposes outlined in this Privacy Policy
+- Comply with legal obligations and medical record retention requirements
+- Resolve disputes and enforce our agreements
+
+Medical records may be retained for extended periods as required by law or medical best practices.
+
+## Cookies and Tracking Technologies
+
+We use cookies and similar tracking technologies to:
+- Maintain your session and authentication state
+- Analyze Service usage and performance
+- Personalize your experience
+
+You can control cookies through your browser settings, but disabling cookies may affect Service functionality.
+
+## Children's Privacy
+
+Our Service is not intended for individuals under 18 years of age. We do not knowingly collect personal information from children. If you believe we have collected information from a child, please contact us immediately.
+
+## International Data Transfers
+
+Your information may be transferred to and processed in countries other than your country of residence. We ensure appropriate safeguards are in place for international data transfers.
+
+## Changes to This Privacy Policy
+
+We may update this Privacy Policy from time to time. We will notify you of any material changes by:
+- Posting the new Privacy Policy on this page
+- Updating the "Last Updated" date
+- Sending email notifications for significant changes
+
+Your continued use of the Service after changes become effective constitutes acceptance of the updated Privacy Policy.
+
+## Contact Us
+
+If you have questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
+
+**Haemologix Privacy Team**
+- Email: haemologix@gmail.in
+- Website: https://haemologix.in/contact
+- Address: remote
+
+For medical data inquiries or HIPAA-related requests, please specify "HIPAA Request" in your communication.
+
+---
+
+*This Privacy Policy is effective as of November 2025 and applies to all users of the Haemologix platform.*
+

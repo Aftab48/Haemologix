@@ -1,0 +1,133 @@
+name: Auto Comment on Issues and PRs
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  comment-on-issue:
+    name: Comment on New Issue
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = context.payload.issue.number;
+            const issueAuthor = context.payload.issue.user.login;
+            
+            const comment = `👋 Hello @${issueAuthor}! Thank you for opening this issue. We appreciate you taking the time to help improve HaemoLogix! 🩸
+
+            Our team will review this issue and get back to you as soon as possible. In the meantime, here are some helpful resources:
+
+            📚 **Getting Started**
+            - [Contributing Guide](https://github.com/${{ github.repository }}/blob/main/CONTRIBUTING.md) - Learn how to contribute
+            - [Code of Conduct](https://github.com/${{ github.repository }}/blob/main/CODE_OF_CONDUCT.md) - Community standards
+            - [Documentation](https://github.com/${{ github.repository }}/tree/main/docs) - Project documentation
+
+            🔍 **Before We Proceed**
+            - Please make sure this issue hasn't been reported already
+            - Include as much detail as possible (steps to reproduce, expected vs actual behavior, screenshots if applicable)
+            - Check if your issue is related to an existing discussion
+
+            💡 **Quick Links**
+            - [Report a Bug](https://github.com/${{ github.repository }}/issues/new?template=bug_report.yml)
+            - [Request a Feature](https://github.com/${{ github.repository }}/issues/new?template=feature_request.yml)
+            - [Join Discussions](https://github.com/${{ github.repository }}/discussions)
+
+            We're here to help! If you have any questions, feel free to ask in the comments below.
+
+            ---
+            *This is an automated message. A team member will review your issue shortly.*`;
+
+            github.rest.issues.createComment({
+              issue_number: issueNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  comment-on-pr:
+    name: Comment on New Pull Request
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on Pull Request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const prAuthor = context.payload.pull_request.user.login;
+            const prTitle = context.payload.pull_request.title;
+            const prBody = context.payload.pull_request.body || '';
+            
+            const comment = `🎉 Thank you @${prAuthor} for your contribution to HaemoLogix! We're excited to review your pull request. 🩸
+
+            ## 📋 Review Checklist
+
+            Before we proceed with the review, please ensure:
+
+            ### Code Quality
+            - [ ] Code follows the project's coding standards
+            - [ ] All linting checks pass (\`npm run lint\`)
+            - [ ] TypeScript type checking passes (\`npx tsc --noEmit\`)
+            - [ ] No console errors or warnings
+            - [ ] Code is properly commented, especially complex logic
+
+            ### Testing
+            - [ ] Manual testing completed
+            - [ ] Tested on multiple browsers (Chrome, Firefox, Safari, Edge)
+            - [ ] Tested on mobile devices
+            - [ ] Tested in both light and dark modes
+            - [ ] No breaking changes (or breaking changes are documented)
+
+            ### Documentation
+            - [ ] README.md updated (if needed)
+            - [ ] Relevant documentation in \`/docs\` updated (if needed)
+            - [ ] CHANGELOG.md updated with your changes
+            - [ ] JSDoc comments added for new functions/components
+
+            ### Project-Specific
+            - [ ] Works with the agent system (if applicable)
+            - [ ] No sensitive information (API keys, passwords) included
+            - [ ] Environment variables documented (if new ones added)
+            - [ ] Database schema changes documented (if applicable)
+
+            ## 📚 Resources
+
+            - [Contributing Guide](https://github.com/${{ github.repository }}/blob/main/CONTRIBUTING.md) - Detailed contribution guidelines
+            - [Code of Conduct](https://github.com/${{ github.repository }}/blob/main/CODE_OF_CONDUCT.md) - Community standards
+            - [Pull Request Template](https://github.com/${{ github.repository }}/blob/main/.github/pull_request_template.md) - PR checklist
+
+            ## ⏱️ What Happens Next?
+
+            1. Our CI/CD pipeline will automatically run tests and checks
+            2. A team member will review your PR
+            3. We may request changes or ask questions
+            4. Once approved, your PR will be merged!
+
+            ## 💬 Questions?
+
+            If you have any questions or need help, feel free to:
+            - Comment on this PR
+            - Open a [GitHub Discussion](https://github.com/${{ github.repository }}/discussions)
+            - Email: mdalam4884@gmail.com
+
+            Thank you for helping us save lives through efficient blood donation! 🙏
+
+            ---
+            *This is an automated message. A team member will review your PR shortly.*`;
+
+            github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

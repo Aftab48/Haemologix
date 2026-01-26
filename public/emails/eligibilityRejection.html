@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blood Donation Eligibility - Not Eligible</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .header {
+        background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+        color: white;
+        text-align: center;
+        padding: 30px 20px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+      }
+      .content {
+        padding: 30px 40px;
+        color: #333;
+      }
+      .content h2 {
+        color: #d32f2f;
+        font-size: 22px;
+        margin-bottom: 15px;
+      }
+      .content p {
+        font-size: 16px;
+        line-height: 1.6;
+        margin-bottom: 15px;
+      }
+      .criteria-box {
+        background-color: #fff3e0;
+        border-left: 4px solid #ff6f00;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+      }
+      .criteria-title {
+        font-weight: bold;
+        color: #ff6f00;
+        margin-bottom: 10px;
+      }
+      .criteria-item {
+        background-color: #ffffff;
+        border: 1px solid #ffccbc;
+        border-radius: 5px;
+        padding: 12px;
+        margin: 10px 0;
+      }
+      .criteria-item strong {
+        color: #d32f2f;
+        display: block;
+        margin-bottom: 5px;
+      }
+      .criteria-item .value {
+        color: #666;
+        font-size: 14px;
+      }
+      .info-box {
+        background-color: #e3f2fd;
+        border-left: 4px solid #1976d2;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 5px;
+      }
+      .info-box p {
+        margin: 5px 0;
+        font-size: 15px;
+      }
+      .footer {
+        background-color: #f9f9f9;
+        text-align: center;
+        padding: 20px;
+        font-size: 14px;
+        color: #666;
+      }
+      .footer a {
+        color: #1976d2;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <h1>Blood Donation Eligibility Assessment</h1>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <h2>Dear {{donorName}},</h2>
+        <p>
+          Thank you for your interest in becoming a blood donor with Haemologix.
+          We appreciate your willingness to help save lives.
+        </p>
+        <p>
+          After reviewing your application, we regret to inform you that you are
+          <strong>currently not eligible</strong> to donate blood based on our
+          medical screening criteria.
+        </p>
+
+        <!-- Failed Criteria Box -->
+        <div class="criteria-box">
+          <div class="criteria-title">❌ Eligibility Criteria Not Met:</div>
+          {{failedCriteriaList}}
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+          <p><strong>📅 Account Status:</strong> Suspended for 14 days</p>
+          <p><strong>⏳ Reapplication Date:</strong> {{reapplicationDate}}</p>
+          <p>
+            <strong>ℹ️ Note:</strong> This suspension period allows you time to
+            address the eligibility concerns listed above.
+          </p>
+        </div>
+
+        <p>
+          <strong>What You Can Do:</strong>
+        </p>
+        <ul>
+          <li>
+            Review the failed criteria and work on addressing the issues
+            (e.g., improve hemoglobin levels, maintain healthy weight).
+          </li>
+          <li>
+            After 14 days, you may reapply if you meet all eligibility
+            requirements.
+          </li>
+          <li>
+            If you believe there has been an error, please contact our support
+            team.
+          </li>
+        </ul>
+
+        <p>
+          We understand this may be disappointing, but these criteria are in
+          place to ensure the safety of both donors and recipients.
+        </p>
+
+        <p>
+          Thank you again for your interest in saving lives through blood
+          donation.
+        </p>
+
+        <p>Best regards,<br /><strong>Haemologix Medical Team</strong></p>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <p>Need help? <a href="mailto:support@haemologix.com">Contact Support</a></p>
+        <p>&copy; <span id="year"></span> Haemologix Pvt. Ltd. All rights reserved.</p>
+      <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -1,0 +1,36 @@
+# Training Hyperparameters
+
+task_type: "donor_selection"  # or "urgency_assessment", "inventory_selection", "transport_planning", "eligibility_analysis"
+
+training:
+  batch_size: 32
+  num_epochs: 100
+  early_stopping_patience: 999
+  save_every: 10
+
+optimizer:
+  type: "AdamW"
+  lr: 0.001
+  weight_decay: 0.00001
+
+scheduler:
+  type: "ReduceLROnPlateau"
+  factor: 0.5
+  patience: 5
+  mode: "min"
+
+task_weights:
+  donor_selection: 1.0
+  urgency_assessment: 1.0
+  inventory_selection: 1.0
+  transport_planning: 1.0
+  eligibility_analysis: 1.0
+
+data:
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+
+checkpoint_dir: "checkpoints"
+data_dir: "data"
+

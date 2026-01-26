@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Donor Registration Confirmation</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #7f1d1d, #7f1d1d 50%, #ca8a04 100%);
+        color: white;
+        text-align: center;
+        padding: 25px 15px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 26px;
+      }
+      .content {
+        padding: 25px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .content h2 {
+        color: #7f1d1d;
+      }
+      .button-container {
+        text-align: center;
+        margin: 25px 0;
+      }
+      .button {
+        display: inline-block;
+        background: linear-gradient(135deg, #7f1d1d, #7f1d1d 50%, #ca8a04 100%);
+        color: white !important;
+        padding: 14px 0;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 16px;
+        width: 100%;
+        max-width: 300px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888888;
+        padding: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>🎉 Thank You for Applying!</h1>
+      </div>
+      <div class="content">
+        <h2>Dear {{name}},</h2>
+        <p>
+          Your application has been <strong>successfully submitted</strong>.
+        </p>
+        <p>Our team will carefully review the details you’ve provided.</p>
+        <p>
+          You can expect to receive an update via email within the next
+          <strong>24–48 hours</strong>.
+        </p>
+        <p>We truly appreciate your willingness to make a difference. ❤️</p>
+        <div class="button-container">
+          <a href="https://haemologix.vercel.app" class="button" target="_blank"
+            >Visit Our Website</a
+          >
+        </div>
+      </div>
+      <div class="footer">
+        © <span id="year"></span> Haemologix Pvt. Ltd. — Connecting Life, One Drop at a Time
+      <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+      </div>
+    </div>
+  </body>
+</html>

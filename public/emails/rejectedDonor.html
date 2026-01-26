@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Application Rejected</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #7f1d1d, #7f1d1d 50%, #ca8a04 100%);
+        color: white;
+        text-align: center;
+        padding: 25px 15px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 26px;
+      }
+      .content {
+        padding: 25px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .content h2 {
+        color: #7f1d1d;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888888;
+        padding: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>❌ Application Update</h1>
+      </div>
+      <div class="content">
+        <h2>Dear {{name}},</h2>
+        <p>
+          We appreciate the time and effort you took to apply as a donor at
+          <strong>HaemoLogix</strong>.
+        </p>
+        <p>
+          After reviewing your application, we regret to inform you that your
+          donor registration has been <strong>rejected</strong>.
+        </p>
+        <p>
+          This decision may be due to eligibility criteria or information
+          provided during your application. If you believe this was an error or
+          your circumstances change, you are welcome to apply again in the
+          future.
+        </p>
+        <p>
+          Thank you for your interest in contributing to our mission of saving
+          lives — we truly value your willingness to help.
+        </p>
+      </div>
+      <div class="footer">
+        © <span id="year"></span> Haemologix Pvt. Ltd. — Connecting Life, One Drop at a Time
+      <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+      </div>
+    </div>
+  </body>
+</html>

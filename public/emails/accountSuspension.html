@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Suspended</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9fafb;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .alert-box {
+            background: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .info-box {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .button {
+            display: inline-block;
+            background: #dc2626;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        h2 {
+            color: #dc2626;
+            font-size: 20px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚠️ Account Suspended</h1>
+    </div>
+    
+    <div class="content">
+        <p>Dear {{name}},</p>
+        
+        <div class="alert-box">
+            <strong>Your HaemoLogix account has been temporarily suspended.</strong>
+        </div>
+        
+        <p>Your donor registration has been suspended for <strong>7 days</strong> due to three consecutive failed document verification attempts.</p>
+        
+        <div class="info-box">
+            <h2>Why was my account suspended?</h2>
+            <p>Our automated verification system detected mismatches between the information you entered and the data extracted from your uploaded documents on three separate occasions.</p>
+            
+            <p><strong>Suspension Period:</strong> 7 days from today</p>
+            <p><strong>What happens next:</strong></p>
+            <ul>
+                <li>Your account will be automatically reactivated after 7 days</li>
+                <li>You will receive an email when your account is reactivated</li>
+                <li>You can then try registering again with correct information</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h2>Tips for successful verification:</h2>
+            <ul>
+                <li><strong>Use clear, high-quality scans</strong> of your documents</li>
+                <li><strong>Ensure documents are recent</strong> (blood reports within 90 days)</li>
+                <li><strong>Double-check all entered information</strong> matches your documents exactly</li>
+                <li><strong>Verify your name spelling</strong> is identical to your ID proof</li>
+                <li><strong>Ensure blood group</strong> entered matches your blood test report</li>
+            </ul>
+        </div>
+        
+        <p>If you believe this suspension was made in error or if you have questions, please contact our support team.</p>
+        
+        <p><strong>Support Email:</strong> support@haemologix.com</p>
+        <p><strong>Support Phone:</strong> +91 XXX XXX XXXX</p>
+        
+        <div class="footer">
+            <p>Thank you for your understanding.</p>
+            <p><strong>Team HaemoLogix</strong></p>
+            <p>Saving Lives, One Donation at a Time</p>
+        </div>
+    </div>
+</body>
+</html>
+

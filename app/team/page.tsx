@@ -1,0 +1,238 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import Link from "next/link";
+import GradientBackground from "@/components/GradientBackground";
+import Header from "@/components/Header";
+import { ArrowUp } from "lucide-react";
+import ScrollReveal from "@/components/ScrollReveal";
+
+import { Users, Heart, Target, Zap } from "lucide-react";
+
+export default function TeamPage() {
+  return (
+    <GradientBackground>
+      {/* Header */}
+      <Header activePage="team" />
+
+      {/* Hero Section */}
+      <section className="py-20 px-4 bg-white/5 backdrop-blur-[2px]">
+        <div className="container mx-auto max-w-6xl">
+          <ScrollReveal>
+            <div className="text-center mb-16">
+              <h1 className="text-5xl md:text-6xl font-bold mb-6 text-text-dark">
+                Our Team
+              </h1>
+              <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
+                Meet the passionate individuals working to revolutionize blood donation coordination through technology and innovation.
+              </p>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Company Overview Section */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4 text-text-dark">About HaemoLogix</h2>
+              <p className="text-lg text-text-dark/80 max-w-3xl mx-auto">
+                We are a dedicated team committed to saving lives through intelligent automation and seamless coordination.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <ScrollReveal delay={0.1} direction="left">
+              <Card className="glass-morphism h-full">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Target className="w-8 h-8 text-primary" />
+                  </div>
+                  <CardTitle>Our Mission</CardTitle>
+                  <CardDescription>
+                    To eliminate blood shortage crises by connecting donors with hospitals through AI-powered coordination and real-time matching.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.2} direction="up">
+              <Card className="glass-morphism h-full">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Heart className="w-8 h-8 text-primary" />
+                  </div>
+                  <CardTitle>Our Values</CardTitle>
+                  <CardDescription>
+                    Compassion, innovation, and reliability drive everything we do. Every feature is designed with lives in mind.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.3} direction="right">
+              <Card className="glass-morphism h-full">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Zap className="w-8 h-8 text-primary" />
+                  </div>
+                  <CardTitle>Our Story</CardTitle>
+                  <CardDescription>
+                    Born from the urgent need to solve blood shortage challenges, HaemoLogix combines cutting-edge AI with human-centered design.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* Team Members Section */}
+      <section className="py-16 px-4 bg-white/5 backdrop-blur-[2px]">
+        <div className="container mx-auto max-w-6xl">
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4 text-text-dark">Meet Our Team</h2>
+              <p className="text-lg text-text-dark/80 max-w-2xl mx-auto">
+                The talented individuals behind HaemoLogix
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Placeholder Team Member Cards */}
+            {[1, 2, 3, 4, 5, 6].map((member, index) => (
+              <ScrollReveal key={member} delay={index * 0.1}>
+                <Card className="glass-morphism h-full">
+                  <CardHeader className="text-center">
+                    <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-12 h-12 text-primary" />
+                    </div>
+                    <CardTitle>Team Member {member}</CardTitle>
+                    <CardDescription className="text-primary font-medium">Role Title</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-center">
+                      Brief bio and description of their contribution to HaemoLogix will appear here.
+                    </p>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
+            ))}
+          </div>
+
+          <ScrollReveal delay={0.4}>
+            <div className="text-center mt-12">
+              <p className="text-text-dark/80 mb-6">
+                Want to join our mission? We're always looking for passionate individuals.
+              </p>
+              <Link href="/contact">
+                <Button className="gradient-ruby hover:opacity-90 text-white font-outfit font-semibold py-6 px-8 rounded-xl text-lg shadow-lg hover:shadow-primary/50 transition-all duration-300">
+                  Get in Touch
+                </Button>
+              </Link>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="text-text-dark py-12 my-0 px-4 mx-0 bg-text-dark/95 backdrop-blur-md">
+        <div className="container mx-auto">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Heart className="w-6 h-6 text-slate-300" />
+                <span className="text-xl font-bold text-slate-300">
+                  HaemoLogix
+                </span>
+              </div>
+              <p className="text-gray-400">
+                Connecting lives through technology and compassion.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-outfit font-semibold mb-4 text-background">Platform</h4>
+              <ul className="space-y-2 text-background/80 font-dm-sans">
+                <li>
+                  <Link href="/donor" className="hover:text-white">
+                    Donor Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/hospital" className="hover:text-white">
+                    Hospital Portal
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/admin" className="hover:text-white">
+                    Admin Panel
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-outfit font-semibold mb-4 text-background">Support</h4>
+              <ul className="space-y-2 text-background/80 font-dm-sans">
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="hover:text-white">
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    Emergency
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-outfit font-semibold mb-4 text-background">Legal</h4>
+              <ul className="space-y-2 text-background/80 font-dm-sans">
+                <li>
+                  <Link href="/privacy-policy" className="hover:text-white">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms-and-conditions" className="hover:text-white">
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    HIPAA Compliance
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-background/30 mt-8 pt-8 text-center text-background/70 font-dm-sans">
+            <p>
+              &copy; {new Date().getFullYear()} Haemologix Pvt. Ltd. All rights reserved. Built for saving
+              lives.
+            </p>
+          </div>
+          {/* Back to Top */}
+          <div className="flex justify-center mt-6">
+            <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex items-center gap-1 text-sm text-background/60 hover:text-white transition"
+            >
+             <ArrowUp className="w-4 h-4" />
+                  Back to Top
+            </button>
+          </div>
+        </div>
+      </footer>
+    </GradientBackground>
+  );
+}

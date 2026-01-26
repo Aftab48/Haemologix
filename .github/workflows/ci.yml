@@ -1,0 +1,96 @@
+name: CI - Lint, Type Check & Build
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  validate:
+    name: Validate Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint Code
+        run: npm run lint
+
+      - name: Type Check
+        run: npx tsc --noEmit
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Restore Next.js Build Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.[jt]s', '**/*.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set build environment variables
+        shell: bash
+        run: |
+          # Note: Clerk validates key format during build, so real test keys from Clerk dashboard are required
+          # Get test keys from: https://dashboard.clerk.com/last-active?path=api-keys
+          if [ -z "${{ secrets.CI_CLERK_PUBLISHABLE_KEY }}" ]; then
+            echo "❌ Error: CI_CLERK_PUBLISHABLE_KEY secret is required for build."
+            echo "Please set it in GitHub Settings > Secrets and variables > Actions"
+            echo "Get a test key from: https://dashboard.clerk.com/last-active?path=api-keys"
+            exit 1
+          else
+            echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.CI_CLERK_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
+          fi
+          
+          if [ -z "${{ secrets.CI_CLERK_SECRET_KEY }}" ]; then
+            echo "❌ Error: CI_CLERK_SECRET_KEY secret is required for build."
+            echo "Please set it in GitHub Settings > Secrets and variables > Actions"
+            exit 1
+          else
+            echo "CLERK_SECRET_KEY=${{ secrets.CI_CLERK_SECRET_KEY }}" >> $GITHUB_ENV
+          fi
+          
+          if [ -z "${{ secrets.CI_DATABASE_URL }}" ]; then
+            echo "DATABASE_URL=postgresql://ci_user:ci_password@localhost:5432/ci_database?sslmode=disable" >> $GITHUB_ENV
+          else
+            echo "DATABASE_URL=${{ secrets.CI_DATABASE_URL }}" >> $GITHUB_ENV
+          fi
+          
+          if [ -z "${{ secrets.CI_GOOGLE_MAPS_API_KEY }}" ]; then
+            echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=CI_PLACEHOLDER_GOOGLE_MAPS_KEY" >> $GITHUB_ENV
+          else
+            echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.CI_GOOGLE_MAPS_API_KEY }}" >> $GITHUB_ENV
+          fi
+
+      - name: Build Project
+        run: npm run build
+

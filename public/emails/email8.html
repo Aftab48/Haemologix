@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Appointment Scheduled</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #7f1d1d, #7f1d1d 50%, #ca8a04 100%);
+        color: white;
+        text-align: center;
+        padding: 25px 15px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .content {
+        padding: 25px;
+        color: #333;
+        line-height: 1.6;
+      }
+      .button-container {
+        text-align: center;
+        margin: 25px 0;
+      }
+      .button {
+        display: inline-block;
+        background: linear-gradient(135deg, #7f1d1d, #7f1d1d 50%, #ca8a04 100%);
+        color: white !important;
+        padding: 14px 0;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 16px;
+        width: 100%;
+        max-width: 300px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      .subtext-button {
+        display: inline-block;
+        background: #7f1d1d;
+        color: white !important;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888;
+        padding: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>📅 Appointment Scheduled</h1>
+      </div>
+      <div class="content">
+        <p>
+          Your blood donation appointment has been scheduled by the hospital:
+        </p>
+        <ul>
+          <li><strong>Date:</strong> 17th August 2025</li>
+          <li><strong>Time:</strong> 5pm</li>
+          <li>
+            <strong>Location:</strong>
+            <a href="[Hospital Location Link]" target="_blank"
+              >AMRI Hospitals Dhakuria</a
+            >
+          </li>
+        </ul>
+        <p>Please arrive on time to ensure a smooth donation process.</p>
+        <div class="button-container">
+          <a href="[Hospital Location Link]" class="button" target="_blank">
+            View Location
+          </a>
+        </div>
+        <p style="font-size: 13px; color: #777">
+          If you are unavailable at this time, please contact the hospital
+          directly:
+        </p>
+        <div class="button-container">
+          <a href="tel:[Hospital Phone]" class="subtext-button">
+            Contact Hospital
+          </a>
+        </div>
+      </div>
+      <div class="footer">© <span id="year"></span> Haemologix Pvt. Ltd. — Lifesaving Network</div>
+      <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+    </div>
+  </body>
+</html>

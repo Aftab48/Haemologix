@@ -1,0 +1,529 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Donor {
+  id                  String            @id @default(uuid())
+  name                String
+  phone               String
+  email               String            @unique
+  address             String
+  city                String
+  state               String
+  pincode             String
+  dateOfBirth         DateTime
+  gender              String
+  bloodGroup          String
+  weight              String
+  height              String
+  bmi                 String
+  hasDonatedBefore    Boolean           @default(false)
+  lastDonationDate    DateTime?
+  diseases            String?
+  clerkUserId         String?
+  donorRegistrationId String?
+  status              ApprovalStatus    @default(PENDING)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  donorRegistration   DonorRegistration? @relation(fields: [donorRegistrationId], references: [id])
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model DonorRegistration {
+  id                      String          @id @default(uuid())
+  firstName               String
+  lastName                String
+  email                   String          @unique
+  phone                   String
+  dateOfBirth             DateTime
+  gender                  String
+  address                 String
+  emergencyContact        String
+  emergencyPhone          String
+  weight                  String
+  height                  String
+  bmi                     String
+  lastDonation            DateTime?
+  donationCount           String?
+  neverDonated            Boolean         @default(false)
+  recentVaccinations      Boolean         @default(false)
+  vaccinationDetails      String?
+  medicalConditions       String?
+  medications             String?
+  hivTest                 String
+  hepatitisBTest          String
+  hepatitisCTest          String
+  syphilisTest            String
+  malariaTest             String
+  hemoglobin              String
+  bloodGroup              String
+  plateletCount           String
+  wbcCount                String
+  bloodTestReport         String?
+  idProof                 String?
+  medicalCertificate      String?
+  dataProcessingConsent   Boolean         @default(false)
+  medicalScreeningConsent Boolean         @default(false)
+  termsAccepted           Boolean         @default(false)
+  status                  ApprovalStatus  @default(PENDING)
+  verificationAttempts    Int             @default(0)
+  suspendedUntil          DateTime?
+  lastVerificationAt      DateTime?
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+  latitude                String?
+  longitude               String?
+  availableForEmergency Boolean @default(true)
+  responses               AlertResponse[]
+  approvals               Approval[]      @relation("DonorApprovals")
+  verifications           DonorVerification[]
+  responseHistory         DonorResponseHistory[] @relation("DonorHistory")
+  onboardDonors           Donor[]
+}
+
+
+
+
+model HospitalRegistration {
+  id                            String         @id @default(uuid())
+  bloodBankLicense              String
+  licenseExpiryDate             DateTime?
+  sbtcNoc                       Boolean
+  nocNumber                     String
+  nocExpiryDate                 DateTime?
+  nbtcCompliance                Boolean
+  nacoCompliance                Boolean
+  hospitalName                  String
+  hospitalAddress               String
+  city                          String
+  state                         String
+  pincode                       String
+  operationalStatus             String
+  coldStorageFacility           Boolean
+  temperatureStandards          Boolean
+  testingLabsOnsite             Boolean
+  affiliatedLabs                String
+  qualifiedMedicalOfficer       Boolean
+  certifiedTechnicians          String
+  contactEmail                  String
+  contactPhone                  String
+  inventoryReporting            Boolean
+  realTimeUpdates               Boolean
+  emergencyResponseCommitment   Boolean
+  responseTimeMinutes           String
+  dataHandlingCommitment        Boolean
+  confidentialityAgreement      Boolean
+  bloodBankLicenseDoc           String?
+  hospitalRegistrationCert      String?
+  authorizedRepIdProof          String?
+  contactDetails24x7            String
+  mouAcceptance                 Boolean
+  repName                       String
+  repDesignation                String
+  repIdNumber                   String
+  repEmail                      String
+  repPhone                      String
+  termsAccepted                 Boolean
+  dataProcessingConsent         Boolean
+  networkParticipationAgreement Boolean
+  status                        ApprovalStatus @default(PENDING)
+  verificationAttempts          Int            @default(0)
+  suspendedUntil                DateTime?
+  lastVerificationAt            DateTime?
+  createdAt                     DateTime       @default(now())
+  updatedAt                     DateTime       @updatedAt
+  latitude                      String?
+  longitude                     String?
+  alerts                        Alert[]
+  approvals                     Approval[]     @relation("HospitalApprovals")
+  inventory                     InventoryUnit[]
+  inventoryThresholds           InventoryThreshold[]
+  transportsFrom                TransportRequest[] @relation("TransportFrom")
+  transportsTo                  TransportRequest[] @relation("TransportTo")
+}
+
+model Admin {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  password  String
+  approvals Approval[]
+}
+
+model Approval {
+  id         String                @id @default(uuid())
+  approvedBy String
+  approvedAt DateTime              @default(now())
+  decision   Decision
+  remarks    String?
+  status     ApprovalStatus        @default(PENDING)
+  hospitalId String?
+  donorId    String?
+  admin      Admin                 @relation(fields: [approvedBy], references: [id])
+  donor      DonorRegistration?    @relation("DonorApprovals", fields: [donorId], references: [id])
+  hospital   HospitalRegistration? @relation("HospitalApprovals", fields: [hospitalId], references: [id])
+}
+
+model Alert {
+  id           String               @id @default(uuid())
+  bloodType    String
+  latitude     String?
+  longitude    String?
+  urgency      UrgencyLevel
+  unitsNeeded  String
+  searchRadius String
+  description  String?
+  status       String               @default("PENDING") // PENDING, NOTIFIED, MATCHED, FULFILLED
+  autoDetected Boolean              @default(false) // True if auto-created by Hospital Agent
+  hospitalId   String
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  hospital     HospitalRegistration @relation(fields: [hospitalId], references: [id])
+  responses    AlertResponse[]
+}
+
+model AlertResponse {
+  id        String            @id @default(uuid())
+  alertId   String
+  donorId   String
+  status    ResponseStatus    @default(PENDING)
+  confirmed Boolean  @default(false)
+  createdAt DateTime          @default(now())
+  alert     Alert             @relation(fields: [alertId], references: [id])
+  donor     DonorRegistration @relation(fields: [donorId], references: [id])
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Decision {
+  APPROVED
+  REJECTED
+}
+
+enum UrgencyLevel {
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ResponseStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+}
+
+model Document {
+  id        Int      @id @default(autoincrement())
+  fileUrl   String
+  createdAt DateTime @default(now())
+}
+
+
+enum VerificationStatus {
+  PENDING           // doc uploaded, waiting for AI check
+  AUTO_REJECTED     // AI found mismatch / unsafe values
+  MATCHED_FOR_ADMIN // AI passed, awaiting admin approval
+  ADMIN_REJECTED    // admin manually rejected
+  APPROVED          // admin approved
+}
+
+enum DonorDocumentType {
+  BLOOD_TEST
+  ID_PROOF
+  MEDICAL_CERTIFICATE
+}
+
+model DonorVerification {
+  id              String             @id @default(cuid())
+  donorId         String
+  donor           DonorRegistration              @relation(fields: [donorId], references: [id])
+
+  docType         DonorDocumentType
+  docUrl          String
+  status          VerificationStatus @default(PENDING)
+
+  confidence      Float?
+  extractedFields Json?
+  mismatchFields  Json?
+
+  // Eligibility screening fields
+  eligibilityChecked Boolean @default(false)
+  eligibilityPassed  Boolean @default(false)
+  failedCriteria     Json?   // Stores which eligibility criteria failed
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Agentic AI Tables
+
+model AgentEvent {
+  id        String   @id @default(uuid())
+  type      String   // "shortage.request", "donor.candidate", etc.
+  payload   Json     // Event data
+  processed Boolean  @default(false)
+  agentType String?  // Which agent created this event
+  createdAt DateTime @default(now())
+
+  @@index([type, processed])
+  @@index([createdAt])
+}
+
+model WorkflowState {
+  id              String   @id @default(uuid())
+  requestId       String   @unique // Links to Alert.id
+  status          String   // "pending", "matching", "fulfilled", "failed"
+  currentStep     String   // Current workflow step
+  metadata        Json     // Workflow metadata (matched donors, inventory, etc.)
+  fulfillmentPlan Json?    // Fulfillment strategy and details
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([requestId])
+  @@index([status])
+}
+
+model AgentDecision {
+  id         String   @id @default(uuid())
+  agentType  String   // "hospital", "donor", "coordinator", etc.
+  eventType  String   // Type of decision made
+  eventId    String?  // Related event ID
+  requestId  String?  // Related shortage request ID
+  decision   Json     // Decision details and reasoning
+  confidence Float?   // Confidence score (0-1)
+  createdAt  DateTime @default(now())
+
+  @@index([agentType, createdAt])
+  @@index([requestId])
+}
+
+model InventoryUnit {
+  id          String   @id @default(uuid())
+  hospitalId  String
+  bloodType   String   // "O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"
+  units       Int      // Number of units available
+  expiryDate  DateTime // Expiry date of units
+  reserved    Boolean  @default(false)
+  reservedFor String?  // Request ID if reserved
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hospital HospitalRegistration @relation(fields: [hospitalId], references: [id])
+
+  @@index([hospitalId, bloodType])
+  @@index([reserved])
+  @@index([expiryDate])
+}
+
+model InventoryThreshold {
+  id              String   @id @default(uuid())
+  hospitalId      String
+  bloodType       String   // "O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"
+  minimumRequired Int      // Minimum units required (critical threshold = minimumRequired * 0.4)
+  optimalLevel    Int?     // Optimal stock level
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  hospital HospitalRegistration @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, bloodType]) // One threshold per blood type per hospital
+  @@index([hospitalId])
+}
+
+model TransportRequest {
+  id             String    @id @default(uuid())
+  fromHospitalId String
+  toHospitalId   String
+  bloodType      String
+  units          Int
+  status         String    // "pending", "picked_up", "in_transit", "delivered", "cancelled"
+  eta            DateTime?
+  pickupTime     DateTime?
+  deliveryTime   DateTime?
+  transportMethod String?  // "ambulance", "courier", "scheduled"
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  fromHospital HospitalRegistration @relation("TransportFrom", fields: [fromHospitalId], references: [id])
+  toHospital   HospitalRegistration @relation("TransportTo", fields: [toHospitalId], references: [id])
+
+  @@index([status])
+  @@index([fromHospitalId])
+  @@index([toHospitalId])
+}
+
+model DonorResponseHistory {
+  id               String    @id @default(uuid())
+  donorId          String
+  requestId        String    // Alert ID
+  notifiedAt       DateTime
+  respondedAt      DateTime?
+  responseTime     Int?      // Response time in seconds
+  status           String    // "notified", "accepted", "declined", "no_response"
+  confirmed        Boolean   @default(false) // Did they show up?
+  noShow           Boolean   @default(false)
+  distance         Float?    // Distance in km
+  score            Float?    // Donor score at time of selection
+  expectedArrival  DateTime? // Expected arrival time (calculated when accepted)
+  createdAt        DateTime  @default(now())
+
+  donor DonorRegistration @relation("DonorHistory", fields: [donorId], references: [id])
+
+  @@index([donorId])
+  @@index([requestId])
+  @@index([status])
+}
+
+enum AgentType {
+  HOSPITAL
+  DONOR
+  COORDINATOR
+  INVENTORY
+  LOGISTICS
+  COMPLIANCE
+  VERIFICATION
+}
+
+enum WorkflowStatus {
+  PENDING
+  MATCHING
+  FULFILLMENT_IN_PROGRESS
+  FULFILLED
+  FAILED
+  CANCELLED
+}
+
+model PilotRequest {
+  id            String   @id @default(uuid())
+  hospitalName  String
+  contactPerson String
+  email         String
+  phone         String
+  location      String
+  hasBloodBank  Boolean
+  status        String   @default("PENDING") // PENDING, CONTACTED, APPROVED, REJECTED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model PilotAnalytics {
+  id            String   @id @default(uuid())
+  eventType     String   // "qr_scan", "page_view", "form_submission"
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+  utmContent    String?
+  referrer      String?
+  userAgent     String?
+  ipAddress     String?
+  metadata      Json?    // Additional event data
+  createdAt     DateTime @default(now())
+
+  @@index([eventType])
+  @@index([utmMedium])
+  @@index([createdAt])
+  @@index([eventType, createdAt])
+}
+
+// ML Training and Model Management
+
+model TrainingExample {
+  id            String   @id @default(uuid())
+  taskType      String   // "donor_selection", "urgency_assessment", "inventory_selection", "transport_planning", "eligibility_analysis"
+  inputFeatures Json     // Structured input features for the model
+  outputLabel   Json     // Expected output/label (decision, outcome, etc.)
+  outcome       Json?    // Actual outcome (success/failure, metrics, etc.)
+  agentDecisionId String? // Link to AgentDecision for traceability
+  requestId     String?  // Related request/alert ID
+  usedForTraining Boolean @default(false) // Whether this example was used in training
+  createdAt     DateTime @default(now())
+
+  @@index([taskType, usedForTraining])
+  @@index([agentDecisionId])
+  @@index([requestId])
+  @@index([createdAt])
+}
+
+model CustomModel {
+  id            String   @id @default(uuid())
+  version       String   @unique // Model version identifier (e.g., "v1.0.0")
+  taskType      String   // Which task this model handles (or "multi_task")
+  modelPath     String   // Path to saved model file
+  config        Json     // Model configuration and hyperparameters
+  metrics       Json?    // Training and validation metrics
+  status        String   @default("training") // "training", "active", "archived", "failed"
+  isActive      Boolean  @default(false) // Whether this is the active model for production
+  trainedAt     DateTime @default(now())
+  deployedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  predictions   ModelPrediction[]
+
+  @@index([taskType, isActive])
+  @@index([status])
+}
+
+model ModelPrediction {
+  id            String   @id @default(uuid())
+  modelId       String
+  model         CustomModel @relation(fields: [modelId], references: [id])
+  taskType      String   // Task type for this prediction
+  inputFeatures Json     // Input features used
+  prediction    Json     // Model prediction output
+  confidence    Float?   // Confidence score
+  actualOutcome Json?    // Actual outcome (for feedback loop)
+  feedback      String?  // Human feedback or correction
+  requestId     String?  // Related request ID
+  createdAt     DateTime @default(now())
+
+  @@index([modelId])
+  @@index([taskType, createdAt])
+  @@index([requestId])
+}
+
+enum UserRole {
+  ADMIN
+  HOSPITAL
+  DONOR
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String    @unique
+  clerkId String   @unique
+  password      String?
+  role          UserRole  @default(DONOR)
+  donations Donation[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Donation {
+  id        String   @id @default(uuid())
+  amount    Int
+  status    String   @default("PENDING") // Or use an Enum if you have one
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

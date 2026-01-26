@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Thank you for contacting HaemoLogix</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #7f1d1d, #7f1d1d 50%, #ca8a04 100%);
+        color: white;
+        text-align: center;
+        padding: 25px 15px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 26px;
+      }
+      .content {
+        padding: 25px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .content h2 {
+        color: #7f1d1d;
+        margin-top: 0;
+      }
+      .message-box {
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      .message-content {
+        background-color: white;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 10px;
+        border-left: 4px solid #9B2226;
+      }
+      .contact-section {
+        margin: 20px 0;
+      }
+      .contact-section p {
+        margin: 10px 0;
+      }
+      .phone-button {
+        display: block;
+        padding: 14px 20px;
+        color: white !important;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        text-align: center;
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .call-button {
+        background-color: #9B2226;
+      }
+      .whatsapp-button {
+        background-color: #25D366;
+      }
+      /* Email client compatible styling */
+      .button-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 12px 12px;
+        margin: 15px 0;
+      }
+      .button-table td {
+        width: 48%;
+        padding: 0;
+      }
+      @media only screen and (max-width: 480px) {
+        .button-table,
+        .button-table tbody,
+        .button-table tr,
+        .button-table td {
+          display: block;
+          width: 100% !important;
+        }
+        .button-table td {
+          margin-bottom: 12px;
+        }
+        .button-table td:last-child {
+          margin-bottom: 0;
+        }
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888888;
+        padding: 15px;
+        background-color: #f9fafb;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>Thank you for contacting HaemoLogix!</h1>
+      </div>
+      <div class="content">
+        <h2>Dear {{name}},</h2>
+        <p>We have received your message and will get back to you as soon as possible.</p>
+        
+        <div class="message-box">
+          <p><strong>Your Message:</strong></p>
+          <div class="message-content">
+            {{message}}
+          </div>
+        </div>
+
+        <div class="contact-section">
+          <p><strong>For urgent matters, please contact us:</strong></p>
+          <p style="margin: 15px 0 10px 0;"><strong>Phone Numbers:</strong></p>
+          
+          <table class="button-table" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td>
+                <a href="tel:+919903776046" class="phone-button call-button">
+                  📞 Call: +91 9903776046
+                </a>
+              </td>
+              <td>
+                <a href="https://wa.me/919903776046" class="phone-button whatsapp-button">
+                  💬 WhatsApp: +91 9903776046
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <a href="tel:+919874712191" class="phone-button call-button">
+                  📞 Call: +91 9874712191
+                </a>
+              </td>
+              <td>
+                <a href="https://wa.me/919874712191" class="phone-button whatsapp-button">
+                  💬 WhatsApp: +91 9874712191
+                </a>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <p style="color: #666; margin-top: 30px;">
+          Best regards,<br>
+          <strong>The HaemoLogix Team</strong>
+        </p>
+      </div>
+      <div class="footer">
+        © <span id="year"></span> Haemologix Pvt. Ltd. — Connecting Life, One Drop at a Time
+      <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+      </div>
+    </div>
+  </body>
+</html>
+

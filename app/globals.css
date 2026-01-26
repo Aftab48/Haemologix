@@ -1,0 +1,605 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* New Color Scheme */
+    --ruby: 355 68% 37%; /* Deep Ruby #9B2226 */
+    --oxygen-blue: 188 100% 23%; /* Oxygen Blue #005F73 */
+    --mist-green: 162 50% 70%; /* Mist Green #94D2BD */
+    --bone-white: 42 55% 88%; /* Bone White #E9D8A6 */
+    --text-dark: 235 18% 21%; /* Text #2B2D42 */
+    
+    /* Theme Variables */
+    --background: 42 55% 88%; /* Bone White */
+    --foreground: 235 18% 21%; /* Text Dark */
+    --card: 0 0% 100%;
+    --card-foreground: 235 18% 21%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 235 18% 21%;
+    --primary: 355 68% 37%; /* Deep Ruby */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 188 100% 23%; /* Oxygen Blue */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 42 35% 75%;
+    --muted-foreground: 235 15% 40%;
+    --accent: 162 50% 70%; /* Mist Green */
+    --accent-foreground: 235 18% 21%;
+    --destructive: 355 68% 37%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 42 30% 70%;
+    --input: 42 30% 75%;
+    --ring: 355 68% 37%;
+    --radius: 0.75rem;
+    --chart-1: 355 68% 37%;
+    --chart-2: 188 100% 23%;
+    --chart-3: 162 50% 70%;
+    --chart-4: 42 55% 68%;
+    --chart-5: 235 18% 35%;
+  }
+
+  .dark {
+    --background: 235 18% 15%;
+    --foreground: 42 55% 88%;
+    --card: 235 18% 18%;
+    --card-foreground: 42 55% 88%;
+    --popover: 235 18% 15%;
+    --popover-foreground: 42 55% 88%;
+    --primary: 355 68% 47%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 188 100% 33%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 235 15% 25%;
+    --muted-foreground: 42 35% 65%;
+    --accent: 162 50% 60%;
+    --accent-foreground: 235 18% 15%;
+    --destructive: 355 68% 47%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 235 15% 25%;
+    --input: 235 15% 25%;
+    --ring: 162 50% 60%;
+    --chart-1: 355 68% 47%;
+    --chart-2: 188 100% 33%;
+    --chart-3: 162 50% 60%;
+    --chart-4: 42 55% 58%;
+    --chart-5: 235 18% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'DM Sans', sans-serif;
+    font-optical-sizing: auto;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+  }
+}
+
+
+/* Custom animations */
+@keyframes pulse-red {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-red {
+  animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(148, 210, 189, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(148, 210, 189, 0.6);
+  }
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.loading-shimmer {
+  background: linear-gradient(90deg, #E9D8A6 25%, #94D2BD 50%, #E9D8A6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.5s ease-out forwards;
+}
+
+/* Oxygen motion effect */
+@keyframes oxygen-flow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateX(-100%);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+}
+
+.oxygen-flow {
+  position: relative;
+  overflow: hidden;
+}
+
+.oxygen-flow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(148, 210, 189, 0.3), transparent);
+  animation: oxygen-flow 3s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+
+/* Smooth transitions */
+.transition-all {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom scrollbar with new colors */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #E9D8A6;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #005F73;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9B2226;
+}
+
+/* Glass morphism effect */
+.glass-morphism {
+  background: rgba(233, 216, 166, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(155, 34, 38, 0.15);
+}
+
+/* Accessibility improvements */
+.focus-visible:focus {
+  outline: 2px solid #9B2226;
+  outline-offset: 3px;
+}
+
+/* Text readability on gradients */
+.gradient-text-overlay {
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+}
+/* Improved keyboard focus visibility (Accessibility) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #9B2226; /* Deep Ruby */
+  outline-offset: 3px;
+}
+
+
+/* Gradient backgrounds */
+.gradient-ruby {
+  background: linear-gradient(135deg, #9B2226 0%, #7a1a1d 100%);
+}
+
+.gradient-oxygen {
+  background: linear-gradient(135deg, #005F73 0%, #004a5a 100%);
+}
+
+.gradient-mist {
+  background: linear-gradient(135deg, #94D2BD 0%, #7ab8a3 100%);
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Clerk Authentication Component Styling */
+/* Target Clerk's internal classes to match website theme */
+
+/* Main container and card */
+.cl-rootBox,
+.cl-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(233, 216, 166, 0.3) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 20px 40px rgba(155, 34, 38, 0.15) !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+.cl-main {
+  padding: 2rem !important;
+}
+
+/* Headers and titles */
+.cl-headerTitle,
+.cl-headerTitle h1,
+.cl-headerTitle h2 {
+  font-family: 'Outfit', sans-serif !important;
+  font-weight: 700 !important;
+  color: hsl(var(--text-dark)) !important;
+  font-size: 1.875rem !important;
+  line-height: 2.25rem !important;
+}
+
+.cl-headerSubtitle,
+.cl-headerSubtitle p {
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.875rem !important;
+}
+
+/* Form buttons - Primary */
+.cl-formButtonPrimary,
+.cl-buttonPrimary {
+  background: hsl(var(--primary)) !important;
+  background-color: #9B2226 !important;
+  color: white !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 600 !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1.5rem !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none !important;
+}
+
+.cl-formButtonPrimary:hover,
+.cl-buttonPrimary:hover {
+  background: #7a1a1d !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(155, 34, 38, 0.3) !important;
+}
+
+.cl-formButtonPrimary:active,
+.cl-buttonPrimary:active {
+  transform: translateY(0);
+}
+
+.cl-formButtonPrimary:focus,
+.cl-buttonPrimary:focus {
+  outline: 2px solid #9B2226 !important;
+  outline-offset: 2px !important;
+}
+
+/* Form buttons - Secondary */
+.cl-formButtonSecondary,
+.cl-buttonSecondary {
+  background: hsl(var(--secondary)) !important;
+  background-color: #005F73 !important;
+  color: white !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 600 !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1.5rem !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none !important;
+}
+
+.cl-formButtonSecondary:hover,
+.cl-buttonSecondary:hover {
+  background: #004a5a !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 95, 115, 0.3) !important;
+}
+
+/* Input fields */
+.cl-input,
+.cl-inputField {
+  background: hsl(var(--input)) !important;
+  background-color: rgba(233, 216, 166, 0.5) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-color: rgba(233, 216, 166, 0.7) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1rem !important;
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--text-dark)) !important;
+  font-size: 0.875rem !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.cl-input:focus,
+.cl-inputField:focus {
+  outline: none !important;
+  border-color: hsl(var(--primary)) !important;
+  border-color: #9B2226 !important;
+  box-shadow: 0 0 0 3px rgba(155, 34, 38, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.cl-input::placeholder,
+.cl-inputField::placeholder {
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 0.7 !important;
+}
+
+/* Form field labels */
+.cl-formFieldLabel,
+.cl-label {
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 600 !important;
+  color: hsl(var(--text-dark)) !important;
+  font-size: 0.875rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Links */
+.cl-footerActionLink,
+.cl-link,
+.cl-anchor {
+  color: hsl(var(--primary)) !important;
+  color: #9B2226 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.cl-footerActionLink:hover,
+.cl-link:hover,
+.cl-anchor:hover {
+  color: #7a1a1d !important;
+  text-decoration: underline !important;
+}
+
+/* Social buttons */
+.cl-socialButtonsBlockButton,
+.cl-socialButton {
+  background: white !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-color: rgba(233, 216, 166, 0.7) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1rem !important;
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--text-dark)) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.cl-socialButtonsBlockButton:hover,
+.cl-socialButton:hover {
+  background: hsl(var(--accent)) !important;
+  background-color: rgba(148, 210, 189, 0.2) !important;
+  border-color: hsl(var(--accent)) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(148, 210, 189, 0.3) !important;
+}
+
+/* Dividers */
+.cl-dividerLine {
+  background: hsl(var(--border)) !important;
+  background-color: rgba(233, 216, 166, 0.7) !important;
+  height: 1px !important;
+}
+
+.cl-dividerText {
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.875rem !important;
+}
+
+/* Form field error messages */
+.cl-fieldError,
+.cl-alertText {
+  color: hsl(var(--destructive)) !important;
+  color: #9B2226 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 0.875rem !important;
+}
+
+/* Form field success messages */
+.cl-fieldSuccess {
+  color: hsl(var(--accent-foreground)) !important;
+  color: #005F73 !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 0.875rem !important;
+}
+
+/* Footer text */
+.cl-footerText,
+.cl-footerText p {
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.875rem !important;
+}
+
+/* Identity preview and user button */
+.cl-userButtonBox,
+.cl-userButtonTrigger {
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+/* Form actions */
+.cl-formActions {
+  margin-top: 1.5rem !important;
+}
+
+/* Form fields container */
+.cl-formFieldInput {
+  margin-bottom: 1rem !important;
+}
+
+/* Loading states */
+.cl-spinner {
+  border-color: hsl(var(--primary)) !important;
+  border-top-color: transparent !important;
+}
+
+/* Checkbox and radio buttons */
+.cl-checkboxInput,
+.cl-radioInput {
+  accent-color: hsl(var(--primary)) !important;
+  accent-color: #9B2226 !important;
+}
+
+/* Select dropdowns */
+.cl-selectButton,
+.cl-select {
+  background: hsl(var(--input)) !important;
+  background-color: rgba(233, 216, 166, 0.5) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-color: rgba(233, 216, 166, 0.7) !important;
+  border-radius: 0.75rem !important;
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--text-dark)) !important;
+}
+
+.cl-selectButton:focus,
+.cl-select:focus {
+  outline: none !important;
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: 0 0 0 3px rgba(155, 34, 38, 0.1) !important;
+}
+
+/* OTP input fields */
+.cl-otpInputField {
+  background: hsl(var(--input)) !important;
+  background-color: rgba(233, 216, 166, 0.5) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-color: rgba(233, 216, 166, 0.7) !important;
+  border-radius: 0.5rem !important;
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--text-dark)) !important;
+}
+
+.cl-otpInputField:focus {
+  outline: none !important;
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: 0 0 0 3px rgba(155, 34, 38, 0.1) !important;
+}
+
+/* Modal and overlay */
+.cl-modalContent,
+.cl-modal {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 0.75rem !important;
+}
+
+/* Breadcrumb navigation */
+.cl-breadcrumbItem {
+  font-family: 'DM Sans', sans-serif !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.cl-breadcrumbItemActive {
+  color: hsl(var(--text-dark)) !important;
+  font-weight: 600 !important;
+}
+
+/* Ensure proper z-index for Clerk components */
+.cl-rootBox {
+  position: relative;
+  z-index: 10;
+}

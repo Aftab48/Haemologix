@@ -1,0 +1,24 @@
+# Model Architecture Hyperparameters
+
+model:
+  num_blood_types: 8
+  num_urgency_levels: 4
+  num_transport_methods: 3
+  embedding_dim: 32
+  numerical_dim: 64
+  hidden_dim: 256
+  num_factors: 4  # urgency, reliability, distance, health
+  dropout: 0.1
+
+feature_encoder:
+  time_encoding_dim: 16
+
+reasoning_layer:
+  num_heads: 8
+
+task_heads:
+  donor_selection:
+    max_candidates: 50
+  inventory_selection:
+    max_sources: 20
+
