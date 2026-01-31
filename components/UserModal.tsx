@@ -15,9 +15,11 @@ type Props = {
   userId: string;
   userType: "donor" | "hospital";
   onClose: () => void;
+  /** Base path for "View Full Profile" link (e.g. "/demo/admin" for demo admin). Default "/admin". */
+  adminBasePath?: string;
 };
 
-export function UserModal({ userId, userType, onClose }: Props) {
+export function UserModal({ userId, userType, onClose, adminBasePath = "/admin" }: Props) {
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -99,7 +101,7 @@ export function UserModal({ userId, userType, onClose }: Props) {
             )}
 
             <Link
-              href={`/admin/users/${userType}/${userData.id}`}
+              href={`${adminBasePath}/users/${userType}/${userData.id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 underline mt-4 block text-center"
