@@ -197,7 +197,7 @@ export default function DonorRegistration() {
           <CardContent>
             {/* STEP 1 FIELDS */}
             {currentStep === 1 && (
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>First Name *</Label>
@@ -222,17 +222,223 @@ export default function DonorRegistration() {
                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                      <SelectContent className="bg-white">
                         <SelectItem value="O+">O+</SelectItem>
+                        <SelectItem value="O-">O-</SelectItem>
                         <SelectItem value="A+">A+</SelectItem>
+                        <SelectItem value="A-">A-</SelectItem>
                         <SelectItem value="B+">B+</SelectItem>
+                        <SelectItem value="B-">B-</SelectItem>
                         <SelectItem value="AB+">AB+</SelectItem>
+                        <SelectItem value="AB-">AB-</SelectItem>
                      </SelectContent>
                    </Select>
                 </div>
               </div>
             )}
 
-            {/* Steps 2-6 (Omitted for brevity, keep your original logic for these steps) */}
-            {currentStep > 1 && <div className="py-10 text-center">Form content for Step {currentStep}</div>}
+            {/* STEP 2: Physical Requirements */}
+            {currentStep === 2 && (
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <div className="space-y-2">
+                  <Label>Date of Birth *</Label>
+                  <Input type="date" value={formData.dateOfBirth} onChange={(e) => updateFormData("dateOfBirth", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Gender *</Label>
+                  <Select value={formData.gender} onValueChange={(val) => updateFormData("gender", val)}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Address *</Label>
+                  <Textarea value={formData.address} onChange={(e) => updateFormData("address", e.target.value)} placeholder="Full address" rows={3} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Emergency Contact Name *</Label>
+                    <Input value={formData.emergencyContact} onChange={(e) => updateFormData("emergencyContact", e.target.value)} placeholder="Name" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Emergency Contact Phone *</Label>
+                    <Input value={formData.emergencyPhone} onChange={(e) => updateFormData("emergencyPhone", e.target.value)} placeholder="10 digits" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Weight (kg) *</Label>
+                    <Input type="number" step="0.1" value={formData.weight} onChange={(e) => updateFormData("weight", e.target.value)} placeholder="e.g. 70" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Height (cm) *</Label>
+                    <Input type="number" step="0.1" value={formData.height} onChange={(e) => updateFormData("height", e.target.value)} placeholder="e.g. 175" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>BMI (auto)</Label>
+                    <Input value={formData.bmi || "—"} readOnly className="bg-muted" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: Medical History */}
+            {currentStep === 3 && (
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="neverDonated" checked={formData.neverDonated} onCheckedChange={(c) => updateFormData("neverDonated", c === true)} />
+                  <Label htmlFor="neverDonated" className="cursor-pointer">I have never donated blood before</Label>
+                </div>
+                {!formData.neverDonated && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Last Donation Date</Label>
+                      <Input type="date" value={formData.lastDonation} onChange={(e) => updateFormData("lastDonation", e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Donation Count</Label>
+                      <Input value={formData.donationCount} onChange={(e) => updateFormData("donationCount", e.target.value)} placeholder="Number of times" />
+                    </div>
+                  </>
+                )}
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="recentVaccinations" checked={formData.recentVaccinations} onCheckedChange={(c) => updateFormData("recentVaccinations", c === true)} />
+                  <Label htmlFor="recentVaccinations" className="cursor-pointer">Recent vaccinations (within eligibility period)</Label>
+                </div>
+                {formData.recentVaccinations && (
+                  <div className="space-y-2">
+                    <Label>Vaccination Details</Label>
+                    <Textarea value={formData.vaccinationDetails} onChange={(e) => updateFormData("vaccinationDetails", e.target.value)} placeholder="Details" rows={2} />
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label>Medical Conditions</Label>
+                  <Textarea value={formData.medicalConditions} onChange={(e) => updateFormData("medicalConditions", e.target.value)} placeholder="Any conditions (or None)" rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Medications</Label>
+                  <Textarea value={formData.medications} onChange={(e) => updateFormData("medications", e.target.value)} placeholder="Current medications (or None)" rows={2} />
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: Health Screening */}
+            {currentStep === 4 && (
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>HIV Test</Label>
+                    <Select value={formData.hivTest} onValueChange={(val) => updateFormData("hivTest", val)}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectItem value="Negative">Negative</SelectItem>
+                        <SelectItem value="Positive">Positive</SelectItem>
+                        <SelectItem value="Not tested">Not tested</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Hepatitis B Test</Label>
+                    <Select value={formData.hepatitisBTest} onValueChange={(val) => updateFormData("hepatitisBTest", val)}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectItem value="Negative">Negative</SelectItem>
+                        <SelectItem value="Positive">Positive</SelectItem>
+                        <SelectItem value="Not tested">Not tested</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Hepatitis C Test</Label>
+                    <Select value={formData.hepatitisCTest} onValueChange={(val) => updateFormData("hepatitisCTest", val)}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectItem value="Negative">Negative</SelectItem>
+                        <SelectItem value="Positive">Positive</SelectItem>
+                        <SelectItem value="Not tested">Not tested</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Syphilis Test</Label>
+                    <Select value={formData.syphilisTest} onValueChange={(val) => updateFormData("syphilisTest", val)}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectItem value="Negative">Negative</SelectItem>
+                        <SelectItem value="Positive">Positive</SelectItem>
+                        <SelectItem value="Not tested">Not tested</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Malaria Test</Label>
+                    <Select value={formData.malariaTest} onValueChange={(val) => updateFormData("malariaTest", val)}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent className="bg-white">
+                        <SelectItem value="Negative">Negative</SelectItem>
+                        <SelectItem value="Positive">Positive</SelectItem>
+                        <SelectItem value="Not tested">Not tested</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Hemoglobin (g/dL)</Label>
+                    <Input value={formData.hemoglobin} onChange={(e) => updateFormData("hemoglobin", e.target.value)} placeholder="e.g. 14" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Platelet Count</Label>
+                    <Input value={formData.plateletCount} onChange={(e) => updateFormData("plateletCount", e.target.value)} placeholder="Optional" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>WBC Count</Label>
+                    <Input value={formData.wbcCount} onChange={(e) => updateFormData("wbcCount", e.target.value)} placeholder="Optional" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: Document Upload */}
+            {currentStep === 5 && (
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <div className="space-y-2">
+                  <Label>Blood Test Report (optional)</Label>
+                  <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => updateFormData("bloodTestReport", e.target.files?.[0] ?? null)} />
+                  {formData.bloodTestReport && <span className="text-sm text-muted-foreground">Selected: {(formData.bloodTestReport as File).name}</span>}
+                </div>
+                <div className="space-y-2">
+                  <Label>ID Proof *</Label>
+                  <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => updateFormData("idProof", e.target.files?.[0] ?? null)} />
+                  {formData.idProof && <span className="text-sm text-muted-foreground">Selected: {(formData.idProof as File).name}</span>}
+                </div>
+                <div className="space-y-2">
+                  <Label>Medical Certificate (optional)</Label>
+                  <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => updateFormData("medicalCertificate", e.target.files?.[0] ?? null)} />
+                  {formData.medicalCertificate && <span className="text-sm text-muted-foreground">Selected: {(formData.medicalCertificate as File).name}</span>}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 6: Consent & Agreement */}
+            {currentStep === 6 && (
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <div className="flex items-start space-x-2">
+                  <Checkbox id="dataProcessingConsent" checked={formData.dataProcessingConsent} onCheckedChange={(c) => updateFormData("dataProcessingConsent", c === true)} />
+                  <Label htmlFor="dataProcessingConsent" className="cursor-pointer leading-tight">I consent to the processing of my personal and health data for donor registration and matching purposes.</Label>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <Checkbox id="medicalScreeningConsent" checked={formData.medicalScreeningConsent} onCheckedChange={(c) => updateFormData("medicalScreeningConsent", c === true)} />
+                  <Label htmlFor="medicalScreeningConsent" className="cursor-pointer leading-tight">I consent to medical screening and eligibility checks as required for blood donation.</Label>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <Checkbox id="termsAccepted" checked={formData.termsAccepted} onCheckedChange={(c) => updateFormData("termsAccepted", c === true)} />
+                  <Label htmlFor="termsAccepted" className="cursor-pointer leading-tight">I accept the terms and conditions for blood donor registration.</Label>
+                </div>
+              </div>
+            )}
 
             {/* NAVIGATION BUTTONS */}
             <div className="flex justify-between mt-8">

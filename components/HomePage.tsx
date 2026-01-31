@@ -40,11 +40,12 @@ const HomePage = () => {
       router.push(path);
       return;
     }
-    
-    if (!isSignedIn) {
-      router.push("/auth/sign-up");
-    } else {
+    // Register forms are reachable without login
+    const isRegisterRoute = /^\/(donor|hospital|bloodbank)\/register/.test(path);
+    if (isRegisterRoute || isSignedIn) {
       router.push(path);
+    } else {
+      router.push("/auth/sign-up");
     }
   };
 
