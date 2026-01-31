@@ -289,9 +289,7 @@ export default function BloodBankRegistration() {
   };
 
   const nextStep = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
-    }
+    setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
   };
 
   const prevStep = () => {
