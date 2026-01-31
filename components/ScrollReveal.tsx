@@ -50,7 +50,7 @@ const ScrollReveal = ({
       y: 0,
       transition: {
         duration: duration,
-        ease: [0.22, 1, 0.36, 1], // Custom easing for "soothing" feel
+        ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
         delay: delay,
         staggerChildren: staggerChildren
       }

@@ -3,10 +3,9 @@ import { fetchUserDataById } from "@/lib/actions/user.actions";
 import GradientBackground from "@/components/GradientBackground";
 
 export default async function UserDetailPage(props: {
-  params: { userType: string; id: string };
+  params: Promise<{ userType: string; id: string }>;
 }) {
-  const { params } = props;
-  const { userType, id } = params;
+  const { userType, id } = await props.params;
 
   const userData = await fetchUserDataById(
     id,

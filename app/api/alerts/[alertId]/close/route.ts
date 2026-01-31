@@ -6,10 +6,10 @@ import { db } from "@/db";
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { alertId: string } }
+  { params }: { params: Promise<{ alertId: string }> }
 ) {
   try {
-    const alertId = params.alertId;
+    const { alertId } = await params;
     const body = await req.json();
     const { source, donors, externalDonorEmail, otherDetails } = body;
 
