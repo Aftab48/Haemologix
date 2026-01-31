@@ -2,7 +2,12 @@
 
 import { useMemo } from "react";
 import { GoogleMap, Marker, InfoWindow, useLoadScript } from "@react-google-maps/api";
-import { MapPin } from "lucide-react";
+import { MapPin, Clock } from "lucide-react";
+import {
+  haversineDistanceKm,
+  calculateDonorEta,
+  transportModeLabel,
+} from "@/lib/distanceEta";
 
 interface DonorLocation {
   id: string;
@@ -83,6 +88,24 @@ export default function DonorLocationMap({
     return defaultCenter;
   }, [donorLat, donorLng, hospitalLat, hospitalLng]);
 
+  // Distance and ETA (donor → hospital)
+  const distanceAndEta = useMemo(() => {
+    if (
+      isNaN(donorLat) ||
+      isNaN(donorLng) ||
+      isNaN(hospitalLat) ||
+      isNaN(hospitalLng)
+    )
+      return null;
+    const distanceKm = haversineDistanceKm(
+      donorLat,
+      donorLng,
+      hospitalLat,
+      hospitalLng
+    );
+    return calculateDonorEta(distanceKm);
+  }, [donorLat, donorLng, hospitalLat, hospitalLng]);
+
   // Calculate bounds to fit both markers (will be set in onLoad callback)
   const hasBothLocations =
     !isNaN(donorLat) &&
@@ -124,7 +147,24 @@ export default function DonorLocationMap({
   }
 
   return (
-    <GoogleMap
+    <div className="space-y-2">
+      {distanceAndEta && (
+        <div className="flex flex-wrap items-center gap-3 text-sm text-white/90 bg-white/5 rounded-lg px-3 py-2 border border-white/10">
+          <span className="flex items-center gap-1.5">
+            <MapPin className="w-4 h-4 text-emerald-400" />
+            <strong>{distanceAndEta.distanceKm.toFixed(1)} km</strong>
+            <span className="text-white/70">to hospital</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-amber-400" />
+            <strong>~{distanceAndEta.recommendedEtaMinutes} min</strong>
+            <span className="text-white/70">
+              ETA ({transportModeLabel(distanceAndEta.recommendedMode)})
+            </span>
+          </span>
+        </div>
+      )}
+      <GoogleMap
           mapContainerStyle={mapContainerStyle}
           center={center}
           zoom={hasBothLocations ? undefined : 12}
@@ -209,7 +249,7 @@ export default function DonorLocationMap({
             }}
           >
             <InfoWindow position={{ lat: donorLat, lng: donorLng }}>
-              <div className="text-gray-800">
+              <div className="text-gray-800 min-w-[180px]">
                 <p className="font-semibold">{donor.name}</p>
                 {donor.bloodGroup && (
                   <p className="text-sm">Blood Group: {donor.bloodGroup}</p>
@@ -217,11 +257,23 @@ export default function DonorLocationMap({
                 {donor.phone && (
                   <p className="text-sm">Phone: {donor.phone}</p>
                 )}
+                {distanceAndEta && (
+                  <>
+                    <p className="text-sm mt-1 border-t border-gray-200 pt-1">
+                      📍 {distanceAndEta.distanceKm.toFixed(1)} km to hospital
+                    </p>
+                    <p className="text-sm">
+                      ⏱ ~{distanceAndEta.recommendedEtaMinutes} min ETA (
+                      {transportModeLabel(distanceAndEta.recommendedMode)})
+                    </p>
+                  </>
+                )}
                 <p className="text-xs text-gray-500 mt-1">Donor Location</p>
               </div>
             </InfoWindow>
           </Marker>
         </GoogleMap>
+    </div>
   );
 }
 
