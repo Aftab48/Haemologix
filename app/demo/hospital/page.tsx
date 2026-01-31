@@ -454,6 +454,25 @@ export default function HospitalDashboard() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [distanceFilter, setDistanceFilter] = useState("all");
+  const [shareCopiedId, setShareCopiedId] = useState<string | number | null>(null);
+  const [closeConfirmId, setCloseConfirmId] = useState<string | number | null>(null);
+
+  const handleShareAlert = async (alertId: string | number) => {
+    const url = `${typeof window !== "undefined" ? window.location.origin : ""}/hospital/alert/${alertId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareCopiedId(alertId);
+      setTimeout(() => setShareCopiedId(null), 2000);
+    } catch {
+      // fallback: open in same window so user can copy
+      window.open(url, "_blank");
+    }
+  };
+
+  const handleCloseAlert = (alertId: string | number) => {
+    setActiveAlerts((prev) => prev.filter((a) => String(a.id) !== String(alertId)));
+    setCloseConfirmId(null);
+  };
 
   const filteredDonors = useMemo(() => {
     return donorResponses.filter((donor) => {
@@ -1017,31 +1036,60 @@ export default function HospitalDashboard() {
                         </div>
                       </div>
 
-                      <div className="flex gap-3">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-white/20 text-white bg-yellow-600 hover:bg-white/20 transition-all duration-300"
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Link
+                          href={`/hospital/alert/${String(alert.id)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
-                          <Eye className="w-4 h-4 mr-2" />
-                          View Details
-                        </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-white/20 text-white bg-yellow-600 hover:bg-white/20 transition-all duration-300"
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Details
+                          </Button>
+                        </Link>
                         <Button
                           variant="outline"
                           size="sm"
                           className="border-white/20 bg-yellow-600 text-white hover:bg-white/20 transition-all duration-300"
+                          onClick={() => handleShareAlert(alert.id)}
                         >
                           <Share2 className="w-4 h-4 mr-2" />
-                          Share Alert
+                          {shareCopiedId === alert.id ? "Link copied!" : "Share Alert"}
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-yellow-600 text-red-700  border-red-600 hover:bg-red-600/20 transition-all duration-300"
-                        >
-                          <XCircle className="w-4 h-4 mr-2" />
-                          Close Alert
-                        </Button>
+                        {closeConfirmId === alert.id ? (
+                          <span className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="bg-red-600 text-white border-red-600 hover:bg-red-700"
+                              onClick={() => handleCloseAlert(alert.id)}
+                            >
+                              Yes, close
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-white/20 hover:bg-white/20"
+                              onClick={() => setCloseConfirmId(null)}
+                            >
+                              Cancel
+                            </Button>
+                          </span>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-yellow-600 text-red-700 border-red-600 hover:bg-red-600/20 transition-all duration-300"
+                            onClick={() => setCloseConfirmId(alert.id)}
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Close Alert
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
