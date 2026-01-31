@@ -36,7 +36,6 @@ import {
   getEligibilityProgress,
   isCompatible,
 } from "@/lib/utils";
-import { format } from "path";
 import {
   Select,
   SelectContent,
@@ -49,10 +48,49 @@ import GradientBackground from "@/components/GradientBackground";
 import { fetchUserDataById } from "@/lib/actions/user.actions";
 import { getAllAvailableAlerts } from "@/lib/actions/alerts.actions";
 
-export default function DonorDashboard() {
-  // Demo donor ID
-  const DEMO_DONOR_ID = "4b9f499a-f928-4133-8dcb-378199d8418f";
+// Hardcoded demo identities (neondb donor uuid + Clerk user id)
+const DEMO_NEONDB_DONOR_ID = "4b9f499a-f928-4133-8dcb-378199d8418f";
+const DEMO_CLERK_USER_ID = "user_31gpGyFGjwX3jPTd4FLVN1jiVvf";
 
+/** Fallback donor when DB has no record for demo id */
+function getFallbackDonor(): DonorData & { id: string } {
+  return {
+    id: DEMO_NEONDB_DONOR_ID,
+    firstName: "Demo",
+    lastName: "Donor",
+    email: "demo@haemologix.in",
+    phone: "+910000000000",
+    dateOfBirth: "",
+    gender: "Other",
+    address: "Demo Address",
+    emergencyContact: "Demo Contact",
+    emergencyPhone: "+910000000001",
+    weight: "70",
+    height: "170",
+    bmi: "24.2",
+    bloodGroup: "O+",
+    lastDonation: undefined,
+    donationCount: "0",
+    neverDonated: false,
+    recentVaccinations: false,
+    vaccinationDetails: "",
+    medicalConditions: "",
+    medications: "",
+    hivTest: "",
+    hepatitisBTest: "",
+    hepatitisCTest: "",
+    syphilisTest: "",
+    malariaTest: "",
+    hemoglobin: "",
+    plateletCount: "",
+    wbcCount: "",
+    dataProcessingConsent: true,
+    medicalScreeningConsent: true,
+    termsAccepted: true,
+  };
+}
+
+export default function DonorDashboard() {
   const [user, setUser] = useState<DonorData | null>(null);
   const [isAvailable, setIsAvailable] = useState(true);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
@@ -89,16 +127,17 @@ export default function DonorDashboard() {
   //   fetchUser();
   // }, [loggedInUser]);
 
-  // Fetch user data on mount
+  // Fetch user data on mount (neondb donor uuid)
   useEffect(() => {
     const fetchUser = async () => {
       try {
         setIsLoadingUser(true);
-        const userData = await fetchUserDataById(DEMO_DONOR_ID, "donor");
+        const userData = await fetchUserDataById(DEMO_NEONDB_DONOR_ID, "donor");
         if (userData && userData.userType === "donor") {
-          const donorData = userData as any; // Type assertion for donor data
+          const donorData = userData as any;
           setUser({
             ...donorData,
+            id: donorData.id ?? DEMO_NEONDB_DONOR_ID,
             dateOfBirth: donorData.dateOfBirth
               ? new Date(donorData.dateOfBirth).toISOString()
               : "",
@@ -106,9 +145,12 @@ export default function DonorDashboard() {
               ? new Date(donorData.lastDonation).toISOString()
               : undefined,
           } as DonorData);
+        } else {
+          setUser(getFallbackDonor());
         }
       } catch (err) {
         console.error("[Demo Donor Dashboard] error fetching user:", err);
+        setUser(getFallbackDonor());
       } finally {
         setIsLoadingUser(false);
       }
@@ -272,14 +314,34 @@ export default function DonorDashboard() {
     "accept" | "decline" | null
   >(null);
 
-  const handleAlertResponse = (alertId: number) => {
+  const handleAlertResponse = async (alertId: string | number, status: "accept" | "decline") => {
+    const donorId = (user as DonorData & { id?: string })?.id ?? DEMO_NEONDB_DONOR_ID;
+    setButtonResponse(status);
     setActiveAlerts((alerts) =>
       alerts.map((alert) =>
-        alert.id === alertId
-          ? { ...alert, responded: true, response: buttonResponse }
+        String(alert.id) === String(alertId)
+          ? { ...alert, responded: true, response: status }
           : alert
       )
     );
+    try {
+      const res = await fetch("/api/donor/respond", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          donor_id: donorId,
+          request_id: String(alertId),
+          status: status === "accept" ? "accepted" : "declined",
+          eta_minutes: status === "accept" ? 45 : undefined,
+        }),
+      });
+      const result = await res.json();
+      if (!result.success) {
+        console.warn("[Demo Donor] respond API:", result.error);
+      }
+    } catch (err) {
+      console.warn("[Demo Donor] respond API error:", err);
+    }
   };
 
   const getUrgencyColor = (urgency: string) => {
@@ -660,10 +722,7 @@ export default function DonorDashboard() {
                         <div className="flex flex-col gap-3">
                           <div className="flex gap-3">
                             <Button
-                              onClick={() => {
-                                setButtonResponse("accept");
-                                handleAlertResponse(alert.id);
-                              }}
+                              onClick={() => handleAlertResponse(alert.id, "accept")}
                               className="bg-green-600 hover:bg-green-700 text-white"
                               disabled={
                                 alert.bloodType.toLowerCase() === "plasma"
@@ -679,10 +738,7 @@ export default function DonorDashboard() {
                             </Button>
                             <Button
                               variant="outline"
-                              onClick={() => {
-                                setButtonResponse("decline");
-                                handleAlertResponse(alert.id);
-                              }}
+                              onClick={() => handleAlertResponse(alert.id, "decline")}
                               className="bg-white/20 text-white border-white/30 hover:bg-white/30"
                               disabled={
                                 !isCompatible(
