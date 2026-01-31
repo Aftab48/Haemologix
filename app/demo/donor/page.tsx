@@ -87,6 +87,7 @@ function getFallbackDonor(): DonorData & { id: string } {
     dataProcessingConsent: true,
     medicalScreeningConsent: true,
     termsAccepted: true,
+    idProof: null,
   };
 }
 
