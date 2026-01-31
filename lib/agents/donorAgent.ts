@@ -8,6 +8,7 @@ import { AgentType } from "@prisma/client";
 import { publishEvent } from "./eventBus";
 import { scoreDonor, DonorScores } from "./donorScoring";
 import { sendDonorBloodRequestEmail } from "../actions/mails.actions";
+import { sendUrgentBloodRequestSMS } from "../actions/sms.actions";
 import { reasonAboutDonorMatchingStrategy } from "./llmReasoning";
 import { getHistoricalPatterns } from "./outcomeTracking";
 
@@ -485,7 +486,21 @@ export async function processShortageEvent(eventId: string): Promise<{
       return { success: false, donorsNotified: 0, error: "Hospital not found" };
     }
 
-    // Send notifications to top donors
+    // Phase 1: Create AlertResponse for all found donors first so they show on the alerts page immediately
+    await db.alertResponse.createMany({
+      data: topDonors.map((donor) => ({
+        alertId: requestId,
+        donorId: donor.id,
+        status: "PENDING" as const,
+        confirmed: false,
+      })),
+      skipDuplicates: true,
+    });
+    console.log(
+      `[DonorAgent] Created ${topDonors.length} donor entries on alert — visible on alerts page`
+    );
+
+    // Phase 2: Send email and SMS to each donor (after donors are already visible)
     let notifiedCount = 0;
     for (const donor of topDonors) {
       try {
@@ -495,22 +510,6 @@ export async function processShortageEvent(eventId: string): Promise<{
           process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
         const acceptUrl = `${baseUrl}/api/donor/respond?token=${token}&status=accept`;
         const declineUrl = `${baseUrl}/api/donor/respond?token=${token}&status=decline`;
-
-        // Create donor.candidate event
-        await publishEvent(
-          "donor.candidate.v1",
-          {
-            type: "donor.candidate.v1",
-            request_id: requestId,
-            donor_id: donor.id,
-            distance_km: donor.distanceKm,
-            eligibility_score: donor.scores.final / 100,
-            rank: donor.rank,
-            notification_sent: true,
-            timestamp: new Date().toISOString(),
-          },
-          "donor"
-        );
 
         // Send email notification
         await sendDonorBloodRequestEmail({
@@ -528,8 +527,37 @@ export async function processShortageEvent(eventId: string): Promise<{
           declineUrl,
         });
 
+        // Send SMS notification
+        try {
+          await sendUrgentBloodRequestSMS(donor.phone, bloodType);
+          console.log(
+            `[DonorAgent] SMS sent to ${donor.firstName} ${donor.lastName} (${donor.phone})`
+          );
+        } catch (smsErr) {
+          console.warn(
+            `[DonorAgent] SMS failed for donor ${donor.id}, email was sent:`,
+            smsErr
+          );
+        }
+
         console.log(
           `[DonorAgent] Email sent to ${donor.firstName} ${donor.lastName} (${donor.email})`
+        );
+
+        // Create donor.candidate event (after notification sent)
+        await publishEvent(
+          "donor.candidate.v1",
+          {
+            type: "donor.candidate.v1",
+            request_id: requestId,
+            donor_id: donor.id,
+            distance_km: donor.distanceKm,
+            eligibility_score: donor.scores.final / 100,
+            rank: donor.rank,
+            notification_sent: true,
+            timestamp: new Date().toISOString(),
+          },
+          "donor"
         );
 
         // Log notification in DonorResponseHistory
@@ -541,16 +569,6 @@ export async function processShortageEvent(eventId: string): Promise<{
             status: "notified",
             distance: donor.distanceKm,
             score: donor.scores.final,
-          },
-        });
-
-        // Also create AlertResponse for hospital dashboard tracking
-        await db.alertResponse.create({
-          data: {
-            alertId: requestId,
-            donorId: donor.id,
-            status: "PENDING", // Initially pending, will be updated when donor responds
-            confirmed: false,
           },
         });
 
