@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check if first contribution
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: check-contributor
         with:
           script: |
@@ -39,7 +39,7 @@ jobs:
 
       - name: Welcome first-time contributor
         if: steps.check-contributor.outputs.is_first == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const contributor = '${{ steps.check-contributor.outputs.contributor }}';
