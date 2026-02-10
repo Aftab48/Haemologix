@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Mark Stale Issues and PRs
-        uses: actions/stale@v9
+        uses: actions/stale@v10
         with:
           # Issues configuration
           stale-issue-message: |
