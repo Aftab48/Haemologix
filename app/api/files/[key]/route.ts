@@ -1,27 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth";
 
 /**
- * API proxy route for serving S3 files with caching headers
- * This allows better caching control and can be extended for image optimization
+ * API proxy route for serving S3 files with caching headers.
+ * Requires authentication — medical documents must not be publicly accessible.
+ *
+ * Path traversal protection: only allows alphanumeric, dash, underscore, dot, and slash.
  */
+
+const ALLOWED_KEY_PATTERN = /^[\w.\-/]+$/;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ key: string }> }
 ) {
+  const { error } = await requireAuth();
+  if (error) return error;
+
   try {
     const { key } = await params;
-    
+
     if (!key) {
       return NextResponse.json({ error: "File key is required" }, { status: 400 });
     }
 
     // Decode the key (it might be URL encoded)
     const decodedKey = decodeURIComponent(key);
-    
-    // Construct the S3 URL
+
+    // Prevent path traversal attacks
+    if (
+      !ALLOWED_KEY_PATTERN.test(decodedKey) ||
+      decodedKey.includes("..") ||
+      decodedKey.startsWith("/")
+    ) {
+      return NextResponse.json({ error: "Invalid file key" }, { status: 400 });
+    }
+
     const bucketName = process.env.S3_BUCKET_NAME;
     const region = process.env.AWS_REGION;
-    
+
     if (!bucketName || !region) {
       return NextResponse.json(
         { error: "S3 configuration missing" },
@@ -31,10 +48,9 @@ export async function GET(
 
     const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/${decodedKey}`;
 
-    // Fetch the file from S3
     const response = await fetch(s3Url, {
       headers: {
-        "Accept": request.headers.get("Accept") || "*/*",
+        Accept: request.headers.get("Accept") || "*/*",
       },
     });
 
@@ -45,20 +61,15 @@ export async function GET(
       );
     }
 
-    // Get the file content
     const fileBuffer = await response.arrayBuffer();
-    const contentType = response.headers.get("content-type") || "application/octet-stream";
+    const contentType =
+      response.headers.get("content-type") || "application/octet-stream";
 
-    // Set caching headers
-    // Cache for 1 hour, revalidate in background
     const headers = new Headers();
     headers.set("Content-Type", contentType);
-    headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400");
+    // Private cache — do not serve to public CDN
+    headers.set("Cache-Control", "private, max-age=3600");
     headers.set("X-Content-Type-Options", "nosniff");
-
-    // Add CORS headers if needed
-    headers.set("Access-Control-Allow-Origin", "*");
-    headers.set("Access-Control-Allow-Methods", "GET");
 
     return new NextResponse(fileBuffer, {
       status: 200,
@@ -72,4 +83,3 @@ export async function GET(
     );
   }
 }
-

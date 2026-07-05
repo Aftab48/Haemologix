@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
+import { requireAuth } from "@/lib/auth";
 
 /**
- * API Endpoint to close an alert with fulfillment details
+ * API Endpoint to close an alert with fulfillment details.
+ * Requires authentication.
  */
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ alertId: string }> }
 ) {
+  const { error } = await requireAuth();
+  if (error) return error;
+
   try {
     const { alertId } = await params;
     const body = await req.json();
@@ -41,16 +46,17 @@ export async function POST(
     });
 
     // Update workflow state
+    const existing = await db.workflowState.findUnique({
+      where: { requestId: alertId },
+    });
+
     await db.workflowState.update({
       where: { requestId: alertId },
       data: {
         status: "fulfilled",
         currentStep: "completed",
         metadata: {
-          ...(
-            (await db.workflowState.findUnique({ where: { requestId: alertId } }))
-              ?.metadata as object
-          ),
+          ...(existing?.metadata as object),
           fulfilled_at: new Date().toISOString(),
           fulfillment_source: source,
           fulfillment_donors: donors || [],
@@ -69,9 +75,8 @@ export async function POST(
   } catch (error) {
     console.error("[CloseAlert] Error:", error);
     return NextResponse.json(
-      { success: false, error: String(error) },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }
 }
-

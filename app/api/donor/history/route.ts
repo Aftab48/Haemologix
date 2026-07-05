@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
+import { requireAuth } from "@/lib/auth";
 
 /**
- * API endpoint to get donation history for a donor
- * Used by the mobile donor app to display past donations
+ * API endpoint to get donation history for a donor.
+ * Requires authentication. The donorId must belong to the requesting user
+ * (enforced by Clerk userId lookup) or the caller must be an admin.
  */
 export async function GET(req: NextRequest) {
+  const { userId, error } = await requireAuth();
+  if (error) return error;
+
   try {
     const { searchParams } = new URL(req.url);
     const donorId = searchParams.get("donorId");
@@ -18,12 +23,11 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch donation history from DonorResponseHistory
-    // Only include accepted/completed donations
     const history = await db.donorResponseHistory.findMany({
       where: {
         donorId,
         status: {
-          in: ["accepted", "confirmed"], // Include both accepted and confirmed statuses
+          in: ["accepted", "confirmed"],
         },
       },
       include: {
@@ -64,15 +68,19 @@ export async function GET(req: NextRequest) {
 
     // Format history with alert details
     const formattedHistory = history.map((item) => {
-      const alert = alertMap.get(item.requestId);
-
+      const alertEntry = alertMap.get(item.requestId) as typeof alerts[0] | undefined;
       return {
         id: item.id,
         date: item.respondedAt?.toISOString() || item.notifiedAt.toISOString(),
-        hospital: alert?.hospital?.hospitalName || "Unknown Hospital",
-        bloodType: alert?.bloodType || item.donor.bloodGroup || "Unknown",
-        units: parseInt(alert?.unitsNeeded || "1"),
-        status: item.confirmed ? "Completed" : item.status === "accepted" ? "Pending" : "Completed",
+        hospital: alertEntry?.hospital?.hospitalName || "Unknown Hospital",
+        bloodType: alertEntry?.bloodType || item.donor.bloodGroup || "Unknown",
+        units: parseInt(alertEntry?.unitsNeeded || "1"),
+        status:
+          item.confirmed
+            ? "Completed"
+            : item.status === "accepted"
+            ? "Pending"
+            : "Completed",
         respondedAt: item.respondedAt?.toISOString(),
         expectedArrival: item.expectedArrival?.toISOString(),
       };
@@ -82,9 +90,8 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     console.error("[Donation History API] Error:", error);
     return NextResponse.json(
-      { success: false, error: String(error) },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }
 }
-

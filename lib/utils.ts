@@ -10,6 +10,13 @@ export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));
 
 export const convertFileToUrl = (file: File) => URL.createObjectURL(file);
 
+/**
+ * Encode a passkey for localStorage storage.
+ * NOTE: This is NOT cryptographic encryption — it is only obfuscation
+ * to prevent casual shoulder-surfing. The admin passkey itself is
+ * stored in the environment variable (NEXT_PUBLIC_ADMIN_PASSKEY) and
+ * real security is enforced server-side via Clerk roles.
+ */
 export function encryptKey(passkey: string) {
   return btoa(passkey);
 }

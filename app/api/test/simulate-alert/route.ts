@@ -1,14 +1,27 @@
 /**
  * Test API Endpoint: Simulate Alert with Donor Acceptances
- * 
+ *
  * POST /api/test/simulate-alert
- * 
+ *
  * Creates a test alert with multiple donors who have accepted.
  * Useful for testing the maps functionality.
+ *
+ * SECURITY: Only available in development/test environments.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
+
+// Guard: this endpoint must never be reachable in production
+function productionGuard(): NextResponse | null {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { success: false, error: "Not found" },
+      { status: 404 }
+    );
+  }
+  return null;
+}
 
 // Kolkata coordinates (for hospital)
 const KOLKATA_HOSPITAL = {
@@ -17,7 +30,7 @@ const KOLKATA_HOSPITAL = {
   address: "Kolkata General Hospital, Kolkata, West Bengal",
 };
 
-// Test donor locations around Mumbai (using fixed emails for reusability)
+// Test donor locations around Kolkata (using fixed emails for reusability)
 const TEST_DONORS = [
   {
     firstName: "Raj",
@@ -25,7 +38,7 @@ const TEST_DONORS = [
     email: "test.donor.4.maps@example.com",
     phone: "+919876543210",
     bloodGroup: "O+",
-    latitude: "22.5725", // Very close to hospital
+    latitude: "22.5725",
     longitude: "88.3638",
     address: "Near Hospital, Kolkata",
   },
@@ -35,7 +48,7 @@ const TEST_DONORS = [
     email: "test.donor.5.maps@example.com",
     phone: "+919876543211",
     bloodGroup: "O+",
-    latitude: "22.5730", // ~500m away
+    latitude: "22.5730",
     longitude: "88.3645",
     address: "Park Street, Kolkata",
   },
@@ -45,25 +58,25 @@ const TEST_DONORS = [
     email: "test.donor.6.maps@example.com",
     phone: "+919876543212",
     bloodGroup: "O+",
-    latitude: "22.5720", // ~1km away
+    latitude: "22.5720",
     longitude: "88.3630",
     address: "Salt Lake, Kolkata",
   },
 ];
 
 export async function POST(req: NextRequest) {
+  const guard = productionGuard();
+  if (guard) return guard;
+
   try {
-    console.log("🚀 Starting Alert Simulation via API...\n");
+    console.log("Starting Alert Simulation via API...\n");
 
     // Step 1: Find an existing hospital (or use the first one)
     let hospital = await db.hospitalRegistration.findFirst({
-      where: {
-        status: "APPROVED",
-      },
+      where: { status: "APPROVED" },
     });
 
     if (!hospital) {
-      // If no approved hospital exists, get any hospital
       hospital = await db.hospitalRegistration.findFirst();
     }
 
@@ -99,7 +112,7 @@ export async function POST(req: NextRequest) {
         hospitalId: hospital.id,
         latitude: hospital.latitude || KOLKATA_HOSPITAL.latitude,
         longitude: hospital.longitude || KOLKATA_HOSPITAL.longitude,
-        status: "MATCHED", // Set to MATCHED since we're creating accepted donors
+        status: "MATCHED",
       },
     });
 
@@ -144,22 +157,18 @@ export async function POST(req: NextRequest) {
             status: "APPROVED",
           },
         });
-      } else {
-        // Update coordinates if missing
-        if (!donor.latitude || !donor.longitude) {
-          donor = await db.donorRegistration.update({
-            where: { id: donor.id },
-            data: {
-              latitude: donorData.latitude,
-              longitude: donorData.longitude,
-              address: donorData.address,
-            },
-          });
-        }
+      } else if (!donor.latitude || !donor.longitude) {
+        donor = await db.donorRegistration.update({
+          where: { id: donor.id },
+          data: {
+            latitude: donorData.latitude,
+            longitude: donorData.longitude,
+            address: donorData.address,
+          },
+        });
       }
       createdDonors.push(donor);
 
-      // Create response history
       await db.donorResponseHistory.create({
         data: {
           donorId: donor.id,
@@ -174,7 +183,6 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Create alert response with CONFIRMED status
       await db.alertResponse.create({
         data: {
           alertId: alert.id,
@@ -205,7 +213,7 @@ export async function POST(req: NextRequest) {
       message: `Created alert with ${createdDonors.length} accepted donors`,
     });
   } catch (error: any) {
-    console.error("❌ Error during simulation:", error);
+    console.error("Error during simulation:", error);
     return NextResponse.json(
       {
         success: false,
@@ -215,4 +223,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

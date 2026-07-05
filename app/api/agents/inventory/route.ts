@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processInventorySearch, releaseReservedUnits } from "@/lib/agents/inventoryAgent";
+import { requireAuth } from "@/lib/auth";
 
 /**
  * Inventory Agent API Endpoint
@@ -7,6 +8,9 @@ import { processInventorySearch, releaseReservedUnits } from "@/lib/agents/inven
  * when donors are unavailable.
  */
 export async function POST(req: NextRequest) {
+  const { error } = await requireAuth();
+  if (error) return error;
+
   try {
     const body = await req.json();
     const { action, request_id } = body;

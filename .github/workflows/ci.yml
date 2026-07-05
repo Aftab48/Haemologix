@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -60,37 +60,38 @@ jobs:
       - name: Set build environment variables
         shell: bash
         run: |
-          # Note: Clerk validates key format during build, so real test keys from Clerk dashboard are required
-          # Get test keys from: https://dashboard.clerk.com/last-active?path=api-keys
+          # Clerk keys — required. Get test keys from: https://dashboard.clerk.com/last-active?path=api-keys
           if [ -z "${{ secrets.CI_CLERK_PUBLISHABLE_KEY }}" ]; then
-            echo "❌ Error: CI_CLERK_PUBLISHABLE_KEY secret is required for build."
+            echo "Error: CI_CLERK_PUBLISHABLE_KEY secret is required for build."
             echo "Please set it in GitHub Settings > Secrets and variables > Actions"
             echo "Get a test key from: https://dashboard.clerk.com/last-active?path=api-keys"
             exit 1
           else
             echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.CI_CLERK_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
           fi
-          
+
           if [ -z "${{ secrets.CI_CLERK_SECRET_KEY }}" ]; then
-            echo "❌ Error: CI_CLERK_SECRET_KEY secret is required for build."
+            echo "Error: CI_CLERK_SECRET_KEY secret is required for build."
             echo "Please set it in GitHub Settings > Secrets and variables > Actions"
             exit 1
           else
             echo "CLERK_SECRET_KEY=${{ secrets.CI_CLERK_SECRET_KEY }}" >> $GITHUB_ENV
           fi
-          
+
           if [ -z "${{ secrets.CI_DATABASE_URL }}" ]; then
             echo "DATABASE_URL=postgresql://ci_user:ci_password@localhost:5432/ci_database?sslmode=disable" >> $GITHUB_ENV
           else
             echo "DATABASE_URL=${{ secrets.CI_DATABASE_URL }}" >> $GITHUB_ENV
           fi
-          
+
           if [ -z "${{ secrets.CI_GOOGLE_MAPS_API_KEY }}" ]; then
             echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=CI_PLACEHOLDER_GOOGLE_MAPS_KEY" >> $GITHUB_ENV
           else
             echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.CI_GOOGLE_MAPS_API_KEY }}" >> $GITHUB_ENV
           fi
 
+          # Admin passkey — safe placeholder for CI
+          echo "NEXT_PUBLIC_ADMIN_PASSKEY=0000" >> $GITHUB_ENV
+
       - name: Build Project
         run: npm run build
-

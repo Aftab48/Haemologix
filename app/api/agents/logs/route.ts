@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
+import { requireAuth } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
+  const { error } = await requireAuth();
+  if (error) return error;
+
   try {
     // Fetch all agent decisions (logs) ordered by most recent
     const logs = await db.agentDecision.findMany({

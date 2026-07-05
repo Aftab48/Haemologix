@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { approveOnboardDonor } from "@/lib/actions/donor-onboard.actions";
+import { requireAdmin } from "@/lib/auth";
 
 /**
- * API endpoint to approve an onboard donor
+ * API endpoint to approve an onboard donor — admin only.
  */
 export async function POST(req: NextRequest) {
+  const { error } = await requireAdmin();
+  if (error) return error;
+
   try {
     const body = await req.json();
     const { donorId } = body;
@@ -47,4 +51,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
