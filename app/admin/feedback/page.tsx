@@ -1,4 +1,6 @@
 import { prisma } from "@/db"
+
+export const dynamic = "force-dynamic"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
