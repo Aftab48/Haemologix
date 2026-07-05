@@ -393,9 +393,12 @@ export default function HospitalDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [distanceFilter, setDistanceFilter] = useState("all");
 
+  const HOSPITAL_ID = user.id; // use the authenticated hospital id
+
   const today = new Date().toISOString().split("T")[0];
   const [selectedOTDate, setSelectedOTDate] = useState(today);
   const [showAddSchedule, setShowAddSchedule] = useState(false);
+  const [otLoading, setOTLoading] = useState(false);
   const [newSchedule, setNewSchedule] = useState({
     patientName: "",
     surgeryType: "",
@@ -405,38 +408,42 @@ export default function HospitalDashboard() {
     scheduledTime: "",
     notes: "",
   });
-  const [otSchedules, setOTSchedules] = useState<OTSchedule[]>([
-    {
-      id: "ot-1",
-      patientName: "Ramesh Kumar",
-      surgeryType: "Cardiac Bypass",
-      bloodType: "O+",
-      unitsRequired: 4,
-      scheduledDate: today,
-      scheduledTime: "08:30",
-      status: "Scheduled",
-    },
-    {
-      id: "ot-2",
-      patientName: "Sunita Devi",
-      surgeryType: "Hip Replacement",
-      bloodType: "A+",
-      unitsRequired: 2,
-      scheduledDate: today,
-      scheduledTime: "11:00",
-      status: "In Progress",
-    },
-    {
-      id: "ot-3",
-      patientName: "Manoj Singh",
-      surgeryType: "Liver Resection",
-      bloodType: "B-",
-      unitsRequired: 6,
-      scheduledDate: today,
-      scheduledTime: "14:30",
-      status: "Scheduled",
-    },
-  ]);
+  const [otSchedules, setOTSchedules] = useState<OTSchedule[]>([]);
+
+  const loadOTSchedules = async (date: string) => {
+    setOTLoading(true);
+    try {
+      const res = await fetch(`/api/ot?hospitalId=${HOSPITAL_ID}&date=${date}`);
+      if (res.ok) {
+        const { schedules } = await res.json();
+        setOTSchedules(schedules.map((s: { id: string; patientName: string; surgeryType: string; bloodType: string; unitsRequired: number; scheduledDate: string; scheduledTime: string; status: string; notes?: string }) => ({
+          ...s,
+          status: s.status === "IN_PROGRESS" ? "In Progress"
+            : s.status.charAt(0) + s.status.slice(1).toLowerCase(),
+        })));
+      }
+    } catch {}
+    setOTLoading(false);
+  };
+
+  const runOTInventoryCheck = async () => {
+    try {
+      await fetch("/api/ot/check-alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hospitalId: HOSPITAL_ID }),
+      });
+    } catch {}
+  };
+
+  useEffect(() => {
+    loadOTSchedules(selectedOTDate);
+  }, [selectedOTDate]);
+
+  useEffect(() => {
+    // Run inventory check once on mount — fires alerts if OT needs exceed stock
+    runOTInventoryCheck();
+  }, []);
 
   const filteredOTSchedules = otSchedules.filter(
     (s) => s.scheduledDate === selectedOTDate
@@ -457,26 +464,45 @@ export default function HospitalDashboard() {
     return inv.current >= unitsRequired ? "sufficient" : "insufficient";
   };
 
-  const handleAddSchedule = () => {
+  const handleAddSchedule = async () => {
     if (!newSchedule.patientName || !newSchedule.surgeryType || !newSchedule.bloodType || !newSchedule.unitsRequired || !newSchedule.scheduledDate || !newSchedule.scheduledTime) return;
-    const entry: OTSchedule = {
-      id: `ot-${Date.now()}`,
-      patientName: newSchedule.patientName,
-      surgeryType: newSchedule.surgeryType,
-      bloodType: newSchedule.bloodType,
-      unitsRequired: parseInt(newSchedule.unitsRequired),
-      scheduledDate: newSchedule.scheduledDate,
-      scheduledTime: newSchedule.scheduledTime,
-      status: "Scheduled",
-      notes: newSchedule.notes,
-    };
-    setOTSchedules((prev) => [...prev, entry]);
+    try {
+      const res = await fetch("/api/ot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hospitalId: HOSPITAL_ID,
+          patientName: newSchedule.patientName,
+          surgeryType: newSchedule.surgeryType,
+          bloodType: newSchedule.bloodType,
+          unitsRequired: parseInt(newSchedule.unitsRequired),
+          scheduledDate: newSchedule.scheduledDate,
+          scheduledTime: newSchedule.scheduledTime,
+          notes: newSchedule.notes,
+        }),
+      });
+      if (res.ok) {
+        await loadOTSchedules(newSchedule.scheduledDate === selectedOTDate ? selectedOTDate : selectedOTDate);
+        // Re-run inventory check after adding new surgery
+        runOTInventoryCheck();
+      }
+    } catch {}
     setShowAddSchedule(false);
     setNewSchedule({ patientName: "", surgeryType: "", bloodType: "", unitsRequired: "", scheduledDate: today, scheduledTime: "", notes: "" });
   };
 
-  const handleOTStatusChange = (id: string, status: OTSchedule["status"]) => {
-    setOTSchedules((prev) => prev.map((s) => s.id === id ? { ...s, status } : s));
+  const handleOTStatusChange = async (id: string, status: OTSchedule["status"]) => {
+    const dbStatus = status === "In Progress" ? "IN_PROGRESS" : status.toUpperCase();
+    try {
+      await fetch("/api/ot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update-status", id, status: dbStatus }),
+      });
+      setOTSchedules((prev) => prev.map((s) => s.id === id ? { ...s, status } : s));
+    } catch {
+      setOTSchedules((prev) => prev.map((s) => s.id === id ? { ...s, status } : s));
+    }
   };
 
   const filteredDonors = useMemo(() => {
@@ -1368,7 +1394,13 @@ export default function HospitalDashboard() {
                   </Dialog>
                 </div>
 
-                {filteredOTSchedules.length === 0 ? (
+                {otLoading ? (
+                  <Card className="glass-morphism border border-accent/30 text-white">
+                    <CardContent className="p-12 text-center">
+                      <p className="text-gray-300">Loading schedules...</p>
+                    </CardContent>
+                  </Card>
+                ) : filteredOTSchedules.length === 0 ? (
                   <Card className="glass-morphism border border-accent/30 text-white">
                     <CardContent className="p-12 text-center">
                       <Scissors className="w-12 h-12 text-gray-400 mx-auto mb-4" />
