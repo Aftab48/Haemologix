@@ -92,6 +92,25 @@ model DonorRegistration {
 
 
 
+model OTSchedule {
+  id            String               @id @default(cuid())
+  hospitalId    String
+  hospital      HospitalRegistration @relation(fields: [hospitalId], references: [id])
+  patientName   String
+  surgeryType   String
+  bloodType     String
+  unitsRequired Int
+  scheduledDate DateTime             // stored as date, time component ignored
+  scheduledTime String               // "HH:MM"
+  status        String               @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+  notes         String?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@index([hospitalId])
+  @@index([hospitalId, scheduledDate])
+}
+
 model HospitalRegistration {
   id                            String         @id @default(uuid())
   bloodBankLicense              String
@@ -148,6 +167,7 @@ model HospitalRegistration {
   inventoryThresholds           InventoryThreshold[]
   transportsFrom                TransportRequest[] @relation("TransportFrom")
   transportsTo                  TransportRequest[] @relation("TransportTo")
+  otSchedules                   OTSchedule[]
 }
 
 model Admin {

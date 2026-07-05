@@ -1,7 +1,22 @@
 import { transporter } from "@/lib/mail";
 import { NextResponse } from "next/server";
 
+/**
+ * SMTP connectivity check — development only.
+ * SECURITY: Only available in development/test environments.
+ */
+
+function productionGuard(): NextResponse | null {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  return null;
+}
+
 export async function GET() {
+  const guard = productionGuard();
+  if (guard) return guard;
+
   try {
     await new Promise((resolve, reject) => {
       transporter.verify((err, success) => {
@@ -12,14 +27,12 @@ export async function GET() {
 
     return NextResponse.json({
       ok: true,
-      message: "SMTP server is ready to send emails ✅",
+      message: "SMTP server is ready to send emails",
     });
   } catch (err: any) {
-    console.error("❌ SMTP verify error:", {
+    console.error("SMTP verify error:", {
       message: err.message,
       code: err.code,
-      response: err.response,
-      command: err.command,
     });
 
     return NextResponse.json(
@@ -27,8 +40,6 @@ export async function GET() {
         ok: false,
         error: err.message,
         code: err.code || null,
-        response: err.response || null,
-        command: err.command || null,
       },
       { status: 500 }
     );

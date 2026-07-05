@@ -3,18 +3,33 @@ import { db } from "@/db";
 
 /**
  * TEMPORARY TEST ENDPOINT - Donor Registration for Testing
- * This is a simplified endpoint for testing purposes only
- * Creates a donor with minimal required fields and skips file uploads
+ * Creates a donor with minimal required fields and skips file uploads.
+ *
+ * SECURITY: Only available in development/test environments.
  */
+
+function productionGuard(): NextResponse | null {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { success: false, error: "Not found" },
+      { status: 404 }
+    );
+  }
+  return null;
+}
+
 export async function POST(req: NextRequest) {
+  const guard = productionGuard();
+  if (guard) return guard;
+
   try {
     const body = await req.json();
-    
+
     // Extract required fields with defaults for testing
     const {
       firstName = "Test",
       lastName = "Donor",
-      email = `test-${Date.now()}@example.com`, // Unique email
+      email = `test-${Date.now()}@example.com`,
       phone = "1234567890",
       dateOfBirth = "2000-01-01",
       gender = "male",
@@ -67,8 +82,8 @@ export async function POST(req: NextRequest) {
         dataProcessingConsent,
         medicalScreeningConsent,
         termsAccepted,
-        status: "APPROVED", // Auto-approve for testing
-        latitude: "22.5726", // Default test coordinates
+        status: "APPROVED",
+        latitude: "22.5726",
         longitude: "88.3639",
       },
     });
@@ -90,8 +105,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error("[Test API] Error creating test donor:", error);
-    
-    // Handle unique constraint violation (duplicate email)
+
     if (error.code === "P2002") {
       return NextResponse.json(
         {
@@ -105,10 +119,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: String(error),
+        error: "Internal server error",
       },
       { status: 500 }
     );
   }
 }
-

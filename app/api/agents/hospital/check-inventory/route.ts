@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkInventoryAndAutoAlert } from "@/lib/agents/hospitalAgent";
 import { db } from "@/db";
+import { requireAuth } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
+  const { error } = await requireAuth();
+  if (error) return error;
+
   try {
     const body = await req.json();
     const { hospitalId, bloodType } = body;

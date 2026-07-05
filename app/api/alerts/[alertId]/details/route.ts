@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
+import { requireAuth } from "@/lib/auth";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ alertId: string }> }
 ) {
+  const { error } = await requireAuth();
+  if (error) return error;
+
   try {
     const { alertId } = await params;
 
@@ -74,7 +78,7 @@ export async function GET(
 
     // Check if inventory was matched (from workflow metadata)
     let inventoryMatch = null;
-    if (workflowState?.metadata && typeof workflowState.metadata === 'object') {
+    if (workflowState?.metadata && typeof workflowState.metadata === "object") {
       const metadata = workflowState.metadata as any;
       if (metadata.inventory_source && transportRequest) {
         inventoryMatch = transportRequest;
@@ -124,10 +128,9 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-        error: String(error),
+        error: "Internal server error",
       },
       { status: 500 }
     );
   }
 }
-

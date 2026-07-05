@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkInventoryAndAutoAlert } from "@/lib/agents/hospitalAgent";
+import { requireAuth } from "@/lib/auth";
 
 /**
- * API endpoint to check inventory and auto-create alert if critical
- * Called after inventory updates
+ * API endpoint to check inventory and auto-create alert if critical.
+ * Called after inventory updates — requires authentication.
  */
 export async function POST(req: NextRequest) {
+  const { error } = await requireAuth();
+  if (error) return error;
+
   try {
     const body = await req.json();
     const { hospitalId, bloodType } = body;
@@ -35,10 +39,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: String(error),
+        error: "Internal server error",
       },
       { status: 500 }
     );
   }
 }
-

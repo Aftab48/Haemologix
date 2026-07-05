@@ -1,12 +1,17 @@
 /**
  * Alerts API Endpoint
- * Creates alerts and automatically triggers Hospital Agent
+ * Creates alerts and automatically triggers Hospital Agent.
+ * Requires authentication — only hospital users (or admins) should create alerts.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { createAlert } from "@/lib/actions/alerts.actions";
+import { requireAuth } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
+  const { error } = await requireAuth();
+  if (error) return error;
+
   try {
     const body = await req.json();
 
@@ -28,13 +33,13 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("[Alerts API] Error:", error);
     return NextResponse.json(
-      { success: false, error: String(error) },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   return NextResponse.json({
     endpoint: "POST /api/alerts",
     description: "Create blood shortage alert",
@@ -42,4 +47,3 @@ export async function GET(req: NextRequest) {
     optional_fields: ["unitsNeeded", "description", "latitude", "longitude"],
   });
 }
-

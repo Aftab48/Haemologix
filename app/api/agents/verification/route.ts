@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processDonorVerification, getVerificationStats } from "@/lib/agents/verificationAgent";
+import { requireAdmin } from "@/lib/auth";
 
 /**
- * POST: Manually trigger verification for a donor
+ * POST: Manually trigger verification for a donor — admin only.
  */
 export async function POST(req: NextRequest) {
+  const { error } = await requireAdmin();
+  if (error) return error;
+
   try {
     const body = await req.json();
     const { donorId, documentVerificationResults } = body;

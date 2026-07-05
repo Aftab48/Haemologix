@@ -16,3 +16,5 @@ if (process.env.NODE_ENV === "production") {
 }
 
 export const db = prisma;
+// Alias for code that imports `prisma` directly from "@/db"
+export { prisma };
