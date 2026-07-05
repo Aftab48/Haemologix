@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,7 +51,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 
-import { formatLastActivity } from "@/lib/utils";
+import { formatLastActivity, cn } from "@/lib/utils";
 import Image from "next/image";
 import GradientBackground from "@/components/GradientBackground";
 
@@ -71,6 +71,7 @@ export default function BloodbankDashboard() {
   const [showCreateAlert, setShowCreateAlert] = useState(false);
   const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("inventory");
 
   const [donorResponses, setDonorResponses] = useState<DonorUI[]>([
     {
@@ -899,37 +900,37 @@ export default function BloodbankDashboard() {
           </Card>
         </div>
 
-        <Tabs defaultValue="inventory" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 glass-morphism border border-accent/30">
-            <TabsTrigger
-              value="inventory"
-              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Blood Inventory
-            </TabsTrigger>
-            <TabsTrigger
-              value="alerts"
-              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Active Alerts ({activeAlerts.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="responses"
-              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Donor Responses
-            </TabsTrigger>
-            <TabsTrigger
-              value="analytics"
-              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Analytics
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+          <aside className="w-full md:w-56 md:shrink-0 md:sticky md:top-8">
+            <nav className="glass-morphism border border-accent/30 rounded-lg p-2 flex flex-row md:flex-col overflow-x-auto gap-1">
+              {[
+                { value: "inventory", label: "Blood Inventory", Icon: Activity },
+                { value: "alerts", label: `Active Alerts (${activeAlerts.length})`, Icon: AlertTriangle },
+                { value: "responses", label: "Donor Responses", Icon: Users },
+                { value: "analytics", label: "Analytics", Icon: BarChart3 },
+              ].map(({ value, label, Icon }) => (
+                <button
+                  key={value}
+                  onClick={() => setActiveTab(value)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 text-sm rounded-md transition-all duration-200 whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left",
+                    activeTab === value
+                      ? "bg-yellow-600 text-white shadow-md"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                  )}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {label}
+                </button>
+              ))}
+            </nav>
+          </aside>
+          <div className="flex-1 min-w-0">
 
           {/* Blood Inventory Tab */}
 
-          <TabsContent value="inventory" className="space-y-6">
+          {activeTab === "inventory" && (
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-text-dark">
                 Blood Inventory Status
@@ -974,7 +975,7 @@ export default function BloodbankDashboard() {
                 );
               })}
             </div>
-          </TabsContent>
+          )}
           <Dialog open={isInvModalOpen} onOpenChange={setIsInvModalOpen}>
             <DialogContent className="max-w-md bg-white/10 backdrop-blur-lg border border-white/20 text-white rounded-lg p-6">
               <DialogHeader>
@@ -1086,7 +1087,8 @@ export default function BloodbankDashboard() {
           </Dialog>
 
           {/* Active Alerts Tab */}
-          <TabsContent value="alerts" className="space-y-6">
+          {activeTab === "alerts" && (
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-text-dark">
                 Active Emergency Alerts
@@ -1207,10 +1209,12 @@ export default function BloodbankDashboard() {
                 ))}
               </div>
             )}
-          </TabsContent>
+          </div>
+          )}
 
           {/* Donor Responses Tab */}
-          <TabsContent value="responses" className="space-y-6">
+          {activeTab === "responses" && (
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-text-dark">Donor Responses</h2>
               <div className="flex gap-3">
@@ -1412,10 +1416,12 @@ export default function BloodbankDashboard() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>
+          )}
 
           {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
+          {activeTab === "analytics" && (
+          <div className="space-y-6">
             <h2 className="text-2xl font-bold text-text-dark">
               Analytics & Reports
             </h2>
@@ -1491,8 +1497,10 @@ export default function BloodbankDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+          )}
+          </div>
+        </div>
       </div>
     </GradientBackground>
   );

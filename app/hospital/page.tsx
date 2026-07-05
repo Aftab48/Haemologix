@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,7 +51,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { formatLastActivity } from "@/lib/utils";
+import { formatLastActivity, cn } from "@/lib/utils";
 import GradientBackground from "@/components/GradientBackground";
 
 type Donor = {
@@ -88,6 +87,7 @@ export default function HospitalDashboard() {
   };
 
   const [showCreateAlert, setShowCreateAlert] = useState(false);
+  const [activeTab, setActiveTab] = useState("inventory");
 
   const [bloodInventory, setBloodInventory] = useState([
     { type: "A+", current: 15, minimum: 20 },
@@ -775,43 +775,37 @@ export default function HospitalDashboard() {
           </Card>
         </div>
 
-        <Tabs defaultValue="inventory" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 glass-morphism border border-accent/30">
-            <TabsTrigger
-              value="inventory"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Blood Inventory
-            </TabsTrigger>
-            <TabsTrigger
-              value="alerts"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Active Alerts ({activeAlerts.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="responses"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Donor Responses
-            </TabsTrigger>
-            <TabsTrigger
-              value="analytics"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger
-              value="ot-scheduling"
-              className="text-white data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              OT Scheduling
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+          <aside className="w-full md:w-56 md:shrink-0 md:sticky md:top-8">
+            <nav className="glass-morphism border border-accent/30 rounded-lg p-2 flex flex-row md:flex-col overflow-x-auto gap-1">
+              {[
+                { value: "inventory", label: "Blood Inventory", Icon: Activity },
+                { value: "alerts", label: `Active Alerts (${activeAlerts.length})`, Icon: AlertTriangle },
+                { value: "responses", label: "Donor Responses", Icon: Users },
+                { value: "analytics", label: "Analytics", Icon: BarChart3 },
+                { value: "ot-scheduling", label: "OT Scheduling", Icon: Scissors },
+              ].map(({ value, label, Icon }) => (
+                <button
+                  key={value}
+                  onClick={() => setActiveTab(value)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 text-sm rounded-md transition-all duration-200 whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left",
+                    activeTab === value
+                      ? "bg-yellow-600 text-white shadow-md"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                  )}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {label}
+                </button>
+              ))}
+            </nav>
+          </aside>
+          <div className="flex-1 min-w-0">
 
           {/* Blood Inventory Tab */}
 
-          <TabsContent value="inventory" className="space-y-6">
+          {activeTab === "inventory" && (<div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-white">
                 Blood Inventory Status
@@ -856,7 +850,7 @@ export default function HospitalDashboard() {
                 );
               })}
             </div>
-          </TabsContent>
+          </div>)}
           {isInvModalOpen && editingItem && (
             <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
               <div className="bg-white rounded-lg shadow-lg p-6 w-96">
@@ -944,7 +938,7 @@ export default function HospitalDashboard() {
           )}
 
           {/* Active Alerts Tab */}
-          <TabsContent value="alerts" className="space-y-6">
+          {activeTab === "alerts" && (<div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-white">
                 Active Emergency Alerts
@@ -1069,10 +1063,10 @@ export default function HospitalDashboard() {
                 ))}
               </div>
             )}
-          </TabsContent>
+          </div>)}
 
           {/* Donor Responses Tab */}
-          <TabsContent value="responses" className="space-y-6">
+          {activeTab === "responses" && (<div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-white">Donor Responses</h2>
               <div className="flex gap-3">
@@ -1240,9 +1234,9 @@ export default function HospitalDashboard() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>)}
           {/* OT Scheduling Tab */}
-          <TabsContent value="ot-scheduling" className="space-y-6">
+          {activeTab === "ot-scheduling" && (<div className="space-y-6">
             <div className="flex items-start gap-6">
               {/* Left: Date Picker */}
               <div className="w-64 shrink-0">
@@ -1495,10 +1489,10 @@ export default function HospitalDashboard() {
                 )}
               </div>
             </div>
-          </TabsContent>
+          </div>)}
 
           {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
+          {activeTab === "analytics" && (<div className="space-y-6">
             <h2 className="text-2xl font-bold text-white">
               Analytics & Reports
             </h2>
@@ -1574,8 +1568,9 @@ export default function HospitalDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>)}
+          </div>
+        </div>
       </div>
     </GradientBackground>
   );

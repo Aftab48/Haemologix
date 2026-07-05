@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   VerificationBadge,
   SuspensionBadge,
@@ -48,6 +48,9 @@ import {
   Clock,
   ChevronUp,
   ChevronDown,
+  Heart,
+  Bot,
+  Brain,
 } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
@@ -392,12 +395,12 @@ function AdminWebDashboard() {
   };
 
   const tabOptions = [
-    { value: "users", label: "User Management" },
-    { value: "donors", label: "Donors" },
-    { value: "agentic", label: "Agentic AI Dashboard" },
-    { value: "activity", label: "AI Agent Logs" },
-    { value: "llm-reasoning", label: "LLM Reasoning" },
-    { value: "analytics", label: "System Analytics" },
+    { value: "users", label: "User Management", Icon: Users },
+    { value: "donors", label: "Donors", Icon: Heart },
+    { value: "agentic", label: "Agentic AI", Icon: Bot },
+    { value: "activity", label: "Agent Logs", Icon: Activity },
+    { value: "llm-reasoning", label: "LLM Reasoning", Icon: Brain },
+    { value: "analytics", label: "System Analytics", Icon: BarChart3 },
   ];
 
   if (loading) return <p>Loading Data...</p>;
@@ -602,45 +605,30 @@ function AdminWebDashboard() {
           </Card>
         </div>
 
-        <Tabs
-          defaultValue="users"
-          className="space-y-6"
-          value={activeTab}
-          onValueChange={setActiveTab}
-        >
-          <div className="lg:hidden mb-4">
-            <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full bg-white/10 text-text-dark border border-white/20">
-                <SelectValue placeholder="Select Tab" />
-              </SelectTrigger>
-              <SelectContent>
-                {tabOptions.map((tab) => (
-                  <SelectItem key={tab.value} value={tab.value}>
-                    {tab.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <TabsList className="lg:grid w-full grid-cols-6 glass-morphism border hidden border-white/20">
-            {tabOptions.map((tab) => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                className="
-                text-text-dark text-center rounded-md
-                data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md
-                transition-all duration-300
-                first:rounded-l-lg last:rounded-r-lg
-              "
-              >
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {/* User Management Tab */}
-          <TabsContent value="users" className="space-y-6">
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+          <aside className="w-full md:w-56 md:shrink-0 md:sticky md:top-8">
+            <nav className="glass-morphism border border-white/20 rounded-lg p-2 flex flex-row md:flex-col overflow-x-auto gap-1">
+              {tabOptions.map(({ value, label, Icon }) => (
+                <button
+                  key={value}
+                  onClick={() => setActiveTab(value)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 text-sm rounded-md transition-all duration-200 whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left",
+                    activeTab === value
+                      ? "bg-yellow-600 text-white shadow-md"
+                      : "text-text-dark/70 hover:bg-white/10 hover:text-text-dark"
+                  )}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {label}
+                </button>
+              ))}
+            </nav>
+          </aside>
+          <div className="flex-1 min-w-0">
+            {/* User Management Tab */}
+            {activeTab === "users" && (
+            <div className="space-y-6">
             <div className="flex flex-col lg:flex-row gap-y-3 items-center justify-between">
               <h2 className="text-2xl font-bold text-text-dark">
                 User Management
@@ -1049,10 +1037,11 @@ function AdminWebDashboard() {
                 </Card>
               ))}
             </div>
-          </TabsContent>
+            )}
 
-          {/* Donors Tab */}
-          <TabsContent value="donors" className="space-y-6">
+            {/* Donors Tab */}
+            {activeTab === "donors" && (
+            <div className="space-y-6">
             <div className="flex flex-col lg:flex-row gap-y-3 items-center justify-between">
               <h2 className="text-2xl font-bold text-text-dark">
                 Onboard Donors
@@ -1266,100 +1255,110 @@ function AdminWebDashboard() {
                 </Card>
               );
             })()}
-          </TabsContent>
-
-          {/* Hospital Verification Tab */}
-          {/* Agentic AI Dashboard Tab */}
-          <TabsContent value="agentic" className="space-y-6">
-            <AgenticDashboard />
-          </TabsContent>
-
-          {/* System Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
-            <h2 className="text-2xl font-bold text-text-dark">
-              System Analytics
-            </h2>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-text-dark">
-                    <BarChart3 className="w-5 h-5 text-yellow-400" />
-                    Platform Usage Statistics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 text-text-dark/80">
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Daily Active Users</span>
-                      <span className="font-semibold text-text-dark">
-                        8,234
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Monthly Active Users</span>
-                      <span className="font-semibold text-text-dark">
-                        18,456
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Average Session Duration</span>
-                      <span className="font-semibold text-text-dark">
-                        12 minutes
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Mobile Users</span>
-                      <span className="font-semibold text-text-dark">65%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                <CardHeader>
-                  <CardTitle className="text-text-dark">
-                    Emergency Response Metrics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 text-text-dark/80">
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Average Response Time</span>
-                      <span className="font-semibold text-text-dark">
-                        8.5 minutes
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Success Rate</span>
-                      <span className="font-semibold text-text-dark">89%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Critical Alerts Resolved</span>
-                      <span className="font-semibold text-text-dark">94%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Lives Saved (Est.)</span>
-                      <span className="font-semibold text-text-dark">
-                        2,456
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
-          </TabsContent>
+            )}
 
-          {/* AI Agent Logs Tab */}
-          <TabsContent value="activity" className="space-y-6">
-            <AIAgentLogs />
-          </TabsContent>
+            {/* Hospital Verification Tab */}
+            {/* Agentic AI Dashboard Tab */}
+            {activeTab === "agentic" && (
+            <div className="space-y-6">
+              <AgenticDashboard />
+            </div>
+            )}
 
-          {/* LLM Reasoning Tab */}
-          <TabsContent value="llm-reasoning" className="space-y-6">
-            <LLMReasoningView />
-          </TabsContent>
-        </Tabs>
+            {/* System Analytics Tab */}
+            {activeTab === "analytics" && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-text-dark">
+                System Analytics
+              </h2>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-text-dark">
+                      <BarChart3 className="w-5 h-5 text-yellow-400" />
+                      Platform Usage Statistics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 text-text-dark/80">
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span>Daily Active Users</span>
+                        <span className="font-semibold text-text-dark">
+                          8,234
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Monthly Active Users</span>
+                        <span className="font-semibold text-text-dark">
+                          18,456
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Average Session Duration</span>
+                        <span className="font-semibold text-text-dark">
+                          12 minutes
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Mobile Users</span>
+                        <span className="font-semibold text-text-dark">65%</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+                  <CardHeader>
+                    <CardTitle className="text-text-dark">
+                      Emergency Response Metrics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 text-text-dark/80">
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span>Average Response Time</span>
+                        <span className="font-semibold text-text-dark">
+                          8.5 minutes
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Success Rate</span>
+                        <span className="font-semibold text-text-dark">89%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Critical Alerts Resolved</span>
+                        <span className="font-semibold text-text-dark">94%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Lives Saved (Est.)</span>
+                        <span className="font-semibold text-text-dark">
+                          2,456
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+            )}
+
+            {/* AI Agent Logs Tab */}
+            {activeTab === "activity" && (
+            <div className="space-y-6">
+              <AIAgentLogs />
+            </div>
+            )}
+
+            {/* LLM Reasoning Tab */}
+            {activeTab === "llm-reasoning" && (
+            <div className="space-y-6">
+              <LLMReasoningView />
+            </div>
+            )}
+          </div>
+        </div>
       </div>
       {selectedUser && (
         <UserModal
