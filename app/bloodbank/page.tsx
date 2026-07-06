@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,7 +52,8 @@ import { useRouter } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 
 import { formatLastActivity, cn } from "@/lib/utils";
-import GradientBackground from "@/components/GradientBackground";
+import StatCard from "@/components/dashboard/StatCard";
+import { pageContainer, fadeUp, fadeIn, listItem } from "@/components/dashboard/motion";
 
 type Donor = {
   id: number;
@@ -542,386 +543,364 @@ export default function BloodbankDashboard() {
     setIsInvModalOpen(false);
   };
 
+  const navItems = [
+    { value: "inventory", label: "Blood Inventory", short: "Inventory", Icon: Activity },
+    { value: "alerts", label: `Active Alerts (${activeAlerts.length})`, short: "Alerts", Icon: AlertTriangle, badge: activeAlerts.length },
+    { value: "responses", label: "Donor Responses", short: "Responses", Icon: Users },
+    { value: "analytics", label: "Analytics", short: "Analytics", Icon: BarChart3 },
+  ];
+
   return (
-    <GradientBackground>
-      <img
-        src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
-        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20 z-0"
-      />
-
-      <div className="flex min-h-screen relative z-10">
-
-        {/* === FULL-HEIGHT SIDEBAR === */}
-        <aside className="w-64 shrink-0 hidden md:flex flex-col glass-morphism border-r border-white/10 sticky top-0 h-screen z-20 overflow-hidden">
-          {/* Branding */}
-          <div className="p-5 border-b border-white/10">
-            <Link href="/">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-red-900 rounded-lg flex items-center justify-center shrink-0">
-                  <Building className="w-5 h-5 text-white" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-white text-sm truncate">Blood Bank Dashboard</p>
-                  <p className="text-xs text-white/50 truncate">{user?.hospitalName}</p>
-                </div>
-              </div>
-            </Link>
-          </div>
-
-          {/* Nav items */}
-          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-            {[
-              { value: "inventory", label: "Blood Inventory", Icon: Activity },
-              { value: "alerts", label: `Active Alerts (${activeAlerts.length})`, Icon: AlertTriangle },
-              { value: "responses", label: "Donor Responses", Icon: Users },
-              { value: "analytics", label: "Analytics", Icon: BarChart3 },
-            ].map(({ value, label, Icon }) => (
-              <button
-                key={value}
-                onClick={() => setActiveTab(value)}
-                className={cn(
-                  "flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-200 text-left",
-                  activeTab === value
-                    ? "bg-yellow-600 text-white shadow-sm"
-                    : "text-white/60 hover:bg-white/10 hover:text-white"
-                )}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span className="truncate">{label}</span>
-              </button>
-            ))}
-          </nav>
-
-          {/* User at bottom */}
-          <div className="p-4 border-t border-white/10 flex items-center gap-3">
-            <UserButton />
-            <span className="text-xs text-white/50">Account</span>
-          </div>
-        </aside>
-
-        {/* === MAIN CONTENT AREA === */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-          {/* Mobile nav */}
-          <div className="md:hidden glass-morphism border-b border-white/10 p-3 flex overflow-x-auto gap-1 shrink-0">
-            {[
-              { value: "inventory", label: "Inventory", Icon: Activity },
-              { value: "alerts", label: "Alerts", Icon: AlertTriangle },
-              { value: "responses", label: "Responses", Icon: Users },
-              { value: "analytics", label: "Analytics", Icon: BarChart3 },
-            ].map(({ value, label, Icon }) => (
-              <button
-                key={value}
-                onClick={() => setActiveTab(value)}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all whitespace-nowrap shrink-0",
-                  activeTab === value ? "bg-yellow-600 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"
-                )}
-              >
-                <Icon className="w-3 h-3" />
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* Top action bar */}
-          <div className="glass-morphism border-b border-white/10 px-6 py-3 flex items-center justify-between shrink-0">
-            <div className="md:hidden flex items-center gap-2">
-              <div className="w-7 h-7 bg-red-900 rounded-lg flex items-center justify-center">
-                <Activity className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-white font-semibold text-sm">Blood Bank Dashboard</span>
-            </div>
-            <div className="hidden md:block" />
+    <div className="dashboard-surface flex min-h-screen">
+      {/* === FULL-HEIGHT SIDEBAR === */}
+      <aside className="w-64 shrink-0 hidden md:flex flex-col dash-sidebar sticky top-0 h-screen z-20">
+        {/* Branding */}
+        <div className="p-5 border-b border-text-dark/10">
+          <Link href="/">
             <div className="flex items-center gap-3">
-              <Dialog open={showCreateAlert} onOpenChange={setShowCreateAlert}>
-                <DialogTrigger asChild>
-                  <Button className="bg-yellow-600 hover:bg-yellow-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Alert
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md bg-white/10 backdrop-blur-lg border border-white/20 text-white">
-                  <DialogHeader>
-                    <DialogTitle className="text-white">
-                      Create Emergency Blood Alert
-                    </DialogTitle>
-                    <DialogDescription className="text-gray-200">
-                      Send immediate notifications to eligible donors in your
-                      area
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    {/* Alert Type */}
+              <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                <Building className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-outfit font-bold text-text-dark text-sm truncate">
+                  Blood Bank Dashboard
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.hospitalName ?? "Your Hospital"}
+                </p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Nav items */}
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto dash-scroll">
+          {navItems.map(({ value, label, Icon, badge }) => (
+            <button
+              key={value}
+              onClick={() => setActiveTab(value)}
+              className="dash-nav-item w-full text-sm text-left"
+              data-active={activeTab === value}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span className="truncate flex-1">{label}</span>
+              {badge !== undefined && (
+                <span className="text-xs font-semibold px-1.5 py-0.5 rounded-md chip-ruby">
+                  {badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        {/* User at bottom */}
+        <div className="p-4 border-t border-text-dark/10 flex items-center gap-3">
+          <UserButton />
+          <span className="text-xs text-muted-foreground">Account</span>
+        </div>
+      </aside>
+
+      {/* === MAIN CONTENT AREA === */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile nav bar */}
+        <div className="md:hidden dash-topbar p-3 flex overflow-x-auto gap-1 shrink-0 dash-scroll">
+          {navItems.map(({ value, short, Icon }) => (
+            <button
+              key={value}
+              onClick={() => setActiveTab(value)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all whitespace-nowrap shrink-0 font-medium",
+                activeTab === value
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-text-dark/5"
+              )}
+            >
+              <Icon className="w-3 h-3" />
+              {short}
+            </button>
+          ))}
+        </div>
+
+        {/* Top action bar */}
+        <div className="dash-topbar px-6 py-3 flex items-center justify-between shrink-0 sticky top-0 z-10">
+          <div className="md:hidden flex items-center gap-2">
+            <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
+              <Activity className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <span className="text-text-dark font-outfit font-semibold text-sm">
+              Blood Bank
+            </span>
+          </div>
+          <div className="hidden md:block">
+            <h1 className="font-outfit font-bold text-text-dark text-lg">
+              Blood Bank Dashboard
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Manage inventory, alerts, and donor responses
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Dialog open={showCreateAlert} onOpenChange={setShowCreateAlert}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Alert
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="font-outfit font-bold text-text-dark">
+                    Create Emergency Blood Alert
+                  </DialogTitle>
+                  <DialogDescription className="text-muted-foreground">
+                    Send immediate notifications to eligible donors in your area
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  {/* Alert Type */}
+                  <div className="space-y-2">
+                    <Label className="text-text-dark font-medium">Alert Type</Label>
+                    <Select
+                      value={newAlert.type}
+                      onValueChange={(value) =>
+                        setNewAlert({ ...newAlert, type: value })
+                      }
+                    >
+                      <SelectTrigger className="border-border">
+                        <SelectValue placeholder="Choose type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Blood">Blood</SelectItem>
+                        <SelectItem value="Plasma">Plasma</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {newAlert.type === "Blood" && (
+                      <div className="space-y-2">
+                        <Label className="text-text-dark font-medium">Blood Type</Label>
+                        <Select
+                          value={newAlert.bloodType}
+                          onValueChange={(value) =>
+                            setNewAlert({ ...newAlert, bloodType: value })
+                          }
+                        >
+                          <SelectTrigger className="border-border">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[
+                              "A+",
+                              "A-",
+                              "B+",
+                              "B-",
+                              "AB+",
+                              "AB-",
+                              "O+",
+                              "O-",
+                            ].map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                     <div className="space-y-2">
-                      <Label className="text-white">Alert Type</Label>
+                      <Label className="text-text-dark font-medium">Urgency</Label>
                       <Select
-                        value={newAlert.type}
+                        value={newAlert.urgency}
                         onValueChange={(value) =>
-                          setNewAlert({ ...newAlert, type: value })
+                          setNewAlert({ ...newAlert, urgency: value })
                         }
                       >
-                        <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                          <SelectValue placeholder="Choose type" />
+                        <SelectTrigger className="border-border">
+                          <SelectValue placeholder="Select urgency" />
                         </SelectTrigger>
-                        <SelectContent className="bg-gray-800 text-white border-gray-700">
-                          <SelectItem value="Blood">Blood</SelectItem>
-                          <SelectItem value="Plasma">Plasma</SelectItem>
+                        <SelectContent>
+                          <SelectItem value="Critical">Critical</SelectItem>
+                          <SelectItem value="High">High</SelectItem>
+                          <SelectItem value="Medium">Medium</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      {newAlert.type === "Blood" && (
-                        <div className="space-y-2">
-                          <Label className="text-white">Blood Type</Label>
-                          <Select
-                            value={newAlert.bloodType}
-                            onValueChange={(value) =>
-                              setNewAlert({ ...newAlert, bloodType: value })
-                            }
-                          >
-                            <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                              <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-gray-800 text-white border-gray-700">
-                              {[
-                                "A+",
-                                "A-",
-                                "B+",
-                                "B-",
-                                "AB+",
-                                "AB-",
-                                "O+",
-                                "O-",
-                              ].map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                      <div className="space-y-2">
-                        <Label className="text-white">Urgency</Label>
-                        <Select
-                          value={newAlert.urgency}
-                          onValueChange={(value) =>
-                            setNewAlert({ ...newAlert, urgency: value })
-                          }
-                        >
-                          <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                            <SelectValue placeholder="Select urgency" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-gray-800 text-white border-gray-700">
-                            <SelectItem value="Critical">Critical</SelectItem>
-                            <SelectItem value="High">High</SelectItem>
-                            <SelectItem value="Medium">Medium</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-white">Units Needed</Label>
-                        <Input
-                          type="number"
-                          placeholder="Number of units"
-                          value={newAlert.unitsNeeded}
-                          onChange={(e) =>
-                            setNewAlert({
-                              ...newAlert,
-                              unitsNeeded: e.target.value,
-                            })
-                          }
-                          className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-white">Search Radius</Label>
-                        <Select
-                          value={newAlert.radius}
-                          onValueChange={(value) =>
-                            setNewAlert({ ...newAlert, radius: value })
-                          }
-                        >
-                          <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-gray-800 text-white border-gray-700">
-                            <SelectItem value="5">5 km</SelectItem>
-                            <SelectItem value="10">10 km</SelectItem>
-                            <SelectItem value="15">15 km</SelectItem>
-                            <SelectItem value="20">20 km</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-white">Description</Label>
-                      <Textarea
-                        placeholder="Describe the emergency situation"
-                        value={newAlert.description}
+                      <Label className="text-text-dark font-medium">Units Needed</Label>
+                      <Input
+                        type="number"
+                        placeholder="Number of units"
+                        value={newAlert.unitsNeeded}
                         onChange={(e) =>
                           setNewAlert({
                             ...newAlert,
-                            description: e.target.value,
+                            unitsNeeded: e.target.value,
                           })
                         }
-                        className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                        className="border-border"
                       />
                     </div>
-                    <div className="flex gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowCreateAlert(false)}
-                        className="flex-1 border-white/20 hover:bg-white/20 text-slate-900"
+                    <div className="space-y-2">
+                      <Label className="text-text-dark font-medium">Search Radius</Label>
+                      <Select
+                        value={newAlert.radius}
+                        onValueChange={(value) =>
+                          setNewAlert({ ...newAlert, radius: value })
+                        }
                       >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleCreateAlert}
-                        className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                      >
-                        Send Alert
-                      </Button>
+                        <SelectTrigger className="border-border">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5 km</SelectItem>
+                          <SelectItem value="10">10 km</SelectItem>
+                          <SelectItem value="15">15 km</SelectItem>
+                          <SelectItem value="20">20 km</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-                </DialogContent>
-              </Dialog>
-              <div className="md:hidden"><UserButton /></div>
+                  <div className="space-y-2">
+                    <Label className="text-text-dark font-medium">Description</Label>
+                    <Textarea
+                      placeholder="Describe the emergency situation"
+                      value={newAlert.description}
+                      onChange={(e) =>
+                        setNewAlert({
+                          ...newAlert,
+                          description: e.target.value,
+                        })
+                      }
+                      className="border-border"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowCreateAlert(false)}
+                      className="flex-1 border-border text-text-dark hover:bg-text-dark/5"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleCreateAlert}
+                      className="flex-1"
+                    >
+                      Send Alert
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <div className="md:hidden">
+              <UserButton />
             </div>
           </div>
-
-          {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto p-6">
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-red-800/20 rounded-lg flex items-center justify-center">
-                  <AlertTriangle className="w-6 h-6 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">
-                    {criticalTypes}
-                  </p>
-                  <p className="text-sm text-gray-200">Critical Blood Types</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
-                  <Activity className="w-6 h-6 text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">
-                    {activeAlerts.length}
-                  </p>
-                  <p className="text-sm text-gray-200">Active Alerts</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-green-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">
-                    {totalResponses}
-                  </p>
-                  <p className="text-sm text-gray-200">Donor Responses</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">
-                    {totalConfirmed}
-                  </p>
-                  <p className="text-sm text-gray-200">Confirmed Donors</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
+        {/* Scrollable content */}
+        <motion.div
+          variants={pageContainer}
+          initial="hidden"
+          animate="show"
+          className="flex-1 overflow-y-auto p-6 dash-scroll"
+        >
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <StatCard
+              icon={AlertTriangle}
+              chip="ruby"
+              value={criticalTypes}
+              label="Critical Blood Types"
+            />
+            <StatCard
+              icon={Activity}
+              chip="oxygen"
+              value={activeAlerts.length}
+              label="Active Alerts"
+            />
+            <StatCard
+              icon={Users}
+              chip="mist"
+              value={totalResponses}
+              label="Donor Responses"
+            />
+            <StatCard
+              icon={CheckCircle}
+              chip="dark"
+              value={totalConfirmed}
+              label="Confirmed Donors"
+            />
+          </div>
+
           {/* Blood Inventory Tab */}
-
           {activeTab === "inventory" && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">
-                Blood Inventory Status
-              </h2>
-              <Button
-                variant="outline"
-                className="border-white/20 bg-yellow-600  text-white hover:bg-white/20 transition-all duration-300"
-                onClick={() => handleUpdateInventory()}
-              >
-                <TrendingUp className="w-4 h-4 mr-2" />
-                Update Inventory
-              </Button>
-            </div>
+            <motion.div variants={fadeUp} className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-outfit font-bold text-text-dark">
+                  Blood Inventory Status
+                </h2>
+                <Button
+                  variant="outline"
+                  className="border-border text-text-dark hover:bg-text-dark/5"
+                  onClick={() => handleUpdateInventory()}
+                >
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Update Inventory
+                </Button>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {bloodInventory.map((item) => {
-                const status = getStatus(item.current, item.minimum);
-                return (
-                  <Card
-                    key={item.type}
-                    className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                  >
-                    <CardContent className="p-6">
+              <motion.div
+                variants={pageContainer}
+                initial="hidden"
+                animate="show"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+              >
+                {bloodInventory.map((item) => {
+                  const status = getStatus(item.current, item.minimum);
+                  const pct = Math.min((item.current / item.minimum) * 100, 100);
+                  return (
+                    <motion.div
+                      key={item.type}
+                      variants={listItem}
+                      className="dash-card dash-card-interactive p-5"
+                    >
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold">{item.type}</h3>
+                        <h3 className="text-lg font-outfit font-semibold text-text-dark">
+                          {item.type}
+                        </h3>
                         <Badge className={getInventoryStatus(status)}>
                           {status}
                         </Badge>
                       </div>
                       <div className="space-y-3">
-                        <div className="flex justify-between text-sm text-gray-200">
+                        <div className="flex justify-between text-sm text-muted-foreground">
                           <span>Current: {item.current} units</span>
                           <span>Min: {item.minimum} units</span>
                         </div>
                         <Progress
-                          value={(item.current / item.minimum) * 100}
-                          className="h-2 bg-white/20 [&::-webkit-progress-bar]:bg-white/20 [&::-webkit-progress-value]:bg-yellow-600 [&::-moz-progress-bar]:bg-yellow-600"
+                          value={pct}
+                          className="h-2 bg-muted"
                         />
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            </motion.div>
           )}
+
           {isInvModalOpen && editingItem && (
             <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
               <div className="bg-white rounded-lg shadow-lg p-6 w-96">
-                <h2 className="text-lg font-semibold mb-4">
+                <h2 className="text-lg font-outfit font-semibold text-text-dark mb-4">
                   Update Blood Inventory
                 </h2>
 
                 {/* Blood Type Selector */}
-                <label className="block mb-2">Blood Type</label>
+                <label className="block mb-2 text-sm font-medium text-muted-foreground">Blood Type</label>
                 <select
                   value={editingItem.type}
                   onChange={(e) => {
@@ -930,7 +909,7 @@ export default function BloodbankDashboard() {
                     )!;
                     setEditingItem(selected);
                   }}
-                  className="w-full border rounded px-3 py-2 mb-4"
+                  className="w-full border border-border rounded px-3 py-2 mb-4"
                 >
                   {bloodInventory.map((b) => (
                     <option key={b.type} value={b.type}>
@@ -940,7 +919,7 @@ export default function BloodbankDashboard() {
                 </select>
 
                 {/* Current Units */}
-                <label className="block mb-2">Current Units</label>
+                <label className="block mb-2 text-sm font-medium text-muted-foreground">Current Units</label>
                 <input
                   type="number"
                   value={editingItem.current}
@@ -961,20 +940,20 @@ export default function BloodbankDashboard() {
                         : prev
                     );
                   }}
-                  className="w-full border rounded px-3 py-2 mb-4"
+                  className="w-full border border-border rounded px-3 py-2 mb-4"
                 />
 
                 {/* Show computed Status (read-only) */}
-                <label className="block mb-2">Status</label>
+                <label className="block mb-2 text-sm font-medium text-muted-foreground">Status</label>
                 <div
-                  className={`w-full border rounded px-3 py-2 mb-6 ${
+                  className={`w-full border border-border rounded px-3 py-2 mb-6 font-medium ${
                     getStatus(editingItem.current, editingItem.minimum) ===
                     "Critical"
                       ? "text-red-600"
                       : getStatus(editingItem.current, editingItem.minimum) ===
                         "Low"
                       ? "text-yellow-600"
-                      : "text-green-600"
+                      : "text-emerald-600"
                   }`}
                 >
                   {getStatus(editingItem.current, editingItem.minimum)}
@@ -985,11 +964,12 @@ export default function BloodbankDashboard() {
                   <Button
                     variant="outline"
                     onClick={() => setIsInvModalOpen(false)}
+                    className="border-border text-text-dark hover:bg-text-dark/5"
                   >
                     Cancel
                   </Button>
                   <Button
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
                     onClick={handleSave}
                   >
                     Save
@@ -1001,49 +981,46 @@ export default function BloodbankDashboard() {
 
           {/* Active Alerts Tab */}
           {activeTab === "alerts" && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">
-                Active Emergency Alerts
-              </h2>
-              <Button
-                className="bg-yellow-600 hover:bg-yellow-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                onClick={() => setShowCreateAlert(true)}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                New Alert
-              </Button>
-            </div>
+            <motion.div variants={fadeUp} className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-outfit font-bold text-text-dark">
+                  Active Emergency Alerts
+                </h2>
+                <Button onClick={() => setShowCreateAlert(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Alert
+                </Button>
+              </div>
 
-            {activeAlerts.length === 0 ? (
-              <Card className="glass-morphism border border-accent/30 text-white">
-                <CardContent className="p-12 text-center">
-                  <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-white mb-2">
+              {activeAlerts.length === 0 ? (
+                <div className="dash-card p-12 text-center">
+                  <AlertTriangle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-outfit font-medium text-text-dark mb-2">
                     No Active Alerts
                   </h3>
-                  <p className="text-gray-200 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     Create an emergency alert when you need blood urgently.
                   </p>
-                  <Button
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                    onClick={() => setShowCreateAlert(true)}
-                  >
+                  <Button onClick={() => setShowCreateAlert(true)}>
                     Create First Alert
                   </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {activeAlerts.map((alert) => (
-                  <Card
-                    key={alert.id}
-                    className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                  >
-                    <CardContent className="p-6">
+                </div>
+              ) : (
+                <motion.div
+                  variants={pageContainer}
+                  initial="hidden"
+                  animate="show"
+                  className="space-y-4"
+                >
+                  {activeAlerts.map((alert) => (
+                    <motion.div
+                      key={alert.id}
+                      variants={listItem}
+                      className="dash-card dash-card-interactive border-l-4 border-l-primary p-6"
+                    >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
                             {/* Urgency */}
                             <Badge className={getUrgencyColor(alert.urgency!)}>
                               {alert.urgency}
@@ -1052,7 +1029,7 @@ export default function BloodbankDashboard() {
                             {/* Alert Type (defaults to Blood if not set) */}
                             <Badge
                               variant="outline"
-                              className="bg-white/5 border-white/20 text-white"
+                              className="border-border text-text-dark bg-transparent"
                             >
                               {alert.type ? alert.type : "Blood"}
                             </Badge>
@@ -1061,7 +1038,7 @@ export default function BloodbankDashboard() {
                             {(!alert.type || alert.type === "Blood") && (
                               <Badge
                                 variant="outline"
-                                className="bg-white/5 border-white/20 text-white"
+                                className="border-border text-text-dark bg-transparent"
                               >
                                 Blood Type: {alert.bloodType}
                               </Badge>
@@ -1070,36 +1047,36 @@ export default function BloodbankDashboard() {
                             {/* Units Needed */}
                             <Badge
                               variant="outline"
-                              className="bg-white/5 border-white/20 text-white"
+                              className="border-border text-text-dark bg-transparent"
                             >
                               {alert.unitsNeeded} units needed
                             </Badge>
                           </div>
-                          <p className="text-gray-200 mb-3">
+                          <p className="text-muted-foreground mb-3">
                             {alert.description}
                           </p>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-300">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-4 h-4 text-gray-400" />
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="w-4 h-4 text-secondary" />
                               {alert.createdAt}
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Users className="w-4 h-4 text-gray-400" />
+                            <div className="flex items-center gap-1.5">
+                              <Users className="w-4 h-4 text-secondary" />
                               {alert.responses ? alert.responses : 0} responses
                             </div>
-                            <div className="flex items-center gap-1">
-                              <CheckCircle className="w-4 h-4 text-gray-400" />
+                            <div className="flex items-center gap-1.5">
+                              <CheckCircle className="w-4 h-4 text-secondary" />
                               {alert.confirmed ? alert.confirmed : 0} confirmed
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex gap-3">
+                      <div className="flex gap-3 flex-wrap">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="border-white/20 text-white bg-yellow-600 hover:bg-white/20 transition-all duration-300"
+                          className="border-border text-text-dark hover:bg-text-dark/5"
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           View Details
@@ -1107,7 +1084,7 @@ export default function BloodbankDashboard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="border-white/20 bg-yellow-600 text-white hover:bg-white/20 transition-all duration-300"
+                          className="border-border text-text-dark hover:bg-text-dark/5"
                         >
                           <Share2 className="w-4 h-4 mr-2" />
                           Share Alert
@@ -1115,96 +1092,97 @@ export default function BloodbankDashboard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-yellow-600 text-red-700  border-red-600 hover:bg-red-600/20 transition-all duration-300"
+                          className="border-red-200 text-red-600 hover:bg-red-50"
                         >
                           <XCircle className="w-4 h-4 mr-2" />
                           Close Alert
                         </Button>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
           )}
 
           {/* Donor Responses Tab */}
           {activeTab === "responses" && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">Donor Responses</h2>
-              <div className="flex gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search users..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64 bg-white/5 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-yellow-600"
-                  />
-                </div>
-                <Select
-                  value={bloodTypeFilter}
-                  onValueChange={setBloodTypeFilter}
-                >
-                  <SelectTrigger className="w-32 bg-white/5 border-white/20 text-white">
-                    <SelectValue placeholder="Blood Type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 text-white border-gray-700">
-                    <SelectItem value="all">All</SelectItem>
-                    {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
-                      (type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      )
-                    )}
-                  </SelectContent>
-                </Select>
+            <motion.div variants={fadeUp} className="space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <h2 className="text-2xl font-outfit font-bold text-text-dark">
+                  Donor Responses
+                </h2>
+                <div className="flex flex-wrap gap-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search donors..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-56 border-border"
+                    />
+                  </div>
+                  <Select
+                    value={bloodTypeFilter}
+                    onValueChange={setBloodTypeFilter}
+                  >
+                    <SelectTrigger className="w-32 border-border">
+                      <SelectValue placeholder="Blood Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
+                        (type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        )
+                      )}
+                    </SelectContent>
+                  </Select>
 
-                <Select
-                  value={distanceFilter}
-                  onValueChange={setDistanceFilter}
-                >
-                  <SelectTrigger className="w-32 bg-white/5 border-white/20 text-white">
-                    <SelectValue placeholder="Distance" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 text-white border-gray-700">
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="5">{"<5km"}</SelectItem>
-                    <SelectItem value="10">{"<10km"}</SelectItem>
-                    <SelectItem value="15">{"<15km"}</SelectItem>
-                    <SelectItem value="20">{"<20km"}</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <Select
+                    value={distanceFilter}
+                    onValueChange={setDistanceFilter}
+                  >
+                    <SelectTrigger className="w-32 border-border">
+                      <SelectValue placeholder="Distance" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Any Distance</SelectItem>
+                      <SelectItem value="5">{"<5 km"}</SelectItem>
+                      <SelectItem value="10">{"<10 km"}</SelectItem>
+                      <SelectItem value="15">{"<15 km"}</SelectItem>
+                      <SelectItem value="20">{"<20 km"}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
-            <Card className="glass-morphism border border-accent/30 text-white">
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
+
+              <div className="dash-card overflow-hidden">
+                <div className="overflow-x-auto dash-scroll">
                   <table className="w-full">
-                    <thead className="bg-white/5 border-b border-white/20">
+                    <thead className="bg-text-dark/5 border-b border-text-dark/10">
                       <tr>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Donor
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Blood Type
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Distance
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           ETA
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Status
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Contact
                         </th>
-                        <th className="text-left p-4 font-medium text-white">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Actions
                         </th>
                       </tr>
@@ -1213,14 +1191,14 @@ export default function BloodbankDashboard() {
                       {filteredDonors.map((response) => (
                         <tr
                           key={response.id}
-                          className="border-b border-white/10 hover:bg-white/5 transition-all duration-300"
+                          className="border-b border-text-dark/5 hover:bg-text-dark/[0.03] transition-colors duration-200"
                         >
                           <td className="p-4">
                             <div>
-                              <p className="font-medium text-white">
+                              <p className="font-medium text-text-dark">
                                 {response.donorName}
                               </p>
-                              <p className="text-sm text-gray-300">
+                              <p className="text-sm text-muted-foreground">
                                 Last donation: {response.lastDonation}
                               </p>
                             </div>
@@ -1228,21 +1206,23 @@ export default function BloodbankDashboard() {
                           <td className="p-4">
                             <Badge
                               variant="outline"
-                              className="bg-white/5 border-white/20 text-white"
+                              className="border-border text-text-dark bg-transparent"
                             >
                               {response.bloodType}
                             </Badge>
                           </td>
-                          <td className="p-4 text-gray-200">
+                          <td className="p-4 text-muted-foreground">
                             {response.distance}
                           </td>
-                          <td className="p-4 text-gray-200">{response.eta}</td>
+                          <td className="p-4 text-muted-foreground">
+                            {response.eta}
+                          </td>
                           <td className="p-4">
                             <Badge
                               className={
                                 response.status === "Confirmed"
-                                  ? "bg-green-600 text-white"
-                                  : "bg-yellow-600 text-white"
+                                  ? "bg-emerald-600 text-white"
+                                  : "bg-amber-500 text-white"
                               }
                             >
                               {response.status}
@@ -1252,7 +1232,7 @@ export default function BloodbankDashboard() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-white hover:bg-white/20"
+                              className="text-muted-foreground hover:bg-text-dark/5"
                             >
                               <Phone className="w-4 h-4" />
                             </Button>
@@ -1264,28 +1244,27 @@ export default function BloodbankDashboard() {
                                   <Button
                                     size="sm"
                                     onClick={() => handleConfirm(response.id)}
-                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
                                   >
                                     Confirm
                                   </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="border-white/20 hover:bg-white/20 text-slate-800"
+                                    className="border-border text-text-dark hover:bg-text-dark/5"
                                   >
                                     Contact
                                   </Button>
                                 </>
                               ) : justConfirmed === response.id ? (
-                                <p className="text-green-700 font-medium">
-                                  Thank you for confirming, the donor has been
-                                  notified.
+                                <p className="text-emerald-600 font-medium text-sm">
+                                  Donor has been notified.
                                 </p>
                               ) : (
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="border-white/20 hover:bg-white/20 text-slate-800"
+                                  className="border-border text-text-dark hover:bg-text-dark/5"
                                 >
                                   Contact
                                 </Button>
@@ -1297,95 +1276,85 @@ export default function BloodbankDashboard() {
                     </tbody>
                   </table>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </motion.div>
           )}
+
           {/* Analytics Tab */}
           {activeTab === "analytics" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-white">
-              Analytics & Reports
-            </h2>
+            <motion.div variants={fadeUp} className="space-y-6">
+              <h2 className="text-2xl font-outfit font-bold text-text-dark">
+                Analytics &amp; Reports
+              </h2>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <BarChart3 className="w-5 h-5 text-yellow-400" />
-                    Response Rate Analytics
-                  </CardTitle>
-                  <CardDescription className="text-gray-200">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="dash-card dash-card-interactive p-6">
+                  <div className="flex items-center gap-2 mb-1">
+                    <BarChart3 className="w-5 h-5 text-secondary" />
+                    <h3 className="font-outfit font-bold text-text-dark">
+                      Response Rate Analytics
+                    </h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
                     Donor response statistics for the last 30 days
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3 text-gray-200">
+                  </p>
+                  <div className="space-y-3 text-muted-foreground mb-4">
                     <div className="flex justify-between">
                       <span>Total Alerts Sent</span>
-                      <span className="font-semibold text-white">24</span>
+                      <span className="font-semibold text-text-dark">24</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Average Response Rate</span>
-                      <span className="font-semibold text-white">68%</span>
+                      <span className="font-semibold text-text-dark">68%</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Average Response Time</span>
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-text-dark">
                         12 minutes
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Successful Collections</span>
-                      <span className="font-semibold text-white">89%</span>
+                      <span className="font-semibold text-text-dark">89%</span>
                     </div>
                   </div>
-                  <Progress
-                    value={68}
-                    className="h-2 bg-white/20 [&::-webkit-progress-bar]:bg-white/20 [&::-webkit-progress-value]:bg-yellow-600 [&::-moz-progress-bar]:bg-yellow-600"
-                  />
-                </CardContent>
-              </Card>
+                  <Progress value={68} className="h-2 bg-muted" />
+                </div>
 
-              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                <CardHeader>
-                  <CardTitle className="text-white">
-                    Blood Type Demand
-                  </CardTitle>
-                  <CardDescription className="text-gray-200">
+                <div className="dash-card dash-card-interactive p-6">
+                  <div className="mb-1">
+                    <h3 className="font-outfit font-bold text-text-dark">
+                      Blood Type Demand
+                    </h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
                     Most requested blood types this month
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {[
-                    { type: "O+", requests: 15, percentage: 35 },
-                    { type: "A+", requests: 12, percentage: 28 },
-                    { type: "B+", requests: 8, percentage: 19 },
-                    { type: "O-", requests: 7, percentage: 16 },
-                  ].map((item) => (
-                    <div key={item.type} className="space-y-2">
-                      <div className="flex justify-between text-gray-200">
-                        <span>{item.type}</span>
-                        <span className="text-sm text-white">
-                          {item.requests} requests
-                        </span>
+                  </p>
+                  <div className="space-y-4">
+                    {[
+                      { type: "O+", requests: 15, percentage: 35 },
+                      { type: "A+", requests: 12, percentage: 28 },
+                      { type: "B+", requests: 8, percentage: 19 },
+                      { type: "O-", requests: 7, percentage: 16 },
+                    ].map((item) => (
+                      <div key={item.type} className="space-y-1.5">
+                        <div className="flex justify-between text-sm text-muted-foreground">
+                          <span className="text-text-dark font-medium">{item.type}</span>
+                          <span>{item.requests} requests</span>
+                        </div>
+                        <Progress
+                          value={item.percentage}
+                          className="h-2 bg-muted"
+                        />
                       </div>
-                      <Progress
-                        value={item.percentage}
-                        className="h-2 bg-white/20 [&::-webkit-progress-bar]:bg-white/20 [&::-webkit-progress-value]:bg-yellow-600 [&::-moz-progress-bar]:bg-yellow-600"
-                      />
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           )}
-          </div>
-        </div>
+        </motion.div>
       </div>
-    </GradientBackground>
+    </div>
   );
 }
-
-

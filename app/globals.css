@@ -603,3 +603,159 @@ textarea:focus-visible {
   position: relative;
   z-index: 10;
 }
+
+/* ============================================================
+   DASHBOARD DESIGN SYSTEM (2026 overhaul)
+   Calm, palette-based surfaces. Uses ONLY existing brand tokens.
+   ============================================================ */
+
+/* Calm base surface replacing the loud gradient backdrop on dashboards */
+.dashboard-surface {
+  position: relative;
+  min-height: 100vh;
+  background-color: hsl(var(--background));
+  background-image:
+    radial-gradient(at 12% 8%, hsl(var(--accent) / 0.35) 0px, transparent 42%),
+    radial-gradient(at 88% 6%, hsl(var(--secondary) / 0.12) 0px, transparent 40%),
+    radial-gradient(at 78% 92%, hsl(var(--primary) / 0.08) 0px, transparent 45%),
+    radial-gradient(at 25% 88%, hsl(var(--accent) / 0.22) 0px, transparent 45%);
+  background-attachment: fixed;
+}
+
+/* Solid card: hairline border, soft shadow */
+.dash-card {
+  background: hsl(0 0% 100% / 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid hsl(var(--text-dark) / 0.08);
+  border-radius: var(--radius);
+  box-shadow:
+    0 1px 2px hsl(var(--text-dark) / 0.04),
+    0 8px 24px -12px hsl(var(--text-dark) / 0.12);
+}
+
+.dash-card-interactive {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease, border-color 0.25s ease;
+  will-change: transform;
+}
+.dash-card-interactive:hover {
+  transform: translateY(-3px);
+  border-color: hsl(var(--primary) / 0.22);
+  box-shadow:
+    0 2px 4px hsl(var(--text-dark) / 0.05),
+    0 18px 40px -16px hsl(var(--text-dark) / 0.22);
+}
+
+/* Sidebar + topbar shells */
+.dash-sidebar {
+  background: hsl(0 0% 100% / 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid hsl(var(--text-dark) / 0.08);
+}
+.dash-topbar {
+  background: hsl(var(--background) / 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid hsl(var(--text-dark) / 0.08);
+}
+
+/* Nav items with ruby active state */
+.dash-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: calc(var(--radius) - 2px);
+  color: hsl(var(--text-dark) / 0.72);
+  font-weight: 500;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.dash-nav-item:hover {
+  background: hsl(var(--text-dark) / 0.05);
+  color: hsl(var(--text-dark));
+}
+.dash-nav-item[data-active="true"] {
+  background: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+.dash-nav-item[data-active="true"] svg {
+  color: hsl(var(--primary));
+}
+
+/* Icon chip tints (brand palette; semantic status colors handled separately) */
+.chip-ruby {
+  background: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+}
+.chip-oxygen {
+  background: hsl(var(--secondary) / 0.12);
+  color: hsl(var(--secondary));
+}
+.chip-mist {
+  background: hsl(var(--accent) / 0.35);
+  color: hsl(var(--secondary));
+}
+.chip-dark {
+  background: hsl(var(--text-dark) / 0.08);
+  color: hsl(var(--text-dark));
+}
+
+/* Skeleton loader with sheen */
+.dash-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--text-dark) / 0.06);
+  border-radius: calc(var(--radius) - 2px);
+}
+.dash-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(0 0% 100% / 0.45),
+    transparent
+  );
+  animation: dash-sheen 1.6s infinite;
+}
+@keyframes dash-sheen {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Thin brand scrollbar */
+.dash-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--text-dark) / 0.2) transparent;
+}
+.dash-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.dash-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--text-dark) / 0.18);
+  border-radius: 999px;
+}
+.dash-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--text-dark) / 0.3);
+}
+.dash-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-card-interactive,
+  .dash-card-interactive:hover {
+    transition: none;
+    transform: none;
+  }
+  .dash-skeleton::after {
+    animation: none;
+  }
+}

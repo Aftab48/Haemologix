@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,8 +29,7 @@ import {
   Settings,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import {
   BloodTypeFormat,
   calculateNextEligible,
@@ -38,12 +38,10 @@ import {
   getEligibilityProgress,
   isCompatible,
 } from "@/lib/utils";
-import Image from "next/image";
-import GradientBackground from "@/components/GradientBackground";
+import StatCard from "@/components/dashboard/StatCard";
+import { pageContainer, fadeUp, listItem } from "@/components/dashboard/motion";
 
 export default function DonorDashboard() {
-  //const [dbUser, setDbUser] = useState<any>(null);
-  //const [user, setUser] = useState<DonorData | null>(null);
   const [isAvailable, setIsAvailable] = useState(true);
   const [activeTab, setActiveTab] = useState("alerts");
 
@@ -55,37 +53,6 @@ export default function DonorDashboard() {
     dateOfBirth: "2005-08-14",
     lastDonation: "",
   };
-
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     const email = loggedInUser?.primaryEmailAddress?.emailAddress;
-  //     if (!email) return;
-
-  //     try {
-  //       const res = await getCurrentUser(email);
-
-  //       if (res.role === "DONOR") {
-  //         setUser({
-  //           ...res.user,
-  //           dateOfBirth: res.user.dateOfBirth
-  //             ? formatLastActivity(res.user.dateOfBirth)
-  //             : "",
-  //           lastDonation: res.user.lastDonation
-  //             ? formatLastActivity(res.user.lastDonation)
-  //             : undefined,
-  //         });
-  //       } else {
-  //         setUser(null);
-  //       }
-
-  //       setDbUser(res);
-  //     } catch (err) {
-  //       console.error("[Dashboard] error calling getCurrentUser:", err);
-  //     }
-  //   };
-
-  //   fetchUser();
-  // }, [loggedInUser]);
 
   const [activeAlerts, setActiveAlerts] = useState([
     {
@@ -224,7 +191,7 @@ export default function DonorDashboard() {
       responded: false,
     },
   ]);
-  const [donationHistory, setDonationHistory] = useState([
+  const [donationHistory] = useState([
     {
       id: 1,
       date: "2024-01-15",
@@ -346,13 +313,11 @@ export default function DonorDashboard() {
       status: "Cancelled",
     },
   ]);
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     totalDonations: 12,
     livesSaved: 36,
     eligibilityStatus: "Eligible",
   });
-  const router = useRouter();
-
   const [buttonResponse, setButtonResponse] = useState<
     "accept" | "decline" | null
   >(null);
@@ -370,653 +335,644 @@ export default function DonorDashboard() {
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case "Critical":
-        return "bg-red-800 text-white border-red-900";
+        return "bg-red-600 text-white border-red-700";
       case "High":
-        return "bg-orange-600 text-white border-orange-700";
+        return "bg-amber-500 text-white border-amber-600";
       case "Medium":
-        return "bg-yellow-500 text-white border-yellow-600";
+        return "bg-amber-400 text-text-dark border-amber-500";
       default:
-        return "bg-gray-600 text-white border-gray-700";
+        return "bg-muted text-text-dark border-border";
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Completed":
+        return "bg-emerald-600 text-white";
+      case "Pending":
+        return "bg-amber-500 text-white";
+      case "Cancelled":
+        return "bg-muted text-text-dark";
+      default:
+        return "bg-muted text-text-dark";
+    }
+  };
+
+  const navItems = [
+    {
+      value: "alerts",
+      label: "Active Alerts",
+      short: "Alerts",
+      Icon: AlertTriangle,
+      badge: activeAlerts.length,
+    },
+    { value: "history", label: "Donation History", short: "History", Icon: Clock },
+    { value: "profile", label: "Profile Settings", short: "Profile", Icon: Settings },
+  ];
+
   return (
-    <GradientBackground>
-      <img
-        src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
-        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20 z-0"
-        alt="Blood donation background"
-      />
-
-      <div className="flex min-h-screen relative z-10">
-
-        {/* === FULL-HEIGHT SIDEBAR === */}
-        <aside className="w-64 shrink-0 hidden md:flex flex-col glass-morphism border-r border-white/10 sticky top-0 h-screen z-20 overflow-hidden">
-          {/* Branding */}
-          <div className="p-5 border-b border-white/10">
-            <Link href="/">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-red-800 rounded-lg flex items-center justify-center shrink-0">
-                  <Heart className="w-5 h-5 text-white" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-white text-sm truncate">Donor Dashboard</p>
-                  <p className="text-xs text-white/50 truncate">{user?.name || user?.email.split("@")[0]}</p>
-                </div>
-              </div>
-            </Link>
-          </div>
-
-          {/* Nav items */}
-          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-            {[
-              { value: "alerts", label: `Active Alerts (${activeAlerts.length})`, Icon: AlertTriangle },
-              { value: "history", label: "Donation History", Icon: Clock },
-              { value: "profile", label: "Profile Settings", Icon: Settings },
-            ].map(({ value, label, Icon }) => (
-              <button
-                key={value}
-                onClick={() => setActiveTab(value)}
-                className={cn(
-                  "flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-200 text-left",
-                  activeTab === value
-                    ? "bg-yellow-600 text-white shadow-sm"
-                    : "text-white/60 hover:bg-white/10 hover:text-white"
-                )}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span className="truncate">{label}</span>
-              </button>
-            ))}
-          </nav>
-
-          {/* User at bottom */}
-          <div className="p-4 border-t border-white/10 flex items-center gap-3">
-            <UserButton />
-            <span className="text-xs text-white/50">Account</span>
-          </div>
-        </aside>
-
-        {/* === MAIN CONTENT AREA === */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-          {/* Mobile nav bar */}
-          <div className="md:hidden glass-morphism border-b border-white/10 p-3 flex overflow-x-auto gap-1 shrink-0">
-            {[
-              { value: "alerts", label: "Alerts", Icon: AlertTriangle },
-              { value: "history", label: "History", Icon: Clock },
-              { value: "profile", label: "Profile", Icon: Settings },
-            ].map(({ value, label, Icon }) => (
-              <button
-                key={value}
-                onClick={() => setActiveTab(value)}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all whitespace-nowrap shrink-0",
-                  activeTab === value ? "bg-yellow-600 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"
-                )}
-              >
-                <Icon className="w-3 h-3" />
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* Top bar */}
-          <div className="glass-morphism border-b border-white/10 px-6 py-3 flex items-center justify-between shrink-0">
-            <div className="md:hidden flex items-center gap-2">
-              <div className="w-7 h-7 bg-red-800 rounded-lg flex items-center justify-center">
-                <Heart className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-white font-semibold text-sm">Donor Dashboard</span>
-            </div>
-            <div className="hidden md:block" />
+    <div className="dashboard-surface flex min-h-screen">
+      {/* === FULL-HEIGHT SIDEBAR === */}
+      <aside className="w-64 shrink-0 hidden md:flex flex-col dash-sidebar sticky top-0 h-screen z-20">
+        {/* Branding */}
+        <div className="p-5 border-b border-text-dark/10">
+          <Link href="/">
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-              >
-                <Bell className="w-4 h-4 mr-2" />
-                Notifications
-                <Badge className="ml-2 gradient-ruby text-white">2</Badge>
-              </Button>
-              <div className="md:hidden">
-                <UserButton />
+              <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                <Heart className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-outfit font-bold text-text-dark text-sm truncate">
+                  Donor Dashboard
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.name || user?.email.split("@")[0]}
+                </p>
               </div>
             </div>
+          </Link>
+        </div>
+
+        {/* Nav items */}
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto dash-scroll">
+          {navItems.map(({ value, label, Icon, badge }) => (
+            <button
+              key={value}
+              onClick={() => setActiveTab(value)}
+              className="dash-nav-item w-full text-sm text-left"
+              data-active={activeTab === value}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span className="truncate flex-1">{label}</span>
+              {badge !== undefined && (
+                <span className="text-xs font-semibold px-1.5 py-0.5 rounded-md chip-ruby">
+                  {badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        {/* User at bottom */}
+        <div className="p-4 border-t border-text-dark/10 flex items-center gap-3">
+          <UserButton />
+          <span className="text-xs text-muted-foreground">Account</span>
+        </div>
+      </aside>
+
+      {/* === MAIN CONTENT AREA === */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile nav bar */}
+        <div className="md:hidden dash-topbar p-3 flex overflow-x-auto gap-1 shrink-0 dash-scroll">
+          {navItems.map(({ value, short, Icon }) => (
+            <button
+              key={value}
+              onClick={() => setActiveTab(value)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all whitespace-nowrap shrink-0 font-medium",
+                activeTab === value
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-text-dark/5"
+              )}
+            >
+              <Icon className="w-3 h-3" />
+              {short}
+            </button>
+          ))}
+        </div>
+
+        {/* Top bar */}
+        <div className="dash-topbar px-6 py-3 flex items-center justify-between shrink-0 sticky top-0 z-10">
+          <div className="md:hidden flex items-center gap-2">
+            <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
+              <Heart className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <span className="text-text-dark font-outfit font-semibold text-sm">
+              Donor
+            </span>
+          </div>
+          <div className="hidden md:block">
+            <h1 className="font-outfit font-bold text-text-dark text-lg">
+              Welcome back, {user?.name?.split(" ")[0]}
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Here's what's happening in your area
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-border text-text-dark hover:bg-text-dark/5"
+            >
+              <Bell className="w-4 h-4 mr-2" />
+              Notifications
+              <Badge className="ml-2 bg-primary text-primary-foreground">2</Badge>
+            </Button>
+            <div className="md:hidden">
+              <UserButton />
+            </div>
+          </div>
+        </div>
+
+        {/* Scrollable content */}
+        <motion.div
+          variants={pageContainer}
+          initial="hidden"
+          animate="show"
+          className="flex-1 overflow-y-auto p-6 dash-scroll"
+        >
+          {/* Availability */}
+          <motion.div
+            variants={fadeUp}
+            className="dash-card p-6 mb-6 flex flex-col md:flex-row items-center justify-between gap-4"
+          >
+            <div>
+              <h2 className="text-lg font-outfit font-semibold text-text-dark">
+                Are you currently available to donate?
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Toggle your availability to receive donation alerts.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setIsAvailable(true)}
+                className={cn(
+                  isAvailable
+                    ? "bg-accent text-text-dark hover:bg-accent/80"
+                    : "bg-transparent border border-border text-text-dark hover:bg-text-dark/5"
+                )}
+              >
+                Yes, Available
+              </Button>
+              <Button
+                onClick={() => setIsAvailable(false)}
+                className={cn(
+                  !isAvailable
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : "bg-transparent border border-border text-text-dark hover:bg-text-dark/5"
+                )}
+              >
+                No, Unavailable
+              </Button>
+            </div>
+          </motion.div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <StatCard
+              icon={Heart}
+              chip="ruby"
+              value={stats.totalDonations}
+              label="Total Donations"
+            />
+            <StatCard
+              icon={Activity}
+              chip="mist"
+              value={stats.livesSaved}
+              label="Lives Saved"
+            />
+            <StatCard
+              icon={Calendar}
+              chip="oxygen"
+              label="Next Eligible"
+            >
+              <p className="text-sm font-semibold text-text-dark">
+                {calculateNextEligible(user?.lastDonation)}
+              </p>
+            </StatCard>
+            <StatCard icon={CheckCircle} chip="dark" label="Current Status">
+              <Badge
+                className={cn(
+                  "mb-1",
+                  isAvailable
+                    ? "bg-emerald-600 text-white"
+                    : "bg-muted text-text-dark"
+                )}
+              >
+                {isAvailable ? stats.eligibilityStatus : "Unavailable"}
+              </Badge>
+            </StatCard>
           </div>
 
-          {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto p-6">
-
-            <Card className="mb-6 glass-morphism border border-accent/30 card-hover text-white">
-              <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-white">
-                    Are you currently available to donate?
-                  </h2>
-                  <p className="text-sm text-gray-200">
-                    Toggle your availability to receive donation alerts.
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => setIsAvailable(true)}
-                    className={`${
-                      isAvailable
-                        ? "gradient-mist hover:opacity-90"
-                        : "bg-white/20 border-white/30 hover:bg-white/30"
-                    } text-white`}
-                  >
-                    Yes, Available
-                  </Button>
-                  <Button
-                    onClick={() => setIsAvailable(false)}
-                    className={`${
-                      !isAvailable
-                        ? "gradient-ruby hover:opacity-90"
-                        : "bg-white/20 border-white/30 hover:bg-white/30"
-                    } text-white`}
-                  >
-                    No, Unavailable
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-red-600/20 rounded-lg flex items-center justify-center">
-                      <Heart className="w-6 h-6 text-red-500" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-white">
-                        {stats.totalDonations}
-                      </p>
-                      <p className="text-sm text-gray-200">Total Donations</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
-                      <Activity className="w-6 h-6 text-green-500" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-white">
-                        {stats.livesSaved}
-                      </p>
-                      <p className="text-sm text-gray-200">Lives Saved</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
-                      <Calendar className="w-6 h-6 text-blue-500" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-white">
-                        Next Eligible
-                      </p>
-                      <p className="text-sm text-gray-200">
-                        {calculateNextEligible(user?.lastDonation)}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
-                      <CheckCircle className="w-6 h-6 text-purple-500" />
-                    </div>
-                    <div>
-                      <Badge
-                        className={
-                          isAvailable
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-500 text-white"
-                        }
-                      >
-                        {isAvailable ? stats.eligibilityStatus : "Unavailable"}
-                      </Badge>
-
-                      <p className="text-sm text-gray-200 mt-1">Current Status</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* Eligibility Progress */}
+          <motion.div variants={fadeUp} className="dash-card p-6 mb-8">
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="w-5 h-5 text-secondary" />
+              <h3 className="text-lg font-outfit font-bold text-text-dark">
+                Donation Eligibility
+              </h3>
             </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Track your eligibility for next donation (3-month waiting period)
+            </p>
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>
+                  Last Donation:{" "}
+                  {user?.lastDonation && user.lastDonation !== "N/A"
+                    ? formatLastActivity(user.lastDonation, false)
+                    : "N/A"}
+                </span>
+                <span>
+                  Next Eligible:{" "}
+                  {user?.lastDonation && user.lastDonation !== "N/A"
+                    ? calculateNextEligible(user.lastDonation)
+                    : "Eligible Now"}
+                </span>
+              </div>
 
-            {/* Eligibility Progress */}
-            <Card className="mb-8 glass-morphism border border-accent/30 card-hover text-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Clock className="w-5 h-5 text-gray-200" />
-                  Donation Eligibility
-                </CardTitle>
-                <CardDescription className="text-gray-200">
-                  Track your eligibility for next donation (3-month waiting period)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm text-gray-200">
-                    <span>
-                      Last Donation:{" "}
-                      {user?.lastDonation && user.lastDonation !== "N/A"
-                        ? formatLastActivity(user.lastDonation, false)
-                        : "N/A"}
-                    </span>
-                    <span>
-                      Next Eligible:{" "}
-                      {user?.lastDonation && user.lastDonation !== "N/A"
-                        ? calculateNextEligible(user.lastDonation)
-                        : "Eligible Now"}
-                    </span>
-                  </div>
+              <Progress
+                value={getEligibilityProgress(user?.lastDonation)}
+                className="h-2 bg-muted"
+              />
 
-                  <Progress
-                    value={getEligibilityProgress(user?.lastDonation)}
-                    className="h-2 bg-white/20 [&::-webkit-progress-bar]:bg-red-500 [&::-webkit-progress-value]:bg-yellow-500"
-                  />
+              <p className="text-sm text-muted-foreground">
+                {user?.lastDonation && user.lastDonation !== "N/A"
+                  ? getEligibilityProgress(user.lastDonation) >= 100
+                    ? "You are eligible to donate!"
+                    : `${Math.ceil(
+                        (new Date(
+                          calculateNextEligible(user.lastDonation)
+                        ).getTime() -
+                          new Date().getTime()) /
+                          (1000 * 60 * 60 * 24)
+                      )} days remaining`
+                  : "You are eligible to donate now!"}
+              </p>
+            </div>
+          </motion.div>
 
-                  <p className="text-sm text-gray-200">
-                    {user?.lastDonation && user.lastDonation !== "N/A"
-                      ? getEligibilityProgress(user.lastDonation) >= 100
-                        ? "You are eligible to donate!"
-                        : `${Math.ceil(
-                            (new Date(
-                              calculateNextEligible(user.lastDonation)
-                            ).getTime() -
-                              new Date().getTime()) /
-                              (1000 * 60 * 60 * 24)
-                          )} days remaining`
-                      : "You are eligible to donate now!"}
+          {activeTab === "alerts" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-outfit font-bold text-text-dark">
+                  Emergency Blood Requests
+                </h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-border text-text-dark hover:bg-text-dark/5"
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Update Location
+                </Button>
+              </div>
+
+              {!isAvailable ? (
+                <div className="dash-card p-12 text-center">
+                  <XCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-outfit font-semibold text-text-dark mb-2">
+                    You're marked as unavailable
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Turn your availability back on to receive active donation
+                    requests.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-
-            {activeTab === "alerts" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-white">
-                    Emergency Blood Requests
-                  </h2>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                  >
-                    <MapPin className="w-4 h-4 mr-2" />
-                    Update Location
-                  </Button>
+              ) : activeAlerts.length === 0 ? (
+                <div className="dash-card p-12 text-center">
+                  <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-outfit font-semibold text-text-dark mb-2">
+                    No Active Alerts
+                  </h3>
+                  <p className="text-muted-foreground">
+                    You'll be notified when hospitals in your area need your
+                    blood type.
+                  </p>
                 </div>
-
-                {!isAvailable ? (
-                  <Card className="glass-morphism border border-accent/30 card-hover text-white">
-                    <CardContent className="p-12 text-center">
-                      <XCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-white mb-2">
-                        You're marked as unavailable
-                      </h3>
-                      <p className="text-gray-200">
-                        Turn your availability back on to receive active donation
-                        requests.
-                      </p>
-                    </CardContent>
-                  </Card>
-                ) : activeAlerts.length === 0 ? (
-                  <Card className="glass-morphism border border-accent/30 card-hover text-white">
-                    <CardContent className="p-12 text-center">
-                      <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-white mb-2">
-                        No Active Alerts
-                      </h3>
-                      <p className="text-gray-200">
-                        You'll be notified when hospitals in your area need your
-                        blood type.
-                      </p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="space-y-4">
-                    {activeAlerts.map((alert) => (
-                      <Card
-                        key={alert.id}
-                        className="border-l-4 border-l-red-500 glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg"
-                      >
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-lg font-semibold text-white">
-                                  {alert.hospitalName}
-                                </h3>
-                                <Badge className={getUrgencyColor(alert.urgency)}>
-                                  {alert.urgency}
-                                </Badge>
-                                <Badge
-                                  variant="outline"
-                                  className="bg-white/20 text-white border-white/30"
-                                >
-                                  Blood Type: {alert.bloodType}
-                                </Badge>
-                              </div>
-                              <p className="text-gray-200 mb-3">
-                                {alert.description}
-                              </p>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-200">
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="w-4 h-4 text-gray-300" />
-                                  {alert.distance} away
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Clock className="w-4 h-4 text-gray-300" />
-                                  {alert.timePosted}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Activity className="w-4 h-4 text-gray-300" />
-                                  {alert.unitsNeeded} units needed
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Phone className="w-4 h-4 text-gray-300" />
-                                  {alert.contactPhone}
-                                </div>
-                              </div>
+              ) : (
+                <motion.div
+                  variants={pageContainer}
+                  initial="hidden"
+                  animate="show"
+                  className="space-y-4"
+                >
+                  {activeAlerts.map((alert) => (
+                    <motion.div
+                      key={alert.id}
+                      variants={listItem}
+                      className="dash-card dash-card-interactive border-l-4 border-l-primary p-6"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
+                            <h3 className="text-lg font-outfit font-semibold text-text-dark">
+                              {alert.hospitalName}
+                            </h3>
+                            <Badge className={getUrgencyColor(alert.urgency)}>
+                              {alert.urgency}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className="border-border text-text-dark bg-transparent"
+                            >
+                              Blood Type: {alert.bloodType}
+                            </Badge>
+                          </div>
+                          <p className="text-muted-foreground mb-3">
+                            {alert.description}
+                          </p>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <MapPin className="w-4 h-4 text-secondary" />
+                              {alert.distance} away
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="w-4 h-4 text-secondary" />
+                              {alert.timePosted}
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Activity className="w-4 h-4 text-secondary" />
+                              {alert.unitsNeeded} units needed
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Phone className="w-4 h-4 text-secondary" />
+                              {alert.contactPhone}
                             </div>
                           </div>
+                        </div>
+                      </div>
 
-                          {!alert.responded ? (
-                            <div className="flex flex-col gap-3">
-                              <div className="flex gap-3">
-                                <Button
-                                  onClick={() => {
-                                    setButtonResponse("accept");
-                                    handleAlertResponse(alert.id);
-                                  }}
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                  disabled={
-                                    alert.bloodType.toLowerCase() === "plasma"
-                                      ? false
-                                      : !isCompatible(
-                                          user?.bloodGroup as BloodTypeFormat,
-                                          alert.bloodType as BloodTypeFormat
-                                        )
-                                  }
-                                >
-                                  <CheckCircle className="w-4 h-4 mr-2" />
-                                  Accept & Donate
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  onClick={() => {
-                                    setButtonResponse("decline");
-                                    handleAlertResponse(alert.id);
-                                  }}
-                                  className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                                  disabled={
-                                    !isCompatible(
+                      {!alert.responded ? (
+                        <div className="flex flex-col gap-3">
+                          <div className="flex gap-3 flex-wrap">
+                            <Button
+                              onClick={() => {
+                                setButtonResponse("accept");
+                                handleAlertResponse(alert.id);
+                              }}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                              disabled={
+                                alert.bloodType.toLowerCase() === "plasma"
+                                  ? false
+                                  : !isCompatible(
                                       user?.bloodGroup as BloodTypeFormat,
                                       alert.bloodType as BloodTypeFormat
                                     )
-                                  }
-                                >
-                                  <XCircle className="w-4 h-4 mr-2" />
-                                  Can't Donate
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                                >
-                                  <Navigation className="w-4 h-4 mr-2" />
-                                  <Link
-                                    href={"https://example.com/maps/hospital"}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    Get Directions
-                                  </Link>
-                                </Button>
-                              </div>
-
-                              {alert.bloodType?.toLowerCase() === "plasma" ? (
-                                <p className="text-green-500 text-sm font-medium">
-                                  ✅ Plasma donations are universally accepted.
-                                </p>
-                              ) : (
+                              }
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Accept & Donate
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setButtonResponse("decline");
+                                handleAlertResponse(alert.id);
+                              }}
+                              className="border-border text-text-dark hover:bg-text-dark/5"
+                              disabled={
                                 !isCompatible(
                                   user?.bloodGroup as BloodTypeFormat,
                                   alert.bloodType as BloodTypeFormat
-                                ) && (
-                                  <p className="text-red-400 text-sm font-medium">
-                                    ❌ Your blood type is not compatible for this
-                                    request.
-                                  </p>
                                 )
-                              )}
-                            </div>
-                          ) : (
-                            <>
-                              {buttonResponse === "accept" ? (
-                                <Alert className="bg-green-500/20 border-green-500 text-white">
-                                  <CheckCircle className="h-4 w-4 text-green-400" />
-                                  <AlertDescription className="text-green-100">
-                                    ✅ Thank you for accepting! The hospital has
-                                    been notified of your availability.
-                                  </AlertDescription>
-                                </Alert>
-                              ) : (
-                                <Alert className="bg-red-500/20 border-red-500 text-white">
-                                  <XCircle className="h-4 w-4 text-red-400" />
-                                  <AlertDescription className="text-red-100">
-                                    ❌ You declined this request.
-                                  </AlertDescription>
-                                </Alert>
-                              )}
-                            </>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === "history" && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-white">Donation History</h2>
-
-                <Card className="glass-morphism border border-accent/30 card-hover text-white">
-                  <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-white/20 border-b border-white/30">
-                          <tr>
-                            <th className="text-left p-4 font-medium text-white">
-                              Date
-                            </th>
-                            <th className="text-left p-4 font-medium text-white">
-                              Hospital
-                            </th>
-                            <th className="text-left p-4 font-medium text-white">
-                              Blood Type
-                            </th>
-                            <th className="text-left p-4 font-medium text-white">
-                              Units
-                            </th>
-                            <th className="text-left p-4 font-medium text-white">
-                              Status
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {donationHistory.map((donation) => (
-                            <tr
-                              key={donation.id}
-                              className="border-b border-white/10 hover:bg-white/5 transition-colors duration-200"
+                              }
                             >
-                              <td className="p-4 text-gray-200">
-                                {new Date(donation.date).toLocaleDateString()}
-                              </td>
-                              <td className="p-4 text-gray-200">
-                                {donation.hospital}
-                              </td>
-                              <td className="p-4">
-                                <Badge
-                                  variant="outline"
-                                  className="bg-white/20 text-white border-white/30"
-                                >
-                                  {donation.bloodType}
-                                </Badge>
-                              </td>
-                              <td className="p-4 text-gray-200">
-                                {donation.units}
-                              </td>
-                              <td className="p-4">
-                                <Badge className="bg-green-600 text-white">
-                                  {donation.status}
-                                </Badge>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+                              <XCircle className="w-4 h-4 mr-2" />
+                              Can't Donate
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="border-border text-text-dark hover:bg-text-dark/5"
+                              asChild
+                            >
+                              <Link
+                                href={"https://example.com/maps/hospital"}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Navigation className="w-4 h-4 mr-2" />
+                                Get Directions
+                              </Link>
+                            </Button>
+                          </div>
 
-            {activeTab === "profile" && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-white">Profile Settings</h2>
+                          {alert.bloodType?.toLowerCase() === "plasma" ? (
+                            <p className="text-emerald-600 text-sm font-medium">
+                              ✅ Plasma donations are universally accepted.
+                            </p>
+                          ) : (
+                            !isCompatible(
+                              user?.bloodGroup as BloodTypeFormat,
+                              alert.bloodType as BloodTypeFormat
+                            ) && (
+                              <p className="text-red-600 text-sm font-medium">
+                                ❌ Your blood type is not compatible for this
+                                request.
+                              </p>
+                            )
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          {buttonResponse === "accept" ? (
+                            <Alert className="bg-emerald-50 border-emerald-300 text-emerald-800">
+                              <CheckCircle className="h-4 w-4 text-emerald-600" />
+                              <AlertDescription className="text-emerald-800">
+                                ✅ Thank you for accepting! The hospital has been
+                                notified of your availability.
+                              </AlertDescription>
+                            </Alert>
+                          ) : (
+                            <Alert className="bg-red-50 border-red-300 text-red-800">
+                              <XCircle className="h-4 w-4 text-red-600" />
+                              <AlertDescription className="text-red-800">
+                                ❌ You declined this request.
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                        </>
+                      )}
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </div>
+          )}
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
-                    <CardHeader>
-                      <CardTitle className="text-white">
-                        Personal Information
-                      </CardTitle>
-                      <CardDescription className="text-gray-200">
-                        Update your personal details
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-200">
-                          Full Name
-                        </label>
-                        <p className="text-white">{user?.name || "John Donor"}</p>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-200">
-                          Email
-                        </label>
-                        <p className="text-white">{user?.email}</p>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-200">
+          {activeTab === "history" && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-outfit font-bold text-text-dark">
+                Donation History
+              </h2>
+
+              <div className="dash-card overflow-hidden">
+                <div className="overflow-x-auto dash-scroll">
+                  <table className="w-full">
+                    <thead className="bg-text-dark/5 border-b border-text-dark/10">
+                      <tr>
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
+                          Date
+                        </th>
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
+                          Hospital
+                        </th>
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Blood Type
-                        </label>
-                        <Badge className="bg-red-600 text-white">
+                        </th>
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
+                          Units
+                        </th>
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {donationHistory.map((donation) => (
+                        <tr
+                          key={donation.id}
+                          className="border-b border-text-dark/5 hover:bg-text-dark/[0.03] transition-colors duration-200"
+                        >
+                          <td className="p-4 text-muted-foreground">
+                            {new Date(donation.date).toLocaleDateString()}
+                          </td>
+                          <td className="p-4 text-text-dark">
+                            {donation.hospital}
+                          </td>
+                          <td className="p-4">
+                            <Badge
+                              variant="outline"
+                              className="border-border text-text-dark bg-transparent"
+                            >
+                              {donation.bloodType}
+                            </Badge>
+                          </td>
+                          <td className="p-4 text-muted-foreground">
+                            {donation.units}
+                          </td>
+                          <td className="p-4">
+                            <Badge className={getStatusColor(donation.status)}>
+                              {donation.status}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "profile" && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-outfit font-bold text-text-dark">
+                Profile Settings
+              </h2>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="dash-card dash-card-interactive p-6">
+                  <h3 className="text-xl font-outfit font-bold text-text-dark">
+                    Personal Information
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Update your personal details
+                  </p>
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Full Name
+                      </label>
+                      <p className="text-text-dark">
+                        {user?.name || "John Donor"}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Email
+                      </label>
+                      <p className="text-text-dark">{user?.email}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Blood Type
+                      </label>
+                      <div>
+                        <Badge className="bg-primary text-primary-foreground">
                           {user?.bloodGroup}
                         </Badge>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-200">
-                          Age
-                        </label>
-                        <p className="text-white">28 years</p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Edit Profile
-                      </Button>
-                    </CardContent>
-                  </Card>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Age
+                      </label>
+                      <p className="text-text-dark">28 years</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full border-border text-text-dark hover:bg-text-dark/5"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                  </div>
+                </div>
 
-                  <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
-                    <CardHeader>
-                      <CardTitle className="text-white">
-                        Notification Preferences
-                      </CardTitle>
-                      <CardDescription className="text-gray-200">
-                        Manage how you receive alerts
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-white">
-                            SMS Notifications
-                          </p>
-                          <p className="text-sm text-gray-200">
-                            Receive alerts via text message
-                          </p>
-                        </div>
-                        <Badge className="bg-green-600 text-white">Enabled</Badge>
+                <div className="dash-card dash-card-interactive p-6">
+                  <h3 className="text-xl font-outfit font-bold text-text-dark">
+                    Notification Preferences
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Manage how you receive alerts
+                  </p>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-text-dark">
+                          SMS Notifications
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Receive alerts via text message
+                        </p>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-white">
-                            Email Notifications
-                          </p>
-                          <p className="text-sm text-gray-200">
-                            Receive alerts via email
-                          </p>
-                        </div>
-                        <Badge className="bg-green-600 text-white">Enabled</Badge>
+                      <Badge className="bg-emerald-600 text-white">Enabled</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-text-dark">
+                          Email Notifications
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Receive alerts via email
+                        </p>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-white">
-                            Push Notifications
-                          </p>
-                          <p className="text-sm text-gray-200">
-                            Browser push notifications
-                          </p>
-                        </div>
-                        <Badge className="bg-green-600 text-white">Enabled</Badge>
+                      <Badge className="bg-emerald-600 text-white">Enabled</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-text-dark">
+                          Push Notifications
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Browser push notifications
+                        </p>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-200">
-                          Alert Radius
-                        </label>
-                        <p className="text-white">10 km</p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30"
-                      >
-                        <Bell className="w-4 h-4 mr-2" />
-                        Update Preferences
-                      </Button>
-                    </CardContent>
-                  </Card>
+                      <Badge className="bg-emerald-600 text-white">Enabled</Badge>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        Alert Radius
+                      </label>
+                      <p className="text-text-dark">10 km</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full border-border text-text-dark hover:bg-text-dark/5"
+                    >
+                      <Bell className="w-4 h-4 mr-2" />
+                      Update Preferences
+                    </Button>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          )}
+        </motion.div>
       </div>
-    </GradientBackground>
+    </div>
   );
 }

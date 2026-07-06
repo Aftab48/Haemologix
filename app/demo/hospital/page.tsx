@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,10 +53,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { formatLastActivity, cn } from "@/lib/utils";
-import GradientBackground from "@/components/GradientBackground";
 import { fetchUserDataById } from "@/lib/actions/user.actions";
 import { getAlerts } from "@/lib/actions/alerts.actions";
 import { fetchHospitalInventory } from "@/lib/actions/hospital.actions";
+import StatCard from "@/components/dashboard/StatCard";
+import { pageContainer, fadeUp, listItem } from "@/components/dashboard/motion";
 
 type OTSchedule = {
   id: string;
@@ -405,20 +407,23 @@ export default function HospitalDashboard() {
       case "Good":
         return "bg-green-600 text-white border-green-700";
       default:
-        return "bg-gray-600 text-white border-gray-700";
+        return "bg-muted text-text-dark";
     }
   };
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case "Critical":
-        return "bg-red-800 text-white border-red-900";
+      case "CRITICAL":
+        return "bg-red-600 text-white border-red-700";
       case "High":
-        return "bg-orange-600 text-white border-orange-700";
+      case "HIGH":
+        return "bg-amber-500 text-white border-amber-600";
       case "Medium":
-        return "bg-yellow-600 text-white border-yellow-700";
+      case "MEDIUM":
+        return "bg-amber-400 text-text-dark border-amber-500";
       default:
-        return "bg-gray-600 text-white border-gray-700";
+        return "bg-muted text-text-dark";
     }
   };
 
@@ -519,8 +524,8 @@ export default function HospitalDashboard() {
   const getOTStatusColor = (status: OTSchedule["status"]) => {
     switch (status) {
       case "Scheduled": return "bg-blue-600 text-white";
-      case "In Progress": return "bg-yellow-600 text-white";
-      case "Completed": return "bg-green-600 text-white";
+      case "In Progress": return "bg-amber-500 text-white";
+      case "Completed": return "bg-emerald-600 text-white";
       case "Cancelled": return "bg-red-800 text-white";
     }
   };
@@ -609,390 +614,359 @@ export default function HospitalDashboard() {
     });
   }, [donorResponses, searchTerm, distanceFilter, typeFilter, bloodTypeFilter]);
 
+  const navItems = [
+    { value: "inventory", label: "Blood Inventory", short: "Inventory", Icon: Activity },
+    { value: "alerts", label: "Active Alerts", short: "Alerts", Icon: AlertTriangle, badge: activeAlerts.length },
+    { value: "responses", label: "Donor Responses", short: "Responses", Icon: Users },
+    { value: "analytics", label: "Analytics", short: "Analytics", Icon: BarChart3 },
+    { value: "ot-scheduling", label: "OT Scheduling", short: "OT", Icon: Scissors },
+  ];
+
   return (
-    <GradientBackground>
-      <img
-        src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
-        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20 z-0"
-      />
-
-      <div className="flex min-h-screen relative z-10">
-
-        {/* === FULL-HEIGHT SIDEBAR === */}
-        <aside className="w-64 shrink-0 hidden md:flex flex-col glass-morphism border-r border-white/10 sticky top-0 h-screen z-20 overflow-hidden">
-          {/* Branding */}
-          <div className="p-5 border-b border-white/10">
-            <Link href="/">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-red-800 rounded-lg flex items-center justify-center shrink-0">
-                  <Building className="w-5 h-5 text-white" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-white text-sm truncate">Hospital Dashboard</p>
-                  <p className="text-xs text-white/50 truncate">
-                    {isLoadingUser ? "Loading..." : user?.hospitalName || "Demo Hospital"}
-                  </p>
-                </div>
-              </div>
-            </Link>
-          </div>
-
-          {/* Nav items */}
-          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-            {[
-              { value: "inventory", label: "Blood Inventory", Icon: Activity },
-              { value: "alerts", label: `Active Alerts (${activeAlerts.length})`, Icon: AlertTriangle },
-              { value: "responses", label: "Donor Responses", Icon: Users },
-              { value: "analytics", label: "Analytics", Icon: BarChart3 },
-              { value: "ot-scheduling", label: "OT Scheduling", Icon: Scissors },
-            ].map(({ value, label, Icon }) => (
-              <button
-                key={value}
-                onClick={() => setActiveTab(value)}
-                className={cn(
-                  "flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-200 text-left",
-                  activeTab === value
-                    ? "bg-yellow-600 text-white shadow-sm"
-                    : "text-white/60 hover:bg-white/10 hover:text-white"
-                )}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span className="truncate">{label}</span>
-              </button>
-            ))}
-          </nav>
-
-          {/* User at bottom */}
-          <div className="p-4 border-t border-white/10 flex items-center gap-3">
-            <UserButton />
-            <span className="text-xs text-white/50">Account</span>
-          </div>
-        </aside>
-
-        {/* === MAIN CONTENT AREA === */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-          {/* Mobile nav bar (visible only on small screens) */}
-          <div className="md:hidden glass-morphism border-b border-white/10 p-3 flex overflow-x-auto gap-1 shrink-0">
-            {[
-              { value: "inventory", label: "Inventory", Icon: Activity },
-              { value: "alerts", label: "Alerts", Icon: AlertTriangle },
-              { value: "responses", label: "Responses", Icon: Users },
-              { value: "analytics", label: "Analytics", Icon: BarChart3 },
-              { value: "ot-scheduling", label: "OT", Icon: Scissors },
-            ].map(({ value, label, Icon }) => (
-              <button
-                key={value}
-                onClick={() => setActiveTab(value)}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all whitespace-nowrap shrink-0",
-                  activeTab === value ? "bg-yellow-600 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"
-                )}
-              >
-                <Icon className="w-3 h-3" />
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* Top action bar */}
-          <div className="glass-morphism border-b border-white/10 px-6 py-3 flex items-center justify-between shrink-0">
-            <div className="md:hidden flex items-center gap-2">
-              <div className="w-7 h-7 bg-red-800 rounded-lg flex items-center justify-center">
-                <Building className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-white font-semibold text-sm">Hospital Dashboard</span>
-            </div>
-            <div className="hidden md:block" />
+    <div className="dashboard-surface flex min-h-screen">
+      {/* === FULL-HEIGHT SIDEBAR === */}
+      <aside className="w-64 shrink-0 hidden md:flex flex-col dash-sidebar sticky top-0 h-screen z-20">
+        {/* Branding */}
+        <div className="p-5 border-b border-text-dark/10">
+          <Link href="/">
             <div className="flex items-center gap-3">
-              <Dialog open={showCreateAlert} onOpenChange={setShowCreateAlert}>
-                <DialogTrigger asChild>
-                  <Button className="bg-yellow-600 hover:bg-yellow-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Alert
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md bg-white/10 backdrop-blur-lg border border-white/20 text-white">
-                  <DialogHeader>
-                    <DialogTitle className="text-white">
-                      Create Emergency Blood Alert
-                    </DialogTitle>
-                    <DialogDescription className="text-gray-200">
-                      Send immediate notifications to eligible donors in your
-                      area
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    {/* Alert Type */}
+              <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                <Building className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-outfit font-bold text-text-dark text-sm truncate">
+                  Hospital Dashboard
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {isLoadingUser ? "Loading..." : user?.hospitalName || "Demo Hospital"}
+                </p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Nav items */}
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto dash-scroll">
+          {navItems.map(({ value, label, Icon, badge }) => (
+            <button
+              key={value}
+              onClick={() => setActiveTab(value)}
+              className="dash-nav-item w-full text-sm text-left"
+              data-active={activeTab === value}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span className="truncate flex-1">{label}</span>
+              {badge !== undefined && (
+                <span className="text-xs font-semibold px-1.5 py-0.5 rounded-md chip-ruby">
+                  {badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        {/* User at bottom */}
+        <div className="p-4 border-t border-text-dark/10 flex items-center gap-3">
+          <UserButton />
+          <span className="text-xs text-muted-foreground">Account</span>
+        </div>
+      </aside>
+
+      {/* === MAIN CONTENT AREA === */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile nav bar */}
+        <div className="md:hidden dash-topbar p-3 flex overflow-x-auto gap-1 shrink-0 dash-scroll">
+          {navItems.map(({ value, short, Icon }) => (
+            <button
+              key={value}
+              onClick={() => setActiveTab(value)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 text-xs rounded-lg transition-all whitespace-nowrap shrink-0 font-medium",
+                activeTab === value
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-text-dark/5"
+              )}
+            >
+              <Icon className="w-3 h-3" />
+              {short}
+            </button>
+          ))}
+        </div>
+
+        {/* Top action bar */}
+        <div className="dash-topbar px-6 py-3 flex items-center justify-between shrink-0 sticky top-0 z-10">
+          <div className="md:hidden flex items-center gap-2">
+            <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
+              <Building className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <span className="text-text-dark font-outfit font-semibold text-sm">Hospital Dashboard</span>
+          </div>
+          <div className="hidden md:block">
+            <h1 className="font-outfit font-bold text-text-dark text-lg">
+              {isLoadingUser ? "Loading..." : user?.hospitalName || "Demo Hospital"}
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Hospital blood management dashboard
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Dialog open={showCreateAlert} onOpenChange={setShowCreateAlert}>
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Alert
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="font-outfit text-text-dark">
+                    Create Emergency Blood Alert
+                  </DialogTitle>
+                  <DialogDescription className="text-muted-foreground">
+                    Send immediate notifications to eligible donors in your area
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  {/* Alert Type */}
+                  <div className="space-y-2">
+                    <Label className="text-text-dark">Alert Type</Label>
+                    <Select
+                      value={newAlert.type}
+                      onValueChange={(value) =>
+                        setNewAlert({ ...newAlert, type: value })
+                      }
+                    >
+                      <SelectTrigger className="border-border text-text-dark">
+                        <SelectValue placeholder="Choose type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Blood">Blood</SelectItem>
+                        <SelectItem value="Plasma">Plasma</SelectItem>
+                        <SelectItem value="Platelets">Platelets</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {newAlert.type === "Blood" && (
+                      <div className="space-y-2">
+                        <Label className="text-text-dark">Blood Type</Label>
+                        <Select
+                          value={newAlert.bloodType}
+                          onValueChange={(value) =>
+                            setNewAlert({ ...newAlert, bloodType: value })
+                          }
+                        >
+                          <SelectTrigger className="border-border text-text-dark">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[
+                              "A+",
+                              "A-",
+                              "B+",
+                              "B-",
+                              "AB+",
+                              "AB-",
+                              "O+",
+                              "O-",
+                            ].map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                     <div className="space-y-2">
-                      <Label className="text-white">Alert Type</Label>
+                      <Label className="text-text-dark">Urgency</Label>
                       <Select
-                        value={newAlert.type}
+                        value={newAlert.urgency}
                         onValueChange={(value) =>
-                          setNewAlert({ ...newAlert, type: value })
+                          setNewAlert({ ...newAlert, urgency: value })
                         }
                       >
-                        <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                          <SelectValue placeholder="Choose type" />
+                        <SelectTrigger className="border-border text-text-dark">
+                          <SelectValue placeholder="Select urgency" />
                         </SelectTrigger>
-                        <SelectContent className="bg-gray-800 text-white border-gray-700">
-                          <SelectItem value="Blood">Blood</SelectItem>
-                          <SelectItem value="Plasma">Plasma</SelectItem>
-                          <SelectItem value="Platelets">Platelets</SelectItem>
+                        <SelectContent>
+                          <SelectItem value="Critical">Critical</SelectItem>
+                          <SelectItem value="High">High</SelectItem>
+                          <SelectItem value="Medium">Medium</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      {newAlert.type === "Blood" && (
-                        <div className="space-y-2">
-                          <Label className="text-white">Blood Type</Label>
-                          <Select
-                            value={newAlert.bloodType}
-                            onValueChange={(value) =>
-                              setNewAlert({ ...newAlert, bloodType: value })
-                            }
-                          >
-                            <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                              <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-gray-800 text-white border-gray-700">
-                              {[
-                                "A+",
-                                "A-",
-                                "B+",
-                                "B-",
-                                "AB+",
-                                "AB-",
-                                "O+",
-                                "O-",
-                              ].map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                      <div className="space-y-2">
-                        <Label className="text-white">Urgency</Label>
-                        <Select
-                          value={newAlert.urgency}
-                          onValueChange={(value) =>
-                            setNewAlert({ ...newAlert, urgency: value })
-                          }
-                        >
-                          <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                            <SelectValue placeholder="Select urgency" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-gray-800 text-white border-gray-700">
-                            <SelectItem value="Critical">Critical</SelectItem>
-                            <SelectItem value="High">High</SelectItem>
-                            <SelectItem value="Medium">Medium</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-white">Units Needed</Label>
-                        <Input
-                          type="number"
-                          placeholder="Number of units"
-                          value={newAlert.unitsNeeded}
-                          onChange={(e) =>
-                            setNewAlert({
-                              ...newAlert,
-                              unitsNeeded: e.target.value,
-                            })
-                          }
-                          className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-white">Search Radius</Label>
-                        <Select
-                          value={newAlert.radius}
-                          onValueChange={(value) =>
-                            setNewAlert({ ...newAlert, radius: value })
-                          }
-                        >
-                          <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-gray-800 text-white border-gray-700">
-                            <SelectItem value="5">5 km</SelectItem>
-                            <SelectItem value="10">10 km</SelectItem>
-                            <SelectItem value="15">15 km</SelectItem>
-                            <SelectItem value="20">20 km</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-white">Description</Label>
-                      <Textarea
-                        placeholder="Describe the emergency situation"
-                        value={newAlert.description}
+                      <Label className="text-text-dark">Units Needed</Label>
+                      <Input
+                        type="number"
+                        placeholder="Number of units"
+                        value={newAlert.unitsNeeded}
                         onChange={(e) =>
                           setNewAlert({
                             ...newAlert,
-                            description: e.target.value,
+                            unitsNeeded: e.target.value,
                           })
                         }
-                        className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                        className="border-border text-text-dark"
                       />
                     </div>
-                    <div className="flex gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowCreateAlert(false)}
-                        className="flex-1 border-white/20 hover:bg-white/20 text-slate-900"
+                    <div className="space-y-2">
+                      <Label className="text-text-dark">Search Radius</Label>
+                      <Select
+                        value={newAlert.radius}
+                        onValueChange={(value) =>
+                          setNewAlert({ ...newAlert, radius: value })
+                        }
                       >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleCreateAlert}
-                        className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                      >
-                        Send Alert
-                      </Button>
+                        <SelectTrigger className="border-border text-text-dark">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5 km</SelectItem>
+                          <SelectItem value="10">10 km</SelectItem>
+                          <SelectItem value="15">15 km</SelectItem>
+                          <SelectItem value="20">20 km</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-                </DialogContent>
-              </Dialog>
-              <div className="md:hidden">
-                <UserButton />
-              </div>
+                  <div className="space-y-2">
+                    <Label className="text-text-dark">Description</Label>
+                    <Textarea
+                      placeholder="Describe the emergency situation"
+                      value={newAlert.description}
+                      onChange={(e) =>
+                        setNewAlert({
+                          ...newAlert,
+                          description: e.target.value,
+                        })
+                      }
+                      className="border-border text-text-dark"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowCreateAlert(false)}
+                      className="flex-1 border-border text-text-dark hover:bg-text-dark/5"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleCreateAlert}
+                      className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+                    >
+                      Send Alert
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <div className="md:hidden">
+              <UserButton />
             </div>
           </div>
+        </div>
 
-          {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto p-6">
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-red-800/20 rounded-lg flex items-center justify-center">
-                      <AlertTriangle className="w-6 h-6 text-red-600" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-text-dark">
-                        {criticalTypes}
-                      </p>
-                      <p className="text-sm text-text-dark/80">Critical Blood Types</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
-                      <Activity className="w-6 h-6 text-blue-400" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-text-dark">
-                        {activeAlerts.length}
-                      </p>
-                      <p className="text-sm text-text-dark/80">Active Alerts</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
-                      <Users className="w-6 h-6 text-green-400" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-text-dark">
-                        {totalResponses}
-                      </p>
-                      <p className="text-sm text-text-dark/80">Donor Responses</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
-                      <CheckCircle className="w-6 h-6 text-purple-400" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-text-dark">
-                        {totalConfirmed}
-                      </p>
-                      <p className="text-sm text-text-dark/80">Confirmed Donors</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
+        {/* Scrollable content */}
+        <motion.div
+          variants={pageContainer}
+          initial="hidden"
+          animate="show"
+          className="flex-1 overflow-y-auto p-6 dash-scroll"
+        >
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <StatCard
+              icon={AlertTriangle}
+              chip="ruby"
+              value={criticalTypes}
+              label="Critical Blood Types"
+            />
+            <StatCard
+              icon={Activity}
+              chip="oxygen"
+              value={activeAlerts.length}
+              label="Active Alerts"
+            />
+            <StatCard
+              icon={Users}
+              chip="mist"
+              value={totalResponses}
+              label="Donor Responses"
+            />
+            <StatCard
+              icon={CheckCircle}
+              chip="dark"
+              value={totalConfirmed}
+              label="Confirmed Donors"
+            />
+          </div>
 
           {/* Blood Inventory Tab */}
+          {activeTab === "inventory" && (
+            <div className="space-y-6">
+              <motion.div variants={fadeUp} className="flex items-center justify-between">
+                <h2 className="text-2xl font-outfit font-bold text-text-dark">
+                  Blood Inventory Status
+                </h2>
+                <Button
+                  variant="outline"
+                  className="border-border text-text-dark hover:bg-text-dark/5"
+                  onClick={() => handleUpdateInventory()}
+                >
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Update Inventory
+                </Button>
+              </motion.div>
 
-          {activeTab === "inventory" && (<div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-text-dark">
-                Blood Inventory Status
-              </h2>
-              <Button
-                variant="outline"
-                className="border-white/20 bg-yellow-600  text-white hover:bg-white/20 transition-all duration-300"
-                onClick={() => handleUpdateInventory()}
+              <motion.div
+                variants={pageContainer}
+                initial="hidden"
+                animate="show"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
               >
-                <TrendingUp className="w-4 h-4 mr-2" />
-                Update Inventory
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {bloodInventory.map((item) => {
-                const status = getStatus(item.current, item.minimum);
-                return (
-                  <Card
-                    key={item.type}
-                    className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                  >
-                    <CardContent className="p-6">
+                {bloodInventory.map((item) => {
+                  const status = getStatus(item.current, item.minimum);
+                  return (
+                    <motion.div
+                      key={item.type}
+                      variants={listItem}
+                      className="dash-card dash-card-interactive p-6"
+                    >
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-text-dark">{item.type}</h3>
+                        <h3 className="text-lg font-outfit font-semibold text-text-dark">{item.type}</h3>
                         <Badge className={getInventoryStatus(status)}>
                           {status}
                         </Badge>
                       </div>
                       <div className="space-y-3">
-                        <div className="flex justify-between text-sm text-text-dark/80">
+                        <div className="flex justify-between text-sm text-muted-foreground">
                           <span>Current: {item.current} units</span>
                           <span>Min: {item.minimum} units</span>
                         </div>
                         <Progress
                           value={(item.current / item.minimum) * 100}
-                          className="h-2 bg-white/20 [&::-webkit-progress-bar]:bg-white/20 [&::-webkit-progress-value]:bg-yellow-600 [&::-moz-progress-bar]:bg-yellow-600"
+                          className="h-2 bg-muted"
                         />
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
             </div>
-          </div>)}
+          )}
 
           <Dialog open={isInvModalOpen} onOpenChange={setIsInvModalOpen}>
-            <DialogContent className="max-w-md bg-white/10 backdrop-blur-lg border border-white/20 text-white rounded-lg p-6">
+            <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-white text-lg font-semibold">
+                <DialogTitle className="font-outfit text-text-dark text-lg font-semibold">
                   Update Inventory
                 </DialogTitle>
-                <DialogDescription className="text-gray-200">
+                <DialogDescription className="text-muted-foreground">
                   Adjust current units for the selected type
                 </DialogDescription>
               </DialogHeader>
@@ -1000,7 +974,7 @@ export default function HospitalDashboard() {
               <div className="space-y-4">
                 {/* Type Selector */}
                 <div className="space-y-2">
-                  <Label className="text-white">Type</Label>
+                  <Label className="text-text-dark">Type</Label>
                   <Select
                     value={editingItem?.type || ""}
                     onValueChange={(value) => {
@@ -1010,10 +984,10 @@ export default function HospitalDashboard() {
                       setEditingItem(selected);
                     }}
                   >
-                    <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                    <SelectTrigger className="border-border text-text-dark">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 text-white border-gray-700">
+                    <SelectContent>
                       {bloodInventory.map((b) => (
                         <SelectItem key={b.type} value={b.type}>
                           {b.type}
@@ -1025,7 +999,7 @@ export default function HospitalDashboard() {
 
                 {/* Current Units */}
                 <div className="space-y-2">
-                  <Label className="text-white">Current Units</Label>
+                  <Label className="text-text-dark">Current Units</Label>
                   <Input
                     type="number"
                     placeholder="Enter current units"
@@ -1047,15 +1021,15 @@ export default function HospitalDashboard() {
                           : prev
                       );
                     }}
-                    className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                    className="border-border text-text-dark"
                   />
                 </div>
 
                 {/* Status (read-only) */}
                 <div className="space-y-2">
-                  <Label className="text-white">Status</Label>
+                  <Label className="text-text-dark">Status</Label>
                   <div
-                    className={`w-full border rounded px-3 py-2 ${
+                    className={`w-full border border-border rounded-lg px-3 py-2 font-medium ${
                       getStatus(
                         editingItem?.current || 0,
                         editingItem?.minimum || 1
@@ -1065,8 +1039,8 @@ export default function HospitalDashboard() {
                             editingItem?.current || 0,
                             editingItem?.minimum || 1
                           ) === "Low"
-                        ? "text-yellow-600"
-                        : "text-green-600"
+                        ? "text-amber-600"
+                        : "text-emerald-600"
                     }`}
                   >
                     {getStatus(
@@ -1081,13 +1055,13 @@ export default function HospitalDashboard() {
                   <Button
                     variant="outline"
                     onClick={() => setIsInvModalOpen(false)}
-                    className="flex-1 border-white/20 hover:bg-white/20 text-slate-900"
+                    className="flex-1 border-border text-text-dark hover:bg-text-dark/5"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleSave}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-green-500/50"
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
                   >
                     Save
                   </Button>
@@ -1097,49 +1071,53 @@ export default function HospitalDashboard() {
           </Dialog>
 
           {/* Active Alerts Tab */}
-          {activeTab === "alerts" && (<div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-text-dark">
-                Active Emergency Alerts
-              </h2>
-              <Button
-                className="bg-yellow-600 hover:bg-yellow-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                onClick={() => setShowCreateAlert(true)}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                New Alert
-              </Button>
-            </div>
+          {activeTab === "alerts" && (
+            <div className="space-y-6">
+              <motion.div variants={fadeUp} className="flex items-center justify-between">
+                <h2 className="text-2xl font-outfit font-bold text-text-dark">
+                  Active Emergency Alerts
+                </h2>
+                <Button
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  onClick={() => setShowCreateAlert(true)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Alert
+                </Button>
+              </motion.div>
 
-            {activeAlerts.length === 0 ? (
-              <Card className="glass-morphism border border-accent/30 text-text-dark">
-                <CardContent className="p-12 text-center">
-                  <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-text-dark mb-2">
+              {activeAlerts.length === 0 ? (
+                <motion.div variants={fadeUp} className="dash-card p-12 text-center">
+                  <AlertTriangle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-outfit font-semibold text-text-dark mb-2">
                     No Active Alerts
                   </h3>
-                  <p className="text-text-dark/80 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     Create an emergency alert when you need blood urgently.
                   </p>
                   <Button
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     onClick={() => setShowCreateAlert(true)}
                   >
                     Create First Alert
                   </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {activeAlerts.map((alert) => (
-                  <Card
-                    key={alert.id}
-                    className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                  >
-                    <CardContent className="p-6">
+                </motion.div>
+              ) : (
+                <motion.div
+                  variants={pageContainer}
+                  initial="hidden"
+                  animate="show"
+                  className="space-y-4"
+                >
+                  {activeAlerts.map((alert) => (
+                    <motion.div
+                      key={alert.id}
+                      variants={listItem}
+                      className="dash-card dash-card-interactive border-l-4 border-l-primary p-6"
+                    >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
                             {/* Urgency */}
                             <Badge className={getUrgencyColor(alert.urgency!)}>
                               {alert.urgency}
@@ -1148,7 +1126,7 @@ export default function HospitalDashboard() {
                             {/* Alert Type (defaults to Blood if not set) */}
                             <Badge
                               variant="outline"
-                              className="bg-white/5 border-white/20 text-text-dark"
+                              className="border-border text-text-dark bg-transparent"
                             >
                               {alert.type ? alert.type : "Blood"}
                             </Badge>
@@ -1157,7 +1135,7 @@ export default function HospitalDashboard() {
                             {(!alert.type || alert.type === "Blood") && (
                               <Badge
                                 variant="outline"
-                                className="bg-white/5 border-white/20 text-text-dark"
+                                className="border-border text-text-dark bg-transparent"
                               >
                                 Blood Type: {alert.bloodType}
                               </Badge>
@@ -1166,25 +1144,25 @@ export default function HospitalDashboard() {
                             {/* Units Needed */}
                             <Badge
                               variant="outline"
-                              className="bg-white/5 border-white/20 text-text-dark"
+                              className="border-border text-text-dark bg-transparent"
                             >
                               {alert.unitsNeeded} units needed
                             </Badge>
                           </div>
-                          <p className="text-text-dark/80 mb-3">
+                          <p className="text-muted-foreground mb-3">
                             {alert.description}
                           </p>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-text-dark/70">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-4 h-4 text-gray-400" />
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="w-4 h-4 text-secondary" />
                               {alert.createdAt}
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Users className="w-4 h-4 text-gray-400" />
+                            <div className="flex items-center gap-1.5">
+                              <Users className="w-4 h-4 text-secondary" />
                               {alert.responses ? alert.responses : 0} responses
                             </div>
-                            <div className="flex items-center gap-1">
-                              <CheckCircle className="w-4 h-4 text-gray-400" />
+                            <div className="flex items-center gap-1.5">
+                              <CheckCircle className="w-4 h-4 text-secondary" />
                               {alert.confirmed ? alert.confirmed : 0} confirmed
                             </div>
                           </div>
@@ -1200,7 +1178,7 @@ export default function HospitalDashboard() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="border-white/20 text-white bg-yellow-600 hover:bg-white/20 transition-all duration-300"
+                            className="border-border text-text-dark hover:bg-text-dark/5"
                           >
                             <Eye className="w-4 h-4 mr-2" />
                             View Details
@@ -1209,7 +1187,7 @@ export default function HospitalDashboard() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="border-white/20 bg-yellow-600 text-white hover:bg-white/20 transition-all duration-300"
+                          className="border-border text-text-dark hover:bg-text-dark/5"
                           onClick={() => handleShareAlert(alert.id)}
                         >
                           <Share2 className="w-4 h-4 mr-2" />
@@ -1228,7 +1206,7 @@ export default function HospitalDashboard() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="border-white/20 hover:bg-white/20"
+                              className="border-border text-text-dark hover:bg-text-dark/5"
                               onClick={() => setCloseConfirmId(null)}
                             >
                               Cancel
@@ -1238,7 +1216,7 @@ export default function HospitalDashboard() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="bg-yellow-600 text-red-700 border-red-600 hover:bg-red-600/20 transition-all duration-300"
+                            className="border-red-200 text-red-600 hover:bg-red-50"
                             onClick={() => setCloseConfirmId(alert.id)}
                           >
                             <XCircle className="w-4 h-4 mr-2" />
@@ -1246,112 +1224,112 @@ export default function HospitalDashboard() {
                           </Button>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>)}
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </div>
+          )}
 
           {/* Donor Responses Tab */}
-          {activeTab === "responses" && (<div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-text-dark">Donor Responses</h2>
-              <div className="flex gap-3">
-                {/* Search */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search users..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64 bg-white/5 border-white/20 text-text-dark placeholder:text-gray-400 focus-visible:ring-yellow-600"
-                  />
-                </div>
+          {activeTab === "responses" && (
+            <div className="space-y-6">
+              <motion.div variants={fadeUp} className="flex items-center justify-between flex-wrap gap-3">
+                <h2 className="text-2xl font-outfit font-bold text-text-dark">Donor Responses</h2>
+                <div className="flex gap-3 flex-wrap">
+                  {/* Search */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search donors..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-56 border-border text-text-dark"
+                    />
+                  </div>
 
-                {/* Type Filter */}
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-32 bg-white/5 border-white/20 text-text-dark">
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 text-white border-gray-700">
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="Blood">Blood</SelectItem>
-                    <SelectItem value="Plasma">Plasma</SelectItem>
-                    <SelectItem value="Platelets">Platelets</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                {/* Conditional Blood Type Filter */}
-                {typeFilter === "Blood" && (
-                  <Select
-                    value={bloodTypeFilter}
-                    onValueChange={setBloodTypeFilter}
-                  >
-                    <SelectTrigger className="w-32 bg-white/5 border-white/20 text-text-dark">
-                      <SelectValue placeholder="Blood Type" />
+                  {/* Type Filter */}
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-32 border-border text-text-dark">
+                      <SelectValue placeholder="Type" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 text-white border-gray-700">
+                    <SelectContent>
                       <SelectItem value="all">All</SelectItem>
-                      {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
-                        (type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        )
-                      )}
+                      <SelectItem value="Blood">Blood</SelectItem>
+                      <SelectItem value="Plasma">Plasma</SelectItem>
+                      <SelectItem value="Platelets">Platelets</SelectItem>
                     </SelectContent>
                   </Select>
-                )}
 
-                {/* Distance Filter */}
-                <Select
-                  value={distanceFilter}
-                  onValueChange={setDistanceFilter}
-                >
-                  <SelectTrigger className="w-32 bg-white/5 border-white/20 text-text-dark">
-                    <SelectValue placeholder="Distance" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 text-white border-gray-700">
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="5">{"<5km"}</SelectItem>
-                    <SelectItem value="10">{"<10km"}</SelectItem>
-                    <SelectItem value="15">{"<15km"}</SelectItem>
-                    <SelectItem value="20">{"<20km"}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+                  {/* Conditional Blood Type Filter */}
+                  {typeFilter === "Blood" && (
+                    <Select
+                      value={bloodTypeFilter}
+                      onValueChange={setBloodTypeFilter}
+                    >
+                      <SelectTrigger className="w-32 border-border text-text-dark">
+                        <SelectValue placeholder="Blood Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All</SelectItem>
+                        {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
+                          (type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
+                  )}
 
-            {/* Donors Table */}
-            <Card className="glass-morphism border border-accent/30 text-white">
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
+                  {/* Distance Filter */}
+                  <Select
+                    value={distanceFilter}
+                    onValueChange={setDistanceFilter}
+                  >
+                    <SelectTrigger className="w-32 border-border text-text-dark">
+                      <SelectValue placeholder="Distance" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="5">{"<5km"}</SelectItem>
+                      <SelectItem value="10">{"<10km"}</SelectItem>
+                      <SelectItem value="15">{"<15km"}</SelectItem>
+                      <SelectItem value="20">{"<20km"}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </motion.div>
+
+              {/* Donors Table */}
+              <motion.div variants={fadeUp} className="dash-card overflow-hidden">
+                <div className="overflow-x-auto dash-scroll">
                   <table className="w-full">
-                    <thead className="bg-white/5 border-b border-white/20">
+                    <thead className="bg-text-dark/5 border-b border-text-dark/10">
                       <tr>
-                        <th className="text-left p-4 font-medium text-text-dark">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Donor
                         </th>
-                        <th className="text-left p-4 font-medium text-text-dark">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Type
                         </th>
-                        <th className="text-left p-4 font-medium text-text-dark">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Blood Type
                         </th>
-                        <th className="text-left p-4 font-medium text-text-dark">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Distance
                         </th>
-                        <th className="text-left p-4 font-medium text-text-dark">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           ETA
                         </th>
-                        <th className="text-left p-4 font-medium text-text-dark">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Status
                         </th>
-                        <th className="text-left p-4 font-medium text-text-dark">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Contact
                         </th>
-                        <th className="text-left p-4 font-medium text-text-dark">
+                        <th className="text-left p-4 font-outfit font-semibold text-text-dark">
                           Actions
                         </th>
                       </tr>
@@ -1360,14 +1338,14 @@ export default function HospitalDashboard() {
                       {filteredDonors.map((response) => (
                         <tr
                           key={response.id}
-                          className="border-b border-white/10 hover:bg-white/5 transition-all duration-300"
+                          className="border-b border-text-dark/5 hover:bg-text-dark/[0.03] transition-colors duration-200"
                         >
                           <td className="p-4">
                             <div>
                               <p className="font-medium text-text-dark">
                                 {response.donorName}
                               </p>
-                              <p className="text-sm text-text-dark/70">
+                              <p className="text-sm text-muted-foreground">
                                 Last donation: {response.lastDonation}
                               </p>
                             </div>
@@ -1377,29 +1355,29 @@ export default function HospitalDashboard() {
                           <td className="p-4">
                             <Badge
                               variant="outline"
-                              className="bg-white/5 border-white/20 text-text-dark"
+                              className="border-border text-text-dark bg-transparent"
                             >
                               {response.type}
                             </Badge>
                           </td>
 
                           {/* Blood Type (only for Blood donors) */}
-                          <td className="p-4 text-text-dark/80">
+                          <td className="p-4 text-muted-foreground">
                             {response.type === "Blood"
                               ? response.bloodType
                               : "-"}
                           </td>
 
-                          <td className="p-4 text-text-dark/80">
+                          <td className="p-4 text-muted-foreground">
                             {response.distance}
                           </td>
-                          <td className="p-4 text-text-dark/80">{response.eta}</td>
+                          <td className="p-4 text-muted-foreground">{response.eta}</td>
                           <td className="p-4">
                             <Badge
                               className={
                                 response.status === "Confirmed"
-                                  ? "bg-green-600 text-white"
-                                  : "bg-yellow-600 text-white"
+                                  ? "bg-emerald-600 text-white"
+                                  : "bg-amber-500 text-white"
                               }
                             >
                               {response.status}
@@ -1409,7 +1387,7 @@ export default function HospitalDashboard() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-text-dark hover:bg-white/20"
+                              className="text-muted-foreground hover:text-text-dark hover:bg-text-dark/5"
                             >
                               <Phone className="w-4 h-4" />
                             </Button>
@@ -1421,28 +1399,27 @@ export default function HospitalDashboard() {
                                   <Button
                                     size="sm"
                                     onClick={() => handleConfirm(response.id)}
-                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
                                   >
                                     Confirm
                                   </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="border-white/20 hover:bg-white/20 text-slate-800"
+                                    className="border-border text-text-dark hover:bg-text-dark/5"
                                   >
                                     Contact
                                   </Button>
                                 </>
                               ) : justConfirmed === response.id ? (
-                                <p className="text-green-800 font-medium">
-                                  Thank you for confirming, the donor has been
-                                  notified.
+                                <p className="text-emerald-700 font-medium text-sm">
+                                  Donor notified.
                                 </p>
                               ) : (
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="border-white/20 hover:bg-white/20 text-slate-800"
+                                  className="border-border text-text-dark hover:bg-text-dark/5"
                                 >
                                   Contact
                                 </Button>
@@ -1454,172 +1431,167 @@ export default function HospitalDashboard() {
                     </tbody>
                   </table>
                 </div>
-              </CardContent>
-            </Card>
-          </div>)}
+              </motion.div>
+            </div>
+          )}
 
           {/* OT Scheduling Tab */}
-          {activeTab === "ot-scheduling" && (<div className="space-y-6">
-            <div className="flex items-start gap-6">
-              <div className="w-64 shrink-0">
-                <Card className="glass-morphism border border-accent/30 text-white">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-white text-base">
-                      <Calendar className="w-4 h-4 text-yellow-400" />
-                      Select Date
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+          {activeTab === "ot-scheduling" && (
+            <div className="space-y-6">
+              <div className="flex items-start gap-6">
+                {/* Left: Date Picker */}
+                <motion.div variants={fadeUp} className="w-64 shrink-0">
+                  <div className="dash-card p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Calendar className="w-4 h-4 text-secondary" />
+                      <h3 className="font-outfit font-semibold text-text-dark text-sm">Select Date</h3>
+                    </div>
                     <input
                       type="date"
                       value={selectedOTDate}
                       onChange={(e) => setSelectedOTDate(e.target.value)}
-                      className="w-full bg-white/5 border border-white/20 rounded-md px-3 py-2 text-white text-sm [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-yellow-600"
+                      className="w-full border border-border rounded-lg px-3 py-2 text-text-dark text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
                     <div className="mt-4 space-y-2 text-sm">
-                      <div className="flex justify-between text-gray-300">
+                      <div className="flex justify-between text-muted-foreground">
                         <span>Surgeries scheduled</span>
-                        <span className="text-white font-semibold">{filteredOTSchedules.length}</span>
+                        <span className="text-text-dark font-semibold">{filteredOTSchedules.length}</span>
                       </div>
-                      <div className="flex justify-between text-gray-300">
+                      <div className="flex justify-between text-muted-foreground">
                         <span>Blood warnings</span>
-                        <span className={filteredOTSchedules.some(s => getBloodAvailability(s.bloodType, s.unitsRequired) === "insufficient") ? "text-red-400 font-semibold" : "text-green-400 font-semibold"}>
+                        <span className={filteredOTSchedules.some(s => getBloodAvailability(s.bloodType, s.unitsRequired) === "insufficient") ? "text-red-600 font-semibold" : "text-emerald-600 font-semibold"}>
                           {filteredOTSchedules.filter(s => getBloodAvailability(s.bloodType, s.unitsRequired) === "insufficient").length}
                         </span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="flex-1 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-white">
-                    OT Schedule —{" "}
-                    {new Date(selectedOTDate + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-                  </h2>
-                  <Dialog open={showAddSchedule} onOpenChange={setShowAddSchedule}>
-                    <DialogTrigger asChild>
-                      <Button className="bg-yellow-600 hover:bg-yellow-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Surgery
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-md bg-white/10 backdrop-blur-lg border border-white/20 text-white">
-                      <DialogHeader>
-                        <DialogTitle className="text-white">Schedule Surgery</DialogTitle>
-                        <DialogDescription className="text-gray-200">Add a surgery to the OT schedule and pre-plan blood requirements.</DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label className="text-white">Patient Name</Label>
-                          <Input placeholder="Full name" value={newSchedule.patientName} onChange={(e) => setNewSchedule({ ...newSchedule, patientName: e.target.value })} className="bg-white/5 border-white/20 text-white placeholder:text-gray-400" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-white">Surgery Type</Label>
-                          <Input placeholder="e.g. Cardiac Bypass, Hip Replacement" value={newSchedule.surgeryType} onChange={(e) => setNewSchedule({ ...newSchedule, surgeryType: e.target.value })} className="bg-white/5 border-white/20 text-white placeholder:text-gray-400" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
+                  </div>
+                </motion.div>
+
+                <div className="flex-1 space-y-4">
+                  <motion.div variants={fadeUp} className="flex items-center justify-between">
+                    <h2 className="text-2xl font-outfit font-bold text-text-dark">
+                      OT Schedule —{" "}
+                      {new Date(selectedOTDate + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                    </h2>
+                    <Dialog open={showAddSchedule} onOpenChange={setShowAddSchedule}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Surgery
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle className="font-outfit text-text-dark">Schedule Surgery</DialogTitle>
+                          <DialogDescription className="text-muted-foreground">Add a surgery to the OT schedule and pre-plan blood requirements.</DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
                           <div className="space-y-2">
-                            <Label className="text-white">Blood Type</Label>
-                            <Select value={newSchedule.bloodType} onValueChange={(v: string) => setNewSchedule({ ...newSchedule, bloodType: v })}>
-                              <SelectTrigger className="bg-white/5 border-white/20 text-white"><SelectValue placeholder="Select" /></SelectTrigger>
-                              <SelectContent className="bg-gray-800 text-white border-gray-700">
-                                {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                              </SelectContent>
-                            </Select>
+                            <Label className="text-text-dark">Patient Name</Label>
+                            <Input placeholder="Full name" value={newSchedule.patientName} onChange={(e) => setNewSchedule({ ...newSchedule, patientName: e.target.value })} className="border-border text-text-dark" />
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-white">Units Required</Label>
-                            <Input type="number" min="1" placeholder="Units" value={newSchedule.unitsRequired} onChange={(e) => setNewSchedule({ ...newSchedule, unitsRequired: e.target.value })} className="bg-white/5 border-white/20 text-white placeholder:text-gray-400" />
+                            <Label className="text-text-dark">Surgery Type</Label>
+                            <Input placeholder="e.g. Cardiac Bypass, Hip Replacement" value={newSchedule.surgeryType} onChange={(e) => setNewSchedule({ ...newSchedule, surgeryType: e.target.value })} className="border-border text-text-dark" />
                           </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-text-dark">Blood Type</Label>
+                              <Select value={newSchedule.bloodType} onValueChange={(v: string) => setNewSchedule({ ...newSchedule, bloodType: v })}>
+                                <SelectTrigger className="border-border text-text-dark"><SelectValue placeholder="Select" /></SelectTrigger>
+                                <SelectContent>
+                                  {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-text-dark">Units Required</Label>
+                              <Input type="number" min="1" placeholder="Units" value={newSchedule.unitsRequired} onChange={(e) => setNewSchedule({ ...newSchedule, unitsRequired: e.target.value })} className="border-border text-text-dark" />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-text-dark">Date</Label>
+                              <input type="date" value={newSchedule.scheduledDate} onChange={(e) => setNewSchedule({ ...newSchedule, scheduledDate: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-text-dark text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-text-dark">Time</Label>
+                              <input type="time" value={newSchedule.scheduledTime} onChange={(e) => setNewSchedule({ ...newSchedule, scheduledTime: e.target.value })} className="w-full border border-border rounded-lg px-3 py-2 text-text-dark text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                            </div>
+                          </div>
                           <div className="space-y-2">
-                            <Label className="text-white">Date</Label>
-                            <input type="date" value={newSchedule.scheduledDate} onChange={(e) => setNewSchedule({ ...newSchedule, scheduledDate: e.target.value })} className="w-full bg-white/5 border border-white/20 rounded-md px-3 py-2 text-white text-sm [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-yellow-600" />
+                            <Label className="text-text-dark">Notes (optional)</Label>
+                            <Textarea placeholder="Any special requirements" value={newSchedule.notes} onChange={(e) => setNewSchedule({ ...newSchedule, notes: e.target.value })} className="border-border text-text-dark" />
                           </div>
-                          <div className="space-y-2">
-                            <Label className="text-white">Time</Label>
-                            <input type="time" value={newSchedule.scheduledTime} onChange={(e) => setNewSchedule({ ...newSchedule, scheduledTime: e.target.value })} className="w-full bg-white/5 border border-white/20 rounded-md px-3 py-2 text-white text-sm [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-yellow-600" />
+                          {newSchedule.bloodType && newSchedule.unitsRequired && (
+                            <div className={`rounded-lg px-3 py-2 text-sm border ${getBloodAvailability(newSchedule.bloodType, parseInt(newSchedule.unitsRequired)) === "sufficient" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"}`}>
+                              {getBloodAvailability(newSchedule.bloodType, parseInt(newSchedule.unitsRequired)) === "sufficient" ? `Inventory check: ${newSchedule.bloodType} has sufficient units.` : `Warning: ${newSchedule.bloodType} inventory may be insufficient.`}
+                            </div>
+                          )}
+                          <div className="flex gap-3">
+                            <Button variant="outline" onClick={() => setShowAddSchedule(false)} className="flex-1 border-border text-text-dark hover:bg-text-dark/5">Cancel</Button>
+                            <Button onClick={handleAddSchedule} className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground">Schedule</Button>
                           </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-white">Notes (optional)</Label>
-                          <Textarea placeholder="Any special requirements" value={newSchedule.notes} onChange={(e) => setNewSchedule({ ...newSchedule, notes: e.target.value })} className="bg-white/5 border-white/20 text-white placeholder:text-gray-400" />
-                        </div>
-                        {newSchedule.bloodType && newSchedule.unitsRequired && (
-                          <div className={`rounded-md px-3 py-2 text-sm ${getBloodAvailability(newSchedule.bloodType, parseInt(newSchedule.unitsRequired)) === "sufficient" ? "bg-green-900/40 text-green-300 border border-green-700" : "bg-red-900/40 text-red-300 border border-red-700"}`}>
-                            {getBloodAvailability(newSchedule.bloodType, parseInt(newSchedule.unitsRequired)) === "sufficient" ? `Inventory check: ${newSchedule.bloodType} has sufficient units.` : `Warning: ${newSchedule.bloodType} inventory may be insufficient.`}
-                          </div>
-                        )}
-                        <div className="flex gap-3">
-                          <Button variant="outline" onClick={() => setShowAddSchedule(false)} className="flex-1 border-white/20 hover:bg-white/20 text-slate-900">Cancel</Button>
-                          <Button onClick={handleAddSchedule} className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white">Schedule</Button>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-                {otLoading ? (
-                  <Card className="glass-morphism border border-accent/30 text-white">
-                    <CardContent className="p-12 text-center">
-                      <p className="text-gray-300">Loading schedules...</p>
-                    </CardContent>
-                  </Card>
-                ) : filteredOTSchedules.length === 0 ? (
-                  <Card className="glass-morphism border border-accent/30 text-white">
-                    <CardContent className="p-12 text-center">
-                      <Scissors className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-white mb-2">No surgeries scheduled</h3>
-                      <p className="text-gray-200 mb-4">Add a surgery to pre-plan blood requirements for this date.</p>
-                      <Button onClick={() => setShowAddSchedule(true)} className="bg-yellow-600 hover:bg-yellow-700 text-white">Add Surgery</Button>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <Card className="glass-morphism border border-accent/30 text-white">
-                    <CardContent className="p-0">
-                      <div className="overflow-x-auto">
+                      </DialogContent>
+                    </Dialog>
+                  </motion.div>
+
+                  {otLoading ? (
+                    <motion.div variants={fadeUp} className="dash-card p-12 text-center">
+                      <p className="text-muted-foreground">Loading schedules...</p>
+                    </motion.div>
+                  ) : filteredOTSchedules.length === 0 ? (
+                    <motion.div variants={fadeUp} className="dash-card p-12 text-center">
+                      <Scissors className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-outfit font-semibold text-text-dark mb-2">No surgeries scheduled</h3>
+                      <p className="text-muted-foreground mb-4">Add a surgery to pre-plan blood requirements for this date.</p>
+                      <Button onClick={() => setShowAddSchedule(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground">Add Surgery</Button>
+                    </motion.div>
+                  ) : (
+                    <motion.div variants={fadeUp} className="dash-card overflow-hidden">
+                      <div className="overflow-x-auto dash-scroll">
                         <table className="w-full">
-                          <thead className="bg-white/5 border-b border-white/20">
+                          <thead className="bg-text-dark/5 border-b border-text-dark/10">
                             <tr>
-                              <th className="text-left p-4 font-medium text-white">Patient</th>
-                              <th className="text-left p-4 font-medium text-white">Surgery Type</th>
-                              <th className="text-left p-4 font-medium text-white">Time</th>
-                              <th className="text-left p-4 font-medium text-white">Blood Type</th>
-                              <th className="text-left p-4 font-medium text-white">Units Required</th>
-                              <th className="text-left p-4 font-medium text-white">Availability</th>
-                              <th className="text-left p-4 font-medium text-white">Status</th>
-                              <th className="text-left p-4 font-medium text-white">Actions</th>
+                              <th className="text-left p-4 font-outfit font-semibold text-text-dark">Patient</th>
+                              <th className="text-left p-4 font-outfit font-semibold text-text-dark">Surgery Type</th>
+                              <th className="text-left p-4 font-outfit font-semibold text-text-dark">Time</th>
+                              <th className="text-left p-4 font-outfit font-semibold text-text-dark">Blood Type</th>
+                              <th className="text-left p-4 font-outfit font-semibold text-text-dark">Units Required</th>
+                              <th className="text-left p-4 font-outfit font-semibold text-text-dark">Availability</th>
+                              <th className="text-left p-4 font-outfit font-semibold text-text-dark">Status</th>
+                              <th className="text-left p-4 font-outfit font-semibold text-text-dark">Actions</th>
                             </tr>
                           </thead>
                           <tbody>
                             {filteredOTSchedules.sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime)).map((schedule) => {
                               const avail = getBloodAvailability(schedule.bloodType, schedule.unitsRequired);
                               return (
-                                <tr key={schedule.id} className="border-b border-white/10 hover:bg-white/5 transition-all duration-300">
+                                <tr key={schedule.id} className="border-b border-text-dark/5 hover:bg-text-dark/[0.03] transition-colors duration-200">
                                   <td className="p-4">
-                                    <p className="font-medium text-white">{schedule.patientName}</p>
-                                    {schedule.notes && <p className="text-xs text-gray-400 mt-0.5">{schedule.notes}</p>}
+                                    <p className="font-medium text-text-dark">{schedule.patientName}</p>
+                                    {schedule.notes && <p className="text-xs text-muted-foreground mt-0.5">{schedule.notes}</p>}
                                   </td>
-                                  <td className="p-4 text-gray-200">{schedule.surgeryType}</td>
-                                  <td className="p-4 text-gray-200">
-                                    <div className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-gray-400" />{schedule.scheduledTime}</div>
+                                  <td className="p-4 text-muted-foreground">{schedule.surgeryType}</td>
+                                  <td className="p-4 text-muted-foreground">
+                                    <div className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-secondary" />{schedule.scheduledTime}</div>
                                   </td>
-                                  <td className="p-4"><Badge variant="outline" className="bg-white/5 border-white/20 text-white">{schedule.bloodType}</Badge></td>
-                                  <td className="p-4 text-gray-200 text-center">{schedule.unitsRequired}</td>
+                                  <td className="p-4"><Badge variant="outline" className="border-border text-text-dark bg-transparent">{schedule.bloodType}</Badge></td>
+                                  <td className="p-4 text-muted-foreground text-center">{schedule.unitsRequired}</td>
                                   <td className="p-4">
                                     {avail === "sufficient" ? (
-                                      <Badge className="bg-green-600 text-white">Available</Badge>
+                                      <Badge className="bg-emerald-600 text-white">Available</Badge>
                                     ) : (
-                                      <Badge className="bg-red-700 text-white"><AlertTriangle className="w-3 h-3 mr-1" />Insufficient</Badge>
+                                      <Badge className="bg-red-600 text-white"><AlertTriangle className="w-3 h-3 mr-1" />Insufficient</Badge>
                                     )}
                                   </td>
                                   <td className="p-4"><Badge className={getOTStatusColor(schedule.status)}>{schedule.status}</Badge></td>
                                   <td className="p-4">
                                     <div className="flex gap-2">
-                                      {schedule.status === "Scheduled" && <Button size="sm" onClick={() => handleOTStatusChange(schedule.id, "In Progress")} className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs">Start</Button>}
-                                      {schedule.status === "In Progress" && <Button size="sm" onClick={() => handleOTStatusChange(schedule.id, "Completed")} className="bg-green-600 hover:bg-green-700 text-white text-xs">Complete</Button>}
-                                      {(schedule.status === "Scheduled" || schedule.status === "In Progress") && <Button size="sm" variant="outline" onClick={() => handleOTStatusChange(schedule.id, "Cancelled")} className="border-white/20 text-white hover:bg-red-900/40 text-xs">Cancel</Button>}
+                                      {schedule.status === "Scheduled" && <Button size="sm" onClick={() => handleOTStatusChange(schedule.id, "In Progress")} className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs">Start</Button>}
+                                      {schedule.status === "In Progress" && <Button size="sm" onClick={() => handleOTStatusChange(schedule.id, "Completed")} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">Complete</Button>}
+                                      {(schedule.status === "Scheduled" || schedule.status === "In Progress") && <Button size="sm" variant="outline" onClick={() => handleOTStatusChange(schedule.id, "Cancelled")} className="border-red-200 text-red-600 hover:bg-red-50 text-xs">Cancel</Button>}
                                     </div>
                                   </td>
                                 </tr>
@@ -1628,94 +1600,101 @@ export default function HospitalDashboard() {
                           </tbody>
                         </table>
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
+                    </motion.div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>)}
+          )}
 
           {/* Analytics Tab */}
-          {activeTab === "analytics" && (<div className="space-y-6">
-            <h2 className="text-2xl font-bold text-text-dark">
-              Analytics & Reports
-            </h2>
+          {activeTab === "analytics" && (
+            <div className="space-y-6">
+              <motion.div variants={fadeUp}>
+                <h2 className="text-2xl font-outfit font-bold text-text-dark">
+                  Analytics & Reports
+                </h2>
+              </motion.div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-text-dark">
-                    <BarChart3 className="w-5 h-5 text-yellow-400" />
-                    Response Rate Analytics
-                  </CardTitle>
-                  <CardDescription className="text-text-dark/80">
-                    Donor response statistics for the last 30 days
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3 text-text-dark/80">
-                    <div className="flex justify-between">
-                      <span>Total Alerts Sent</span>
-                      <span className="font-semibold text-text-dark">24</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Average Response Rate</span>
-                      <span className="font-semibold text-text-dark">68%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Average Response Time</span>
-                      <span className="font-semibold text-text-dark">
-                        12 minutes
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Successful Collections</span>
-                      <span className="font-semibold text-text-dark">89%</span>
-                    </div>
-                  </div>
-                  <Progress
-                    value={68}
-                    className="h-2 bg-white/20 [&::-webkit-progress-bar]:bg-white/20 [&::-webkit-progress-value]:bg-yellow-600 [&::-moz-progress-bar]:bg-yellow-600"
-                  />
-                </CardContent>
-              </Card>
-
-              <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-                <CardHeader>
-                  <CardTitle className="text-text-dark">
-                    Blood Type Demand
-                  </CardTitle>
-                  <CardDescription className="text-text-dark/80">
-                    Most requested blood types this month
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {[
-                    { type: "O+", requests: 15, percentage: 35 },
-                    { type: "A+", requests: 12, percentage: 28 },
-                    { type: "B+", requests: 8, percentage: 19 },
-                    { type: "O-", requests: 7, percentage: 16 },
-                  ].map((item) => (
-                    <div key={item.type} className="space-y-2">
-                      <div className="flex justify-between text-text-dark/80">
-                        <span>{item.type}</span>
-                        <span className="text-sm text-text-dark">
-                          {item.requests} requests
-                        </span>
+              <div className="grid md:grid-cols-2 gap-6">
+                <motion.div variants={fadeUp}>
+                  <Card className="dash-card dash-card-interactive">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 font-outfit text-text-dark">
+                        <BarChart3 className="w-5 h-5 text-secondary" />
+                        Response Rate Analytics
+                      </CardTitle>
+                      <CardDescription className="text-muted-foreground">
+                        Donor response statistics for the last 30 days
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3 text-muted-foreground">
+                        <div className="flex justify-between">
+                          <span>Total Alerts Sent</span>
+                          <span className="font-semibold text-text-dark">24</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Average Response Rate</span>
+                          <span className="font-semibold text-text-dark">68%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Average Response Time</span>
+                          <span className="font-semibold text-text-dark">
+                            12 minutes
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Successful Collections</span>
+                          <span className="font-semibold text-text-dark">89%</span>
+                        </div>
                       </div>
                       <Progress
-                        value={item.percentage}
-                        className="h-2 bg-white/20 [&::-webkit-progress-bar]:bg-white/20 [&::-webkit-progress-value]:bg-yellow-600 [&::-moz-progress-bar]:bg-yellow-600"
+                        value={68}
+                        className="h-2 bg-muted"
                       />
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                <motion.div variants={fadeUp}>
+                  <Card className="dash-card dash-card-interactive">
+                    <CardHeader>
+                      <CardTitle className="font-outfit text-text-dark">
+                        Blood Type Demand
+                      </CardTitle>
+                      <CardDescription className="text-muted-foreground">
+                        Most requested blood types this month
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {[
+                        { type: "O+", requests: 15, percentage: 35 },
+                        { type: "A+", requests: 12, percentage: 28 },
+                        { type: "B+", requests: 8, percentage: 19 },
+                        { type: "O-", requests: 7, percentage: 16 },
+                      ].map((item) => (
+                        <div key={item.type} className="space-y-2">
+                          <div className="flex justify-between text-muted-foreground">
+                            <span>{item.type}</span>
+                            <span className="text-sm text-text-dark">
+                              {item.requests} requests
+                            </span>
+                          </div>
+                          <Progress
+                            value={item.percentage}
+                            className="h-2 bg-muted"
+                          />
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </div>
             </div>
-          </div>)}
-          </div>
-        </div>
+          )}
+        </motion.div>
       </div>
-    </GradientBackground>
+    </div>
   );
 }
