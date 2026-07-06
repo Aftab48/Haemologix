@@ -369,43 +369,101 @@ export default function DonorDashboard() {
   });
 
   return (
-    <GradientBackground className="flex flex-col">
+    <GradientBackground>
       <img
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
-        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
+        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20 z-0"
         alt="Blood donation background"
       />
 
-      {/* Header */}
-      <header className="glass-morphism border-b border-mist-green/40 shadow-lg relative z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
-                <Link href={"/"}>
-                 <Image
-                                      src="/logo.png"
-                                      alt="Logo"
-                                      width={48}
-                                      height={48}
-                                      className="rounded-full"
-                                    />
-                </Link>
+      <div className="flex min-h-screen relative z-10">
+
+        {/* === FULL-HEIGHT SIDEBAR === */}
+        <aside className="w-64 shrink-0 hidden md:flex flex-col glass-morphism border-r border-white/10 sticky top-0 h-screen z-20 overflow-hidden">
+          {/* Branding */}
+          <div className="p-5 border-b border-white/10">
+            <Link href="/">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-red-800 rounded-lg flex items-center justify-center shrink-0">
+                  <Heart className="w-5 h-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-white text-sm truncate">Donor Dashboard</p>
+                  <p className="text-xs text-white/50 truncate">
+                    {isLoadingUser
+                      ? "Loading..."
+                      : user
+                        ? `${user.firstName} ${user.lastName}`
+                        : "Demo Donor"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-text-dark">
-                  Donor Dashboard
-                </h1>
-                <p className="text-sm text-text-dark/80">
-                  Welcome back,{" "}
-                  {isLoadingUser
-                    ? "Loading..."
-                    : user
-                      ? `${user.firstName} ${user.lastName}`
-                      : "Demo Donor"}
-                </p>
+            </Link>
+          </div>
+
+          {/* Nav items */}
+          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+            {[
+              { value: "alerts", label: `Active Alerts (${activeAlerts.length})`, Icon: AlertTriangle },
+              { value: "history", label: "Donation History", Icon: Clock },
+              { value: "profile", label: "Profile Settings", Icon: Settings },
+            ].map(({ value, label, Icon }) => (
+              <button
+                key={value}
+                onClick={() => setActiveTab(value)}
+                className={cn(
+                  "flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-200 text-left",
+                  activeTab === value
+                    ? "bg-yellow-600 text-white shadow-sm"
+                    : "text-white/60 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="truncate">{label}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* User at bottom */}
+          <div className="p-4 border-t border-white/10 flex items-center gap-3">
+            <UserButton />
+            <span className="text-xs text-white/50">Account</span>
+          </div>
+        </aside>
+
+        {/* === MAIN CONTENT AREA === */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+          {/* Mobile nav bar */}
+          <div className="md:hidden glass-morphism border-b border-white/10 p-3 flex overflow-x-auto gap-1 shrink-0">
+            {[
+              { value: "alerts", label: "Alerts", Icon: AlertTriangle },
+              { value: "history", label: "History", Icon: Clock },
+              { value: "profile", label: "Profile", Icon: Settings },
+            ].map(({ value, label, Icon }) => (
+              <button
+                key={value}
+                onClick={() => setActiveTab(value)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all whitespace-nowrap shrink-0",
+                  activeTab === value ? "bg-yellow-600 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Icon className="w-3 h-3" />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Top bar */}
+          <div className="glass-morphism border-b border-white/10 px-6 py-3 flex items-center justify-between shrink-0">
+            <div className="md:hidden flex items-center gap-2">
+              <div className="w-7 h-7 bg-red-800 rounded-lg flex items-center justify-center">
+                <Heart className="w-4 h-4 text-white" />
               </div>
+              <span className="text-white font-semibold text-sm">Donor Dashboard</span>
             </div>
+            <div className="hidden md:block" />
             <div className="flex items-center gap-3">
               <Button
                 variant="outline"
@@ -416,199 +474,176 @@ export default function DonorDashboard() {
                 Notifications
                 <Badge className="ml-2 bg-red-600 text-white">2</Badge>
               </Button>
-              <UserButton />
+              <div className="md:hidden">
+                <UserButton />
+              </div>
             </div>
           </div>
-        </div>
-      </header>
 
-      <Card className="mb-6 glass-morphism border border-accent/30 text-white">
-        <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-text-dark">
-              Are you currently available to donate?
-            </h2>
-            <p className="text-sm text-text-dark/80">
-              Toggle your availability to receive donation alerts.
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button
-              onClick={() => setIsAvailable(true)}
-              className={`${
-                isAvailable
-                  ? "bg-green-600 hover:bg-green-700"
-                  : "bg-white/20 border-white/30 hover:bg-white/30"
-              } text-white`}
-            >
-              Yes, Available
-            </Button>
-            <Button
-              onClick={() => setIsAvailable(false)}
-              className={`${
-                !isAvailable
-                  ? "bg-red-600 hover:bg-red-700"
-                  : "bg-white/20 border-white/30 hover:bg-white/30"
-              } text-white`}
-            >
-              No, Unavailable
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto p-6">
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-red-600/20 rounded-lg flex items-center justify-center">
-                  <Heart className="w-6 h-6 text-red-500" />
-                </div>
+            <Card className="mb-6 glass-morphism border border-accent/30 text-white">
+              <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
-                  <p className="text-2xl font-bold text-text-dark">
-                    {stats.totalDonations}
-                  </p>
-                  <p className="text-sm text-text-dark/80">Total Donations</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
-                  <Activity className="w-6 h-6 text-green-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-text-dark">
-                    {stats.livesSaved}
-                  </p>
-                  <p className="text-sm text-text-dark/80">Lives Saved</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-text-dark">
-                    Next Eligible
-                  </p>
+                  <h2 className="text-lg font-semibold text-text-dark">
+                    Are you currently available to donate?
+                  </h2>
                   <p className="text-sm text-text-dark/80">
-                    {calculateNextEligible(user?.lastDonation)}
+                    Toggle your availability to receive donation alerts.
                   </p>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-purple-500" />
-                </div>
-                <div>
-                  <Badge
-                    className={
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => setIsAvailable(true)}
+                    className={`${
                       isAvailable
-                        ? "bg-green-600 text-white"
-                        : "bg-gray-500 text-white"
-                    }
+                        ? "bg-green-600 hover:bg-green-700"
+                        : "bg-white/20 border-white/30 hover:bg-white/30"
+                    } text-white`}
                   >
-                    {isAvailable ? stats.eligibilityStatus : "Unavailable"}
-                  </Badge>
-
-                  <p className="text-sm text-text-dark/80 mt-1">Current Status</p>
+                    Yes, Available
+                  </Button>
+                  <Button
+                    onClick={() => setIsAvailable(false)}
+                    className={`${
+                      !isAvailable
+                        ? "bg-red-600 hover:bg-red-700"
+                        : "bg-white/20 border-white/30 hover:bg-white/30"
+                    } text-white`}
+                  >
+                    No, Unavailable
+                  </Button>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
 
-        {/* Eligibility Progress */}
-        <Card className="mb-8 glass-morphism border border-accent/30 text-white">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-text-dark">
-              <Clock className="w-5 h-5 text-text-dark/70" />
-              Donation Eligibility
-            </CardTitle>
-            <CardDescription className="text-text-dark/80">
-              Track your eligibility for next donation (3-month waiting period)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm text-text-dark/80">
-                <span>
-                  Last Donation:{" "}
-                  {user?.lastDonation && user.lastDonation !== "N/A"
-                    ? formatLastActivity(user.lastDonation, false)
-                    : "N/A"}
-                </span>
-                <span>
-                  Next Eligible:{" "}
-                  {user?.lastDonation && user.lastDonation !== "N/A"
-                    ? calculateNextEligible(user.lastDonation)
-                    : "Eligible Now"}
-                </span>
-              </div>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-red-600/20 rounded-lg flex items-center justify-center">
+                      <Heart className="w-6 h-6 text-red-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-text-dark">
+                        {stats.totalDonations}
+                      </p>
+                      <p className="text-sm text-text-dark/80">Total Donations</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              <Progress
-                value={getEligibilityProgress(user?.lastDonation)}
-                className="h-2 bg-white/20 [&::-webkit-progress-bar]:bg-red-500 [&::-webkit-progress-value]:bg-yellow-500"
-              />
+              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
+                      <Activity className="w-6 h-6 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-text-dark">
+                        {stats.livesSaved}
+                      </p>
+                      <p className="text-sm text-text-dark/80">Lives Saved</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              <p className="text-sm text-text-dark/80">
-                {user?.lastDonation && user.lastDonation !== "N/A"
-                  ? getEligibilityProgress(user.lastDonation) >= 100
-                    ? "You are eligible to donate!"
-                    : `${Math.ceil(
-                        (new Date(
-                          calculateNextEligible(user.lastDonation)
-                        ).getTime() -
-                          new Date().getTime()) /
-                          (1000 * 60 * 60 * 24)
-                      )} days remaining`
-                  : "You are eligible to donate now!"}
-              </p>
+              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
+                      <Calendar className="w-6 h-6 text-blue-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-text-dark">
+                        Next Eligible
+                      </p>
+                      <p className="text-sm text-text-dark/80">
+                        {calculateNextEligible(user?.lastDonation)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-yellow-500 hover:shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-purple-500" />
+                    </div>
+                    <div>
+                      <Badge
+                        className={
+                          isAvailable
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-500 text-white"
+                        }
+                      >
+                        {isAvailable ? stats.eligibilityStatus : "Unavailable"}
+                      </Badge>
+
+                      <p className="text-sm text-text-dark/80 mt-1">Current Status</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
 
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-          <aside className="w-full md:w-56 md:shrink-0 md:sticky md:top-8">
-            <nav className="glass-morphism border border-accent/30 rounded-lg p-2 flex flex-row md:flex-col overflow-x-auto gap-1">
-              {[
-                { value: "alerts", label: `Active Alerts (${activeAlerts.length})`, Icon: AlertTriangle },
-                { value: "history", label: "Donation History", Icon: Clock },
-                { value: "profile", label: "Profile Settings", Icon: Settings },
-              ].map(({ value, label, Icon }) => (
-                <button
-                  key={value}
-                  onClick={() => setActiveTab(value)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 text-sm rounded-md transition-all duration-200 whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left",
-                    activeTab === value
-                      ? "bg-yellow-600 text-white shadow-md"
-                      : "text-white/70 hover:bg-white/10 hover:text-white"
-                  )}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  {label}
-                </button>
-              ))}
-            </nav>
-          </aside>
-          <div className="flex-1 min-w-0">
+            {/* Eligibility Progress */}
+            <Card className="mb-8 glass-morphism border border-accent/30 text-white">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-text-dark">
+                  <Clock className="w-5 h-5 text-text-dark/70" />
+                  Donation Eligibility
+                </CardTitle>
+                <CardDescription className="text-text-dark/80">
+                  Track your eligibility for next donation (3-month waiting period)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm text-text-dark/80">
+                    <span>
+                      Last Donation:{" "}
+                      {user?.lastDonation && user.lastDonation !== "N/A"
+                        ? formatLastActivity(user.lastDonation, false)
+                        : "N/A"}
+                    </span>
+                    <span>
+                      Next Eligible:{" "}
+                      {user?.lastDonation && user.lastDonation !== "N/A"
+                        ? calculateNextEligible(user.lastDonation)
+                        : "Eligible Now"}
+                    </span>
+                  </div>
+
+                  <Progress
+                    value={getEligibilityProgress(user?.lastDonation)}
+                    className="h-2 bg-white/20 [&::-webkit-progress-bar]:bg-red-500 [&::-webkit-progress-value]:bg-yellow-500"
+                  />
+
+                  <p className="text-sm text-text-dark/80">
+                    {user?.lastDonation && user.lastDonation !== "N/A"
+                      ? getEligibilityProgress(user.lastDonation) >= 100
+                        ? "You are eligible to donate!"
+                        : `${Math.ceil(
+                            (new Date(
+                              calculateNextEligible(user.lastDonation)
+                            ).getTime() -
+                              new Date().getTime()) /
+                              (1000 * 60 * 60 * 24)
+                          )} days remaining`
+                      : "You are eligible to donate now!"}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
             {activeTab === "alerts" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-4">

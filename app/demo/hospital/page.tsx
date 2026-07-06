@@ -610,32 +610,100 @@ export default function HospitalDashboard() {
   }, [donorResponses, searchTerm, distanceFilter, typeFilter, bloodTypeFilter]);
 
   return (
-    <GradientBackground className="flex flex-col">
+    <GradientBackground>
       <img
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
-        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
+        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20 z-0"
       />
-      {/* Header */}
-      <header className="glass-morphism border-b border-mist-green/40 shadow-lg relative z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center">
-                <Link href={"/"}>
-                  <Building className="w-6 h-6 text-white" />
-                </Link>
+
+      <div className="flex min-h-screen relative z-10">
+
+        {/* === FULL-HEIGHT SIDEBAR === */}
+        <aside className="w-64 shrink-0 hidden md:flex flex-col glass-morphism border-r border-white/10 sticky top-0 h-screen z-20 overflow-hidden">
+          {/* Branding */}
+          <div className="p-5 border-b border-white/10">
+            <Link href="/">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-red-800 rounded-lg flex items-center justify-center shrink-0">
+                  <Building className="w-5 h-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-white text-sm truncate">Hospital Dashboard</p>
+                  <p className="text-xs text-white/50 truncate">
+                    {isLoadingUser ? "Loading..." : user?.hospitalName || "Demo Hospital"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-text-dark">
-                  Hospital Dashboard
-                </h1>
-                <p className="text-sm text-text-dark/80">
-                  {isLoadingUser
-                    ? "Loading..."
-                    : user?.hospitalName || "Demo Hospital"}
-                </p>
+            </Link>
+          </div>
+
+          {/* Nav items */}
+          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+            {[
+              { value: "inventory", label: "Blood Inventory", Icon: Activity },
+              { value: "alerts", label: `Active Alerts (${activeAlerts.length})`, Icon: AlertTriangle },
+              { value: "responses", label: "Donor Responses", Icon: Users },
+              { value: "analytics", label: "Analytics", Icon: BarChart3 },
+              { value: "ot-scheduling", label: "OT Scheduling", Icon: Scissors },
+            ].map(({ value, label, Icon }) => (
+              <button
+                key={value}
+                onClick={() => setActiveTab(value)}
+                className={cn(
+                  "flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-200 text-left",
+                  activeTab === value
+                    ? "bg-yellow-600 text-white shadow-sm"
+                    : "text-white/60 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="truncate">{label}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* User at bottom */}
+          <div className="p-4 border-t border-white/10 flex items-center gap-3">
+            <UserButton />
+            <span className="text-xs text-white/50">Account</span>
+          </div>
+        </aside>
+
+        {/* === MAIN CONTENT AREA === */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+          {/* Mobile nav bar (visible only on small screens) */}
+          <div className="md:hidden glass-morphism border-b border-white/10 p-3 flex overflow-x-auto gap-1 shrink-0">
+            {[
+              { value: "inventory", label: "Inventory", Icon: Activity },
+              { value: "alerts", label: "Alerts", Icon: AlertTriangle },
+              { value: "responses", label: "Responses", Icon: Users },
+              { value: "analytics", label: "Analytics", Icon: BarChart3 },
+              { value: "ot-scheduling", label: "OT", Icon: Scissors },
+            ].map(({ value, label, Icon }) => (
+              <button
+                key={value}
+                onClick={() => setActiveTab(value)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all whitespace-nowrap shrink-0",
+                  activeTab === value ? "bg-yellow-600 text-white" : "text-white/60 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Icon className="w-3 h-3" />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Top action bar */}
+          <div className="glass-morphism border-b border-white/10 px-6 py-3 flex items-center justify-between shrink-0">
+            <div className="md:hidden flex items-center gap-2">
+              <div className="w-7 h-7 bg-red-800 rounded-lg flex items-center justify-center">
+                <Building className="w-4 h-4 text-white" />
               </div>
+              <span className="text-white font-semibold text-sm">Hospital Dashboard</span>
             </div>
+            <div className="hidden md:block" />
             <div className="flex items-center gap-3">
               <Dialog open={showCreateAlert} onOpenChange={setShowCreateAlert}>
                 <DialogTrigger asChild>
@@ -793,107 +861,81 @@ export default function HospitalDashboard() {
                   </div>
                 </DialogContent>
               </Dialog>
-              <UserButton />
+              <div className="md:hidden">
+                <UserButton />
+              </div>
             </div>
           </div>
-        </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-red-800/20 rounded-lg flex items-center justify-center">
-                  <AlertTriangle className="w-6 h-6 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-text-dark">
-                    {criticalTypes}
-                  </p>
-                  <p className="text-sm text-text-dark/80">Critical Blood Types</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-red-800/20 rounded-lg flex items-center justify-center">
+                      <AlertTriangle className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-text-dark">
+                        {criticalTypes}
+                      </p>
+                      <p className="text-sm text-text-dark/80">Critical Blood Types</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
-                  <Activity className="w-6 h-6 text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-text-dark">
-                    {activeAlerts.length}
-                  </p>
-                  <p className="text-sm text-text-dark/80">Active Alerts</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center">
+                      <Activity className="w-6 h-6 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-text-dark">
+                        {activeAlerts.length}
+                      </p>
+                      <p className="text-sm text-text-dark/80">Active Alerts</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-green-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-text-dark">
-                    {totalResponses}
-                  </p>
-                  <p className="text-sm text-text-dark/80">Donor Responses</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center">
+                      <Users className="w-6 h-6 text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-text-dark">
+                        {totalResponses}
+                      </p>
+                      <p className="text-sm text-text-dark/80">Donor Responses</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-text-dark">
-                    {totalConfirmed}
-                  </p>
-                  <p className="text-sm text-text-dark/80">Confirmed Donors</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              <Card className="glass-morphism border border-accent/30 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-text-dark">
+                        {totalConfirmed}
+                      </p>
+                      <p className="text-sm text-text-dark/80">Confirmed Donors</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-          <aside className="w-full md:w-56 md:shrink-0 md:sticky md:top-8">
-            <nav className="glass-morphism border border-accent/30 rounded-lg p-2 flex flex-row md:flex-col overflow-x-auto gap-1">
-              {[
-                { value: "inventory", label: "Blood Inventory", Icon: Activity },
-                { value: "alerts", label: `Active Alerts (${activeAlerts.length})`, Icon: AlertTriangle },
-                { value: "responses", label: "Donor Responses", Icon: Users },
-                { value: "analytics", label: "Analytics", Icon: BarChart3 },
-                { value: "ot-scheduling", label: "OT Scheduling", Icon: Scissors },
-              ].map(({ value, label, Icon }) => (
-                <button
-                  key={value}
-                  onClick={() => setActiveTab(value)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 text-sm rounded-md transition-all duration-200 whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left",
-                    activeTab === value
-                      ? "bg-yellow-600 text-white shadow-md"
-                      : "text-white/70 hover:bg-white/10 hover:text-white"
-                  )}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  {label}
-                </button>
-              ))}
-            </nav>
-          </aside>
-          <div className="flex-1 min-w-0">
 
           {/* Blood Inventory Tab */}
 

@@ -53,7 +53,7 @@ import {
   Brain,
 } from "lucide-react";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
+import { useUser, UserButton } from "@clerk/nextjs";
 import { formatLastActivity } from "@/lib/utils";
 import { UserModal } from "@/components/UserModal";
 import { updateUserStatus } from "@/lib/actions/user.actions";
@@ -407,51 +407,88 @@ function AdminWebDashboard() {
 
   return (
     <GradientBackground className="flex flex-col">
-      {/* Header */}
-      <header className="glass-morphism border-b border-mist-green/40 shadow-lg relative z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
-                <Link href={"/"}>
-                  <Shield className="w-6 h-6 text-white" />
-                </Link>
+      <div className="flex min-h-screen relative z-10">
+
+        {/* === FULL-HEIGHT SIDEBAR === */}
+        <aside className="w-64 shrink-0 hidden md:flex flex-col glass-morphism border-r border-white/20 sticky top-0 h-screen z-20 overflow-hidden">
+          {/* Branding */}
+          <div className="p-5 border-b border-white/20">
+            <Link href="/">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-purple-600 rounded-lg flex items-center justify-center shrink-0">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-text-dark text-sm truncate">Admin Dashboard</p>
+                  <p className="text-xs text-text-dark/50 truncate">{currentUser.name}</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-text-dark">
-                  System Administration
-                </h1>
-                <p className="text-sm text-text-dark/80">
-                  Haemologix Management Portal
-                </p>
+            </Link>
+          </div>
+
+          {/* Nav items */}
+          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+            {tabOptions.map(({ value, label, Icon }) => (
+              <button
+                key={value}
+                onClick={() => setActiveTab(value)}
+                className={cn(
+                  "flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-200 text-left",
+                  activeTab === value
+                    ? "bg-yellow-600 text-white shadow-sm"
+                    : "text-text-dark/60 hover:bg-white/10 hover:text-text-dark"
+                )}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="truncate">{label}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* User at bottom */}
+          <div className="p-4 border-t border-white/20 flex items-center gap-3">
+            <UserButton />
+            <span className="text-xs text-text-dark/50">Admin</span>
+          </div>
+        </aside>
+
+        {/* === MAIN CONTENT AREA === */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+          {/* Mobile nav */}
+          <div className="md:hidden glass-morphism border-b border-white/20 p-3 flex overflow-x-auto gap-1 shrink-0">
+            {tabOptions.map(({ value, label, Icon }) => (
+              <button
+                key={value}
+                onClick={() => setActiveTab(value)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all whitespace-nowrap shrink-0",
+                  activeTab === value ? "bg-yellow-600 text-white" : "text-text-dark/60 hover:bg-white/10 hover:text-text-dark"
+                )}
+              >
+                <Icon className="w-3 h-3" />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Top bar */}
+          <div className="glass-morphism border-b border-white/20 px-6 py-3 flex items-center justify-between shrink-0">
+            <div className="md:hidden flex items-center gap-2">
+              <div className="w-7 h-7 bg-purple-600 rounded-lg flex items-center justify-center">
+                <Shield className="w-4 h-4 text-white" />
               </div>
+              <span className="text-text-dark font-semibold text-sm">Admin Dashboard</span>
             </div>
-            <div className="lg:flex items-center hidden gap-3">
-              <Link href="/demo/admin/pilot">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                >
-                  <Building className="w-4 h-4 mr-2" />
-                  Pilot Requests
-                </Button>
-              </Link>
-              {/* <Link href="/auth/login">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/20"
-                >
-                  Logout
-                </Button>
-              </Link> */}
+            <div className="hidden md:block" />
+            <div className="flex items-center gap-3">
+              <div className="md:hidden"><UserButton /></div>
             </div>
           </div>
-        </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto p-6">
+
         {/* System Overview Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="glass-morphism border border-accent/30 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
@@ -605,27 +642,7 @@ function AdminWebDashboard() {
           </Card>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-          <aside className="w-full md:w-56 md:shrink-0 md:sticky md:top-8">
-            <nav className="glass-morphism border border-white/20 rounded-lg p-2 flex flex-row md:flex-col overflow-x-auto gap-1">
-              {tabOptions.map(({ value, label, Icon }) => (
-                <button
-                  key={value}
-                  onClick={() => setActiveTab(value)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 text-sm rounded-md transition-all duration-200 whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left",
-                    activeTab === value
-                      ? "bg-yellow-600 text-white shadow-md"
-                      : "text-text-dark/70 hover:bg-white/10 hover:text-text-dark"
-                  )}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  {label}
-                </button>
-              ))}
-            </nav>
-          </aside>
-          <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0">
             {/* User Management Tab */}
             {activeTab === "users" && (
             <div className="space-y-6">
@@ -1358,8 +1375,9 @@ function AdminWebDashboard() {
             </div>
             )}
           </div>
-        </div>
-      </div>
+          </div>{/* end scrollable content */}
+        </div>{/* end main content area */}
+      </div>{/* end flex wrapper */}
       {selectedUser && (
         <UserModal
           userId={selectedUser.id}
