@@ -1022,6 +1022,7 @@ export default function BloodbankDashboard() {
                 );
               })}
             </div>
+          </div>
           )}
           <Dialog open={isInvModalOpen} onOpenChange={setIsInvModalOpen}>
             <DialogContent className="max-w-md bg-white/10 backdrop-blur-lg border border-white/20 text-white rounded-lg p-6">

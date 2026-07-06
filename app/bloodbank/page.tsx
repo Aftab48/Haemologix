@@ -911,6 +911,7 @@ export default function BloodbankDashboard() {
                 );
               })}
             </div>
+          </div>
           )}
           {isInvModalOpen && editingItem && (
             <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
