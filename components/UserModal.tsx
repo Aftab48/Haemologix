@@ -19,8 +19,26 @@ type Props = {
   adminBasePath?: string;
 };
 
+interface UserDetails {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  bloodGroup?: string | null;
+  phone?: string | null;
+  lastDonation?: Date | null;
+  hospitalName?: string | null;
+  contactEmail?: string | null;
+  hospitalAddress?: string | null;
+  city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+  bloodBankLicense?: string | null;
+  alerts?: unknown[];
+}
+
 export function UserModal({ userId, userType, onClose, adminBasePath = "/admin" }: Props) {
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserDetails | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,7 +93,7 @@ export function UserModal({ userId, userType, onClose, adminBasePath = "/admin" 
                 </p>
                 <p className="text-text-dark">
                   <strong>Last Donation:</strong>{" "}
-                  {formatLastActivity(userData.lastDonation) || "N/A"}
+                  {formatLastActivity(userData.lastDonation ?? null) || "N/A"}
                 </p>
               </>
             ) : (

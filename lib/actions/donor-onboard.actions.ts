@@ -6,6 +6,13 @@ import { donorOnboardSchema, type DonorOnboardFormData } from "@/lib/validations
 import { sendDonorOnboardWelcomeEmail } from "@/lib/actions/mails.actions";
 import { sendApplicationApprovedEmail, sendApplicationRejectedEmail } from "@/lib/actions/mails.actions";
 import { processOnboardDonorVerification } from "@/lib/agents/onboardDonorVerification";
+import { ZodError } from "zod";
+
+function asErrorRecord(error: unknown): Record<string, unknown> {
+  return typeof error === "object" && error !== null
+    ? (error as Record<string, unknown>)
+    : {};
+}
 
 /**
  * Generate a random secure password that meets Clerk requirements
@@ -105,7 +112,7 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
             skipPasswordRequirement: false,
           });
         }
-      } catch (checkError: any) {
+      } catch (checkError) {
         // If getUserList fails, try creating anyway
         console.warn("Could not check for existing Clerk user, attempting creation:", checkError);
         
@@ -120,12 +127,14 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
           skipPasswordRequirement: false,
         });
       }
-    } catch (clerkError: any) {
+    } catch (clerkError) {
+      const details = asErrorRecord(clerkError);
       console.error("Clerk user creation error:", {
-        message: clerkError.message,
-        status: clerkError.status,
-        errors: clerkError.errors,
-        clerkTraceId: clerkError.clerkTraceId,
+        message:
+          clerkError instanceof Error ? clerkError.message : String(clerkError),
+        status: details.status,
+        errors: details.errors,
+        clerkTraceId: details.clerkTraceId,
       });
       // If Clerk user creation fails, we still want to create the donor record
       // but without clerkUserId
@@ -228,19 +237,20 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
       donorId: newDonor.id,
       message: "Donor registration submitted successfully. Please check your email for login credentials.",
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error submitting donor onboard form:", error);
 
     // Handle validation errors
-    if (error.errors) {
+    if (error instanceof ZodError) {
       return {
         success: false,
-        error: error.errors.map((e: any) => e.message).join(", "),
+        error: error.errors.map((e) => e.message).join(", "),
       };
     }
 
     // Handle unique constraint violation (duplicate email)
-    if (error.code === "P2002") {
+    const details = asErrorRecord(error);
+    if (details.code === "P2002") {
       return {
         success: false,
         error: "An account with this email already exists",
@@ -249,7 +259,10 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
 
     return {
       success: false,
-      error: error.message || "Failed to submit donor registration",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to submit donor registration",
     };
   }
 }

@@ -1,8 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { requireAuth } from "@/lib/auth";
 
-export async function GET(req: NextRequest) {
+function getStringProperty(value: unknown, key: string): string {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    key in value &&
+    typeof (value as Record<string, unknown>)[key] === "string"
+  ) {
+    return (value as Record<string, string>)[key];
+  }
+  return "";
+}
+
+export async function GET() {
   const { error } = await requireAuth();
   if (error) return error;
   try {
@@ -17,14 +29,14 @@ export async function GET(req: NextRequest) {
     // Transform decisions into activities and filter out invalid ones (5 agents - NO Compliance)
     const validAgentTypes = ["HOSPITAL", "DONOR", "COORDINATOR", "INVENTORY", "LOGISTICS"];
     const activities = recentDecisions
-      .map((decision: any) => ({
+      .map((decision) => ({
         id: decision.id,
         agentType: decision.agentType?.toUpperCase() || "UNKNOWN", // Normalize to uppercase
         eventType: decision.eventType,
         timestamp: decision.createdAt.toISOString(),
         status: "completed", // All logged decisions are completed
         decision: decision.decision,
-        reasoning: (decision.decision as any)?.reasoning || "",
+        reasoning: getStringProperty(decision.decision, "reasoning"),
         metadata: {
           requestId: decision.requestId,
           eventId: decision.eventId,
@@ -35,14 +47,17 @@ export async function GET(req: NextRequest) {
 
     // Calculate stats for each agent type (5 agents - NO Compliance)
     const agentTypes = ["HOSPITAL", "DONOR", "COORDINATOR", "INVENTORY", "LOGISTICS"];
-    const stats: Record<string, any> = {};
+    const stats: Record<
+      string,
+      { active: number; total: number; avgTime: string }
+    > = {};
 
     for (const agentType of agentTypes) {
       const agentDecisions = recentDecisions.filter(
-        (d: any) => d.agentType?.toUpperCase() === agentType
+        (d) => d.agentType?.toUpperCase() === agentType
       );
       const recentActive = agentDecisions.filter(
-        (d: any) => new Date().getTime() - d.createdAt.getTime() < 60000 // Last 1 minute
+        (d) => new Date().getTime() - d.createdAt.getTime() < 60000 // Last 1 minute
       );
 
       // Calculate average time (mock for now, can be enhanced with actual timing data)

@@ -8,7 +8,7 @@ import { requireAuth } from "@/lib/auth";
  * (enforced by Clerk userId lookup) or the caller must be an admin.
  */
 export async function GET(req: NextRequest) {
-  const { userId, error } = await requireAuth();
+  const { error } = await requireAuth();
   if (error) return error;
 
   try {
@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json(formattedHistory);
-  } catch (error: any) {
+  } catch (error) {
     console.error("[Donation History API] Error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },

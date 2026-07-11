@@ -14,7 +14,7 @@ if (!isTwilioConfigured) {
 // Create Twilio client (conditional)
 export const twilioClient = isTwilioConfigured
   ? twilio(accountSid, authToken)
-  : (null as any);
+  : null;
 
 function normalizePhoneNumber(phone: string): string {
   // Remove spaces, dashes, etc.
@@ -38,7 +38,7 @@ function normalizePhoneNumber(phone: string): string {
 
 // Helper wrapper for sending SMS
 export async function sendSMS(to: string, body: string) {
-  if (!isTwilioConfigured) {
+  if (!twilioClient) {
     console.warn(`[Mock SMS] To: ${to}, Body: ${body}`);
     return { success: true, sid: "mock-sid-env-missing" };
   }
@@ -53,13 +53,22 @@ export async function sendSMS(to: string, body: string) {
 
     console.log(`✅ SMS sent to ${formatted}, SID: ${message.sid}`);
     return { success: true, sid: message.sid };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorDetails =
+      typeof error === "object" && error !== null
+        ? error
+        : { message: String(error) };
+    const errorMessage =
+      "message" in errorDetails ? errorDetails.message : undefined;
+    const errorCode = "code" in errorDetails ? errorDetails.code : undefined;
+    const errorStack = "stack" in errorDetails ? errorDetails.stack : undefined;
+
     console.error("❌ Twilio SMS Error:", {
       to,
       body,
-      errorMessage: error?.message,
-      errorCode: error?.code,
-      errorStack: error?.stack,
+      errorMessage,
+      errorCode,
+      errorStack,
     });
     throw error;
   }

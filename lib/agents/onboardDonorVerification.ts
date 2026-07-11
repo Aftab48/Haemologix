@@ -5,11 +5,12 @@
  */
 
 import { db } from "@/db";
+import type { Donor } from "@prisma/client";
 
 export interface OnboardEligibilityCriterion {
   criterion: string;
-  value: any;
-  required: any;
+  value: string | number;
+  required: string;
   reason: string;
   passed: boolean;
 }
@@ -24,7 +25,9 @@ export interface OnboardEligibilityCheckResult {
  * Check onboard donor eligibility based on simplified criteria
  * Only checks basic requirements: age, weight, BMI
  */
-export function checkOnboardDonorEligibility(donor: any): OnboardEligibilityCheckResult {
+export function checkOnboardDonorEligibility(
+  donor: Pick<Donor, "dateOfBirth" | "weight" | "bmi">
+): OnboardEligibilityCheckResult {
   const failedCriteria: OnboardEligibilityCriterion[] = [];
   const allCriteria: OnboardEligibilityCriterion[] = [];
 

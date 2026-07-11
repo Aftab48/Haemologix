@@ -6,6 +6,17 @@ import { currentUser } from "@clerk/nextjs/server";
 import { clerkClient as getClerkClient } from "@clerk/nextjs/server";
 import { db } from "@/db";
 
+function getActionError(error: unknown) {
+  const details =
+    typeof error === "object" && error !== null
+      ? (error as Record<string, unknown>)
+      : {};
+  return {
+    digest: details.digest,
+    message: error instanceof Error ? error.message : String(error),
+  };
+}
+
 /**
  * Mark the logged-in user as having applied
  */
@@ -21,13 +32,14 @@ export async function markDonorAsApplied() {
     });
 
     return { ok: true, userId: user.id };
-  } catch (err: any) {
+  } catch (err) {
+    const error = getActionError(err);
     // Log digest if available, but don’t block workflow
-    console.error("Server Action Error Digest:", err.digest ?? "N/A");
+    console.error("Server Action Error Digest:", error.digest ?? "N/A");
     console.error("Full error object:", err);
 
     // Return a safe fallback so the UI can continue
-    return { ok: false, error: err.message ?? "Unknown error" };
+    return { ok: false, error: error.message || "Unknown error" };
   }
 }
 
@@ -41,13 +53,14 @@ export async function markHospitalAsApplied() {
       publicMetadata: { hasAppliedHospital: true },
     });
     return { ok: true, userId: user.id };
-  } catch (err: any) {
+  } catch (err) {
+    const error = getActionError(err);
     // Log digest if available, but don’t block workflow
-    console.error("Server Action Error Digest:", err.digest ?? "N/A");
+    console.error("Server Action Error Digest:", error.digest ?? "N/A");
     console.error("Full error object:", err);
 
     // Return a safe fallback so the UI can continue
-    return { ok: false, error: err.message ?? "Unknown error" };
+    return { ok: false, error: error.message || "Unknown error" };
   }
 }
 

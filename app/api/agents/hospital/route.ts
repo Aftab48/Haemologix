@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
 /**
  * GET endpoint to check agent status
  */
-export async function GET(req: NextRequest) {
+export async function GET() {
   return NextResponse.json({
     agent: "Hospital Agent",
     status: "operational",

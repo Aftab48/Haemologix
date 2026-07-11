@@ -11,6 +11,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ requestId: string }> }
 ) {
+  void req;
   const { error } = await requireAuth();
   if (error) return error;
 
@@ -25,13 +26,13 @@ export async function GET(
             payload: {
               path: ["id"],
               equals: requestId,
-            } as any,
+            },
           },
           {
             payload: {
               path: ["request_id"],
               equals: requestId,
-            } as any,
+            },
           },
         ],
       },

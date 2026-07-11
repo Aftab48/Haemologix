@@ -6,14 +6,41 @@
  */
 
 import { db } from "@/db";
+import type { Prisma } from "@prisma/client";
+import type { EligibilityCriterion } from "../agents/verificationAgent";
 
-interface TrainingExampleData {
-  taskType: string;
-  inputFeatures: any;
-  outputLabel: any;
-  outcome?: any;
-  agentDecisionId?: string;
-  requestId?: string;
+interface DonorSelectionCandidate extends Prisma.InputJsonObject {
+  donor_id: string;
+  distance_km?: number;
+  distance?: number;
+  eta_minutes?: number;
+  eta?: number;
+  score?: number;
+  match_score?: number;
+  reliability_rate?: number;
+  reliability?: number;
+  health_score?: number;
+  health?: number;
+}
+
+interface DonorSelectionAlert {
+  id?: string;
+  bloodType: string;
+  urgency: string;
+  unitsNeeded?: string | number;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
+}
+
+interface InventorySelectionUnit extends Prisma.InputJsonObject {
+  unit_id: string;
+  distance_km?: number;
+  distance?: number;
+  expiry_days?: number;
+  expiry?: number | Date;
+  units_available?: number;
+  quantity?: number;
+  scores?: Record<string, number>;
 }
 
 /**
@@ -21,10 +48,15 @@ interface TrainingExampleData {
  */
 export async function collectDonorSelectionExample(
   agentDecisionId: string,
-  candidates: any[],
-  alert: any,
-  context: any,
-  selectedDonor: any,
+  candidates: DonorSelectionCandidate[],
+  alert: DonorSelectionAlert,
+  context: {
+    timeOfDay?: string;
+    trafficConditions?: string;
+    historicalPatterns?: Prisma.InputJsonValue;
+    requestId?: string;
+  },
+  selectedDonor: DonorSelectionCandidate,
   outcome?: {
     success: boolean;
     donorArrived: boolean;
@@ -94,7 +126,7 @@ export async function collectUrgencyAssessmentExample(
     currentUnits: number;
     daysRemaining: number;
     dailyUsage: number;
-    hospitalContext?: any;
+    hospitalContext?: Prisma.InputJsonObject;
     timeOfDay?: string;
   },
   assessedUrgency: string,
@@ -152,14 +184,14 @@ export async function collectUrgencyAssessmentExample(
  */
 export async function collectInventorySelectionExample(
   agentDecisionId: string,
-  rankedUnits: any[],
+  rankedUnits: InventorySelectionUnit[],
   request: {
     bloodType: string;
     unitsNeeded: number;
     urgency: string;
     requestId?: string;
   },
-  selectedSource: any,
+  selectedSource: InventorySelectionUnit,
   outcome?: {
     success: boolean;
     unitsDelivered: boolean;
@@ -216,8 +248,8 @@ export async function collectInventorySelectionExample(
 export async function collectTransportPlanningExample(
   agentDecisionId: string,
   context: {
-    fromHospital: any;
-    toHospital: any;
+    fromHospital: Prisma.InputJsonObject;
+    toHospital: Prisma.InputJsonObject;
     distanceKm: number;
     urgency: string;
     bloodType: string;
@@ -294,8 +326,8 @@ export async function collectEligibilityAnalysisExample(
   },
   eligibilityResult: {
     passed: boolean;
-    failedCriteria: any[];
-    allCriteria: any[];
+    failedCriteria: EligibilityCriterion[];
+    allCriteria: EligibilityCriterion[];
   },
   outcome?: {
     wasAccurate: boolean;
@@ -318,6 +350,7 @@ export async function collectEligibilityAnalysisExample(
     const failedCriteriaBinary = [0, 0, 0, 0, 0, 0]; // 6 common criteria
     // Map failed criteria to binary vector (simplified)
     eligibilityResult.failedCriteria.forEach((criteria, idx) => {
+      void criteria;
       if (idx < 6) {
         failedCriteriaBinary[idx] = 1;
       }

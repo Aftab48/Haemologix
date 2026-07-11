@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect, useMemo } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -30,13 +29,12 @@ interface LLMReasoningData {
   reasoning: string;
   modelUsed: string;
   confidence?: number;
-  decision?: any;
+  decision?: unknown;
   createdAt: string;
 }
 
 export default function LLMReasoningView() {
   const [reasoningData, setReasoningData] = useState<LLMReasoningData[]>([]);
-  const [filteredData, setFilteredData] = useState<LLMReasoningData[]>([]);
   const [loading, setLoading] = useState(true);
   const [agentFilter, setAgentFilter] = useState<string>("ALL");
   const [modelFilter, setModelFilter] = useState<string>("ALL");
@@ -45,10 +43,6 @@ export default function LLMReasoningView() {
   useEffect(() => {
     fetchReasoningData();
   }, []);
-
-  useEffect(() => {
-    filterData();
-  }, [reasoningData, agentFilter, modelFilter, searchQuery]);
 
   const fetchReasoningData = async () => {
     try {
@@ -65,7 +59,7 @@ export default function LLMReasoningView() {
     }
   };
 
-  const filterData = () => {
+  const filteredData = useMemo(() => {
     let filtered = [...reasoningData];
 
     // Filter by agent type
@@ -90,8 +84,8 @@ export default function LLMReasoningView() {
       );
     }
 
-    setFilteredData(filtered);
-  };
+    return filtered;
+  }, [reasoningData, agentFilter, modelFilter, searchQuery]);
 
   const getModelStats = () => {
     const stats = {

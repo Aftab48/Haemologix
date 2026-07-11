@@ -9,7 +9,7 @@
  * SECURITY: Only available in development/test environments.
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/db";
 
 // Guard: this endpoint must never be reachable in production
@@ -64,7 +64,7 @@ const TEST_DONORS = [
   },
 ];
 
-export async function POST(req: NextRequest) {
+export async function POST() {
   const guard = productionGuard();
   if (guard) return guard;
 
@@ -212,12 +212,15 @@ export async function POST(req: NextRequest) {
       alertUrl: `/hospital/alert/${alert.id}`,
       message: `Created alert with ${createdDonors.length} accepted donors`,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error during simulation:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to simulate alert",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to simulate alert",
       },
       { status: 500 }
     );

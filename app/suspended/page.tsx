@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Clock } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { getCurrentUser } from "@/lib/actions/user.actions";
 import GradientBackground from "@/components/GradientBackground";
 
@@ -34,10 +35,15 @@ export default function SuspendedPage() {
         const currentUser = await getCurrentUser(email);
 
         if (currentUser.role === "DONOR") {
-          const donor = currentUser.user as any;
-          
-          if (donor.suspendedUntil) {
-            const suspensionEnd = new Date(donor.suspendedUntil);
+          const donor = currentUser.user;
+          const suspendedUntilValue =
+            "suspendedUntil" in donor ? donor.suspendedUntil : null;
+
+          if (
+            typeof suspendedUntilValue === "string" ||
+            suspendedUntilValue instanceof Date
+          ) {
+            const suspensionEnd = new Date(suspendedUntilValue);
             
             // Check if suspension has expired
             if (new Date() >= suspensionEnd) {
@@ -101,10 +107,13 @@ export default function SuspendedPage() {
 
   return (
     <GradientBackground className="flex items-center justify-center p-4">
-      <img
+      <Image
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
+        width={1200}
+        height={800}
+        unoptimized
         className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
-        alt="Background"
+        alt=""
       />
 
       <Card className="w-full max-w-2xl glass-morphism border border-accent/30 text-text-dark relative z-10">

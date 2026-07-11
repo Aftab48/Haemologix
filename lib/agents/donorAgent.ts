@@ -5,7 +5,8 @@
 
 import { db } from "@/db";
 import { AgentType } from "@prisma/client";
-import { publishEvent } from "./eventBus";
+import type { DonorRegistration } from "@prisma/client";
+import { parseShortageRequestEvent, publishEvent } from "./eventBus";
 import { scoreDonor, DonorScores } from "./donorScoring";
 import { sendDonorBloodRequestEmail } from "../actions/mails.actions";
 import { sendUrgentBloodRequestSMS } from "../actions/sms.actions";
@@ -99,7 +100,7 @@ export function calculateDistance(
 /**
  * Check if donor is medically eligible
  */
-export function isDonorEligible(donor: any): {
+export function isDonorEligible(donor: DonorRegistration): {
   eligible: boolean;
   reason?: string;
 } {
@@ -201,7 +202,7 @@ export async function findAndRankDonors(
   );
 
   const eligibleDonors: Array<{
-    donor: any;
+    donor: DonorRegistration;
     distance: number;
     scores: DonorScores;
   }> = [];
@@ -310,7 +311,10 @@ export async function processShortageEvent(eventId: string): Promise<{
       return { success: false, donorsNotified: 0, error: "Event not found" };
     }
 
-    const payload = event.payload as any;
+    const payload = parseShortageRequestEvent(event.payload);
+    if (!payload) {
+      throw new Error("Shortage event has an invalid payload");
+    }
 
     // Extract shortage details
     const bloodType = payload.blood_type;
@@ -334,7 +338,6 @@ export async function processShortageEvent(eventId: string): Promise<{
     let shouldTriggerInventory = false;
     let insufficientReason = "";
     let notificationStrategy = "";
-    let expectedResponseRate = 0.3;
     let llmUsed: boolean = false;
 
     try {
@@ -357,7 +360,6 @@ export async function processShortageEvent(eventId: string): Promise<{
 
       shouldTriggerInventory = strategyResult.shouldTriggerInventory;
       notificationStrategy = strategyResult.notificationStrategy;
-      expectedResponseRate = strategyResult.expectedResponseRate;
       insufficientReason = strategyResult.reasoning;
       llmUsed = true;
 

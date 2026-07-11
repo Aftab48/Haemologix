@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     
     // Return the result as-is (it already has the correct structure)
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error) {
     console.error("[User API] Error:", error);
     return NextResponse.json(
       { success: false, error: String(error) },

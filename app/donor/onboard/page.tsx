@@ -173,10 +173,13 @@ export default function DonorOnboardPage() {
           message: result.error || "Failed to submit registration. Please try again.",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       setSubmitStatus({
         success: false,
-        message: error.message || "An error occurred. Please try again.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "An error occurred. Please try again.",
       });
     } finally {
       setIsSubmitting(false);

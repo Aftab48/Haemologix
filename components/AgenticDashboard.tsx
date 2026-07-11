@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,6 @@ import {
   XCircle,
   Clock,
   Zap,
-  ArrowRight,
   RefreshCcw,
   TrendingUp,
 } from "lucide-react";
@@ -81,25 +80,27 @@ interface AgentActivity {
   eventType: string;
   timestamp: string;
   status: "processing" | "completed" | "failed";
-  decision?: any;
+  decision?: unknown;
   reasoning?: string;
-  metadata?: any;
+  metadata?: unknown;
 }
+
+const initialAgentStats = {
+  HOSPITAL: { active: 0, total: 0, avgTime: "0s" },
+  DONOR: { active: 0, total: 0, avgTime: "0s" },
+  COORDINATOR: { active: 0, total: 0, avgTime: "0s" },
+  INVENTORY: { active: 0, total: 0, avgTime: "0s" },
+  LOGISTICS: { active: 0, total: 0, avgTime: "0s" },
+  VERIFICATION: { active: 0, total: 0, avgTime: "0s" },
+};
 
 export default function AgenticDashboard() {
   const [activities, setActivities] = useState<AgentActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [agentStats, setAgentStats] = useState({
-    HOSPITAL: { active: 0, total: 0, avgTime: "0s" },
-    DONOR: { active: 0, total: 0, avgTime: "0s" },
-    COORDINATOR: { active: 0, total: 0, avgTime: "0s" },
-    INVENTORY: { active: 0, total: 0, avgTime: "0s" },
-    LOGISTICS: { active: 0, total: 0, avgTime: "0s" },
-    VERIFICATION: { active: 0, total: 0, avgTime: "0s" },
-  });
+  const [agentStats, setAgentStats] = useState(initialAgentStats);
 
-  const fetchAgentActivities = async () => {
+  const fetchAgentActivities = useCallback(async () => {
     try {
       setLoading(true);
       // Fetch recent agent decisions across all requests
@@ -107,14 +108,14 @@ export default function AgenticDashboard() {
       if (response.ok) {
         const data = await response.json();
         setActivities(data.activities || []);
-        setAgentStats(data.stats || agentStats);
+        setAgentStats(data.stats || initialAgentStats);
       }
     } catch (error) {
       console.error("Error fetching agent activities:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAgentActivities();
@@ -124,7 +125,7 @@ export default function AgenticDashboard() {
       const interval = setInterval(fetchAgentActivities, 10000);
       return () => clearInterval(interval);
     }
-  }, [autoRefresh]);
+  }, [autoRefresh, fetchAgentActivities]);
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -304,7 +305,7 @@ export default function AgenticDashboard() {
                               {activity.reasoning}
                             </p>
                           )}
-                          {activity.decision && (
+                          {activity.decision != null && (
                             <div className="bg-black/20 rounded p-2 text-xs text-text-dark/80 font-mono">
                               <pre className="whitespace-pre-wrap">
                                 {JSON.stringify(activity.decision, null, 2).substring(0, 200)}

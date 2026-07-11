@@ -5,22 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUp } from "lucide-react";
-import { Heart, Shield, Activity, Droplet, Droplets } from "lucide-react";
+import { Heart, Shield, Activity, Droplets } from "lucide-react";
 import Link from "next/link";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-  useUser,
-} from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import PasskeyModal from "@/components/PasskeyModal";
 import { stats, features, steps, CarouselData } from "@/constants";
 import { getCurrentUser } from "@/lib/actions/user.actions";
 import Image from "next/image";
-import { gsap, slideInUp, fadeIn, staggerIn, scrollReveal } from "@/lib/gsap-utils";
+import { gsap } from "@/lib/gsap-utils";
 import Header from "@/components/Header";
 
 const HomePage = () => {
@@ -50,8 +43,8 @@ const HomePage = () => {
   };
 
   const { user, isSignedIn } = useUser();
-  const [role, setRole] = useState<any>(null);
-  const [dbUser, setDbUser] = useState<any>(null);
+  const [role, setRole] = useState<CurrentUserResponse["role"]>(null);
+  const [dbUser, setDbUser] = useState<CurrentUserResponse | null>(null);
   const userId = user?.id;
 
   useEffect(() => {
@@ -427,9 +420,12 @@ const HomePage = () => {
                   key={`row1-${index}`}
                   className="flex-shrink-0 w-72 h-44 relative rounded-xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-primary/50 transition-all duration-500"
                 >
-                  <img
+                  <Image
                     src={item.image || "/placeholder.svg"}
                     alt={item.title}
+                    fill
+                    unoptimized
+                    sizes="288px"
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   {/* Glass Gradient Overlay */}
@@ -468,9 +464,12 @@ const HomePage = () => {
                   key={`row2-${index}`}
                   className="flex-shrink-0 w-72 h-44 relative rounded-xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-secondary/50 transition-all duration-500"
                 >
-                  <img
+                  <Image
                     src={item.image || "/placeholder.svg"}
                     alt={item.title}
+                    fill
+                    unoptimized
+                    sizes="288px"
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   {/* Glass Gradient Overlay */}
@@ -567,7 +566,11 @@ const HomePage = () => {
               </div>
             )}
 
-            {isSignedIn && role && dbUser?.status === "APPROVED" && (
+            {isSignedIn &&
+              role &&
+              dbUser &&
+              "status" in dbUser &&
+              dbUser.status === "APPROVED" && (
               <div className="flex justify-center">
                 <Button
                   size="lg"

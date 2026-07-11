@@ -9,6 +9,10 @@ import { calculateDistance } from "./donorAgent";
 import { reasonAboutDonorSelection } from "./llmReasoning";
 import { getHistoricalPatterns, getTrafficConditions } from "./outcomeTracking";
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 /**
  * COORDINATOR AGENT
  * Master orchestrator that handles donor responses, selects optimal matches,
@@ -268,8 +272,11 @@ export async function selectOptimalMatch(requestId: string): Promise<{
 
     // If already matching, check if we have a selected donor
     if (workflowState.status === "matching") {
-      const metadata = workflowState.metadata as any;
-      if (metadata?.matched_donor_id) {
+      const metadata = workflowState.metadata;
+      if (
+        isRecord(metadata) &&
+        typeof metadata.matched_donor_id === "string"
+      ) {
         console.log(
           `[CoordinatorAgent] Donor already selected: ${metadata.matched_donor_id}`
         );

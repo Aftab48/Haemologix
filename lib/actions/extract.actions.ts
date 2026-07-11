@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import Tesseract from "tesseract.js";
 
-type ParsedContent = Record<string, any>;
+type ParsedContent = Record<string, string>;
 
 /**
  * Extract text from image using Tesseract OCR
@@ -185,7 +185,7 @@ export async function extractData(filePath: string) {
   // Auto-detect file type
   const fileType = detectFileType(parsedContent);
   const map = fieldMaps[fileType];
-  const result: Record<string, any> = {};
+  const result: Record<string, string> = {};
 
   for (const field in map) {
     const keywords = map[field];

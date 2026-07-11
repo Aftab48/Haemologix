@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import fs from "fs";
 import fetch from "node-fetch";
 

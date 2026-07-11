@@ -13,16 +13,22 @@ export async function sendApplicationApprovedSMS(to: string, name: string) {
   try {
     const body = `Hi ${name}, your donor application has been approved. Welcome aboard!`;
     return await sendSMS(to, body);
-  } catch (error: any) {
+  } catch (error) {
+    const details =
+      typeof error === "object" && error !== null
+        ? (error as Record<string, unknown>)
+        : {};
+    const message = error instanceof Error ? error.message : String(error);
     console.error("❌ Failed to send approval SMS", {
       to,
       name,
-      errorMessage: error?.message || "Unknown error",
-      errorCode: error?.code || "N/A",
-      errorStack: error?.stack || "No stack trace",
+      errorMessage: message || "Unknown error",
+      errorCode: details.code || "N/A",
+      errorStack:
+        error instanceof Error ? error.stack || "No stack trace" : "No stack trace",
       errorDetails: error, // full object for debugging
     });
-    throw new Error(`SMS sending failed for ${to}: ${error?.message}`);
+    throw new Error(`SMS sending failed for ${to}: ${message}`);
   }
 }
 

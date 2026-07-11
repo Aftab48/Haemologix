@@ -1,5 +1,90 @@
+import type { DonorRegistration, HospitalRegistration } from "@prisma/client";
+import type { MatchedDonor } from "./coordinatorAgent";
+import type { RankedInventoryUnit } from "./inventoryAgent";
+import type { EligibilityCheckResult } from "./verificationAgent";
+
+type JsonRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseJsonRecord(value: string): JsonRecord {
+  const parsed: unknown = JSON.parse(value);
+  if (!isRecord(parsed)) {
+    throw new Error("LLM returned a non-object JSON response");
+  }
+  return parsed;
+}
+
+function getString(
+  record: JsonRecord,
+  key: string,
+  fallback: string
+): string {
+  return typeof record[key] === "string" ? record[key] : fallback;
+}
+
+function getNumber(
+  record: JsonRecord,
+  key: string,
+  fallback: number
+): number {
+  const value = record[key];
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+  return fallback;
+}
+
+function getBoolean(
+  record: JsonRecord,
+  key: string,
+  fallback: boolean
+): boolean {
+  return typeof record[key] === "boolean" ? record[key] : fallback;
+}
+
+function getStringArray(record: JsonRecord, key: string): string[] {
+  const value = record[key];
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+function normalizeUrgency(
+  value: string
+): "low" | "medium" | "high" | "critical" {
+  switch (value.trim().toLowerCase()) {
+    case "low":
+      return "low";
+    case "medium":
+      return "medium";
+    case "high":
+      return "high";
+    case "critical":
+      return "critical";
+    default:
+      return "medium";
+  }
+}
+
+function getMessageText(value: unknown): string | null {
+  if (typeof value === "string") return value;
+  if (!Array.isArray(value)) return null;
+
+  const parts = value.flatMap((part) =>
+    isRecord(part) && typeof part.text === "string" ? [part.text] : []
+  );
+  return parts.length > 0 ? parts.join("") : null;
+}
+
 interface ReasoningRequest {
-  context: any;
+  context: unknown;
   prompt: string;
   temperature?: number;
   responseFormat?: "json" | "text";
@@ -8,7 +93,7 @@ interface ReasoningRequest {
 
 interface ReasoningResponse {
   reasoning: string;
-  decision?: any;
+  decision?: JsonRecord | null;
   confidence?: number;
   model_used: string;
 }
@@ -86,8 +171,19 @@ async function callLLM(
     throw new Error(`LLM API error: ${response.status} - ${error}`);
   }
 
-  const data = await response.json();
-  return data.choices[0].message.content;
+  const data: unknown = await response.json();
+  if (!isRecord(data) || !Array.isArray(data.choices)) {
+    throw new Error("LLM API returned an invalid response");
+  }
+  const firstChoice = data.choices[0];
+  if (!isRecord(firstChoice) || !isRecord(firstChoice.message)) {
+    throw new Error("LLM API response is missing a message");
+  }
+  const content = getMessageText(firstChoice.message.content);
+  if (content === null) {
+    throw new Error("LLM API response message has no text content");
+  }
+  return content;
 }
 
 /**
@@ -110,11 +206,11 @@ export async function reasonAboutDecision(
       model: LLM_CONFIG.model,
     });
 
-    let parsed: any;
+    let parsed: JsonRecord;
     if (request.responseFormat === "json") {
       try {
-        parsed = JSON.parse(response);
-      } catch (e) {
+        parsed = parseJsonRecord(response);
+      } catch {
         // If JSON parsing fails, wrap the response
         parsed = { reasoning: response };
       }
@@ -123,9 +219,9 @@ export async function reasonAboutDecision(
     }
 
     return {
-      reasoning: parsed.reasoning || response,
-      decision: parsed.decision || parsed,
-      confidence: parsed.confidence || 0.8,
+      reasoning: getString(parsed, "reasoning", response),
+      decision: isRecord(parsed.decision) ? parsed.decision : parsed,
+      confidence: getNumber(parsed, "confidence", 0.8),
       model_used: "claude-4.5",
     };
   } catch (error) {
@@ -145,11 +241,11 @@ export async function reasonAboutDecision(
         model: FALLBACK_MODEL,
       });
 
-      let parsed: any;
+      let parsed: JsonRecord;
       if (request.responseFormat === "json") {
         try {
-          parsed = JSON.parse(response);
-        } catch (e) {
+          parsed = parseJsonRecord(response);
+        } catch {
           // If JSON parsing fails, wrap the response
           parsed = { reasoning: response };
         }
@@ -160,9 +256,9 @@ export async function reasonAboutDecision(
       console.log("[LLM Reasoning] GPT-4o mini fallback succeeded");
 
       return {
-        reasoning: parsed.reasoning || response,
-        decision: parsed.decision || parsed,
-        confidence: parsed.confidence || 0.75, // Slightly lower confidence for fallback
+        reasoning: getString(parsed, "reasoning", response),
+        decision: isRecord(parsed.decision) ? parsed.decision : parsed,
+        confidence: getNumber(parsed, "confidence", 0.75), // Slightly lower confidence for fallback
         model_used: "gpt-4o-mini",
       };
     } catch (fallbackError) {
@@ -185,20 +281,35 @@ export async function reasonAboutDecision(
 /**
  * Reason about donor selection with full context
  */
+interface DonorSelectionCandidate extends MatchedDonor {
+  firstName?: string;
+  lastName?: string;
+  reliability_rate?: number;
+  health_score?: number;
+  lastDonationDays?: number;
+}
+
+interface DonorSelectionAlert {
+  bloodType: string;
+  unitsNeeded: string | number;
+  latitude: string | null;
+  longitude: string | null;
+}
+
 export async function reasonAboutDonorSelection(
-  candidates: any[],
-  alert: any,
+  candidates: DonorSelectionCandidate[],
+  alert: DonorSelectionAlert,
   context: {
     urgency: string;
     timeOfDay: string;
-    historicalPatterns?: any;
+    historicalPatterns?: unknown;
     trafficConditions?: string;
   }
 ): Promise<{
-  selectedDonor: any;
+  selectedDonor: DonorSelectionCandidate;
   reasoning: string;
   confidence: number;
-  alternatives?: any[];
+  alternatives?: string[];
   model_used: string;
 }> {
   const prompt = `You are a blood donation coordinator agent. Analyze this scenario and select the optimal donor:
@@ -273,15 +384,25 @@ Respond in JSON format:
   const decision =
     result.decision ||
     (typeof result.reasoning === "string"
-      ? JSON.parse(result.reasoning)
-      : result.reasoning);
+      ? parseJsonRecord(result.reasoning)
+      : {});
+  const selectedIndex = getNumber(decision, "selected_index", 0);
+  const alternativeConsiderations = getString(
+    decision,
+    "alternative_considerations",
+    ""
+  );
 
   return {
-    selectedDonor: candidates[decision.selected_index || 0],
-    reasoning: decision.reasoning || result.reasoning,
-    confidence: decision.confidence || result.confidence || 0.8,
-    alternatives: decision.alternative_considerations
-      ? [decision.alternative_considerations]
+    selectedDonor: candidates[selectedIndex] || candidates[0],
+    reasoning: getString(decision, "reasoning", result.reasoning),
+    confidence: getNumber(
+      decision,
+      "confidence",
+      result.confidence || 0.8
+    ),
+    alternatives: alternativeConsiderations
+      ? [alternativeConsiderations]
       : undefined,
     model_used: result.model_used,
   };
@@ -295,7 +416,10 @@ export async function reasonAboutUrgency(context: {
   currentUnits: number;
   daysRemaining: number;
   dailyUsage: number;
-  hospitalContext?: any;
+  hospitalContext?: Pick<
+    HospitalRegistration,
+    "hospitalName" | "operationalStatus"
+  >;
   timeOfDay?: string;
 }): Promise<{
   urgency: "low" | "medium" | "high" | "critical";
@@ -352,13 +476,17 @@ Respond in JSON:
     responseFormat: "json",
   });
 
-  const decision = result.decision || JSON.parse(result.reasoning);
+  const decision = result.decision || parseJsonRecord(result.reasoning);
 
   return {
-    urgency: decision.urgency || "medium",
-    reasoning: decision.reasoning || result.reasoning,
-    priorityScore: decision.priority_score || 50,
-    recommendedAction: decision.recommended_action || "Monitor and prepare",
+    urgency: normalizeUrgency(getString(decision, "urgency", "medium")),
+    reasoning: getString(decision, "reasoning", result.reasoning),
+    priorityScore: getNumber(decision, "priority_score", 50),
+    recommendedAction: getString(
+      decision,
+      "recommended_action",
+      "Monitor and prepare"
+    ),
   };
 }
 
@@ -366,15 +494,17 @@ Respond in JSON:
  * Reason about inventory source selection
  */
 export async function reasonAboutInventorySelection(
-  rankedUnits: any[],
+  rankedUnits: RankedInventoryUnit[],
   request: {
     bloodType: string;
     unitsNeeded: number;
     urgency: string;
-    requestingHospital: any;
+    requestingHospital?:
+      | Pick<HospitalRegistration, "hospitalName">
+      | null;
   }
 ): Promise<{
-  selectedSource: any;
+  selectedSource: RankedInventoryUnit;
   reasoning: string;
   confidence: number;
   transportStrategy: string;
@@ -432,13 +562,22 @@ Respond in JSON:
     responseFormat: "json",
   });
 
-  const decision = result.decision || JSON.parse(result.reasoning);
+  const decision = result.decision || parseJsonRecord(result.reasoning);
+  const selectedIndex = getNumber(decision, "selected_index", 0);
 
   return {
-    selectedSource: rankedUnits[decision.selected_index || 0],
-    reasoning: decision.reasoning || result.reasoning,
-    confidence: decision.confidence || result.confidence || 0.8,
-    transportStrategy: decision.transport_strategy || "Standard courier",
+    selectedSource: rankedUnits[selectedIndex] || rankedUnits[0],
+    reasoning: getString(decision, "reasoning", result.reasoning),
+    confidence: getNumber(
+      decision,
+      "confidence",
+      result.confidence || 0.8
+    ),
+    transportStrategy: getString(
+      decision,
+      "transport_strategy",
+      "Standard courier"
+    ),
   };
 }
 
@@ -446,8 +585,8 @@ Respond in JSON:
  * Reason about transport method and route
  */
 export async function reasonAboutTransport(context: {
-  fromHospital: any;
-  toHospital: any;
+  fromHospital: Pick<HospitalRegistration, "hospitalName"> | null;
+  toHospital: Pick<HospitalRegistration, "hospitalName"> | null;
   distanceKm: number;
   urgency: string;
   bloodType: string;
@@ -507,14 +646,29 @@ Respond in JSON:
     responseFormat: "json",
   });
 
-  const decision = result.decision || JSON.parse(result.reasoning);
+  const decision = result.decision || parseJsonRecord(result.reasoning);
+  const requestedMethod = getString(decision, "method", "courier");
+  const method =
+    requestedMethod === "ambulance" ||
+    requestedMethod === "scheduled" ||
+    requestedMethod === "courier"
+      ? requestedMethod
+      : "courier";
 
   return {
-    method: decision.method || "courier",
-    reasoning: decision.reasoning || result.reasoning,
-    etaMinutes: decision.eta_minutes || 60,
-    coldChainCompliant: decision.cold_chain_compliant !== false,
-    routeOptimization: decision.route_optimization || "Standard route",
+    method,
+    reasoning: getString(decision, "reasoning", result.reasoning),
+    etaMinutes: getNumber(decision, "eta_minutes", 60),
+    coldChainCompliant: getBoolean(
+      decision,
+      "cold_chain_compliant",
+      true
+    ),
+    routeOptimization: getString(
+      decision,
+      "route_optimization",
+      "Standard route"
+    ),
   };
 }
 
@@ -581,14 +735,23 @@ Respond in JSON:
     responseFormat: "json",
   });
 
-  const decision = result.decision || JSON.parse(result.reasoning);
+  const decision = result.decision || parseJsonRecord(result.reasoning);
 
   return {
-    shouldTriggerInventory: decision.should_trigger_inventory || false,
-    reasoning: decision.reasoning || result.reasoning,
+    shouldTriggerInventory: getBoolean(
+      decision,
+      "should_trigger_inventory",
+      false
+    ),
+    reasoning: getString(decision, "reasoning", result.reasoning),
     notificationStrategy:
-      decision.notification_strategy || "Notify top 10 donors",
-    expectedResponseRate: decision.expected_response_rate || 0.3,
+      getString(
+        decision,
+        "notification_strategy",
+        "Notify top 10 donors"
+      ),
+    expectedResponseRate:
+      getNumber(decision, "expected_response_rate", 0.3) || 0.3,
   };
 }
 
@@ -596,12 +759,8 @@ Respond in JSON:
  * Reason about donor eligibility with LLM for edge cases and explanations
  */
 export async function reasonAboutEligibility(
-  eligibilityResult: {
-    passed: boolean;
-    failedCriteria: any[];
-    allCriteria: any[];
-  },
-  donor: any
+  eligibilityResult: EligibilityCheckResult,
+  donor: DonorRegistration
 ): Promise<{
   finalDecision: "approved" | "rejected" | "needs_review";
   reasoning: string;
@@ -675,15 +834,29 @@ Respond in JSON:
       "You are a medical eligibility expert for blood donation. You must prioritize safety while providing helpful guidance. Never override hard medical requirements, but identify edge cases that may need human review.",
   });
 
-  const decision = result.decision || JSON.parse(result.reasoning);
+  const decision = result.decision || parseJsonRecord(result.reasoning);
+  const requestedDecision = getString(
+    decision,
+    "final_decision",
+    eligibilityResult.passed ? "approved" : "rejected"
+  );
+  const finalDecision =
+    requestedDecision === "approved" ||
+    requestedDecision === "rejected" ||
+    requestedDecision === "needs_review"
+      ? requestedDecision
+      : eligibilityResult.passed
+      ? "approved"
+      : "rejected";
 
   return {
-    finalDecision:
-      decision.final_decision ||
-      (eligibilityResult.passed ? "approved" : "rejected"),
-    reasoning: decision.reasoning || result.reasoning,
-    edgeCases: decision.edge_cases || [],
-    recommendations: decision.recommendations || [],
-    confidence: decision.confidence || result.confidence || 0.9,
+    finalDecision,
+    reasoning: getString(decision, "reasoning", result.reasoning),
+    edgeCases: getStringArray(decision, "edge_cases"),
+    recommendations: getStringArray(decision, "recommendations"),
+    confidence:
+      getNumber(decision, "confidence", result.confidence || 0.9) ||
+      result.confidence ||
+      0.9,
   };
 }

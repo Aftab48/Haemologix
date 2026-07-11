@@ -103,7 +103,10 @@ export default function HospitalRegistration() {
   const totalSteps = 6;
   const progress = ((currentStep - 1) / totalSteps) * 100;
 
-  const updateFormData = (field: keyof HospitalData, value: any) => {
+  const updateFormData = <K extends keyof HospitalData>(
+    field: K,
+    value: HospitalData[K]
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear error when user starts typing
@@ -435,7 +438,7 @@ export default function HospitalRegistration() {
                       id="sbtc-noc"
                       checked={formData.sbtcNoc}
                       onCheckedChange={(checked) =>
-                        updateFormData("sbtcNoc", checked)
+                        updateFormData("sbtcNoc", checked === true)
                       }
                     />
                     <Label htmlFor="sbtc-noc">NOC from State Blood Transfusion Council (SBTC) *</Label>
@@ -484,7 +487,7 @@ export default function HospitalRegistration() {
                         id="nbtc-compliance"
                         checked={formData.nbtcCompliance}
                         onCheckedChange={(checked) =>
-                          updateFormData("nbtcCompliance", checked)
+                          updateFormData("nbtcCompliance", checked === true)
                         }
                       />
                       <Label htmlFor="nbtc-compliance">
@@ -501,7 +504,7 @@ export default function HospitalRegistration() {
                         id="naco-compliance"
                         checked={formData.nacoCompliance}
                         onCheckedChange={(checked) =>
-                          updateFormData("nacoCompliance", checked)
+                          updateFormData("nacoCompliance", checked === true)
                         }
                       />
                       <Label htmlFor="naco-compliance">
@@ -691,7 +694,7 @@ export default function HospitalRegistration() {
                         id="cold-storage"
                         checked={formData.coldStorageFacility}
                         onCheckedChange={(checked) =>
-                          updateFormData("coldStorageFacility", checked)
+                          updateFormData("coldStorageFacility", checked === true)
                         }
                       />
                       <Label htmlFor="cold-storage" className="">
@@ -709,7 +712,7 @@ export default function HospitalRegistration() {
                         id="temp-standards"
                         checked={formData.temperatureStandards}
                         onCheckedChange={(checked) =>
-                          updateFormData("temperatureStandards", checked)
+                          updateFormData("temperatureStandards", checked === true)
                         }
                       />
                       <Label htmlFor="temp-standards" className="">
@@ -727,7 +730,7 @@ export default function HospitalRegistration() {
                         id="testing-labs"
                         checked={formData.testingLabsOnsite}
                         onCheckedChange={(checked) =>
-                          updateFormData("testingLabsOnsite", checked)
+                          updateFormData("testingLabsOnsite", checked === true)
                         }
                       />
                       <Label htmlFor="testing-labs" className="">
@@ -761,7 +764,7 @@ export default function HospitalRegistration() {
                         id="medical-officer"
                         checked={formData.qualifiedMedicalOfficer}
                         onCheckedChange={(checked) =>
-                          updateFormData("qualifiedMedicalOfficer", checked)
+                          updateFormData("qualifiedMedicalOfficer", checked === true)
                         }
                       />
                       <Label htmlFor="medical-officer" className="">
@@ -831,7 +834,7 @@ export default function HospitalRegistration() {
                         id="inventory-reporting"
                         checked={formData.inventoryReporting}
                         onCheckedChange={(checked) =>
-                          updateFormData("inventoryReporting", checked)
+                          updateFormData("inventoryReporting", checked === true)
                         }
                       />
                       <Label
@@ -853,7 +856,7 @@ export default function HospitalRegistration() {
                         id="realtime-updates"
                         checked={formData.realTimeUpdates}
                         onCheckedChange={(checked) =>
-                          updateFormData("realTimeUpdates", checked)
+                          updateFormData("realTimeUpdates", checked === true)
                         }
                       />
                       <Label htmlFor="realtime-updates" className="">
@@ -869,7 +872,7 @@ export default function HospitalRegistration() {
                       id="emergency-response"
                       checked={formData.emergencyResponseCommitment}
                       onCheckedChange={(checked) =>
-                        updateFormData("emergencyResponseCommitment", checked)
+                        updateFormData("emergencyResponseCommitment", checked === true)
                       }
                     />
                     <Label htmlFor="emergency-response" className="">
@@ -921,7 +924,7 @@ export default function HospitalRegistration() {
                         id="data-handling"
                         checked={formData.dataHandlingCommitment}
                         onCheckedChange={(checked) =>
-                          updateFormData("dataHandlingCommitment", checked)
+                          updateFormData("dataHandlingCommitment", checked === true)
                         }
                       />
                       <Label htmlFor="data-handling" className="">
@@ -939,7 +942,7 @@ export default function HospitalRegistration() {
                         id="confidentiality"
                         checked={formData.confidentialityAgreement}
                         onCheckedChange={(checked) =>
-                          updateFormData("confidentialityAgreement", checked)
+                          updateFormData("confidentialityAgreement", checked === true)
                         }
                       />
                       <Label htmlFor="confidentiality" className="">
@@ -1234,7 +1237,7 @@ export default function HospitalRegistration() {
                         id="mou-acceptance"
                         checked={formData.mouAcceptance}
                         onCheckedChange={(checked) =>
-                          updateFormData("mouAcceptance", checked)
+                          updateFormData("mouAcceptance", checked === true)
                         }
                         className="mt-1"
                       />
@@ -1272,7 +1275,7 @@ export default function HospitalRegistration() {
                       id="terms-accepted"
                       checked={formData.termsAccepted}
                       onCheckedChange={(checked) =>
-                        updateFormData("termsAccepted", checked)
+                        updateFormData("termsAccepted", checked === true)
                       }
                       className="mt-1"
                     />
@@ -1307,7 +1310,7 @@ export default function HospitalRegistration() {
                       id="data-processing-consent"
                       checked={formData.dataProcessingConsent}
                       onCheckedChange={(checked) =>
-                        updateFormData("dataProcessingConsent", checked)
+                        updateFormData("dataProcessingConsent", checked === true)
                       }
                       className="mt-1"
                     />
@@ -1336,7 +1339,7 @@ export default function HospitalRegistration() {
                       id="network-participation"
                       checked={formData.networkParticipationAgreement}
                       onCheckedChange={(checked) =>
-                        updateFormData("networkParticipationAgreement", checked)
+                        updateFormData("networkParticipationAgreement", checked === true)
                       }
                       className="mt-1"
                     />

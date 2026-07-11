@@ -8,6 +8,18 @@ import { AgentType, UrgencyLevel } from "@prisma/client";
 import { publishEvent, ShortageRequestEvent } from "./eventBus";
 import { reasonAboutUrgency } from "./llmReasoning";
 
+type Urgency = "low" | "medium" | "high" | "critical";
+
+function normalizeUrgency(value: string): Urgency {
+  const normalized = value.toLowerCase();
+  return normalized === "low" ||
+    normalized === "medium" ||
+    normalized === "high" ||
+    normalized === "critical"
+    ? normalized
+    : "medium";
+}
+
 export interface InventoryCheck {
   hospitalId: string;
   bloodType: string;
@@ -31,7 +43,7 @@ function calculateUrgency(
   bloodType: string,
   daysRemaining: number,
   currentUnits: number
-): "low" | "medium" | "high" | "critical" {
+): Urgency {
   // Blood type rarity factor
   const rarityScore: Record<string, number> = {
     "AB-": 10, // Rarest
@@ -225,7 +237,7 @@ export async function processAlert(alertId: string): Promise<{
     });
 
     // Use LLM reasoning to assess urgency (AGENTIC AI)
-    let urgency: "low" | "medium" | "high" | "critical";
+    let urgency: Urgency;
     let priorityScore: number;
     let urgencyReasoning: string;
     let recommendedAction: string;
@@ -260,7 +272,7 @@ export async function processAlert(alertId: string): Promise<{
         error
       );
       // Fallback to algorithmic assessment
-      urgency = alert.urgency.toLowerCase() as any;
+      urgency = normalizeUrgency(alert.urgency);
       priorityScore = calculatePriorityScore(
         urgency,
         alert.bloodType,
@@ -299,7 +311,7 @@ export async function processAlert(alertId: string): Promise<{
     console.log("[HospitalAgent] Publishing event...");
     const eventId = await publishEvent(
       "shortage.request.v1",
-      eventPayload as any,
+      eventPayload,
       "hospital"
     );
     console.log(`[HospitalAgent] Event published: ${eventId}`);
@@ -463,7 +475,7 @@ export async function checkInventoryAndAutoAlert(
         urgency,
         unitsNeeded: String(unitsNeeded),
         searchRadius: String(
-          calculateSearchRadius(urgency.toLowerCase() as any)
+          calculateSearchRadius(urgency.toLowerCase())
         ),
         description: `Auto-detected critical shortage: ${currentTotal} units remaining (critical threshold: ${criticalThreshold})`,
         autoDetected: true, // Mark as auto-detected

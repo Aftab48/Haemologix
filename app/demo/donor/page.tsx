@@ -28,8 +28,7 @@ import {
   Settings,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import {
   BloodTypeFormat,
   calculateNextEligible,
@@ -52,53 +51,71 @@ import { getAllAvailableAlerts } from "@/lib/actions/alerts.actions";
 
 // Hardcoded demo identities (neondb donor uuid + Clerk user id)
 const DEMO_NEONDB_DONOR_ID = "4b9f499a-f928-4133-8dcb-378199d8418f";
-const DEMO_CLERK_USER_ID = "user_31gpGyFGjwX3jPTd4FLVN1jiVvf";
+interface DemoDonor {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  bloodGroup: string;
+  lastDonation?: string;
+  latitude?: string | null;
+  longitude?: string | null;
+}
+
+type DemoAlert = Awaited<
+  ReturnType<typeof getAllAvailableAlerts>
+>[number] & {
+  distance: string;
+  responded: boolean;
+  response?: "accept" | "decline";
+};
+
+function isFetchedDonor(value: unknown): value is {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  bloodGroup: string;
+  dateOfBirth: string | Date;
+  lastDonation?: string | Date | null;
+  latitude?: string | null;
+  longitude?: string | null;
+} {
+  if (typeof value !== "object" || value === null) return false;
+  const donor = value as Record<string, unknown>;
+  return (
+    typeof donor.id === "string" &&
+    typeof donor.firstName === "string" &&
+    typeof donor.lastName === "string" &&
+    typeof donor.email === "string" &&
+    typeof donor.phone === "string" &&
+    typeof donor.bloodGroup === "string" &&
+    (typeof donor.dateOfBirth === "string" ||
+      donor.dateOfBirth instanceof Date)
+  );
+}
 
 /** Fallback donor when DB has no record for demo id */
-function getFallbackDonor(): DonorData & { id: string } {
+function getFallbackDonor(): DemoDonor {
   return {
     id: DEMO_NEONDB_DONOR_ID,
     firstName: "Demo",
     lastName: "Donor",
     email: "demo@haemologix.in",
     phone: "+910000000000",
-    dateOfBirth: "",
-    gender: "Other",
-    address: "Demo Address",
-    emergencyContact: "Demo Contact",
-    emergencyPhone: "+910000000001",
-    weight: "70",
-    height: "170",
-    bmi: "24.2",
     bloodGroup: "O+",
     lastDonation: undefined,
-    donationCount: "0",
-    neverDonated: false,
-    recentVaccinations: false,
-    vaccinationDetails: "",
-    medicalConditions: "",
-    medications: "",
-    hivTest: "",
-    hepatitisBTest: "",
-    hepatitisCTest: "",
-    syphilisTest: "",
-    malariaTest: "",
-    hemoglobin: "",
-    plateletCount: "",
-    wbcCount: "",
-    dataProcessingConsent: true,
-    medicalScreeningConsent: true,
-    termsAccepted: true,
-    idProof: null,
   };
 }
 
 export default function DonorDashboard() {
-  const [user, setUser] = useState<DonorData | null>(null);
+  const [user, setUser] = useState<DemoDonor | null>(null);
   const [isAvailable, setIsAvailable] = useState(true);
   const [activeTab, setActiveTab] = useState("alerts");
   const [isLoadingUser, setIsLoadingUser] = useState(true);
-  const [isLoadingAlerts, setIsLoadingAlerts] = useState(true);
+  const [, setIsLoadingAlerts] = useState(true);
 
   // useEffect(() => {
   //   const fetchUser = async () => {
@@ -137,18 +154,20 @@ export default function DonorDashboard() {
       try {
         setIsLoadingUser(true);
         const userData = await fetchUserDataById(DEMO_NEONDB_DONOR_ID, "donor");
-        if (userData && userData.userType === "donor") {
-          const donorData = userData as any;
+        if (isFetchedDonor(userData)) {
           setUser({
-            ...donorData,
-            id: donorData.id ?? DEMO_NEONDB_DONOR_ID,
-            dateOfBirth: donorData.dateOfBirth
-              ? new Date(donorData.dateOfBirth).toISOString()
-              : "",
-            lastDonation: donorData.lastDonation
-              ? new Date(donorData.lastDonation).toISOString()
+            id: userData.id,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            email: userData.email,
+            phone: userData.phone,
+            bloodGroup: userData.bloodGroup,
+            latitude: userData.latitude,
+            longitude: userData.longitude,
+            lastDonation: userData.lastDonation
+              ? new Date(userData.lastDonation).toISOString()
               : undefined,
-          } as DonorData);
+          });
         } else {
           setUser(getFallbackDonor());
         }
@@ -167,7 +186,7 @@ export default function DonorDashboard() {
     "All" | "Blood" | "Platelets" | "Plasma"
   >("All");
 
-  const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
+  const [activeAlerts, setActiveAlerts] = useState<DemoAlert[]>([]);
 
   /** Haversine formula — returns distance in km */
   function calculateDistance(
@@ -197,20 +216,19 @@ export default function DonorDashboard() {
         const alerts = await getAllAvailableAlerts();
 
         // Enrich with distance and responded status
-        const enriched = alerts.map((alert: any) => {
+        const enriched = alerts.map((alert) => {
           let distance = "0 km";
           let responded = false;
 
           // Calculate distance if donor has coordinates
-          const donorUser = user as any;
           if (
             alert.latitude &&
             alert.longitude &&
-            donorUser?.latitude &&
-            donorUser?.longitude
+            user?.latitude &&
+            user?.longitude
           ) {
-            const lat1 = parseFloat(donorUser.latitude);
-            const lon1 = parseFloat(donorUser.longitude);
+            const lat1 = parseFloat(user.latitude);
+            const lon1 = parseFloat(user.longitude);
             const lat2 = parseFloat(alert.latitude);
             const lon2 = parseFloat(alert.longitude);
             const dist = calculateDistance(lat1, lon1, lat2, lon2);
@@ -220,7 +238,7 @@ export default function DonorDashboard() {
           // Check if this demo donor has already responded
           if (alert.responses && Array.isArray(alert.responses)) {
             responded = alert.responses.some(
-              (r: any) => r.donorId === DEMO_NEONDB_DONOR_ID
+              (response) => response.donorId === DEMO_NEONDB_DONOR_ID
             );
           }
 
@@ -242,7 +260,7 @@ export default function DonorDashboard() {
     return () => clearInterval(interval);
   }, [user]);
 
-  const [donationHistory, setDonationHistory] = useState([
+  const [donationHistory] = useState([
     {
       id: 1,
       date: "2024-01-15",
@@ -364,7 +382,7 @@ export default function DonorDashboard() {
       status: "Cancelled",
     },
   ]);
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     totalDonations: 12,
     livesSaved: 36,
     eligibilityStatus: "Eligible",
@@ -375,7 +393,7 @@ export default function DonorDashboard() {
   >(null);
 
   const handleAlertResponse = async (alertId: string | number, status: "accept" | "decline") => {
-    const donorId = (user as DonorData & { id?: string })?.id ?? DEMO_NEONDB_DONOR_ID;
+    const donorId = user?.id ?? DEMO_NEONDB_DONOR_ID;
     setButtonResponse(status);
     setActiveAlerts((alerts) =>
       alerts.map((alert) =>
@@ -426,10 +444,13 @@ export default function DonorDashboard() {
 
   return (
     <GradientBackground>
-      <img
+      <Image
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
+        width={1200}
+        height={800}
+        unoptimized
         className="w-full h-full object-cover absolute mix-blend-overlay opacity-20 z-0"
-        alt="Blood donation background"
+        alt=""
       />
 
       <div className="flex min-h-screen relative z-10">

@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { AgentType } from "@prisma/client";
-import { publishEvent } from "./eventBus";
+import type { HospitalRegistration } from "@prisma/client";
+import { parseShortageRequestEvent, publishEvent } from "./eventBus";
 import { calculateDistance } from "./donorAgent";
 import { reasonAboutInventorySelection } from "./llmReasoning";
 
@@ -114,7 +115,7 @@ function calculateQuantityScore(
  * Calculate feasibility score (0-100) - based on hospital participation
  * Weight: 10%
  */
-function calculateFeasibilityScore(hospital: any): number {
+function calculateFeasibilityScore(hospital: HospitalRegistration): number {
   // Check if hospital is in network and has sharing agreement
   if (!hospital.networkParticipationAgreement) return 50;
   if (!hospital.coldStorageFacility) return 70;
@@ -130,7 +131,7 @@ function scoreInventoryUnit(
   expiryDate: Date,
   hospitalUnits: number,
   unitsNeeded: number,
-  hospital: any
+  hospital: HospitalRegistration
 ): {
   proximity: number;
   expiry: number;
@@ -289,7 +290,7 @@ export async function processInventorySearch(requestId: string): Promise<{
         payload: {
           path: ["id"],
           equals: requestId,
-        } as any,
+        },
         type: "shortage.request.v1",
       },
     });
@@ -303,7 +304,10 @@ export async function processInventorySearch(requestId: string): Promise<{
       };
     }
 
-    const payload = shortageEvent.payload as any;
+    const payload = parseShortageRequestEvent(shortageEvent.payload);
+    if (!payload) {
+      throw new Error("Shortage event has an invalid payload");
+    }
     const bloodType = payload.blood_type;
     const unitsNeeded = payload.units_needed;
     const hospitalId = payload.hospital_id;

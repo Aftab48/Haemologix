@@ -4,14 +4,27 @@
  */
 
 import { db } from "@/db";
-import { AgentType } from "@prisma/client";
+import { AgentType, Prisma } from "@prisma/client";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export interface HistoricalPatterns {
+  totalDecisions: number;
+  successRate: number;
+  avgFulfillmentTime: number;
+  donorResponseRate: number;
+  avgResponseTime?: number;
+  commonFactors?: Record<string, number>;
+}
 
 export interface DecisionOutcome {
   decisionId: string;
   agentType: AgentType;
   requestId: string;
-  decision: any;
-  outcome: 'success' | 'failure' | 'partial';
+  decision: Prisma.JsonObject;
+  outcome: "success" | "failure" | "partial";
   outcomeDetails: {
     fulfillmentTime?: number; // minutes
     donorArrived?: boolean;
@@ -66,8 +79,9 @@ export async function getHistoricalPatterns(
     urgency?: string;
     timeOfDay?: string;
   }
-): Promise<any> {
+): Promise<HistoricalPatterns> {
   try {
+    void context;
     // Get recent decisions from this agent
     const recentDecisions = await db.agentDecision.findMany({
       where: {
@@ -77,14 +91,15 @@ export async function getHistoricalPatterns(
         },
       },
       take: 100,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     // Analyze patterns
-    const patterns: any = {
+    const patterns: HistoricalPatterns = {
       totalDecisions: recentDecisions.length,
       successRate: 0,
       avgFulfillmentTime: 0,
+      donorResponseRate: 0.3,
       commonFactors: {},
     };
 
@@ -93,14 +108,21 @@ export async function getHistoricalPatterns(
     let fulfillmentCount = 0;
 
     for (const decision of recentDecisions) {
-      const decisionData = decision.decision as any;
+      const decisionData = isRecord(decision.decision)
+        ? decision.decision
+        : {};
       
-      if (decisionData.outcome === 'success') {
+      if (decisionData.outcome === "success") {
         successCount++;
       }
       
-      if (decisionData.outcomeDetails?.fulfillmentTime) {
-        totalFulfillmentTime += decisionData.outcomeDetails.fulfillmentTime;
+      const outcomeDetails = decisionData.outcomeDetails;
+      if (
+        isRecord(outcomeDetails) &&
+        typeof outcomeDetails.fulfillmentTime === "number" &&
+        outcomeDetails.fulfillmentTime
+      ) {
+        totalFulfillmentTime += outcomeDetails.fulfillmentTime;
         fulfillmentCount++;
       }
     }
@@ -148,13 +170,13 @@ export async function learnFromOutcomes(
   agentType: AgentType
 ): Promise<{
   insights: string[];
-  recommendedAdjustments: any;
+  recommendedAdjustments: Record<string, number>;
 }> {
   try {
     const patterns = await getHistoricalPatterns(agentType, {});
 
     const insights: string[] = [];
-    const adjustments: any = {};
+    const adjustments: Record<string, number> = {};
 
     // Analyze success rate
     if (patterns.successRate < 0.7) {
@@ -191,6 +213,7 @@ export async function learnFromOutcomes(
  * Get traffic conditions based on time of day
  */
 export function getTrafficConditions(timeOfDay: string): string {
+  void timeOfDay;
   const hour = new Date().getHours();
   
   if (hour >= 7 && hour <= 9) {

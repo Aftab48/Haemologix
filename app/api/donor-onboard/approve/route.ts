@@ -40,12 +40,15 @@ export async function POST(req: NextRequest) {
       message: "Donor approved successfully",
       donor: result.donor,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("[API] Error approving donor:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to approve donor",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to approve donor",
       },
       { status: 500 }
     );

@@ -14,7 +14,7 @@ interface LLMReasoningCardProps {
   eventType: string;
   timestamp: string;
   requestId?: string;
-  decision?: any;
+  decision?: unknown;
 }
 
 export default function LLMReasoningCard({
@@ -136,7 +136,7 @@ export default function LLMReasoningCard({
           </div>
 
           {/* Expanded Details */}
-          {isExpanded && decision && (
+          {isExpanded && decision != null && (
             <div className="space-y-2 pt-2 border-t border-white/10">
               <h4 className="text-sm font-semibold text-text-dark">Decision Details</h4>
               <div className="bg-black/20 rounded-lg p-3 overflow-x-auto">

@@ -30,6 +30,7 @@ import { updateDonorRegistration } from "@/lib/actions/donor.actions";
 import { sendDonorRegistrationEmail } from "@/lib/actions/mails.actions";
 import { sendDonorRegistrationSMS } from "@/lib/actions/sms.actions";
 import GradientBackground from "@/components/GradientBackground";
+import Image from "next/image";
 
 const initialFormData: DonorData = {
   firstName: "",
@@ -78,8 +79,9 @@ export default function DonorEditPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
-  const [donorInfo, setDonorInfo] = useState<any>(null);
-  const [verificationErrors, setVerificationErrors] = useState<any[]>([]);
+  const [donorInfo, setDonorInfo] = useState<
+    Awaited<ReturnType<typeof fetchDonorById>>
+  >(null);
 
   const totalSteps = 6;
   const progress = ((currentStep - 1) / totalSteps) * 100;
@@ -167,7 +169,10 @@ export default function DonorEditPage() {
     return "";
   };
 
-  const updateFormData = (field: keyof DonorData, value: any) => {
+  const updateFormData = <K extends keyof DonorData>(
+    field: K,
+    value: DonorData[K]
+  ) => {
     setFormData((prev) => {
       const updated = { ...prev, [field]: value };
 
@@ -303,10 +308,13 @@ export default function DonorEditPage() {
   if (isSubmitted) {
     return (
       <GradientBackground className="flex items-center justify-center p-4">
-        <img
+        <Image
           src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
+          width={1200}
+          height={800}
+          unoptimized
           className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
-          alt="Background"
+          alt=""
         />
 
         <Card className="w-full max-w-2xl glass-morphism border border-accent/30 card-hover text-gray-900 relative z-10">
@@ -373,10 +381,13 @@ export default function DonorEditPage() {
 
   return (
     <GradientBackground className="p-4">
-      <img
+      <Image
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
+        width={1200}
+        height={800}
+        unoptimized
         className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
-        alt="Background"
+        alt=""
       />
 
       <div className="container mx-auto max-w-4xl relative z-10">
@@ -719,7 +730,7 @@ export default function DonorEditPage() {
                     checked={formData.neverDonated || false}
                     onChange={(e) => {
                       const checked = e.target.checked;
-                      updateFormData("neverDonated", checked);
+                      updateFormData("neverDonated", checked === true);
                       if (checked) {
                         updateFormData("lastDonation", "");
                         updateFormData("donationCount", "");
@@ -1101,7 +1112,9 @@ export default function DonorEditPage() {
                     <Checkbox
                       id="consent-data"
                       checked={formData.dataProcessingConsent}
-                      onCheckedChange={(checked) => updateFormData("dataProcessingConsent", checked)}
+                      onCheckedChange={(checked) =>
+                        updateFormData("dataProcessingConsent", checked === true)
+                      }
                       className="border-white/30 data-[state=checked]:bg-yellow-600 data-[state=checked]:border-yellow-600 mt-1"
                     />
                     <div className="space-y-1">
@@ -1121,7 +1134,9 @@ export default function DonorEditPage() {
                     <Checkbox
                       id="consent-medical"
                       checked={formData.medicalScreeningConsent}
-                      onCheckedChange={(checked) => updateFormData("medicalScreeningConsent", checked)}
+                      onCheckedChange={(checked) =>
+                        updateFormData("medicalScreeningConsent", checked === true)
+                      }
                       className="border-white/30 data-[state=checked]:bg-yellow-600 data-[state=checked]:border-yellow-600 mt-1"
                     />
                     <div className="space-y-1">
@@ -1141,7 +1156,9 @@ export default function DonorEditPage() {
                     <Checkbox
                       id="terms-conditions"
                       checked={formData.termsAccepted}
-                      onCheckedChange={(checked) => updateFormData("termsAccepted", checked)}
+                      onCheckedChange={(checked) =>
+                        updateFormData("termsAccepted", checked === true)
+                      }
                       className="border-white/30 data-[state=checked]:bg-yellow-600 data-[state=checked]:border-yellow-600 mt-1"
                     />
                     <div className="space-y-1">

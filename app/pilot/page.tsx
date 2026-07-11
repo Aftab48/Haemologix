@@ -11,7 +11,6 @@ import {
   Bell,
   DollarSign,
   FileText,
-  QrCode,
   CheckCircle2,
   ArrowRight,
   Heart,
@@ -106,8 +105,7 @@ export default function PilotPage() {
     };
 
     trackPageView();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, [trackEvent]);
   const [formData, setFormData] = useState<PilotFormData>({
     hospitalName: "",
     contactPerson: "",
@@ -195,7 +193,7 @@ export default function PilotPage() {
         });
         trackEvent("form_submission", { status: "error", error: data.error });
       }
-    } catch (error) {
+    } catch {
       setSubmitStatus({
         type: "error",
         message: "An error occurred. Please try again later.",

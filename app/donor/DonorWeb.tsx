@@ -42,11 +42,24 @@ import Image from "next/image";
 import GradientBackground from "@/components/GradientBackground";
 import { Loader2 } from "lucide-react";
 
+type DashboardDonor = DonorData & {
+  latitude?: string | null;
+  longitude?: string | null;
+};
+
+type AvailableAlert = Awaited<
+  ReturnType<typeof getAllAvailableAlerts>
+>[number] & {
+  distance: string;
+  responded: boolean;
+  response?: "accept" | "decline";
+};
+
 function DonorWebDashboard() {
   const { user: loggedInUser } = useUser();
   const router = useRouter();
-  const [dbUser, setDbUser] = useState<any>(null);
-  const [user, setUser] = useState<DonorData | null>(null);
+  const [dbUser, setDbUser] = useState<CurrentUserResponse | null>(null);
+  const [user, setUser] = useState<DashboardDonor | null>(null);
   const [isAvailable, setIsAvailable] = useState(true);
   const [alertsLoading, setAlertsLoading] = useState(true);
 
@@ -60,7 +73,7 @@ function DonorWebDashboard() {
 
         if (res.role === "DONOR") {
           // Check if user is approved
-          if (res.user && (res.user as any).status !== "APPROVED") {
+          if (res.user.status !== "APPROVED") {
             router.push("/waitlist");
             return;
           }
@@ -73,7 +86,15 @@ function DonorWebDashboard() {
             lastDonation: res.user.lastDonation
               ? formatLastActivity(res.user.lastDonation)
               : undefined,
-          } as DonorData & { id?: string });
+            latitude:
+              "latitude" in res.user && typeof res.user.latitude === "string"
+                ? res.user.latitude
+                : undefined,
+            longitude:
+              "longitude" in res.user && typeof res.user.longitude === "string"
+                ? res.user.longitude
+                : undefined,
+          });
         } else {
           setUser(null);
         }
@@ -87,7 +108,7 @@ function DonorWebDashboard() {
     fetchUser();
   }, [loggedInUser, router]);
 
-  const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
+  const [activeAlerts, setActiveAlerts] = useState<AvailableAlert[]>([]);
 
   // Fetch active alerts
   useEffect(() => {
@@ -97,10 +118,10 @@ function DonorWebDashboard() {
       setAlertsLoading(true);
       try {
         const alerts = await getAllAvailableAlerts();
-        const donorId = (user as any)?.id || dbUser?.user?.id;
+        const donorId = user?.id || dbUser?.user?.id;
 
         // Calculate distance and check if donor has responded
-        const alertsWithDistance = alerts.map((alert: any) => {
+        const alertsWithDistance = alerts.map((alert) => {
           let distance = "0 km";
           let responded = false;
 
@@ -108,11 +129,11 @@ function DonorWebDashboard() {
           if (
             alert.latitude &&
             alert.longitude &&
-            (user as any)?.latitude &&
-            (user as any)?.longitude
+            user?.latitude &&
+            user?.longitude
           ) {
-            const lat1 = parseFloat((user as any).latitude);
-            const lon1 = parseFloat((user as any).longitude);
+            const lat1 = parseFloat(user.latitude);
+            const lon1 = parseFloat(user.longitude);
             const lat2 = parseFloat(alert.latitude);
             const lon2 = parseFloat(alert.longitude);
 
@@ -134,7 +155,7 @@ function DonorWebDashboard() {
           // Check if donor has responded (this would need to check AlertResponse table)
           // For now, we'll check if there's a response in the alert object
           if (alert.responses && donorId) {
-            responded = alert.responses.some((r: any) => r.donorId === donorId);
+            responded = alert.responses.some((response) => response.donorId === donorId);
           }
 
           return {
@@ -159,7 +180,7 @@ function DonorWebDashboard() {
     const interval = setInterval(fetchAlerts, 30000);
     return () => clearInterval(interval);
   }, [user, dbUser]);
-  const [donationHistory, setDonationHistory] = useState([
+  const [donationHistory] = useState([
     {
       id: 1,
       date: "2024-01-15",
@@ -281,7 +302,7 @@ function DonorWebDashboard() {
       status: "Cancelled",
     },
   ]);
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     totalDonations: 12,
     livesSaved: 36,
     eligibilityStatus: "Eligible",
@@ -295,7 +316,7 @@ function DonorWebDashboard() {
     alertId: string,
     status: "accept" | "decline"
   ) => {
-    const donorId = (user as any)?.id || dbUser?.user?.id;
+    const donorId = user?.id || dbUser?.user?.id;
     if (!donorId) {
       console.error("Donor ID not found");
       return;
@@ -357,10 +378,13 @@ function DonorWebDashboard() {
 
   return (
     <GradientBackground className="flex flex-col">
-      <img
+      <Image
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
+        width={1200}
+        height={800}
+        unoptimized
         className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
-        alt="Blood donation background"
+        alt=""
       />
 
       {/* Header */}

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import Link from "next/link";
+import Image from "next/image";
 import GradientBackground from "@/components/GradientBackground";
 import Header from "@/components/Header";
 import ScrollReveal from "@/components/ScrollReveal";
@@ -110,9 +111,12 @@ export default function ContactPage() {
             <ScrollReveal direction="left">
               <div className="relative">
                 <div className="w-full h-96 lg:h-[500px] rounded-full overflow-hidden shadow-2xl border-8 border-slate-300/20">
-                  <img
+                  <Image
                     src="https://media.istockphoto.com/id/1212823663/photo/female-doctor-is-checking-blood-bags-in-llaboratory-at-hospital.jpg?s=612x612&w=0&k=20&c=5mp2sorTIgbIfQerDa8lXMJuypOS8FAwhIsGBqlFSeo="
                     alt="Blood donation medical professional"
+                    fill
+                    unoptimized
+                    sizes="(max-width: 1024px) 100vw, 50vw"
                     className="w-full h-full object-cover"
                   />
                 </div>

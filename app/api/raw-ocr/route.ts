@@ -55,8 +55,9 @@ export async function GET() {
       lines: rawText.split("\n").filter((l) => l.trim()),
       confidence: "Tesseract OCR",
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Extraction error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

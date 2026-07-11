@@ -5,6 +5,7 @@
  */
 
 import { db } from "@/db";
+import type { AgentEvent, Prisma } from "@prisma/client";
 
 export type AgentEventType =
   | "shortage.request.v1"
@@ -18,10 +19,6 @@ export type AgentEventType =
   | "verification.document.failed.v1"
   | "verification.eligibility.passed.v1"
   | "verification.eligibility.failed.v1";
-
-export interface EventPayload {
-  [key: string]: any;
-}
 
 export interface ShortageRequestEvent {
   type: "shortage.request.v1";
@@ -39,6 +36,131 @@ export interface ShortageRequestEvent {
     contact_phone?: string;
     reason?: string;
     estimated_procedure_time?: string;
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string" || value.trim() === "") return null;
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function toUrgency(
+  value: unknown
+): ShortageRequestEvent["urgency"] | null {
+  if (typeof value !== "string") return null;
+
+  switch (value.trim().toLowerCase()) {
+    case "low":
+      return "low";
+    case "medium":
+      return "medium";
+    case "high":
+      return "high";
+    case "critical":
+      return "critical";
+    default:
+      return null;
+  }
+}
+
+function getOptionalString(
+  value: Record<string, unknown>,
+  key: string
+): string | undefined {
+  return typeof value[key] === "string" ? value[key] : undefined;
+}
+
+function toNestedJsonValue(
+  value: unknown
+): Prisma.InputJsonValue | null | undefined {
+  if (value === null) return null;
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return value;
+  }
+  if (value instanceof Date) return value.toJSON();
+  if (Array.isArray(value)) {
+    return value.map((item) => toNestedJsonValue(item) ?? null);
+  }
+  if (isRecord(value)) {
+    return toInputJsonObject(value);
+  }
+  return undefined;
+}
+
+function toInputJsonObject(value: object): Prisma.InputJsonObject {
+  const result: Record<string, Prisma.InputJsonValue | null> = {};
+  for (const [key, item] of Object.entries(value)) {
+    const jsonValue = toNestedJsonValue(item);
+    if (jsonValue !== undefined) {
+      result[key] = jsonValue;
+    }
+  }
+  return result;
+}
+
+export function parseShortageRequestEvent(
+  value: unknown
+): ShortageRequestEvent | null {
+  if (
+    !isRecord(value) ||
+    !isRecord(value.location) ||
+    value.type !== "shortage.request.v1" ||
+    typeof value.id !== "string" ||
+    typeof value.hospital_id !== "string" ||
+    typeof value.blood_type !== "string"
+  ) {
+    return null;
+  }
+
+  const unitsNeeded = toFiniteNumber(value.units_needed);
+  const latitude = toFiniteNumber(value.location.lat);
+  const longitude = toFiniteNumber(value.location.lng);
+  const searchRadius = toFiniteNumber(value.search_radius_km);
+  const priorityScore = toFiniteNumber(value.priority_score);
+  const urgency = toUrgency(value.urgency);
+  if (
+    unitsNeeded === null ||
+    latitude === null ||
+    longitude === null ||
+    searchRadius === null ||
+    priorityScore === null ||
+    urgency === null
+  ) {
+    return null;
+  }
+
+  const metadata = isRecord(value.metadata) ? value.metadata : {};
+  return {
+    type: "shortage.request.v1",
+    id: value.id,
+    hospital_id: value.hospital_id,
+    blood_type: value.blood_type,
+    units_needed: unitsNeeded,
+    urgency,
+    location: { lat: latitude, lng: longitude },
+    search_radius_km: searchRadius,
+    expiry_time: getOptionalString(value, "expiry_time"),
+    priority_score: priorityScore,
+    metadata: {
+      contact_person: getOptionalString(metadata, "contact_person"),
+      contact_phone: getOptionalString(metadata, "contact_phone"),
+      reason: getOptionalString(metadata, "reason"),
+      estimated_procedure_time: getOptionalString(
+        metadata,
+        "estimated_procedure_time"
+      ),
+    },
   };
 }
 
@@ -65,16 +187,16 @@ export interface DonorResponseEvent {
 /**
  * Publish an event to the event bus
  */
-export async function publishEvent(
+export async function publishEvent<Payload extends object>(
   type: AgentEventType,
-  payload: EventPayload,
+  payload: Payload,
   agentType: string
 ): Promise<string> {
   try {
     const event = await db.agentEvent.create({
       data: {
         type,
-        payload: payload as any,
+        payload: toInputJsonObject(payload),
         agentType,
         processed: false,
       },
@@ -97,7 +219,7 @@ export async function publishEvent(
  */
 export async function getUnprocessedEvents(
   type: AgentEventType
-): Promise<any[]> {
+): Promise<AgentEvent[]> {
   try {
     const events = await db.agentEvent.findMany({
       where: {
@@ -133,14 +255,14 @@ export async function markEventProcessed(eventId: string): Promise<void> {
 /**
  * Get all events for a specific request (for debugging/logging)
  */
-export async function getEventsByRequest(requestId: string): Promise<any[]> {
+export async function getEventsByRequest(requestId: string): Promise<AgentEvent[]> {
   try {
     const events = await db.agentEvent.findMany({
       where: {
         payload: {
           path: ["request_id"],
           equals: requestId,
-        } as any,
+        },
       },
       orderBy: {
         createdAt: "asc",
@@ -157,7 +279,7 @@ export async function getEventsByRequest(requestId: string): Promise<any[]> {
 /**
  * Get recent events for dashboard (live activity feed)
  */
-export async function getRecentEvents(limit: number = 50): Promise<any[]> {
+export async function getRecentEvents(limit: number = 50): Promise<AgentEvent[]> {
   try {
     const events = await db.agentEvent.findMany({
       take: limit,

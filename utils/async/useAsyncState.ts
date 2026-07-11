@@ -58,7 +58,7 @@ export interface UseAsyncStateOptions<T> {
 /**
  * Return type of useAsyncState hook.
  */
-export interface UseAsyncStateReturn<T, Args extends any[] = []> {
+export interface UseAsyncStateReturn<T, Args extends unknown[] = []> {
   /**
    * Current async state. Use this for rendering decisions.
    */
@@ -113,7 +113,7 @@ export interface UseAsyncStateReturn<T, Args extends any[] = []> {
  *   { executeOnMount: true, dependencies: [userId] }
  * );
  */
-export function useAsyncState<T, Args extends any[] = []>(
+export function useAsyncState<T, Args extends unknown[] = []>(
   asyncFunction: (...args: Args) => Promise<T>,
   options: UseAsyncStateOptions<T> = {}
 ): UseAsyncStateReturn<T, Args> {
@@ -211,7 +211,7 @@ export function useAsyncState<T, Args extends any[] = []>(
    */
   useEffect(() => {
     if (executeOnMount) {
-      execute(...([] as any));
+      Reflect.apply(execute, undefined, []);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [executeOnMount, ...dependencies]);

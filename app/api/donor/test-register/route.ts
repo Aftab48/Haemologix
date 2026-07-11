@@ -103,10 +103,15 @@ export async function POST(req: NextRequest) {
         hemoglobin,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("[Test API] Error creating test donor:", error);
 
-    if (error.code === "P2002") {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
       return NextResponse.json(
         {
           success: false,

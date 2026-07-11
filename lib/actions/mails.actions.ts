@@ -1,7 +1,28 @@
 "use server";
-import fs from "fs";
-import path from "path";
 import { transporter } from "@/lib/mail";
+
+interface EmailMismatch {
+  field?: string;
+  value?: string | number;
+  entered?: string | number;
+  extracted?: string | number;
+  reason?: string;
+  criterion?: string;
+  required?: string | number;
+}
+
+function getMailError(error: unknown) {
+  const details =
+    typeof error === "object" && error !== null
+      ? (error as Record<string, unknown>)
+      : {};
+  return {
+    message: error instanceof Error ? error.message : String(error),
+    code: details.code,
+    response: details.response,
+    command: details.command,
+  };
+}
 
 // Load static HTML file from /public/emails
 async function loadEmailTemplate(filename: string) {
@@ -53,19 +74,20 @@ export async function sendApplicationApprovedEmail(to: string, name: string) {
 
     console.log("Email sent:", info.messageId);
     return { success: true };
-  } catch (err: any) {
+  } catch (err) {
+    const error = getMailError(err);
     console.error("❌ Email send error:", {
-      message: err.message,
-      code: err.code,
-      response: err.response,
-      command: err.command,
+      message: error.message,
+      code: error.code,
+      response: error.response,
+      command: error.command,
     });
 
     // Re-throw with more details for Vercel logs
     throw new Error(
-      `MAIL_ERROR: ${err.message} | code: ${err.code || "N/A"} | response: ${
-        err.response || "N/A"
-      } | command: ${err.command || "N/A"}`
+      `MAIL_ERROR: ${error.message} | code: ${error.code || "N/A"} | response: ${
+        error.response || "N/A"
+      } | command: ${error.command || "N/A"}`
     );
   }
 }
@@ -73,7 +95,7 @@ export async function sendApplicationApprovedEmail(to: string, name: string) {
 export async function sendApplicationRejectedEmail(
   to: string,
   name: string,
-  mismatches?: any[]
+  mismatches?: EmailMismatch[]
 ) {
   let html = await loadEmailTemplate("rejectedDonor.html");
   
@@ -207,7 +229,7 @@ export async function sendUrgentBloodRequestEmail(
 export async function sendAccountSuspensionEmail(
   to: string,
   name: string,
-  mismatches?: any[]
+  mismatches?: EmailMismatch[]
 ) {
   let html = await loadEmailTemplate("accountSuspension.html");
   
@@ -251,7 +273,7 @@ export async function sendAccountSuspensionEmail(
 export async function sendEligibilityRejectionEmail(
   to: string,
   name: string,
-  failedCriteria: any[]
+  failedCriteria: EmailMismatch[]
 ) {
   let html = await loadEmailTemplate("eligibilityRejection.html");
 
@@ -339,13 +361,14 @@ export async function sendDonorBloodRequestEmail(data: {
 
     console.log(`[Email] Donor blood request sent to ${data.to}:`, info.messageId);
     return { success: true, messageId: info.messageId };
-  } catch (err: any) {
+  } catch (err) {
+    const error = getMailError(err);
     console.error("❌ Donor blood request email error:", {
-      message: err.message,
-      code: err.code,
+      message: error.message,
+      code: error.code,
       to: data.to,
     });
-    throw new Error(`Failed to send donor blood request email: ${err.message}`);
+    throw new Error(`Failed to send donor blood request email: ${error.message}`);
   }
 }
 
@@ -383,13 +406,14 @@ export async function sendDonorSelectedEmail(data: {
 
     console.log(`[Email] Donor selected confirmation sent to ${data.to}:`, info.messageId);
     return { success: true, messageId: info.messageId };
-  } catch (err: any) {
+  } catch (err) {
+    const error = getMailError(err);
     console.error("❌ Donor selected email error:", {
-      message: err.message,
-      code: err.code,
+      message: error.message,
+      code: error.code,
       to: data.to,
     });
-    throw new Error(`Failed to send donor selected email: ${err.message}`);
+    throw new Error(`Failed to send donor selected email: ${error.message}`);
   }
 }
 
@@ -417,14 +441,15 @@ export async function sendDonorNotSelectedEmail(data: {
 
     console.log(`[Email] Donor not selected email sent to ${data.to}:`, info.messageId);
     return { success: true, messageId: info.messageId };
-  } catch (err: any) {
+  } catch (err) {
+    const error = getMailError(err);
     console.error("❌ Donor not selected email error:", {
-      message: err.message,
-      code: err.code,
+      message: error.message,
+      code: error.code,
       to: data.to,
     });
     // Don't throw - this is a courtesy email, shouldn't break the flow
-    return { success: false, error: err.message };
+    return { success: false, error: error.message };
   }
 }
 
@@ -455,12 +480,13 @@ export async function sendContactAdminNotification(data: {
 
     console.log(`[Email] Contact admin notification sent to ${adminEmail}:`, info.messageId);
     return { success: true, messageId: info.messageId };
-  } catch (err: any) {
+  } catch (err) {
+    const error = getMailError(err);
     console.error("❌ Contact admin notification email error:", {
-      message: err.message,
-      code: err.code,
+      message: error.message,
+      code: error.code,
     });
-    throw new Error(`Failed to send contact admin notification: ${err.message}`);
+    throw new Error(`Failed to send contact admin notification: ${error.message}`);
   }
 }
 
@@ -488,13 +514,14 @@ export async function sendContactUserConfirmation(data: {
 
     console.log(`[Email] Contact user confirmation sent to ${data.email}:`, info.messageId);
     return { success: true, messageId: info.messageId };
-  } catch (err: any) {
+  } catch (err) {
+    const error = getMailError(err);
     console.error("❌ Contact user confirmation email error:", {
-      message: err.message,
-      code: err.code,
+      message: error.message,
+      code: error.code,
       to: data.email,
     });
-    throw new Error(`Failed to send contact user confirmation: ${err.message}`);
+    throw new Error(`Failed to send contact user confirmation: ${error.message}`);
   }
 }
 
@@ -528,12 +555,13 @@ export async function sendDonorOnboardWelcomeEmail(
 
     console.log(`[Email] Donor onboard welcome email sent to ${to}:`, info.messageId);
     return { success: true, messageId: info.messageId };
-  } catch (err: any) {
+  } catch (err) {
+    const error = getMailError(err);
     console.error("❌ Donor onboard welcome email error:", {
-      message: err.message,
-      code: err.code,
+      message: error.message,
+      code: error.code,
       to,
     });
-    throw new Error(`Failed to send donor onboard welcome email: ${err.message}`);
+    throw new Error(`Failed to send donor onboard welcome email: ${error.message}`);
   }
 }

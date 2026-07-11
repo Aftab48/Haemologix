@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import {
   Card,
@@ -49,17 +49,88 @@ import {
 import LLMReasoningCard from "@/components/LLMReasoningCard";
 import DonorLocationMap from "@/components/DonorLocationMap";
 
+interface AlertDetails {
+  autoDetected?: boolean;
+  description: string;
+  status: string;
+  urgency: string;
+  bloodType: string;
+  unitsNeeded: string;
+  searchRadius: number;
+  createdAt: string;
+  hospital: {
+    latitude: string;
+    longitude: string;
+    hospitalName: string;
+  };
+}
+
+interface WorkflowState {
+  currentStep: string;
+  status: string;
+}
+
+interface AgentDecisionPayload {
+  reasoning?: string;
+  llm_used?: boolean;
+  model_used?: string;
+  llm_confidence?: number;
+  confidence?: number;
+  response_time?: number | string;
+  distance_km?: number;
+  eta_minutes?: number;
+  selected_donor?: string;
+  match_score?: number;
+}
+
+interface AgentDecision {
+  id: string;
+  agentType: string;
+  eventType: string;
+  requestId?: string | null;
+  confidence?: number | null;
+  createdAt: string;
+  decision: string | AgentDecisionPayload;
+}
+
+interface DonorResponse {
+  id: string;
+  donorId: string;
+  status: string;
+  confirmed?: boolean;
+  donor: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    bloodGroup: string;
+    email: string;
+    phone: string;
+    latitude: string;
+    longitude: string;
+  };
+}
+
+interface TransportDetails {
+  fromHospital?: { hospitalName: string } | null;
+  bloodType: string;
+  units: number;
+  status: string;
+  transportMethod: string;
+  eta?: string | null;
+  pickupTime?: string | null;
+  deliveryTime?: string | null;
+}
+
 export default function AlertDetailsPage() {
   const params = useParams();
   const alertId = params.alertId as string;
 
-  const [alertData, setAlertData] = useState<any>(null);
-  const [workflowState, setWorkflowState] = useState<any>(null);
-  const [agentDecisions, setAgentDecisions] = useState<any[]>([]);
-  const [agentEvents, setAgentEvents] = useState<any[]>([]);
-  const [donorResponses, setDonorResponses] = useState<any[]>([]);
-  const [inventoryMatch, setInventoryMatch] = useState<any>(null);
-  const [transportRequest, setTransportRequest] = useState<any>(null);
+  const [alertData, setAlertData] = useState<AlertDetails | null>(null);
+  const [workflowState, setWorkflowState] = useState<WorkflowState | null>(null);
+  const [agentDecisions, setAgentDecisions] = useState<AgentDecision[]>([]);
+  const [donorResponses, setDonorResponses] = useState<DonorResponse[]>([]);
+  const [inventoryMatch, setInventoryMatch] = useState<TransportDetails | null>(null);
+  const [transportRequest, setTransportRequest] = useState<TransportDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -72,7 +143,7 @@ export default function AlertDetailsPage() {
   const [isClosingAlert, setIsClosingAlert] = useState(false);
   const [selectedDonorIndex, setSelectedDonorIndex] = useState(0);
 
-  const fetchAlertDetails = async (isRefresh = false) => {
+  const fetchAlertDetails = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     try {
       const response = await fetch(`/api/alerts/${alertId}/details`);
@@ -82,7 +153,6 @@ export default function AlertDetailsPage() {
         setAlertData(data.alert);
         setWorkflowState(data.workflowState);
         setAgentDecisions(data.agentDecisions || []);
-        setAgentEvents(data.agentEvents || []);
         setDonorResponses(data.donorResponses || []);
         setInventoryMatch(data.inventoryMatch);
         setTransportRequest(data.transportRequest);
@@ -94,13 +164,13 @@ export default function AlertDetailsPage() {
       setLoading(false);
       if (isRefresh) setRefreshing(false);
     }
-  };
+  }, [alertId]);
 
   useEffect(() => {
     if (alertId) {
       fetchAlertDetails();
     }
-  }, [alertId]);
+  }, [alertId, fetchAlertDetails]);
 
   // Reset selected donor index when donor responses change
   useEffect(() => {
@@ -124,7 +194,7 @@ export default function AlertDetailsPage() {
     }, 5000); // Refresh every 5 seconds
 
     return () => clearInterval(interval);
-  }, [alertId, loading]);
+  }, [alertId, loading, fetchAlertDetails]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -345,8 +415,12 @@ export default function AlertDetailsPage() {
 
   return (
     <GradientBackground className="flex flex-col min-h-screen">
-      <img
+      <Image
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
+        alt=""
+        width={1200}
+        height={800}
+        unoptimized
         className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
       />
 
@@ -700,21 +774,25 @@ export default function AlertDetailsPage() {
               </p>
             ) : (
               <div className="space-y-4">
-                {agentDecisions.map((decision, index) => {
+                {agentDecisions.map((decision) => {
+                  const decisionPayload =
+                    typeof decision.decision === "object"
+                      ? decision.decision
+                      : {};
                   // Extract and format the reasoning text
                   let reasoningText = "";
                   if (typeof decision.decision === "string") {
                     reasoningText = decision.decision;
-                  } else if (decision.decision.reasoning) {
-                    reasoningText = decision.decision.reasoning;
+                  } else if (decisionPayload.reasoning) {
+                    reasoningText = decisionPayload.reasoning;
                   } else {
                     reasoningText = "";
                   }
 
                   // Check if LLM was used
-                  const llmUsed = decision.decision?.llm_used === true;
+                  const llmUsed = decisionPayload.llm_used === true;
                   const modelUsed =
-                    decision.decision?.model_used ||
+                    decisionPayload.model_used ||
                     (llmUsed ? "claude-4.5" : "unknown");
 
                   // Extract and format response time from reasoning text
@@ -732,8 +810,8 @@ export default function AlertDetailsPage() {
                         modelUsed={modelUsed}
                         confidence={
                           decision.confidence ||
-                          decision.decision?.llm_confidence ||
-                          decision.decision?.confidence
+                          decisionPayload.llm_confidence ||
+                          decisionPayload.confidence
                         }
                         agentType={decision.agentType}
                         eventType={decision.eventType}
@@ -786,43 +864,43 @@ export default function AlertDetailsPage() {
 
                           {/* Additional metadata */}
                           <div className="flex flex-wrap gap-x-4 gap-y-1 mb-2">
-                            {decision.decision.response_time && (
+                            {decisionPayload.response_time && (
                               <span className="text-xs text-text-dark/70">
                                 ⏱️ Response:{" "}
-                                {typeof decision.decision.response_time ===
+                                {typeof decisionPayload.response_time ===
                                 "number"
                                   ? formatDuration(
                                       Math.floor(
-                                        decision.decision.response_time
+                                        decisionPayload.response_time
                                       )
                                     )
-                                  : decision.decision.response_time}
+                                  : decisionPayload.response_time}
                               </span>
                             )}
-                            {decision.decision.distance_km && (
+                            {decisionPayload.distance_km && (
                               <span className="text-xs text-text-dark/70">
-                                📍 {decision.decision.distance_km.toFixed(1)} km
+                                📍 {decisionPayload.distance_km.toFixed(1)} km
                                 away
                               </span>
                             )}
-                            {decision.decision.eta_minutes && (
+                            {decisionPayload.eta_minutes && (
                               <span className="text-xs text-text-dark/70">
                                 🚗 ETA:{" "}
-                                {decision.decision.eta_minutes >= 60
+                                {decisionPayload.eta_minutes >= 60
                                   ? `${Math.floor(
-                                      decision.decision.eta_minutes / 60
-                                    )}h ${decision.decision.eta_minutes % 60}m`
-                                  : `${decision.decision.eta_minutes}m`}
+                                      decisionPayload.eta_minutes / 60
+                                    )}h ${decisionPayload.eta_minutes % 60}m`
+                                  : `${decisionPayload.eta_minutes}m`}
                               </span>
                             )}
-                            {decision.decision.selected_donor && (
+                            {decisionPayload.selected_donor && (
                               <span className="text-xs text-text-dark/70">
-                                👤 {decision.decision.selected_donor}
+                                👤 {decisionPayload.selected_donor}
                               </span>
                             )}
-                            {decision.decision.match_score && (
+                            {decisionPayload.match_score && (
                               <span className="text-xs text-text-dark/70">
-                                ⭐ Score: {decision.decision.match_score}/100
+                                ⭐ Score: {decisionPayload.match_score}/100
                               </span>
                             )}
                           </div>

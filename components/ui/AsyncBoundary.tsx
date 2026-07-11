@@ -114,8 +114,10 @@ export function AsyncBoundary<T>({
       break;
 
     default: {
-      const _exhaustive: never = state;
-      content = 'Unknown state';
+      content = ((unreachableState: never) => {
+        void unreachableState;
+        return 'Unknown state';
+      })(state);
       break;
     }
   }
@@ -127,7 +129,7 @@ export function AsyncBoundary<T>({
   );
 }
 
-export function AsyncListBoundary<T extends any[]>({
+export function AsyncListBoundary<T extends unknown[]>({
   emptyMessage = 'No items found',
   ...props
 }: Omit<AsyncBoundaryProps<T>, 'empty'> & { emptyMessage?: string }) {

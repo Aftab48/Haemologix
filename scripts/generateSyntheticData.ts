@@ -4,6 +4,7 @@
  */
 
 import { db } from "@/db";
+import type { Prisma } from "@prisma/client";
 import {
   randomFloat,
   randomInt,
@@ -26,6 +27,35 @@ import {
 
 const EXAMPLES_PER_TASK = 200;
 
+interface SyntheticDonorCandidate extends Prisma.InputJsonObject {
+  donor_id: string;
+  distance_km: number;
+  eta_minutes: number;
+  score: number;
+  reliability_rate: number;
+  health_score: number;
+}
+
+interface SyntheticInventoryUnit extends Prisma.InputJsonObject {
+  unit_id: string;
+  hospital_name: string;
+  distance_km: number;
+  expiry_days: number;
+  units_available: number;
+  scores: {
+    proximity: number;
+    expiry: number;
+    quantity: number;
+    final: number;
+  };
+}
+
+interface SyntheticFailedCriterion extends Prisma.InputJsonObject {
+  criterion: string;
+  value: string | number;
+  required: string;
+}
+
 /**
  * Generate donor selection examples
  */
@@ -42,7 +72,7 @@ async function generateDonorSelectionExamples(count: number): Promise<void> {
     const numCandidates = randomInt(3, 15);
 
     // Generate candidates
-    const candidates: any[] = [];
+    const candidates: SyntheticDonorCandidate[] = [];
     for (let j = 0; j < numCandidates; j++) {
       const distance = generateDistance();
       const reliability = generateReliability();
@@ -261,7 +291,7 @@ async function generateInventorySelectionExamples(
     const numSources = randomInt(2, 10);
 
     // Generate ranked units
-    const rankedUnits: any[] = [];
+    const rankedUnits: SyntheticInventoryUnit[] = [];
     for (let j = 0; j < numSources; j++) {
       const distance = randomFloat(5, 100); // Inventory can be further
       const expiryDays = randomInt(1, 30);
@@ -463,7 +493,7 @@ async function generateEligibilityAnalysisExamples(
     const lastDonationDays = randomInt(0, 730);
 
     // Determine eligibility based on criteria
-    const failedCriteria: any[] = [];
+    const failedCriteria: SyntheticFailedCriterion[] = [];
     let passed = true;
 
     // Age check
@@ -527,7 +557,7 @@ async function generateEligibilityAnalysisExamples(
 
     // Create failed criteria binary vector
     const failedCriteriaBinary = [0, 0, 0, 0, 0, 0];
-    failedCriteria.forEach((criteria, idx) => {
+    failedCriteria.forEach((criteria) => {
       const criterionIndex = eligibilityCriteria.indexOf(criteria.criterion);
       if (criterionIndex >= 0 && criterionIndex < 6) {
         failedCriteriaBinary[criterionIndex] = 1;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -65,10 +65,6 @@ export default function PilotRequestsPage() {
   const [showAnalytics, setShowAnalytics] = useState(false);
 
   useEffect(() => {
-    fetchRequests();
-  }, [statusFilter]);
-
-  useEffect(() => {
     fetchAnalytics();
   }, []); // Fetch analytics only on mount
 
@@ -88,7 +84,7 @@ export default function PilotRequestsPage() {
     }
   };
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       setLoading(true);
       const url =
@@ -106,7 +102,11 @@ export default function PilotRequestsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
+
+  useEffect(() => {
+    fetchRequests();
+  }, [fetchRequests]);
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {

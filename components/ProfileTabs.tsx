@@ -1,16 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { profileTabsConfig } from "@/configs/profileTabs";
 import { formatLastActivity } from "@/lib/utils";
 import Image from "next/image";
-import { db } from "@/db";
-import { VerificationBadge, SuspensionBadge, AttemptsBadge } from "./VerificationBadge";
+import { SuspensionBadge, AttemptsBadge } from "./VerificationBadge";
 import { Badge } from "./ui/badge";
+
+interface ProfileUserData extends Record<string, unknown> {
+  verificationAttempts?: number;
+  suspendedUntil?: Date | null;
+  lastVerificationAt?: string | Date | null;
+  status?: string;
+  bloodTestReport?: string | null;
+  idProof?: string | null;
+  medicalCertificate?: string | null;
+}
 
 interface ProfileTabsProps {
   userType: "donor" | "hospital";
-  userData: Record<string, any>;
+  userData: ProfileUserData;
 }
 
 export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
@@ -205,7 +214,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {tabs[activeTab].fields.map((field) => {
-            let value = userData[field.key];
+            let value: unknown = userData[field.key];
 
             // Only format if field.type === 'date' AND value is a string or Date
             if (
@@ -220,6 +229,13 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
             if (typeof value === "object" && value !== null) {
               value = "N/A";
             }
+
+            const displayValue =
+              typeof value === "string" ||
+              typeof value === "number" ||
+              typeof value === "boolean"
+                ? value || "N/A"
+                : "N/A";
 
             // Render file types differently to avoid div inside p
             const renderFileValue = () => {
@@ -278,7 +294,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
                       ? value
                         ? "✅ Yes"
                         : "❌ No"
-                      : value || "N/A"}
+                      : displayValue}
                   </p>
                 )}
               </div>

@@ -61,7 +61,7 @@ export default function FeedbackForm({ open, onOpenChange }: Props) {
       setType("")
       setFile(null)
       onOpenChange(false)
-    } catch (err) {
+    } catch {
       toast.error("Something went wrong")
     } finally {
       setLoading(false)

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, Users, Activity, Shield } from "lucide-react";
+import { Heart, Shield } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 
 export const metadata: Metadata = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,10 +28,11 @@ import {
   Clock,
   CheckCircle2,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 /* -------------------- Config -------------------- */
 
-const agentIcons: any = {
+const agentIcons: Record<string, LucideIcon> = {
   HOSPITAL: Building2,
   DONOR: Users,
   COORDINATOR: Activity,
@@ -40,7 +41,7 @@ const agentIcons: any = {
   VERIFICATION: CheckCircle2,
 };
 
-const agentColors: any = {
+const agentColors: Record<string, string> = {
   HOSPITAL: "text-blue-400",
   DONOR: "text-green-400",
   COORDINATOR: "text-purple-400",
@@ -49,7 +50,7 @@ const agentColors: any = {
   VERIFICATION: "text-pink-400",
 };
 
-const agentBorders: any = {
+const agentBorders: Record<string, string> = {
   HOSPITAL: "border-blue-500",
   DONOR: "border-green-500",
   COORDINATOR: "border-purple-500",
@@ -63,7 +64,7 @@ interface AgentLog {
   agentType: string;
   eventType: string;
   requestId?: string;
-  decision: any;
+  decision: unknown;
   confidence?: number;
   createdAt: string;
 }
@@ -72,7 +73,6 @@ interface AgentLog {
 
 export default function AIAgentLogs() {
   const [logs, setLogs] = useState<AgentLog[]>([]);
-  const [filteredLogs, setFilteredLogs] = useState<AgentLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [agentFilter, setAgentFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -80,10 +80,6 @@ export default function AIAgentLogs() {
   useEffect(() => {
     fetchLogs();
   }, []);
-
-  useEffect(() => {
-    filterLogs();
-  }, [logs, agentFilter, searchQuery]);
 
   const fetchLogs = async () => {
     try {
@@ -100,7 +96,7 @@ export default function AIAgentLogs() {
     }
   };
 
-  const filterLogs = () => {
+  const filteredLogs = useMemo(() => {
     let filtered = [...logs];
 
     if (agentFilter !== "ALL") {
@@ -118,8 +114,8 @@ export default function AIAgentLogs() {
       );
     }
 
-    setFilteredLogs(filtered);
-  };
+    return filtered;
+  }, [logs, agentFilter, searchQuery]);
 
   const exportLogs = () => {
     const dataStr = JSON.stringify(filteredLogs, null, 2);

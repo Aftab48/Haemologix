@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -49,7 +49,7 @@ interface AnalyticsEvent {
   referrer?: string;
   userAgent?: string;
   ipAddress?: string;
-  metadata?: any;
+  metadata?: unknown;
   createdAt: string;
 }
 
@@ -80,11 +80,7 @@ export default function AnalyticsPage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [eventTypeFilter, utmMediumFilter, startDate, endDate]);
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -105,7 +101,11 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventTypeFilter, utmMediumFilter, startDate, endDate]);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
 
   const prepareDateChartData = () => {
     if (!stats?.byDate) return [];

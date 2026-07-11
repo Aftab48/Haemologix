@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 /**
  * GET: Get verification statistics for dashboard
  */
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     console.log("[API] Fetching verification statistics");
 

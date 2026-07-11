@@ -5,14 +5,19 @@
  */
 
 import { db } from "@/db";
-import { AgentType } from "@prisma/client";
+import { AgentType, Prisma } from "@prisma/client";
+import type { DonorRegistration } from "@prisma/client";
 import { publishEvent } from "./eventBus";
 import { reasonAboutEligibility } from "./llmReasoning";
 
-export interface EligibilityCriterion {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export interface EligibilityCriterion extends Prisma.InputJsonObject {
   criterion: string;
-  value: any;
-  required: any;
+  value: string | number;
+  required: string;
   reason: string;
   passed: boolean;
 }
@@ -27,7 +32,9 @@ export interface EligibilityCheckResult {
  * Check donor eligibility based on registration data
  * Criteria based on DonorRegistration model and form validation
  */
-export function checkDonorEligibility(donor: any): EligibilityCheckResult {
+export function checkDonorEligibility(
+  donor: DonorRegistration
+): EligibilityCheckResult {
   const failedCriteria: EligibilityCriterion[] = [];
   const allCriteria: EligibilityCriterion[] = [];
 
@@ -96,7 +103,9 @@ export function checkDonorEligibility(donor: any): EligibilityCheckResult {
 
   diseaseTests.forEach((test) => {
     // Case-insensitive check: "NEGATIVE", "negative", "Negative" all pass
-    const isNegative = test.value && test.value.toUpperCase() === "NEGATIVE";
+    const isNegative = Boolean(
+      test.value && test.value.toUpperCase() === "NEGATIVE"
+    );
     const testCheck: EligibilityCriterion = {
       criterion: `${test.name} Test`,
       value: test.value,
@@ -144,7 +153,12 @@ export async function processDonorVerification(
   documentVerificationResults: {
     allPassed: boolean;
     hasTechnicalError: boolean;
-    mismatches: any[];
+    mismatches: Array<{
+      field: string;
+      entered: string;
+      extracted: string;
+      reason: string;
+    }>;
   }
 ): Promise<{
   success: boolean;
@@ -334,7 +348,7 @@ export async function processDonorVerification(
           edge_cases: edgeCases.length > 0 ? edgeCases : undefined,
           recommendations:
             recommendations.length > 0 ? recommendations : undefined,
-        } as any,
+        },
         confidence: confidence,
       },
     });
@@ -347,10 +361,8 @@ export async function processDonorVerification(
         eligibilityPassed: eligibilityResult.passed,
         failedCriteria:
           eligibilityResult.failedCriteria.length > 0
-            ? (JSON.parse(
-                JSON.stringify(eligibilityResult.failedCriteria)
-              ) as any)
-            : null,
+            ? eligibilityResult.failedCriteria
+            : Prisma.DbNull,
       },
     });
 
@@ -439,10 +451,17 @@ export async function getVerificationStats(): Promise<{
     decisions
       .filter((d) => d.eventType === "eligibility_failed")
       .forEach((d) => {
-        const decision = d.decision as any;
-        if (decision.failed_criteria) {
-          decision.failed_criteria.forEach((c: any) => {
-            criteriaCount[c.criterion] = (criteriaCount[c.criterion] || 0) + 1;
+        const decision = isRecord(d.decision) ? d.decision : {};
+        const failedCriteria = decision.failed_criteria;
+        if (Array.isArray(failedCriteria)) {
+          failedCriteria.forEach((criterion) => {
+            if (
+              isRecord(criterion) &&
+              typeof criterion.criterion === "string"
+            ) {
+              criteriaCount[criterion.criterion] =
+                (criteriaCount[criterion.criterion] || 0) + 1;
+            }
           });
         }
       });

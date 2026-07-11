@@ -6,7 +6,8 @@ import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { writeFile, unlink } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
-import { markDonorAsApplied, markHospitalAsApplied } from "./user.actions";
+import { markDonorAsApplied } from "./user.actions";
+import type { DonorRegistration } from "@prisma/client";
 import {
   sendApplicationRejectedEmail,
   sendAccountSuspensionEmail,
@@ -30,8 +31,18 @@ interface MismatchDetail {
 interface VerificationResult {
   passed: boolean;
   confidence: number;
-  extractedFields: Record<string, any>;
+  extractedFields: Record<string, string>;
   mismatches: MismatchDetail[];
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 /**
@@ -76,20 +87,6 @@ function calculateSimilarity(str1: string, str2: string): number {
   const distance = matrix[len2][len1];
   const maxLen = Math.max(len1, len2);
   return 1 - distance / maxLen;
-}
-
-/**
- * Normalize string for comparison (handle OCR errors)
- */
-function normalizeString(str: string): string {
-  return str
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, " ")
-    .replace(/[^a-z0-9\s]/gi, "")
-    .replace(/o/gi, "0") // Handle O vs 0
-    .replace(/i/gi, "1") // Handle I vs 1
-    .replace(/l/gi, "1"); // Handle l vs 1
 }
 
 /**
@@ -162,8 +159,8 @@ async function downloadFromS3ToTemp(s3Key: string): Promise<string> {
  * Compare extracted fields with donor data
  */
 function compareFields(
-  extracted: Record<string, any>,
-  donor: any,
+  extracted: Record<string, string>,
+  donor: DonorRegistration,
   docType: "BLOOD_TEST" | "ID_PROOF" | "MEDICAL_CERTIFICATE"
 ): VerificationResult {
   const mismatches: MismatchDetail[] = [];
@@ -412,13 +409,14 @@ async function processDocument(
         status: result.passed ? "MATCHED_FOR_ADMIN" : "AUTO_REJECTED",
         confidence: result.confidence,
         extractedFields: result.extractedFields,
-        mismatchFields: result.mismatches as any,
+        mismatchFields: result.mismatches.map((mismatch) => ({ ...mismatch })),
       },
     });
 
     return result;
   } catch (error) {
     console.error(`Error processing document ${docType}:`, error);
+    const errorMessage = getErrorMessage(error);
     
     // Create verification record with error
     await db.donorVerification.create({
@@ -428,12 +426,12 @@ async function processDocument(
         docUrl: s3Key || "",
         status: "PENDING",
         confidence: 0,
-        extractedFields: { error: (error as Error).message },
+        extractedFields: { error: errorMessage },
         mismatchFields: [{
           field: docType,
           entered: "N/A",
           extracted: "Error",
-          reason: `Technical error: ${(error as Error).message}`,
+          reason: `Technical error: ${errorMessage}`,
         }],
       },
     });
@@ -530,7 +528,32 @@ async function handleVerificationResult(
         orderBy: { createdAt: "desc" },
       });
 
-      const failedCriteria = decision ? (decision.decision as any).failed_criteria || [] : [];
+      const decisionData = asRecord(decision?.decision);
+      const rawFailedCriteria = decisionData.failed_criteria;
+      const failedCriteria = Array.isArray(rawFailedCriteria)
+        ? rawFailedCriteria
+            .map(asRecord)
+            .map((criterion) => ({
+              criterion:
+                typeof criterion.criterion === "string"
+                  ? criterion.criterion
+                  : undefined,
+              value:
+                typeof criterion.value === "string" ||
+                typeof criterion.value === "number"
+                  ? criterion.value
+                  : undefined,
+              required:
+                typeof criterion.required === "string" ||
+                typeof criterion.required === "number"
+                  ? criterion.required
+                  : undefined,
+              reason:
+                typeof criterion.reason === "string"
+                  ? criterion.reason
+                  : undefined,
+            }))
+        : [];
 
       await sendEligibilityRejectionEmail(
         donor.email,
@@ -648,7 +671,7 @@ export async function verifyDonorDocuments(donorId: string) {
     console.error("Verification error:", error);
     return {
       success: false,
-      error: (error as Error).message,
+      error: getErrorMessage(error),
     };
   }
 }

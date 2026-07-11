@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { track } from "@vercel/analytics";
 
 /**
@@ -15,9 +15,15 @@ export function usePageView(pageName: string, trackOnMount: boolean = true) {
     }
   }, [pageName, trackOnMount]);
 
-  const trackEvent = (eventName: string, properties?: Record<string, any>) => {
-    track(eventName, { ...properties, page: pageName });
-  };
+  const trackEvent = useCallback(
+    (
+      eventName: string,
+      properties?: Record<string, string | number | boolean | null>
+    ) => {
+      track(eventName, { ...properties, page: pageName });
+    },
+    [pageName]
+  );
 
   return { trackEvent };
 }

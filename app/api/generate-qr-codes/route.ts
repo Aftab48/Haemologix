@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import QRCode from "qrcode";
-import fs from "fs";
 import path from "path";
 
 /**
@@ -80,7 +79,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   return NextResponse.json({
     endpoint: "POST /api/generate-qr-codes",
     description: "Generate QR code PNG files and save to public folder",

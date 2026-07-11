@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   return NextResponse.json({
     endpoint: "POST /api/alerts",
     description: "Create blood shortage alert",

@@ -6,6 +6,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ alertId: string }> }
 ) {
+  void req;
   const { error } = await requireAuth();
   if (error) return error;
 
@@ -56,7 +57,7 @@ export async function GET(
         payload: {
           path: ["id"],
           equals: alertId,
-        } as any,
+        },
       },
       orderBy: { createdAt: "asc" },
     });
@@ -78,8 +79,12 @@ export async function GET(
 
     // Check if inventory was matched (from workflow metadata)
     let inventoryMatch = null;
-    if (workflowState?.metadata && typeof workflowState.metadata === "object") {
-      const metadata = workflowState.metadata as any;
+    if (
+      workflowState?.metadata &&
+      typeof workflowState.metadata === "object" &&
+      !Array.isArray(workflowState.metadata)
+    ) {
+      const metadata = workflowState.metadata as Record<string, unknown>;
       if (metadata.inventory_source && transportRequest) {
         inventoryMatch = transportRequest;
       }

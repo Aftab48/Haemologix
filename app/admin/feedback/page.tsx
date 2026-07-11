@@ -3,8 +3,8 @@ import { prisma } from "@/db"
 export const dynamic = "force-dynamic"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 async function getFeedback() {
   return await prisma.feedback.findMany({
@@ -52,10 +52,13 @@ export default async function AdminFeedbackPage() {
               <p>{fb.message}</p>
 
               {fb.screenshot && (
-                <img
+                <Image
                   src={fb.screenshot}
-                  alt="Screenshot"
-                  className="rounded-md border max-h-64"
+                  alt="User-submitted feedback screenshot"
+                  width={1024}
+                  height={768}
+                  unoptimized
+                  className="rounded-md border max-h-64 w-auto h-auto"
                 />
               )}
 

@@ -40,12 +40,15 @@ export async function POST(req: NextRequest) {
       message: "Donor rejected successfully",
       donor: result.donor,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("[API] Error rejecting donor:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Failed to reject donor",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to reject donor",
       },
       { status: 500 }
     );

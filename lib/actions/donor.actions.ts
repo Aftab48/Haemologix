@@ -64,7 +64,7 @@ export async function submitDonorRegistration(formData: DonorData) {
       },
     });
     
-    const fileFields: (keyof DonorData)[] = [
+    const fileFields: DonorFileField[] = [
       "bloodTestReport",
       "idProof",
       "medicalCertificate",
@@ -74,7 +74,7 @@ export async function submitDonorRegistration(formData: DonorData) {
       fileFields.map(async (field) => {
         const file = formData[field] as unknown as File | null;
         if (file) {
-          await uploadDonorFile(field as any, file, newDonor.id);
+          await uploadDonorFile(field, file, newDonor.id);
         }
       })
     );
@@ -121,7 +121,7 @@ export async function updateDonorRegistration(donorId: string, formData: DonorDa
     }
 
     // Update donor data
-    const updatedDonor = await db.donorRegistration.update({
+    await db.donorRegistration.update({
       where: { id: donorId },
       data: {
         firstName: formData.firstName,
@@ -164,7 +164,7 @@ export async function updateDonorRegistration(donorId: string, formData: DonorDa
     });
 
     // Re-upload files if changed
-    const fileFields: (keyof DonorData)[] = [
+    const fileFields: DonorFileField[] = [
       "bloodTestReport",
       "idProof",
       "medicalCertificate",
@@ -174,7 +174,7 @@ export async function updateDonorRegistration(donorId: string, formData: DonorDa
       fileFields.map(async (field) => {
         const file = formData[field] as unknown as File | null;
         if (file) {
-          await uploadDonorFile(field as any, file, donorId);
+          await uploadDonorFile(field, file, donorId);
         }
       })
     );
@@ -190,6 +190,7 @@ export async function updateDonorRegistration(donorId: string, formData: DonorDa
 }
 
 export async function fetchAllDonors(includeFiles: boolean = false) {
+  void includeFiles;
   try {
     // Always fetch all data - file URLs are now direct S3 URLs (no presigned URL generation needed)
     const donors = await db.donorRegistration.findMany();
@@ -201,6 +202,7 @@ export async function fetchAllDonors(includeFiles: boolean = false) {
 }
 
 export async function fetchDonorById(donorId: string, includeFiles: boolean = true) {
+  void includeFiles;
   try {
     // Return all data - file URLs are now direct S3 URLs (no presigned URL generation needed)
     const donor = await db.donorRegistration.findUnique({

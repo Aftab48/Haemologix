@@ -3,6 +3,8 @@
  * 5-factor algorithm for optimal donor matching
  */
 
+import type { DonorRegistration } from "@prisma/client";
+
 export interface DonorScores {
   distance: number;
   history: number;
@@ -159,7 +161,10 @@ export function calculateCompositeScore(
  * Calculate all scores for a donor
  */
 export function scoreDonor(
-  donor: any,
+  donor: Pick<
+    DonorRegistration,
+    "lastDonation" | "hemoglobin" | "bmi" | "recentVaccinations" | "medications"
+  >,
   distanceKm: number,
   maxRadiusKm: number,
   urgency: string,

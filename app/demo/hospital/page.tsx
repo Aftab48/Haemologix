@@ -44,15 +44,14 @@ import {
   BarChart3,
   Share2,
   Search,
-  Download,
   Calendar,
   Scissors,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { formatLastActivity, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import GradientBackground from "@/components/GradientBackground";
+import Image from "next/image";
 import { fetchUserDataById } from "@/lib/actions/user.actions";
 import { createAlert, getAlerts } from "@/lib/actions/alerts.actions";
 import { fetchHospitalInventory, updateHospitalInventory } from "@/lib/actions/hospital.actions";
@@ -69,31 +68,19 @@ type OTSchedule = {
   notes?: string;
 };
 
-type Donor = {
-  id: number;
-  alertId: number;
-  donorName: string;
-  bloodType: string;
-  distance: string;
-  phone: string;
-  status: string;
-  eta: string;
-  lastDonation: string;
-};
-
 export default function HospitalDashboard() {
   // Demo hospital ID
   const DEMO_HOSPITAL_ID = "371e7b56-c11a-4cbf-8300-757526221233";
 
-  const [user, setUser] = useState<HospitalData | null>(null);
+  const [user, setUser] = useState<{ hospitalName: string } | null>(null);
   const [showCreateAlert, setShowCreateAlert] = useState(false);
   const [activeTab, setActiveTab] = useState("inventory");
   const [isLoadingUser, setIsLoadingUser] = useState(true);
-  const [isLoadingInventory, setIsLoadingInventory] = useState(true);
-  const [isLoadingAlerts, setIsLoadingAlerts] = useState(true);
+  const [, setIsLoadingInventory] = useState(true);
+  const [, setIsLoadingAlerts] = useState(true);
 
   const [bloodInventory, setBloodInventory] = useState<InventoryItem[]>([]);
-  const [hasInventoryData, setHasInventoryData] = useState(false);
+  const [, setHasInventoryData] = useState(false);
 
   const [isInvModalOpen, setIsInvModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
@@ -112,17 +99,12 @@ export default function HospitalDashboard() {
       try {
         setIsLoadingUser(true);
         const userData = await fetchUserDataById(DEMO_HOSPITAL_ID, "hospital");
-        if (userData && userData.userType === "hospital") {
-          const hospitalData = userData as any; // Type assertion for hospital data
-          setUser({
-            ...hospitalData,
-            licenseExpiryDate: hospitalData.licenseExpiryDate
-              ? new Date(hospitalData.licenseExpiryDate).toISOString()
-              : "",
-            nocExpiryDate: hospitalData.nocExpiryDate
-              ? new Date(hospitalData.nocExpiryDate).toISOString()
-              : "",
-          } as HospitalData);
+        if (
+          userData &&
+          "hospitalName" in userData &&
+          typeof userData.hospitalName === "string"
+        ) {
+          setUser({ hospitalName: userData.hospitalName });
         }
       } catch (err) {
         console.error("[Demo Hospital Dashboard] error fetching user:", err);
@@ -687,8 +669,12 @@ export default function HospitalDashboard() {
 
   return (
     <GradientBackground>
-      <img
+      <Image
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
+        alt=""
+        width={1200}
+        height={800}
+        unoptimized
         className="w-full h-full object-cover absolute mix-blend-overlay opacity-20 z-0"
       />
 
@@ -1274,7 +1260,7 @@ export default function HospitalDashboard() {
                             )}
 
                             {/* Auto-detected badge */}
-                            {(alert as any).autoDetected && (
+                            {alert.autoDetected && (
                               <Badge className="bg-green-100 text-green-700 border border-green-300">
                                 🤖 Auto-detected
                               </Badge>

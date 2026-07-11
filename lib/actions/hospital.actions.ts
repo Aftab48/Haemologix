@@ -75,7 +75,7 @@ export async function createHospital(hospitalData: HospitalData) {
       },
     });
 
-     const fileFields: (keyof HospitalData)[] = [
+     const fileFields: HospitalFileField[] = [
        "bloodBankLicenseDoc",
        "hospitalRegistrationCert",
        "authorizedRepIdProof",
@@ -85,7 +85,7 @@ export async function createHospital(hospitalData: HospitalData) {
       fileFields.map(async (field) => {
         const file = hospitalData[field] as unknown as File | null;
         if (file) {
-          await uploadHospitalFile(field as any, file, newHospital.id);
+          await uploadHospitalFile(field, file, newHospital.id);
         }
       })
     );
@@ -98,6 +98,7 @@ export async function createHospital(hospitalData: HospitalData) {
 }
 
 export async function fetchAllHospitals(includeFiles: boolean = false) {
+  void includeFiles;
   try {
     // Always fetch all data including alerts and counts
     // File URLs are now direct S3 URLs (no presigned URL generation needed)
@@ -115,6 +116,7 @@ export async function fetchAllHospitals(includeFiles: boolean = false) {
 }
 
 export async function fetchHospitalById(hospitalId: string, includeFiles: boolean = true) {
+  void includeFiles;
   try {
     // Return all data - file URLs are now direct S3 URLs (no presigned URL generation needed)
     const hospital = await db.hospitalRegistration.findUnique({

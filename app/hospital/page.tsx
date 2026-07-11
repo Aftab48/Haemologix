@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,12 +45,10 @@ import {
   BarChart3,
   Share2,
   Search,
-  Download,
   Calendar,
   Scissors,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { formatLastActivity, cn } from "@/lib/utils";
 import StatCard from "@/components/dashboard/StatCard";
@@ -415,7 +413,7 @@ export default function HospitalDashboard() {
   });
   const [otSchedules, setOTSchedules] = useState<OTSchedule[]>([]);
 
-  const loadOTSchedules = async (date: string) => {
+  const loadOTSchedules = useCallback(async (date: string) => {
     setOTLoading(true);
     try {
       const res = await fetch(`/api/ot?hospitalId=${HOSPITAL_ID}&date=${date}`);
@@ -429,9 +427,9 @@ export default function HospitalDashboard() {
       }
     } catch {}
     setOTLoading(false);
-  };
+  }, [HOSPITAL_ID]);
 
-  const runOTInventoryCheck = async () => {
+  const runOTInventoryCheck = useCallback(async () => {
     try {
       await fetch("/api/ot/check-alerts", {
         method: "POST",
@@ -439,16 +437,16 @@ export default function HospitalDashboard() {
         body: JSON.stringify({ hospitalId: HOSPITAL_ID }),
       });
     } catch {}
-  };
+  }, [HOSPITAL_ID]);
 
   useEffect(() => {
     loadOTSchedules(selectedOTDate);
-  }, [selectedOTDate]);
+  }, [selectedOTDate, loadOTSchedules]);
 
   useEffect(() => {
     // Run inventory check once on mount — fires alerts if OT needs exceed stock
     runOTInventoryCheck();
-  }, []);
+  }, [runOTInventoryCheck]);
 
   const filteredOTSchedules = otSchedules.filter(
     (s) => s.scheduledDate === selectedOTDate

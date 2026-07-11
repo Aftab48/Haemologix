@@ -159,7 +159,7 @@ export function mapAsyncState<T, U>(
  * const combined = combineAsyncStates([userState, postsState]);
  * // combined.data will be [User, Post[]] if both succeed
  */
-export function combineAsyncStates<T extends readonly AsyncState<any>[]>(
+export function combineAsyncStates<T extends readonly AsyncState<unknown>[]>(
   states: T
 ): AsyncState<{ [K in keyof T]: T[K] extends AsyncState<infer U> ? U : never }> {
   type ResultData = { [K in keyof T]: T[K] extends AsyncState<infer U> ? U : never };

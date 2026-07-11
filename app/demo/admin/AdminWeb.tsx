@@ -6,17 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import {
-  VerificationBadge,
-  SuspensionBadge,
-  AttemptsBadge,
-} from "@/components/VerificationBadge";
+import { SuspensionBadge, AttemptsBadge } from "@/components/VerificationBadge";
 
 import { fetchAllDonors } from "@/lib/actions/donor.actions";
-import {
-  fetchAllHospitals,
-  fetchHospitalById,
-} from "@/lib/actions/hospital.actions";
+import { fetchAllHospitals } from "@/lib/actions/hospital.actions";
 import {
   fetchAllOnboardDonors,
   approveOnboardDonor,
@@ -40,14 +33,10 @@ import {
   CheckCircle,
   XCircle,
   Search,
-  Filter,
   Download,
-  Settings,
   BarChart3,
   Globe,
   Clock,
-  ChevronUp,
-  ChevronDown,
   Heart,
   Bot,
   Brain,
@@ -96,7 +85,7 @@ function AdminWebDashboard() {
     }
   }, [user]);
 
-  const [systemStats, setSystemStats] = useState({
+  const [systemStats] = useState({
     totalUsers: 25847,
     activeDonors: 18234,
     registeredHospitals: 156,
@@ -107,7 +96,7 @@ function AdminWebDashboard() {
     criticalAlerts: 5,
   });
 
-  const [recentActivity, setRecentActivity] = useState([
+  const [recentActivity] = useState([
     {
       id: 1,
       type: "alert_created",
@@ -154,6 +143,8 @@ function AdminWebDashboard() {
     address?: string; // hospital only
     responseTimeMinutes?: string; // hospital only
     phone: string;
+    verificationAttempts?: number;
+    suspendedUntil?: Date | null;
   };
 
   const [users, setUsers] = useState<NormalizedUser[]>([]);
@@ -163,7 +154,7 @@ function AdminWebDashboard() {
       const donors = await fetchAllDonors();
       const hospitals = await fetchAllHospitals();
 
-      const formattedDonors: NormalizedUser[] = donors.map((d: any) => ({
+      const formattedDonors: NormalizedUser[] = donors.map((d) => ({
         id: d.id,
         name: `${d.firstName} ${d.lastName}`,
         email: d.email,
@@ -173,9 +164,11 @@ function AdminWebDashboard() {
         status: d.status,
         lastActivity: d.lastDonation ? d.lastDonation.toISOString() : "N/A",
         phone: d.phone,
+        verificationAttempts: d.verificationAttempts,
+        suspendedUntil: d.suspendedUntil,
       }));
 
-      const formattedHospitals: NormalizedUser[] = hospitals.map((h: any) => ({
+      const formattedHospitals: NormalizedUser[] = hospitals.map((h) => ({
         id: h.id,
         name: h.hospitalName,
         email: h.contactEmail,
@@ -197,12 +190,9 @@ function AdminWebDashboard() {
     setLoading(false);
   }, []);
 
-  type HospitalType = Awaited<ReturnType<typeof fetchAllHospitals>>[number];
-
-  const [hospitals, setHospitals] = useState<HospitalType[]>([]);
-
   // Onboard donors state
-  const [onboardDonors, setOnboardDonors] = useState<any[]>([]);
+  type OnboardDonor = Awaited<ReturnType<typeof fetchAllOnboardDonors>>[number];
+  const [onboardDonors, setOnboardDonors] = useState<OnboardDonor[]>([]);
   const [onboardDonorSearch, setOnboardDonorSearch] = useState("");
   const [onboardDonorStatusFilter, setOnboardDonorStatusFilter] = useState<
     "ALL" | "PENDING" | "APPROVED" | "REJECTED"
@@ -216,25 +206,12 @@ function AdminWebDashboard() {
     fetchOnboardDonors();
   }, []);
 
-  const fetchHospitals = async () => {
-    const hospitalsData = await fetchAllHospitals();
-    setHospitals(hospitalsData);
-  };
-
-  useEffect(() => {
-    fetchHospitals();
-  }, []);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-
-  const toggleExpand = (id: string) => {
-    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "donor" | "hospital">(
     "all"
   ); // always defined
 
-  const [statusFilter, setStatusFilter] = useState<ApprovalStatus | "ALL">(
+  const [statusFilter] = useState<ApprovalStatus | "ALL">(
     "ALL"
   );
 
@@ -255,14 +232,14 @@ function AdminWebDashboard() {
 
   const manualReviewUsers = users.filter((user) => {
     // Users pending without verification or with technical errors
-    return user.status === "PENDING" && !(user as any).verificationAttempts;
+    return user.status === "PENDING" && !user.verificationAttempts;
   });
 
   const suspendedUsers = users.filter((user) => {
     // Users who are suspended
     return (
-      (user as any).suspendedUntil &&
-      new Date() < new Date((user as any).suspendedUntil)
+      user.suspendedUntil &&
+      new Date() < new Date(user.suspendedUntil)
     );
   });
 
@@ -363,11 +340,11 @@ function AdminWebDashboard() {
   //   );
   // }
 
-  const handleApprove = async (user: any) => {
+  const handleApprove = async (user: NormalizedUser) => {
     setUsers((prev) =>
       prev.map((u) => (u.id === user.id ? { ...u, status: "APPROVED" } : u))
     );
-    const role = user.role.toLowerCase();
+    const role = user.role;
     await updateUserStatus(user.id, role, "APPROVED");
     console.log(user.phone);
 
@@ -380,15 +357,16 @@ function AdminWebDashboard() {
     }
   };
 
-  const handleReject = async (user: any) => {
+  const handleReject = async (user: NormalizedUser) => {
     setUsers((prev) =>
       prev.map((u) => (u.id === user.id ? { ...u, status: "REJECTED" } : u))
     );
     await updateUserStatus(user.id, user.role, "REJECTED");
-    if (user.role === "DONOR") {
+
+    if (user.role === "donor") {
       await sendApplicationRejectedEmail(user.email, user.name);
       await sendApplicationRejectedSMS(user.phone, user.name);
-    } else if (user.role === "HOSPITAL") {
+    } else {
       await sendHospitalRejectionEmail(user.email, user.name);
       await sendHospitalRejectedSMS(user.phone, user.name);
     }
@@ -663,7 +641,15 @@ function AdminWebDashboard() {
                 <div className="flex justify-between gap-2 w-full">
                   <Select
                     value={roleFilter}
-                    onValueChange={(value) => setRoleFilter(value as any)}
+                    onValueChange={(value) => {
+                      if (
+                        value === "all" ||
+                        value === "donor" ||
+                        value === "hospital"
+                      ) {
+                        setRoleFilter(value);
+                      }
+                    }}
                   >
                     <SelectTrigger className="w-32 bg-white/5 border-white/20 text-text-dark">
                       <SelectValue />
@@ -815,19 +801,15 @@ function AdminWebDashboard() {
                           <td className="p-4">{getStatusBadge(user.status)}</td>
                           <td className="p-4">
                             <div className="flex flex-col gap-1">
-                              {(user as any).suspendedUntil &&
-                                new Date() <
-                                  new Date((user as any).suspendedUntil) && (
+                              {user.suspendedUntil &&
+                                new Date() < new Date(user.suspendedUntil) && (
                                   <SuspensionBadge
-                                    suspendedUntil={
-                                      (user as any).suspendedUntil
-                                    }
+                                    suspendedUntil={user.suspendedUntil}
                                   />
                                 )}
-                              {(user as any).verificationAttempts !==
-                                undefined && (
+                              {user.verificationAttempts !== undefined && (
                                 <AttemptsBadge
-                                  attempts={(user as any).verificationAttempts}
+                                  attempts={user.verificationAttempts}
                                 />
                               )}
                             </div>
@@ -1076,9 +1058,16 @@ function AdminWebDashboard() {
                 </div>
                 <Select
                   value={onboardDonorStatusFilter}
-                  onValueChange={(value) =>
-                    setOnboardDonorStatusFilter(value as any)
-                  }
+                  onValueChange={(value) => {
+                    if (
+                      value === "ALL" ||
+                      value === "PENDING" ||
+                      value === "APPROVED" ||
+                      value === "REJECTED"
+                    ) {
+                      setOnboardDonorStatusFilter(value);
+                    }
+                  }}
                 >
                   <SelectTrigger className="w-40 bg-white/5 border-white/20 text-text-dark">
                     <SelectValue />

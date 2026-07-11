@@ -7,10 +7,47 @@
 const ML_API_URL = process.env.ML_API_URL || "http://localhost:8000";
 
 interface ModelPredictionResponse {
-  decision: any;
+  decision: unknown;
   reasoning: string;
   confidence: number;
-  alternatives?: any[];
+  alternatives?: unknown[];
+}
+
+type JsonRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string" || value.trim() === "") return null;
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseModelPrediction(value: unknown): ModelPredictionResponse {
+  if (
+    !isRecord(value) ||
+    !("decision" in value) ||
+    typeof value.reasoning !== "string" ||
+    (value.alternatives !== undefined && !Array.isArray(value.alternatives))
+  ) {
+    throw new Error("ML API returned an invalid prediction");
+  }
+
+  const confidence = toFiniteNumber(value.confidence);
+  if (confidence === null) {
+    throw new Error("ML API returned an invalid prediction");
+  }
+
+  return {
+    decision: value.decision,
+    reasoning: value.reasoning,
+    confidence,
+    alternatives: value.alternatives,
+  };
 }
 
 interface DonorSelectionRequest {
@@ -30,7 +67,7 @@ interface DonorSelectionRequest {
   context?: {
     timeOfDay?: string;
     trafficConditions?: string;
-    historicalPatterns?: any;
+    historicalPatterns?: JsonRecord;
   };
 }
 
@@ -39,7 +76,7 @@ interface UrgencyAssessmentRequest {
   currentUnits: number;
   daysRemaining: number;
   dailyUsage: number;
-  hospitalContext?: any;
+  hospitalContext?: JsonRecord;
   timeOfDay?: string;
 }
 
@@ -58,8 +95,8 @@ interface InventorySelectionRequest {
 }
 
 interface TransportPlanningRequest {
-  fromHospital: any;
-  toHospital: any;
+  fromHospital: JsonRecord;
+  toHospital: JsonRecord;
   distanceKm: number;
   urgency: string;
   bloodType: string;
@@ -79,8 +116,8 @@ interface EligibilityAnalysisRequest {
   };
   eligibilityResult: {
     passed: boolean;
-    failedCriteria: any[];
-    allCriteria: any[];
+    failedCriteria: JsonRecord[];
+    allCriteria: JsonRecord[];
   };
 }
 
@@ -99,8 +136,8 @@ async function checkMLApiHealth(): Promise<boolean> {
       return false;
     }
 
-    const data = await response.json();
-    return data.model_loaded === true;
+    const data: unknown = await response.json();
+    return isRecord(data) && data.model_loaded === true;
   } catch (error) {
     console.warn("[ModelClient] ML API health check failed:", error);
     return false;
@@ -112,7 +149,7 @@ async function checkMLApiHealth(): Promise<boolean> {
  */
 async function callMLApi(
   endpoint: string,
-  data: any,
+  data: unknown,
   retries: number = 2
 ): Promise<ModelPredictionResponse | null> {
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -132,7 +169,7 @@ async function callMLApi(
         throw new Error(`ML API error: ${response.status}`);
       }
 
-      return await response.json();
+      return parseModelPrediction(await response.json());
     } catch (error) {
       if (attempt < retries) {
         console.warn(

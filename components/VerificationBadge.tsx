@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Clock, AlertCircle, Ban } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Ban } from "lucide-react";
 
 type VerificationStatus = 
   | "PENDING" 

@@ -22,16 +22,24 @@ export async function GET() {
     const filePath = path.join(process.cwd(), "public", "id.jpg");
     const data = await extractData(filePath);
     return NextResponse.json(data);
-  } catch (err: any) {
+  } catch (err) {
     console.error("Extraction error:", err);
 
-    if (err.message === "Unknown file type" && err.parsedContent) {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "message" in err &&
+      err.message === "Unknown file type" &&
+      "parsedContent" in err &&
+      err.parsedContent
+    ) {
       return NextResponse.json({
         fileType: "unknown",
         raw: err.parsedContent,
       });
     }
 
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

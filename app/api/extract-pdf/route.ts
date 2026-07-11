@@ -2,6 +2,21 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
+function getUploadedFileUri(value: unknown): string {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "file" in value &&
+    typeof value.file === "object" &&
+    value.file !== null &&
+    "uri" in value.file &&
+    typeof value.file.uri === "string"
+  ) {
+    return value.file.uri;
+  }
+  throw new Error("Upload response did not include a file URI");
+}
+
 /**
  * PDF extraction endpoint — development only.
  * SECURITY: Only available in development/test environments.
@@ -46,7 +61,8 @@ export async function GET() {
       );
     }
 
-    const uploadedFile = await uploadRes.json();
+    const uploadedFile: unknown = await uploadRes.json();
+    const fileUri = getUploadedFileUri(uploadedFile);
 
     const extractRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
@@ -63,7 +79,7 @@ export async function GET() {
                 {
                   fileData: {
                     mimeType: "application/pdf",
-                    fileUri: uploadedFile.file.uri,
+                    fileUri,
                   },
                 },
                 { text: "Extract all the text content from this PDF." },
@@ -74,9 +90,10 @@ export async function GET() {
       }
     );
 
-    const data = await extractRes.json();
+    const data: unknown = await extractRes.json();
     return NextResponse.json({ success: true, data });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

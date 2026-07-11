@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
+import type { Prisma } from "@prisma/client";
 
 /**
  * Pilot Analytics API Endpoint
@@ -15,12 +16,16 @@ interface AnalyticsData {
   referrer?: string;
   userAgent?: string;
   ipAddress?: string;
-  metadata?: Record<string, any>;
+  metadata?: Prisma.InputJsonValue;
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body: unknown = await req.json();
+    const payload =
+      typeof body === "object" && body !== null
+        ? (body as Partial<AnalyticsData>)
+        : {};
     const {
       eventType,
       utmSource,
@@ -29,7 +34,7 @@ export async function POST(req: NextRequest) {
       utmContent,
       referrer,
       metadata,
-    }: AnalyticsData = body;
+    } = payload;
 
     if (!eventType) {
       return NextResponse.json(
@@ -87,7 +92,7 @@ export async function GET(req: NextRequest) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
 
-    const where: any = {};
+    const where: Prisma.PilotAnalyticsWhereInput = {};
     if (eventType) where.eventType = eventType;
     if (utmMedium) where.utmMedium = utmMedium;
     if (startDate || endDate) {
@@ -104,25 +109,25 @@ export async function GET(req: NextRequest) {
     // Calculate statistics
     const stats = {
       totalEvents: analytics.length,
-      qrScans: analytics.filter((a: any) => a.eventType === "qr_scan" || a.eventType === "donor_qr_scan").length,
-      pageViews: analytics.filter((a: any) => a.eventType === "page_view" || a.eventType === "donor_page_view")
+      qrScans: analytics.filter((a) => a.eventType === "qr_scan" || a.eventType === "donor_qr_scan").length,
+      pageViews: analytics.filter((a) => a.eventType === "page_view" || a.eventType === "donor_page_view")
         .length,
       formSubmissions: analytics.filter(
-        (a: any) => a.eventType === "form_submission" || a.eventType === "donor_form_submission"
+        (a) => a.eventType === "form_submission" || a.eventType === "donor_form_submission"
       ).length,
-      donorQrScans: analytics.filter((a: any) => a.eventType === "donor_qr_scan").length,
-      donorPageViews: analytics.filter((a: any) => a.eventType === "donor_page_view").length,
-      donorFormSubmissions: analytics.filter((a: any) => a.eventType === "donor_form_submission").length,
-      pilotQrScans: analytics.filter((a: any) => a.eventType === "qr_scan").length,
-      pilotPageViews: analytics.filter((a: any) => a.eventType === "page_view").length,
-      pilotFormSubmissions: analytics.filter((a: any) => a.eventType === "form_submission").length,
+      donorQrScans: analytics.filter((a) => a.eventType === "donor_qr_scan").length,
+      donorPageViews: analytics.filter((a) => a.eventType === "donor_page_view").length,
+      donorFormSubmissions: analytics.filter((a) => a.eventType === "donor_form_submission").length,
+      pilotQrScans: analytics.filter((a) => a.eventType === "qr_scan").length,
+      pilotPageViews: analytics.filter((a) => a.eventType === "page_view").length,
+      pilotFormSubmissions: analytics.filter((a) => a.eventType === "form_submission").length,
       byUtmMedium: {} as Record<string, number>,
       byDate: {} as Record<string, number>,
       byEventType: {} as Record<string, number>,
     };
 
     // Group by UTM medium, date, and event type
-    analytics.forEach((a: any) => {
+    analytics.forEach((a) => {
       const medium = a.utmMedium || "direct";
       stats.byUtmMedium[medium] = (stats.byUtmMedium[medium] || 0) + 1;
 

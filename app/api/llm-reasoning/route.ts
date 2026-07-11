@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { requireAuth } from "@/lib/auth";
+import type { Prisma } from "@prisma/client";
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
 export async function GET(req: NextRequest) {
   const { error } = await requireAuth();
@@ -15,7 +22,7 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "100");
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.AgentDecisionWhereInput = {};
 
     if (agentType) {
       where.agentType = agentType.toUpperCase();
@@ -45,14 +52,14 @@ export async function GET(req: NextRequest) {
     // Transform decisions to include reasoning details and filter for LLM usage
     const reasoningData = decisions
       .map((decision) => {
-        const decisionData = decision.decision as any;
+        const decisionData = asRecord(decision.decision);
         
         // Check if LLM was used
-        const llmUsed = decisionData?.llm_used === true;
+        const llmUsed = decisionData.llm_used === true;
         
         // Extract model used from decision or infer from model_used field
         let modelUsed = "unknown";
-        if (decisionData?.model_used) {
+        if (typeof decisionData.model_used === "string") {
           modelUsed = decisionData.model_used;
         } else if (llmUsed) {
           // If llm_used is true but no model_used, assume claude-4.5 (legacy data)
@@ -65,17 +72,25 @@ export async function GET(req: NextRequest) {
           eventType: decision.eventType,
           requestId: decision.requestId,
           eventId: decision.eventId,
-          reasoning: decisionData?.reasoning || "",
+          reasoning:
+            typeof decisionData.reasoning === "string"
+              ? decisionData.reasoning
+              : "",
           modelUsed: modelUsed,
-          confidence: decision.confidence || decisionData?.llm_confidence || decisionData?.confidence,
+          confidence:
+            decision.confidence ||
+            decisionData.llm_confidence ||
+            decisionData.confidence,
           decision: decisionData,
           createdAt: decision.createdAt.toISOString(),
         };
       })
       .filter((item) => {
         // Only include items where LLM was used (has reasoning or model_used is not unknown)
-        const decisionData = decisions.find(d => d.id === item.id)?.decision as any;
-        return decisionData?.llm_used === true || (item.reasoning && item.modelUsed !== "unknown");
+        const decisionData = asRecord(
+          decisions.find((d) => d.id === item.id)?.decision
+        );
+        return decisionData.llm_used === true || (item.reasoning && item.modelUsed !== "unknown");
       })
       .slice(0, limit); // Limit after filtering
 

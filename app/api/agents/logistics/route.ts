@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
 /**
  * GET endpoint for Logistics Agent status
  */
-export async function GET(req: NextRequest) {
+export async function GET() {
   return NextResponse.json({
     success: true,
     message: "Logistics Agent API is running",

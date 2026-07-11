@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Save, User, Phone, MapPin, Heart, AlertCircle } from "lucide-react";
+import { ArrowLeft, Save, User, Phone, Heart, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getCurrentUser } from "@/lib/actions/user.actions";
@@ -81,8 +81,8 @@ export default function ProfileEditPage() {
         const res = await getCurrentUser(email);
 
         if (res.role === "DONOR" && res.user) {
-          const user = res.user as any;
-          setDonorId(user.id);
+          const user = res.user;
+          setDonorId(user.id ?? null);
           
           // Format date for input
           const dateOfBirth = user.dateOfBirth
@@ -223,9 +223,14 @@ export default function ProfileEditPage() {
       setTimeout(() => {
         router.push("/donor");
       }, 1500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating profile:", error);
-      setErrors({ submit: error.message || "Failed to update profile. Please try again." });
+      setErrors({
+        submit:
+          error instanceof Error
+            ? error.message
+            : "Failed to update profile. Please try again.",
+      });
     } finally {
       setSaving(false);
     }

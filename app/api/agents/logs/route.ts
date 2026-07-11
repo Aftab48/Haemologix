@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { requireAuth } from "@/lib/auth";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const { error } = await requireAuth();
   if (error) return error;
 
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     // Transform to a cleaner format and normalize agent types
     const validAgentTypes = ["HOSPITAL", "DONOR", "COORDINATOR", "INVENTORY", "LOGISTICS", "VERIFICATION"];
     const formattedLogs = logs
-      .map((log: any) => ({
+      .map((log) => ({
         id: log.id,
         agentType: log.agentType?.toUpperCase() || "UNKNOWN", // Normalize to uppercase
         eventType: log.eventType,

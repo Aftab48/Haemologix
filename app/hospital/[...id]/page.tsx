@@ -734,9 +734,12 @@ export default function HospitalDashboard() {
 
   return (
     <GradientBackground className="flex flex-col">
-      <img
+      <Image
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
-        alt="Background"
+        alt=""
+        width={1200}
+        height={800}
+        unoptimized
         className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
       />
       {/* Header */}

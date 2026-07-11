@@ -92,7 +92,10 @@ export default function BloodBankRegistration() {
   const totalSteps = 6;
   const progress = ((currentStep - 1) / totalSteps) * 100;
 
-  const updateFormData = (field: keyof BloodBankData, value: any) => {
+  const updateFormData = <K extends keyof BloodBankData>(
+    field: K,
+    value: BloodBankData[K]
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear error when user starts typing
@@ -416,7 +419,7 @@ export default function BloodBankRegistration() {
                       id="sbtc-noc"
                       checked={formData.sbtcNoc}
                       onCheckedChange={(checked) =>
-                        updateFormData("sbtcNoc", checked)
+                        updateFormData("sbtcNoc", checked === true)
                       }
                     />
                     <Label htmlFor="sbtc-noc" className="text-white">
@@ -475,7 +478,7 @@ export default function BloodBankRegistration() {
                         id="nbtc-compliance"
                         checked={formData.nbtcCompliance}
                         onCheckedChange={(checked) =>
-                          updateFormData("nbtcCompliance", checked)
+                          updateFormData("nbtcCompliance", checked === true)
                         }
                       />
                       <Label htmlFor="nbtc-compliance" className="text-white">
@@ -494,7 +497,7 @@ export default function BloodBankRegistration() {
                         id="naco-compliance"
                         checked={formData.nacoCompliance}
                         onCheckedChange={(checked) =>
-                          updateFormData("nacoCompliance", checked)
+                          updateFormData("nacoCompliance", checked === true)
                         }
                       />
                       <Label htmlFor="naco-compliance" className="text-white">
@@ -684,7 +687,7 @@ export default function BloodBankRegistration() {
                         id="cold-storage"
                         checked={formData.coldStorageFacility}
                         onCheckedChange={(checked) =>
-                          updateFormData("coldStorageFacility", checked)
+                          updateFormData("coldStorageFacility", checked === true)
                         }
                       />
                       <Label htmlFor="cold-storage" className="text-white">
@@ -702,7 +705,7 @@ export default function BloodBankRegistration() {
                         id="temp-standards"
                         checked={formData.temperatureStandards}
                         onCheckedChange={(checked) =>
-                          updateFormData("temperatureStandards", checked)
+                          updateFormData("temperatureStandards", checked === true)
                         }
                       />
                       <Label htmlFor="temp-standards" className="text-white">
@@ -720,7 +723,7 @@ export default function BloodBankRegistration() {
                         id="testing-labs"
                         checked={formData.testingLabsOnsite}
                         onCheckedChange={(checked) =>
-                          updateFormData("testingLabsOnsite", checked)
+                          updateFormData("testingLabsOnsite", checked === true)
                         }
                       />
                       <Label htmlFor="testing-labs" className="text-white">
@@ -754,7 +757,7 @@ export default function BloodBankRegistration() {
                         id="medical-officer"
                         checked={formData.qualifiedMedicalOfficer}
                         onCheckedChange={(checked) =>
-                          updateFormData("qualifiedMedicalOfficer", checked)
+                          updateFormData("qualifiedMedicalOfficer", checked === true)
                         }
                       />
                       <Label htmlFor="medical-officer" className="text-white">
@@ -824,7 +827,7 @@ export default function BloodBankRegistration() {
                         id="inventory-reporting"
                         checked={formData.inventoryReporting}
                         onCheckedChange={(checked) =>
-                          updateFormData("inventoryReporting", checked)
+                          updateFormData("inventoryReporting", checked === true)
                         }
                       />
                       <Label
@@ -846,7 +849,7 @@ export default function BloodBankRegistration() {
                         id="realtime-updates"
                         checked={formData.realTimeUpdates}
                         onCheckedChange={(checked) =>
-                          updateFormData("realTimeUpdates", checked)
+                          updateFormData("realTimeUpdates", checked === true)
                         }
                       />
                       <Label htmlFor="realtime-updates" className="text-white">
@@ -862,7 +865,7 @@ export default function BloodBankRegistration() {
                       id="emergency-response"
                       checked={formData.emergencyResponseCommitment}
                       onCheckedChange={(checked) =>
-                        updateFormData("emergencyResponseCommitment", checked)
+                        updateFormData("emergencyResponseCommitment", checked === true)
                       }
                     />
                     <Label htmlFor="emergency-response" className="text-white">
@@ -914,7 +917,7 @@ export default function BloodBankRegistration() {
                         id="data-handling"
                         checked={formData.dataHandlingCommitment}
                         onCheckedChange={(checked) =>
-                          updateFormData("dataHandlingCommitment", checked)
+                          updateFormData("dataHandlingCommitment", checked === true)
                         }
                       />
                       <Label htmlFor="data-handling" className="text-white">
@@ -932,7 +935,7 @@ export default function BloodBankRegistration() {
                         id="confidentiality"
                         checked={formData.confidentialityAgreement}
                         onCheckedChange={(checked) =>
-                          updateFormData("confidentialityAgreement", checked)
+                          updateFormData("confidentialityAgreement", checked === true)
                         }
                       />
                       <Label htmlFor="confidentiality" className="text-white">
@@ -1179,7 +1182,7 @@ export default function BloodBankRegistration() {
                         id="mou-acceptance"
                         checked={formData.mouAcceptance}
                         onCheckedChange={(checked) =>
-                          updateFormData("mouAcceptance", checked)
+                          updateFormData("mouAcceptance", checked === true)
                         }
                         className="mt-1"
                       />
@@ -1217,7 +1220,7 @@ export default function BloodBankRegistration() {
                       id="terms-accepted"
                       checked={formData.termsAccepted}
                       onCheckedChange={(checked) =>
-                        updateFormData("termsAccepted", checked)
+                        updateFormData("termsAccepted", checked === true)
                       }
                       className="mt-1"
                     />
@@ -1252,7 +1255,7 @@ export default function BloodBankRegistration() {
                       id="data-processing-consent"
                       checked={formData.dataProcessingConsent}
                       onCheckedChange={(checked) =>
-                        updateFormData("dataProcessingConsent", checked)
+                        updateFormData("dataProcessingConsent", checked === true)
                       }
                       className="mt-1"
                     />
@@ -1281,7 +1284,7 @@ export default function BloodBankRegistration() {
                       id="network-participation"
                       checked={formData.networkParticipationAgreement}
                       onCheckedChange={(checked) =>
-                        updateFormData("networkParticipationAgreement", checked)
+                        updateFormData("networkParticipationAgreement", checked === true)
                       }
                       className="mt-1"
                     />

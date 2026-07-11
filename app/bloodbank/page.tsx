@@ -1,15 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
@@ -45,34 +38,20 @@ import {
   BarChart3,
   Share2,
   Search,
-  Download,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 
 import { formatLastActivity, cn } from "@/lib/utils";
 import StatCard from "@/components/dashboard/StatCard";
-import { pageContainer, fadeUp, fadeIn, listItem } from "@/components/dashboard/motion";
-
-type Donor = {
-  id: number;
-  alertId: number;
-  donorName: string;
-  bloodType: string;
-  distance: string;
-  phone: string;
-  status: string;
-  eta: string;
-  lastDonation: string;
-};
+import { pageContainer, fadeUp, listItem } from "@/components/dashboard/motion";
 
 export default function BloodbankDashboard() {
   const [showCreateAlert, setShowCreateAlert] = useState(false);
   const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("inventory");
 
-  const [donorResponses, setDonorResponses] = useState<DonorUI[]>([
+  const [donorResponses] = useState<DonorUI[]>([
     {
       id: "1",
       donorName: "Arjun Roy",
@@ -259,8 +238,6 @@ export default function BloodbankDashboard() {
     },
   ]);
   // const [donorResponses, setDonorResponses] = useState<DonorUI[]>([]);
-  const [currentAlert, setCurrentAlert] = useState<AlertWithType | null>(null);
-
   // useEffect(() => {
   //   if (activeAlerts.length > 0 && !currentAlert) {
   //     setCurrentAlert(activeAlerts[0]);
@@ -288,63 +265,6 @@ export default function BloodbankDashboard() {
   //   if (currentAlert?.id) fetchResponses();
   // }, [currentAlert]);
 
-  // put this near the top of your component file (outside useEffect)
-  const mockPlasmaAlerts: AlertWithType[] = [
-    {
-      id: "mock-plasma-1",
-      type: "Plasma",
-      bloodType: null,
-      urgency: "CRITICAL",
-      unitsNeeded: "3",
-      radius: "10",
-      description: "Urgent plasma required for surgery",
-      hospitalId: "mock-hospital",
-      createdAt: formatLastActivity(new Date(), false),
-      responses: 0,
-      confirmed: 0,
-    },
-    {
-      id: "mock-plasma-2",
-      type: "Plasma",
-      bloodType: null,
-      urgency: "CRITICAL",
-      unitsNeeded: "2",
-      radius: "15",
-      description: "Plasma donation needed for patient recovery",
-      hospitalId: "mock-hospital",
-      createdAt: formatLastActivity(new Date(), false),
-      responses: 0,
-      confirmed: 0,
-    },
-    {
-      id: "1",
-      bloodType: "O+",
-      urgency: "CRITICAL",
-      unitsNeeded: "3",
-      description:
-        "Emergency surgery patient needs immediate blood transfusion",
-      createdAt: "15 minutes ago",
-      hospitalId: "mock-hospital",
-      radius: "15",
-      responses: 12,
-      confirmed: 3,
-      status: "Active",
-    },
-    {
-      id: "2",
-      bloodType: "A-",
-      urgency: "HIGH",
-      unitsNeeded: "2",
-      hospitalId: "mock-hospital",
-      radius: "20",
-      description: "Accident victim requires blood for surgery",
-      createdAt: "1 hour ago",
-      responses: 8,
-      confirmed: 2,
-      status: "Active",
-    },
-  ];
-
   const [newAlert, setNewAlert] = useState({
     type: "",
     bloodType: "",
@@ -353,14 +273,8 @@ export default function BloodbankDashboard() {
     description: "",
     radius: "10",
   });
-  const router = useRouter();
-
-  const [dbUser, setDbUser] = useState<any>(null);
-
-  const [user, setUser] = useState<HospitalData | null>(null);
-
-  const { user: loggedInUser } = useUser();
-  const [hospitalID, setHospitalID] = useState("");
+  const [user] = useState<HospitalData | null>(null);
+  const [hospitalID] = useState("");
   //   useEffect(() => {
   //     const fetchUser = async () => {
   //       const email = loggedInUser?.primaryEmailAddress?.emailAddress;
@@ -483,7 +397,7 @@ export default function BloodbankDashboard() {
   //   );
   // }
 
-  const [justConfirmed, setJustConfirmed] = useState<string | null>(null);
+  const [justConfirmed] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [distanceFilter, setDistanceFilter] = useState("all");
@@ -505,7 +419,7 @@ export default function BloodbankDashboard() {
     });
   }, [donorResponses, searchTerm, distanceFilter, bloodTypeFilter]);
 
-  const handleConfirm = (donorID: string) => {
+  const handleConfirm = () => {
     // Call the API to confirm the donor's response
     // confirmDonorResponse(donorID)
     //   .then(() => {
@@ -1243,7 +1157,7 @@ export default function BloodbankDashboard() {
                                 <>
                                   <Button
                                     size="sm"
-                                    onClick={() => handleConfirm(response.id)}
+                                    onClick={handleConfirm}
                                     className="bg-emerald-600 hover:bg-emerald-700 text-white"
                                   >
                                     Confirm
