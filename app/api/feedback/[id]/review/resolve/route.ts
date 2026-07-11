@@ -3,16 +3,17 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 
 export async function POST(
-  _: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { error } = await requireAdmin();
   if (error) return error;
 
+  const { id } = await params;
   await prisma.feedback.update({
-    where: { id: params.id },
+    where: { id },
     data: { status: "RESOLVED" },
   });
 
-  return NextResponse.redirect("/admin/feedback");
+  return NextResponse.redirect(new URL("/admin/feedback", request.url));
 }

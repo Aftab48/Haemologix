@@ -186,6 +186,7 @@ type Radius = "5" | "10" | "15" | "20" | null;
 type AlertType = "Blood" | "Plasma" | "Platelets" | null;
 
 interface CreateAlertInput {
+  type?: AlertType;
   bloodType: BloodType;
   urgency: Urgency;
   unitsNeeded: string;
@@ -206,6 +207,7 @@ interface InventoryProps {
 
 interface Alerts {
   id: string;
+  type?: AlertType | string;
   bloodType: BloodType;
   urgency: Urgency;
   unitsNeeded: string;

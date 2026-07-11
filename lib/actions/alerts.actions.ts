@@ -13,6 +13,7 @@ export async function createAlert(input: CreateAlertInput) {
   try {
     const alert = await db.alert.create({
       data: {
+        type: input.type ?? "Blood",
         bloodType: input.bloodType,
         urgency: input.urgency,
         unitsNeeded: input.unitsNeeded,
@@ -66,6 +67,7 @@ export async function getAlerts(hospitalId: string) {
     // transform DB → frontend-safe type with response counts
     return alerts.map((a) => ({
       id: a.id,
+      type: a.type,
       bloodType: a.bloodType as BloodType,
       urgency: a.urgency as Urgency,
       unitsNeeded: a.unitsNeeded,

@@ -66,7 +66,7 @@ export default async function AdminFeedbackPage() {
                   </Button>
                 </form>
 
-                <form action={`/api/feedback/${fb.id}/resolve`} method="POST">
+                <form action={`/api/feedback/${fb.id}/review/resolve`} method="POST">
                   <Button size="sm">Mark Resolved</Button>
                 </form>
               </div>

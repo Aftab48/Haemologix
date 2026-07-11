@@ -99,7 +99,11 @@ export default function HospitalDashboard() {
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
-  type AlertWithType = Alerts & { type?: AlertType | string };
+  type AlertWithType = Omit<Alerts, "status"> & {
+    type?: AlertType | string;
+    status?: string;
+    autoDetected?: boolean;
+  };
   const [activeAlerts, setActiveAlerts] = useState<AlertWithType[]>([]);
 
   // Fetch user data on mount
