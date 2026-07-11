@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { requireAuth } from "@/lib/auth";
 
 function getStringProperty(value: unknown, key: string): string {
   if (
@@ -15,8 +14,6 @@ function getStringProperty(value: unknown, key: string): string {
 }
 
 export async function GET() {
-  const { error } = await requireAuth();
-  if (error) return error;
   try {
     // Fetch recent agent decisions (last 50)
     const recentDecisions = await db.agentDecision.findMany({

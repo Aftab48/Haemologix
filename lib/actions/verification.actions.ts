@@ -496,6 +496,8 @@ async function handleVerificationResult(
         where: { id: donorId },
         data: {
           status: "PENDING",
+          // Successful verification counts as at least 1 attempt used
+          verificationAttempts: Math.max(donor.verificationAttempts, 1),
           lastVerificationAt: new Date(),
         },
       });

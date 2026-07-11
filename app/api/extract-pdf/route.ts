@@ -2,46 +2,19 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-function getUploadedFileUri(value: unknown): string {
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    "file" in value &&
-    typeof value.file === "object" &&
-    value.file !== null &&
-    "uri" in value.file &&
-    typeof value.file.uri === "string"
-  ) {
-    return value.file.uri;
-  }
-  throw new Error("Upload response did not include a file URI");
-}
-
-/**
- * PDF extraction endpoint — development only.
- * SECURITY: Only available in development/test environments.
- */
-
-function productionGuard(): NextResponse | null {
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-  return null;
-}
-
 export async function GET() {
-  const guard = productionGuard();
-  if (guard) return guard;
-
   try {
+    // Path to your local PDF inside public/
     const filePath = path.join(process.cwd(), "public", "portfolio.pdf");
 
     if (!fs.existsSync(filePath)) {
       return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
+    // Read PDF as buffer
     const buffer = fs.readFileSync(filePath);
 
+    // Step 1: Upload PDF to Gemini
     const uploadRes = await fetch(
       `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${process.env.GEMINI_API_KEY}`,
       {
@@ -61,9 +34,9 @@ export async function GET() {
       );
     }
 
-    const uploadedFile: unknown = await uploadRes.json();
-    const fileUri = getUploadedFileUri(uploadedFile);
+    const uploadedFile = await uploadRes.json();
 
+    // Step 2: Ask Gemini to extract contents
     const extractRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
@@ -79,7 +52,7 @@ export async function GET() {
                 {
                   fileData: {
                     mimeType: "application/pdf",
-                    fileUri,
+                    fileUri: uploadedFile.file.uri,
                   },
                 },
                 { text: "Extract all the text content from this PDF." },
@@ -90,10 +63,10 @@ export async function GET() {
       }
     );
 
-    const data: unknown = await extractRes.json();
+    const data = await extractRes.json();
+
     return NextResponse.json({ success: true, data });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

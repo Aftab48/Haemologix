@@ -5,16 +5,12 @@ import {
   handleNoResponseTimeout,
   confirmDonorArrival,
 } from "@/lib/agents/coordinatorAgent";
-import { requireAuth } from "@/lib/auth";
 
 /**
  * Coordinator Agent API Endpoint
- * Handles donor responses, match selection, and fulfillment coordination.
- * Requires authentication.
+ * Handles donor responses, match selection, and fulfillment coordination.
  */
 export async function POST(req: NextRequest) {
-  const { error } = await requireAuth();
-  if (error) return error;
   try {
     const body = await req.json();
     const { action, ...data } = body;

@@ -4,23 +4,9 @@ import path from "path";
 import Tesseract from "tesseract.js";
 import fs from "fs";
 
-/**
- * Raw OCR endpoint — development only.
- * SECURITY: Only available in development/test environments.
- */
-
-function productionGuard(): NextResponse | null {
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-  return null;
-}
-
 export async function GET() {
-  const guard = productionGuard();
-  if (guard) return guard;
-
   try {
+    // Hardcoded path to public/medical.jpg
     const filePath = path.join(process.cwd(), "public", "medical.jpg");
 
     if (!fs.existsSync(filePath)) {
@@ -33,6 +19,7 @@ export async function GET() {
     const ext = path.extname(filePath).toLowerCase();
     let rawText = "";
 
+    // Extract based on file type
     if (ext === ".pdf") {
       const { PDFParse } = await import("pdf-parse");
       const dataBuffer = fs.readFileSync(filePath);
@@ -52,12 +39,11 @@ export async function GET() {
 
     return NextResponse.json({
       rawText,
-      lines: rawText.split("\n").filter((l) => l.trim()),
-      confidence: "Tesseract OCR",
+      lines: rawText.split("\n").filter(l => l.trim()),
+      confidence: "Tesseract OCR"
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Extraction error:", error);
-    const message = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

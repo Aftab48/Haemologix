@@ -180,6 +180,8 @@ function AdminWebDashboard() {
         address: h.hospitalAddress,
         responseTimeMinutes: h.responseTimeMinutes,
         phone: h.contactPhone,
+        verificationAttempts: h.verificationAttempts,
+        suspendedUntil: h.suspendedUntil,
       }));
 
       setUsers([...formattedDonors, ...formattedHospitals]);
@@ -231,8 +233,10 @@ function AdminWebDashboard() {
   });
 
   const manualReviewUsers = users.filter((user) => {
-    // Users pending without verification or with technical errors
-    return user.status === "PENDING" && !user.verificationAttempts;
+    // Pending users awaiting manual review (exclude currently suspended)
+    const isSuspended =
+      user.suspendedUntil && new Date() < new Date(user.suspendedUntil);
+    return user.status === "PENDING" && !isSuspended;
   });
 
   const suspendedUsers = users.filter((user) => {
@@ -310,7 +314,18 @@ function AdminWebDashboard() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, suspendedUntil?: Date | null) => {
+    const isSuspended =
+      suspendedUntil && new Date() < new Date(suspendedUntil);
+
+    if (isSuspended) {
+      return (
+        <Badge className="bg-slate-800 text-white border-slate-700 border">
+          SUSPENDED
+        </Badge>
+      );
+    }
+
     switch (status) {
       case "Active":
       case "APPROVED":
@@ -342,7 +357,15 @@ function AdminWebDashboard() {
 
   const handleApprove = async (user: NormalizedUser) => {
     setUsers((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, status: "APPROVED" } : u))
+      prev.map((u) =>
+        u.id === user.id
+          ? {
+              ...u,
+              status: "APPROVED",
+              verificationAttempts: Math.max(u.verificationAttempts ?? 0, 1),
+            }
+          : u
+      )
     );
     const role = user.role;
     await updateUserStatus(user.id, role, "APPROVED");
@@ -798,7 +821,7 @@ function AdminWebDashboard() {
                               {user.role}
                             </Badge>
                           </td>
-                          <td className="p-4">{getStatusBadge(user.status)}</td>
+                          <td className="p-4">{getStatusBadge(user.status, user.suspendedUntil)}</td>
                           <td className="p-4">
                             <div className="flex flex-col gap-1">
                               {user.suspendedUntil &&
@@ -836,7 +859,12 @@ function AdminWebDashboard() {
                                 View
                               </Button>
 
-                              {user.status === "PENDING" ? (
+                              {user.suspendedUntil &&
+                              new Date() < new Date(user.suspendedUntil) ? (
+                                <span className="px-3 py-1 rounded-full text-sm font-semibold bg-slate-800 text-white">
+                                  Suspended
+                                </span>
+                              ) : user.status === "PENDING" ? (
                                 <>
                                   <Button
                                     size="sm"
@@ -974,7 +1002,7 @@ function AdminWebDashboard() {
 
                       {/* Info Grid */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm text-text-dark/70">
-                        <div>Status: {getStatusBadge(user.status)}</div>
+                        <div>Status: {getStatusBadge(user.status, user.suspendedUntil)}</div>
                         <div>
                           Last Activity:{" "}
                           {formatLastActivity(user.lastActivity, false)}

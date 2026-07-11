@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkInventoryAndAutoAlert } from "@/lib/agents/hospitalAgent";
-import { requireAuth } from "@/lib/auth";
 
 /**
  * API endpoint to check inventory and auto-create alert if critical.
- * Called after inventory updates — requires authentication.
+ * Called after inventory updates
  */
 export async function POST(req: NextRequest) {
-  const { error } = await requireAuth();
-  if (error) return error;
-
   try {
     const body = await req.json();
     const { hospitalId, bloodType } = body;

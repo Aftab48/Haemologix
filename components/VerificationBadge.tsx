@@ -68,8 +68,8 @@ export function SuspensionBadge({ suspendedUntil, className = "" }: SuspensionBa
   );
 
   return (
-    <Badge className={`bg-black/20 text-white border-black/30 border flex items-center gap-2 ${className}`}>
-      <Ban className="w-4 h-4" />
+    <Badge className={`bg-slate-800 text-white border-slate-700 border flex items-center gap-2 ${className}`}>
+      <Ban className="w-4 h-4 shrink-0" />
       Suspended ({daysRemaining}d remaining)
     </Badge>
   );
@@ -82,15 +82,15 @@ interface AttemptsBadgeProps {
 }
 
 export function AttemptsBadge({ attempts, maxAttempts = 3, className = "" }: AttemptsBadgeProps) {
-  const color = 
-    attempts === 0 
-      ? "bg-green-500/20 text-green-300 border-green-500/30"
+  const color =
+    attempts === 0
+      ? "bg-emerald-600 text-white border-emerald-700"
       : attempts < maxAttempts
-      ? "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
-      : "bg-red-500/20 text-red-300 border-red-500/30";
+      ? "bg-amber-500 text-slate-900 border-amber-600"
+      : "bg-red-600 text-white border-red-700";
 
   return (
-    <Badge className={`${color} border ${className}`}>
+    <Badge className={`${color} border font-medium ${className}`}>
       {attempts}/{maxAttempts} Verification Attempts
     </Badge>
   );

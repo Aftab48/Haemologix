@@ -252,14 +252,42 @@ export async function updateUserStatus(
 
   try {
     if (userType === "donor") {
+      const existing = await db.donorRegistration.findUnique({
+        where: { id: userId },
+        select: { verificationAttempts: true },
+      });
       return await db.donorRegistration.update({
         where: { id: userId },
-        data: { status },
+        data: {
+          status,
+          ...(status === "APPROVED"
+            ? {
+                verificationAttempts: Math.max(
+                  existing?.verificationAttempts ?? 0,
+                  1
+                ),
+              }
+            : {}),
+        },
       });
     } else if (userType === "hospital") {
+      const existing = await db.hospitalRegistration.findUnique({
+        where: { id: userId },
+        select: { verificationAttempts: true },
+      });
       return await db.hospitalRegistration.update({
         where: { id: userId },
-        data: { status },
+        data: {
+          status,
+          ...(status === "APPROVED"
+            ? {
+                verificationAttempts: Math.max(
+                  existing?.verificationAttempts ?? 0,
+                  1
+                ),
+              }
+            : {}),
+        },
       });
     } else {
       throw new Error("Invalid user type");

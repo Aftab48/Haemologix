@@ -4,17 +4,12 @@ import {
   calculateDonorETA,
   updateTransportStatus,
 } from "@/lib/agents/logisticsAgent";
-import { requireAuth } from "@/lib/auth";
 
 /**
  * Logistics Agent API Endpoint
- * Handles transport planning, ETA calculations, and status updates.
- * Requires authentication.
+ * Handles transport planning, ETA calculations, and status updates.
  */
 export async function POST(req: NextRequest) {
-  const { error } = await requireAuth();
-  if (error) return error;
-
   try {
     const body = await req.json();
     const { action, transport_id, donor_id, hospital_id, request_id, status } = body;

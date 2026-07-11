@@ -43,6 +43,8 @@ import {
   Share2,
   Search,
   Building,
+  Calendar,
+  Scissors,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -57,6 +59,26 @@ import Image from "next/image";
 import GradientBackground from "@/components/GradientBackground";
 import { cn } from "@/lib/utils";
 
+type OTSchedule = {
+  id: string;
+  patientName: string;
+  surgeryType: string;
+  bloodType: string;
+  unitsRequired: number;
+  scheduledDate: string;
+  scheduledTime: string;
+  status: "Scheduled" | "In Progress" | "Completed" | "Cancelled";
+  notes?: string;
+};
+
+function mapOTStatus(status: string): OTSchedule["status"] {
+  if (status === "IN_PROGRESS") return "In Progress";
+  const label = status.charAt(0) + status.slice(1).toLowerCase();
+  if (label === "Scheduled" || label === "Completed" || label === "Cancelled") {
+    return label;
+  }
+  return "Scheduled";
+}
 
 export default function HospitalDashboard() {
   const [showCreateAlert, setShowCreateAlert] = useState(false);
@@ -750,6 +772,185 @@ export default function HospitalDashboard() {
     }
   };
 
+  // ── OT Scheduling ──────────────────────────────────────────────────────────
+  const today = new Date().toISOString().split("T")[0];
+  const [selectedOTDate, setSelectedOTDate] = useState(today);
+  const [showAddSchedule, setShowAddSchedule] = useState(false);
+  const [otLoading, setOTLoading] = useState(false);
+  const [isSavingSchedule, setIsSavingSchedule] = useState(false);
+  const [newSchedule, setNewSchedule] = useState({
+    patientName: "",
+    surgeryType: "",
+    bloodType: "",
+    unitsRequired: "",
+    scheduledDate: today,
+    scheduledTime: "",
+    notes: "",
+  });
+  const [otSchedules, setOTSchedules] = useState<OTSchedule[]>([]);
+
+  const loadOTSchedules = async (date: string) => {
+    if (!hospitalID) return;
+    setOTLoading(true);
+    try {
+      const res = await fetch(`/api/ot?hospitalId=${hospitalID}&date=${date}`);
+      if (res.ok) {
+        const { schedules } = await res.json();
+        setOTSchedules(
+          (schedules as Array<OTSchedule & { status: string }>).map((s) => ({
+            ...s,
+            status: mapOTStatus(s.status),
+          }))
+        );
+      }
+    } catch (err) {
+      console.error("[Dashboard] Error loading OT schedules:", err);
+    } finally {
+      setOTLoading(false);
+    }
+  };
+
+  const runOTInventoryCheck = async () => {
+    if (!hospitalID) return;
+    try {
+      const res = await fetch("/api/ot/check-alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hospitalId: hospitalID }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        if (result.alertsFired > 0) {
+          const updatedAlerts = await getAlerts(hospitalID);
+          setActiveAlerts(updatedAlerts as AlertWithType[]);
+        }
+      }
+    } catch (err) {
+      console.error("[Dashboard] OT inventory check error:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!hospitalID) return;
+    loadOTSchedules(selectedOTDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedOTDate, hospitalID]);
+
+  useEffect(() => {
+    if (!hospitalID) return;
+    runOTInventoryCheck();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hospitalID]);
+
+  const filteredOTSchedules = otSchedules.filter(
+    (s) => s.scheduledDate === selectedOTDate
+  );
+
+  const getOTStatusColor = (status: OTSchedule["status"]) => {
+    switch (status) {
+      case "Scheduled":
+        return "bg-blue-600 text-white";
+      case "In Progress":
+        return "bg-yellow-600 text-white";
+      case "Completed":
+        return "bg-green-600 text-white";
+      case "Cancelled":
+        return "bg-red-800 text-white";
+    }
+  };
+
+  const getBloodAvailability = (bloodType: string, unitsRequired: number) => {
+    const inv = bloodInventory.find((i) => i.type === bloodType);
+    if (!inv) return "unknown";
+    return inv.current >= unitsRequired ? "sufficient" : "insufficient";
+  };
+
+  const handleAddSchedule = async () => {
+    if (
+      !hospitalID ||
+      !newSchedule.patientName ||
+      !newSchedule.surgeryType ||
+      !newSchedule.bloodType ||
+      !newSchedule.unitsRequired ||
+      !newSchedule.scheduledDate ||
+      !newSchedule.scheduledTime
+    ) {
+      return;
+    }
+
+    setIsSavingSchedule(true);
+    try {
+      const res = await fetch("/api/ot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hospitalId: hospitalID,
+          patientName: newSchedule.patientName,
+          surgeryType: newSchedule.surgeryType,
+          bloodType: newSchedule.bloodType,
+          unitsRequired: parseInt(newSchedule.unitsRequired, 10),
+          scheduledDate: newSchedule.scheduledDate,
+          scheduledTime: newSchedule.scheduledTime,
+          notes: newSchedule.notes || undefined,
+        }),
+      });
+
+      if (res.ok) {
+        const dateToLoad = newSchedule.scheduledDate;
+        if (dateToLoad !== selectedOTDate) {
+          setSelectedOTDate(dateToLoad);
+        } else {
+          await loadOTSchedules(selectedOTDate);
+        }
+        await runOTInventoryCheck();
+        setShowAddSchedule(false);
+        setNewSchedule({
+          patientName: "",
+          surgeryType: "",
+          bloodType: "",
+          unitsRequired: "",
+          scheduledDate: today,
+          scheduledTime: "",
+          notes: "",
+        });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || "Failed to schedule surgery. Please try again.");
+      }
+    } catch (err) {
+      console.error("[Dashboard] Error adding OT schedule:", err);
+      alert("An error occurred while scheduling. Please try again.");
+    } finally {
+      setIsSavingSchedule(false);
+    }
+  };
+
+  const handleOTStatusChange = async (
+    id: string,
+    status: OTSchedule["status"]
+  ) => {
+    const dbStatus =
+      status === "In Progress" ? "IN_PROGRESS" : status.toUpperCase();
+    const previous = otSchedules;
+    setOTSchedules((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, status } : s))
+    );
+    try {
+      const res = await fetch("/api/ot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update-status", id, status: dbStatus }),
+      });
+      if (!res.ok) {
+        setOTSchedules(previous);
+        alert("Failed to update surgery status.");
+      }
+    } catch {
+      setOTSchedules(previous);
+      alert("Failed to update surgery status.");
+    }
+  };
+
   const navItems = [
     { value: "inventory", label: "Blood Inventory", short: "Inventory", Icon: Activity },
     {
@@ -759,6 +960,7 @@ export default function HospitalDashboard() {
       Icon: AlertTriangle,
     },
     { value: "responses", label: "Donor Responses", short: "Responses", Icon: Users },
+    { value: "ot-scheduling", label: "OT Scheduling", short: "OT", Icon: Scissors },
     { value: "analytics", label: "Analytics", short: "Analytics", Icon: BarChart3 },
   ];
 
@@ -1338,13 +1540,6 @@ export default function HospitalDashboard() {
                     <SelectItem value="closed">Closed</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button
-                  className="bg-yellow-600 hover:bg-yellow-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50"
-                  onClick={() => setShowCreateAlert(true)}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Alert
-                </Button>
               </div>
             </div>
 
@@ -1670,6 +1865,440 @@ export default function HospitalDashboard() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+          )}
+
+          {activeTab === "ot-scheduling" && (
+          <div className="space-y-6">
+            <div className="flex items-start gap-6 flex-col lg:flex-row">
+              <div className="w-full lg:w-64 shrink-0">
+                <Card className="glass-morphism border border-accent/30 text-white">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-text-dark text-base">
+                      <Calendar className="w-4 h-4 text-yellow-400" />
+                      Select Date
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <input
+                      type="date"
+                      value={selectedOTDate}
+                      onChange={(e) => setSelectedOTDate(e.target.value)}
+                      className="w-full bg-white/5 border border-white/20 rounded-md px-3 py-2 text-text-dark text-sm focus:outline-none focus:ring-2 focus:ring-yellow-600"
+                    />
+                    <div className="mt-4 space-y-2 text-sm">
+                      <div className="flex justify-between text-text-dark/80">
+                        <span>Surgeries scheduled</span>
+                        <span className="text-text-dark font-semibold">
+                          {filteredOTSchedules.length}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-text-dark/80">
+                        <span>Blood warnings</span>
+                        <span
+                          className={
+                            filteredOTSchedules.some(
+                              (s) =>
+                                getBloodAvailability(s.bloodType, s.unitsRequired) ===
+                                "insufficient"
+                            )
+                              ? "text-red-600 font-semibold"
+                              : "text-green-600 font-semibold"
+                          }
+                        >
+                          {
+                            filteredOTSchedules.filter(
+                              (s) =>
+                                getBloodAvailability(s.bloodType, s.unitsRequired) ===
+                                "insufficient"
+                            ).length
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="flex-1 space-y-4 w-full">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <h2 className="text-2xl font-bold text-text-dark">
+                    OT Schedule —{" "}
+                    {new Date(selectedOTDate + "T00:00:00").toLocaleDateString(
+                      "en-IN",
+                      {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      }
+                    )}
+                  </h2>
+                  <Dialog open={showAddSchedule} onOpenChange={setShowAddSchedule}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-yellow-600 hover:bg-yellow-700 text-white transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Surgery
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md bg-white/10 backdrop-blur-lg border border-white/20 text-white">
+                      <DialogHeader>
+                        <DialogTitle className="text-white">
+                          Schedule Surgery
+                        </DialogTitle>
+                        <DialogDescription className="text-gray-200">
+                          Add a surgery to the OT schedule and pre-plan blood
+                          requirements.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-white">Patient Name</Label>
+                          <Input
+                            placeholder="Full name"
+                            value={newSchedule.patientName}
+                            onChange={(e) =>
+                              setNewSchedule({
+                                ...newSchedule,
+                                patientName: e.target.value,
+                              })
+                            }
+                            className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white">Surgery Type</Label>
+                          <Input
+                            placeholder="e.g. Cardiac Bypass, Hip Replacement"
+                            value={newSchedule.surgeryType}
+                            onChange={(e) =>
+                              setNewSchedule({
+                                ...newSchedule,
+                                surgeryType: e.target.value,
+                              })
+                            }
+                            className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-white">Blood Type</Label>
+                            <Select
+                              value={newSchedule.bloodType}
+                              onValueChange={(v: string) =>
+                                setNewSchedule({ ...newSchedule, bloodType: v })
+                              }
+                            >
+                              <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                                <SelectValue placeholder="Select" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-800 text-white border-gray-700">
+                                {[
+                                  "A+",
+                                  "A-",
+                                  "B+",
+                                  "B-",
+                                  "AB+",
+                                  "AB-",
+                                  "O+",
+                                  "O-",
+                                ].map((t) => (
+                                  <SelectItem key={t} value={t}>
+                                    {t}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-white">Units Required</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              placeholder="Units"
+                              value={newSchedule.unitsRequired}
+                              onChange={(e) =>
+                                setNewSchedule({
+                                  ...newSchedule,
+                                  unitsRequired: e.target.value,
+                                })
+                              }
+                              className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-white">Date</Label>
+                            <input
+                              type="date"
+                              value={newSchedule.scheduledDate}
+                              onChange={(e) =>
+                                setNewSchedule({
+                                  ...newSchedule,
+                                  scheduledDate: e.target.value,
+                                })
+                              }
+                              className="w-full bg-white/5 border border-white/20 rounded-md px-3 py-2 text-white text-sm [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-yellow-600"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-white">Time</Label>
+                            <input
+                              type="time"
+                              value={newSchedule.scheduledTime}
+                              onChange={(e) =>
+                                setNewSchedule({
+                                  ...newSchedule,
+                                  scheduledTime: e.target.value,
+                                })
+                              }
+                              className="w-full bg-white/5 border border-white/20 rounded-md px-3 py-2 text-white text-sm [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-yellow-600"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white">Notes (optional)</Label>
+                          <Textarea
+                            placeholder="Any special requirements"
+                            value={newSchedule.notes}
+                            onChange={(e) =>
+                              setNewSchedule({
+                                ...newSchedule,
+                                notes: e.target.value,
+                              })
+                            }
+                            className="bg-white/5 border-white/20 text-white placeholder:text-gray-400"
+                          />
+                        </div>
+                        {newSchedule.bloodType && newSchedule.unitsRequired && (
+                          <div
+                            className={`rounded-md px-3 py-2 text-sm ${
+                              getBloodAvailability(
+                                newSchedule.bloodType,
+                                parseInt(newSchedule.unitsRequired, 10)
+                              ) === "sufficient"
+                                ? "bg-green-900/40 text-green-300 border border-green-700"
+                                : "bg-red-900/40 text-red-300 border border-red-700"
+                            }`}
+                          >
+                            {getBloodAvailability(
+                              newSchedule.bloodType,
+                              parseInt(newSchedule.unitsRequired, 10)
+                            ) === "sufficient"
+                              ? `Inventory check: ${newSchedule.bloodType} has sufficient units.`
+                              : `Warning: ${newSchedule.bloodType} inventory may be insufficient.`}
+                          </div>
+                        )}
+                        <div className="flex gap-3">
+                          <Button
+                            variant="outline"
+                            onClick={() => setShowAddSchedule(false)}
+                            disabled={isSavingSchedule}
+                            className="flex-1 border-white/20 hover:bg-white/20 text-slate-900"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleAddSchedule}
+                            disabled={isSavingSchedule}
+                            className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white disabled:opacity-50"
+                          >
+                            {isSavingSchedule ? "Scheduling..." : "Schedule"}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                {otLoading ? (
+                  <Card className="glass-morphism border border-accent/30 text-text-dark">
+                    <CardContent className="p-12 text-center">
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="w-6 h-6 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin" />
+                        <p className="text-lg text-text-dark">Loading schedules...</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : filteredOTSchedules.length === 0 ? (
+                  <Card className="glass-morphism border border-accent/30 text-text-dark">
+                    <CardContent className="p-12 text-center">
+                      <Scissors className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-text-dark mb-2">
+                        No surgeries scheduled
+                      </h3>
+                      <p className="text-text-dark/80 mb-4">
+                        Add a surgery to pre-plan blood requirements for this date.
+                      </p>
+                      <Button
+                        onClick={() => setShowAddSchedule(true)}
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                      >
+                        Add Surgery
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="glass-morphism border border-accent/30 text-white">
+                    <CardContent className="p-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead className="bg-white/5 border-b border-white/20">
+                            <tr>
+                              <th className="text-left p-4 font-medium text-text-dark">
+                                Patient
+                              </th>
+                              <th className="text-left p-4 font-medium text-text-dark">
+                                Surgery Type
+                              </th>
+                              <th className="text-left p-4 font-medium text-text-dark">
+                                Time
+                              </th>
+                              <th className="text-left p-4 font-medium text-text-dark">
+                                Blood Type
+                              </th>
+                              <th className="text-left p-4 font-medium text-text-dark">
+                                Units Required
+                              </th>
+                              <th className="text-left p-4 font-medium text-text-dark">
+                                Availability
+                              </th>
+                              <th className="text-left p-4 font-medium text-text-dark">
+                                Status
+                              </th>
+                              <th className="text-left p-4 font-medium text-text-dark">
+                                Actions
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {[...filteredOTSchedules]
+                              .sort((a, b) =>
+                                a.scheduledTime.localeCompare(b.scheduledTime)
+                              )
+                              .map((schedule) => {
+                                const avail = getBloodAvailability(
+                                  schedule.bloodType,
+                                  schedule.unitsRequired
+                                );
+                                return (
+                                  <tr
+                                    key={schedule.id}
+                                    className="border-b border-white/10 hover:bg-white/5 transition-all duration-300"
+                                  >
+                                    <td className="p-4">
+                                      <p className="font-medium text-text-dark">
+                                        {schedule.patientName}
+                                      </p>
+                                      {schedule.notes && (
+                                        <p className="text-xs text-text-dark/60 mt-0.5">
+                                          {schedule.notes}
+                                        </p>
+                                      )}
+                                    </td>
+                                    <td className="p-4 text-text-dark/80">
+                                      {schedule.surgeryType}
+                                    </td>
+                                    <td className="p-4 text-text-dark/80">
+                                      <div className="flex items-center gap-1">
+                                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                        {schedule.scheduledTime}
+                                      </div>
+                                    </td>
+                                    <td className="p-4">
+                                      <Badge
+                                        variant="outline"
+                                        className="bg-white/5 border-white/20 text-text-dark"
+                                      >
+                                        {schedule.bloodType}
+                                      </Badge>
+                                    </td>
+                                    <td className="p-4 text-text-dark/80 text-center">
+                                      {schedule.unitsRequired}
+                                    </td>
+                                    <td className="p-4">
+                                      {avail === "sufficient" ? (
+                                        <Badge className="bg-green-600 text-white">
+                                          Available
+                                        </Badge>
+                                      ) : avail === "insufficient" ? (
+                                        <Badge className="bg-red-700 text-white">
+                                          <AlertTriangle className="w-3 h-3 mr-1" />
+                                          Insufficient
+                                        </Badge>
+                                      ) : (
+                                        <Badge className="bg-gray-600 text-white">
+                                          Unknown
+                                        </Badge>
+                                      )}
+                                    </td>
+                                    <td className="p-4">
+                                      <Badge
+                                        className={getOTStatusColor(schedule.status)}
+                                      >
+                                        {schedule.status}
+                                      </Badge>
+                                    </td>
+                                    <td className="p-4">
+                                      <div className="flex gap-2">
+                                        {schedule.status === "Scheduled" && (
+                                          <Button
+                                            size="sm"
+                                            onClick={() =>
+                                              handleOTStatusChange(
+                                                schedule.id,
+                                                "In Progress"
+                                              )
+                                            }
+                                            className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs"
+                                          >
+                                            Start
+                                          </Button>
+                                        )}
+                                        {schedule.status === "In Progress" && (
+                                          <Button
+                                            size="sm"
+                                            onClick={() =>
+                                              handleOTStatusChange(
+                                                schedule.id,
+                                                "Completed"
+                                              )
+                                            }
+                                            className="bg-green-600 hover:bg-green-700 text-white text-xs"
+                                          >
+                                            Complete
+                                          </Button>
+                                        )}
+                                        {(schedule.status === "Scheduled" ||
+                                          schedule.status === "In Progress") && (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() =>
+                                              handleOTStatusChange(
+                                                schedule.id,
+                                                "Cancelled"
+                                              )
+                                            }
+                                            className="border-white/20 text-slate-800 hover:bg-red-900/40 text-xs"
+                                          >
+                                            Cancel
+                                          </Button>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </div>
           </div>
           )}
 

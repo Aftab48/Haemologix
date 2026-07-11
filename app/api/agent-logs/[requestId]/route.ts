@@ -5,15 +5,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { requireAuth } from "@/lib/auth";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ requestId: string }> }
 ) {
   void req;
-  const { error } = await requireAuth();
-  if (error) return error;
 
   try {
     const { requestId } = await params;

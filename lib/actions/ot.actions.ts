@@ -31,6 +31,14 @@ export type OTScheduleRow = {
 
 export async function createOTSchedule(input: OTScheduleInput) {
   try {
+    const hospital = await db.hospitalRegistration.findUnique({
+      where: { id: input.hospitalId },
+      select: { id: true },
+    });
+    if (!hospital) {
+      return { success: false, error: "Hospital not found" };
+    }
+
     const row = await db.oTSchedule.create({
       data: {
         hospitalId: input.hospitalId,
@@ -41,6 +49,7 @@ export async function createOTSchedule(input: OTScheduleInput) {
         scheduledDate: new Date(input.scheduledDate + "T00:00:00Z"),
         scheduledTime: input.scheduledTime,
         notes: input.notes,
+        status: "SCHEDULED",
       },
     });
     return { success: true, id: row.id };
@@ -86,11 +95,19 @@ export async function getOTSchedulesRange(
 
 export async function updateOTScheduleStatus(id: string, status: string) {
   try {
+    const existing = await db.oTSchedule.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!existing) {
+      return { success: false, error: "Schedule not found" };
+    }
+
     await db.oTSchedule.update({ where: { id }, data: { status } });
     return { success: true };
   } catch (err) {
     console.error("[OT] updateOTScheduleStatus error:", err);
-    return { success: false };
+    return { success: false, error: "Failed to update status" };
   }
 }
 

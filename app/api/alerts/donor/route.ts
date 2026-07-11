@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
 import { getAllAvailableAlerts } from "@/lib/actions/alerts.actions";
-import { requireAuth } from "@/lib/auth";
 
 /**
  * API endpoint to get all available alerts for donors.
- * Used by the mobile donor app — requires authentication.
+ * Used by the mobile donor app
  */
 export async function GET() {
-  const { error } = await requireAuth();
-  if (error) return error;
-
   try {
     const alerts = await getAllAvailableAlerts();
     return NextResponse.json(alerts);

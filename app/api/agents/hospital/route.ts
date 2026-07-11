@@ -6,12 +6,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { processAlert } from "@/lib/agents/hospitalAgent";
-import { requireAuth } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
-  const { error } = await requireAuth();
-  if (error) return error;
-
   try {
     const body = await req.json();
     const { alertId } = body;

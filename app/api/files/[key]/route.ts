@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
 
 /**
  * API proxy route for serving S3 files with caching headers.
- * Requires authentication — medical documents must not be publicly accessible.
- *
  * Path traversal protection: only allows alphanumeric, dash, underscore, dot, and slash.
  */
 
@@ -14,9 +11,6 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ key: string }> }
 ) {
-  const { error } = await requireAuth();
-  if (error) return error;
-
   try {
     const { key } = await params;
 

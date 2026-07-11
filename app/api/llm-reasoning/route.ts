@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { requireAuth } from "@/lib/auth";
 import type { Prisma } from "@prisma/client";
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -10,9 +9,6 @@ function asRecord(value: unknown): Record<string, unknown> {
 }
 
 export async function GET(req: NextRequest) {
-  const { error } = await requireAuth();
-  if (error) return error;
-
   try {
     const { searchParams } = new URL(req.url);
     const agentType = searchParams.get("agentType");

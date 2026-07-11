@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { requireAuth } from "@/lib/auth";
 
 /**
  * API endpoint to get donation history for a donor.
- * Requires authentication. The donorId must belong to the requesting user
- * (enforced by Clerk userId lookup) or the caller must be an admin.
+ * Used by the mobile donor app to display past donations.
  */
 export async function GET(req: NextRequest) {
-  const { error } = await requireAuth();
-  if (error) return error;
-
   try {
     const { searchParams } = new URL(req.url);
     const donorId = searchParams.get("donorId");

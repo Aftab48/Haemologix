@@ -1,17 +1,12 @@
 /**
  * Alerts API Endpoint
  * Creates alerts and automatically triggers Hospital Agent.
- * Requires authentication — only hospital users (or admins) should create alerts.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { createAlert } from "@/lib/actions/alerts.actions";
-import { requireAuth } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
-  const { error } = await requireAuth();
-  if (error) return error;
-
   try {
     const body = await req.json();
 

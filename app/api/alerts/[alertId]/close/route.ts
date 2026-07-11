@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { requireAuth } from "@/lib/auth";
 
 /**
- * API Endpoint to close an alert with fulfillment details.
- * Requires authentication.
+ * API Endpoint to close an alert with fulfillment details.
  */
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ alertId: string }> }
 ) {
-  const { error } = await requireAuth();
-  if (error) return error;
-
   try {
     const { alertId } = await params;
     const body = await req.json();
