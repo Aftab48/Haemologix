@@ -180,9 +180,11 @@ export async function getCurrentUser(
       };
     }
 
-    // hospital
+    // hospital — match contact or representative email
     const hospital = await db.hospitalRegistration.findFirst({
-      where: { contactEmail: email },
+      where: {
+        OR: [{ contactEmail: email }, { repEmail: email }],
+      },
     });
 
     if (hospital) {
@@ -190,12 +192,21 @@ export async function getCurrentUser(
         role: "HOSPITAL",
         user: {
           ...hospital,
+          id: hospital.id,
           licenseExpiryDate: hospital.licenseExpiryDate
             ? hospital.licenseExpiryDate.toISOString()
             : "",
           nocExpiryDate: hospital.nocExpiryDate
             ? hospital.nocExpiryDate.toISOString()
             : "",
+          suspendedUntil: hospital.suspendedUntil
+            ? hospital.suspendedUntil.toISOString()
+            : null,
+          lastVerificationAt: hospital.lastVerificationAt
+            ? hospital.lastVerificationAt.toISOString()
+            : null,
+          createdAt: hospital.createdAt.toISOString(),
+          updatedAt: hospital.updatedAt.toISOString(),
         } as HospitalData,
       };
     }

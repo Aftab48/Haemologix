@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +42,7 @@ import {
   BarChart3,
   Share2,
   Search,
+  Building,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -55,6 +55,7 @@ import { getCurrentUser } from "@/lib/actions/user.actions";
 import { fetchHospitalInventory, updateHospitalInventory } from "@/lib/actions/hospital.actions";
 import Image from "next/image";
 import GradientBackground from "@/components/GradientBackground";
+import { cn } from "@/lib/utils";
 
 
 export default function HospitalDashboard() {
@@ -62,6 +63,7 @@ export default function HospitalDashboard() {
   const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
   const [alertStatusFilter, setAlertStatusFilter] = useState<"all" | "active" | "closed">("all");
   const [isCreatingAlert, setIsCreatingAlert] = useState(false);
+  const [activeTab, setActiveTab] = useState("inventory");
 
   // Mock data constants
   const mockDonorResponses: DonorUI[] = [
@@ -312,21 +314,27 @@ export default function HospitalDashboard() {
 
   useEffect(() => {
     if (dbUser?.role === "HOSPITAL" && dbUser.user) {
-      console.log("[Dashboard] user is a hospital:", dbUser.user.id);
-      setHospitalID(dbUser.user.id || "");
+      const id = dbUser.user.id;
+      console.log("[Dashboard] user is a hospital:", id);
+      if (!id) {
+        console.error("[Dashboard] hospital user missing id — alerts cannot load");
+        return;
+      }
+      setHospitalID(id);
       setUser(dbUser.user);
     }
   }, [dbUser]);
 
   useEffect(() => {
-    if (!hospitalID) return; // skip if hospitalID not set
+    if (!hospitalID) return;
 
     const fetchAlerts = async () => {
       try {
         const res = await getAlerts(hospitalID);
-        setActiveAlerts(res);
+        setActiveAlerts(res as AlertWithType[]);
       } catch (err) {
         console.error("Error loading alerts:", err);
+        setActiveAlerts([]);
       }
     };
 
@@ -379,19 +387,25 @@ export default function HospitalDashboard() {
 
   const handleCreateAlert = async () => {
     if (
+      !hospitalID ||
       !newAlert.type ||
       !newAlert.bloodType ||
       !newAlert.urgency ||
       !newAlert.unitsNeeded ||
       !newAlert.description
     ) {
-      alert("Please fill in all required fields");
+      alert(
+        !hospitalID
+          ? "Hospital account not loaded yet. Please refresh and try again."
+          : "Please fill in all required fields"
+      );
       return;
     }
 
     setIsCreatingAlert(true);
 
     const alertInput = {
+      type: newAlert.type as AlertType,
       bloodType: newAlert.bloodType as BloodType,
       urgency: newAlert.urgency.toUpperCase() as Urgency,
       unitsNeeded: newAlert.unitsNeeded,
@@ -406,26 +420,30 @@ export default function HospitalDashboard() {
       
       if (result.success && result.alert) {
         console.log("Alert created successfully:", result.alert);
-        
-        // Add the new alert to local state immediately with proper formatting
-        const newAlertForState = {
-          id: result.alert.id,
-          type: newAlert.type as AlertType,
-          bloodType: result.alert.bloodType as BloodType,
-          urgency: result.alert.urgency as Urgency,
-          unitsNeeded: result.alert.unitsNeeded,
-          radius: result.alert.searchRadius as Radius,
-          description: result.alert.description || "",
-          hospitalId: result.alert.hospitalId,
-          createdAt: new Date(result.alert.createdAt).toLocaleString(),
-          status: result.alert.status,
-          autoDetected: result.alert.autoDetected || false,
-          responses: 0,
-          confirmed: 0,
-        };
-        
-        // Update local state immediately
-        setActiveAlerts((prev) => [newAlertForState, ...prev]);
+
+        // Refresh from DB (same as demo) so list stays in sync
+        try {
+          const updated = await getAlerts(hospitalID);
+          setActiveAlerts(updated as AlertWithType[]);
+        } catch (refreshErr) {
+          console.error("Alert created but refresh failed, using optimistic update:", refreshErr);
+          const newAlertForState = {
+            id: result.alert.id,
+            type: newAlert.type as AlertType,
+            bloodType: result.alert.bloodType as BloodType,
+            urgency: result.alert.urgency as Urgency,
+            unitsNeeded: result.alert.unitsNeeded,
+            radius: result.alert.searchRadius as Radius,
+            description: result.alert.description || "",
+            hospitalId: result.alert.hospitalId,
+            createdAt: new Date(result.alert.createdAt).toLocaleString(),
+            status: result.alert.status,
+            autoDetected: result.alert.autoDetected || false,
+            responses: 0,
+            confirmed: 0,
+          };
+          setActiveAlerts((prev) => [newAlertForState, ...prev]);
+        }
         
         // Reset form and close modal
         setNewAlert({
@@ -463,12 +481,12 @@ export default function HospitalDashboard() {
   };
 
   const getUrgencyColor = (urgency: string) => {
-    switch (urgency) {
-      case "Critical":
+    switch (urgency?.toUpperCase()) {
+      case "CRITICAL":
         return "bg-red-800 text-white border-red-900";
-      case "High":
+      case "HIGH":
         return "bg-orange-600 text-white border-orange-700";
-      case "Medium":
+      case "MEDIUM":
         return "bg-yellow-600 text-white border-yellow-700";
       default:
         return "bg-gray-600 text-white border-gray-700";
@@ -732,39 +750,106 @@ export default function HospitalDashboard() {
     }
   };
 
+  const navItems = [
+    { value: "inventory", label: "Blood Inventory", short: "Inventory", Icon: Activity },
+    {
+      value: "alerts",
+      label: `Active Alerts (${activeAlerts.length})`,
+      short: "Alerts",
+      Icon: AlertTriangle,
+    },
+    { value: "responses", label: "Donor Responses", short: "Responses", Icon: Users },
+    { value: "analytics", label: "Analytics", short: "Analytics", Icon: BarChart3 },
+  ];
+
   return (
-    <GradientBackground className="flex flex-col">
+    <GradientBackground>
       <Image
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
         alt=""
         width={1200}
         height={800}
         unoptimized
-        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
+        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20 z-0"
       />
-      {/* Header */}
-      <header className="glass-morphism border-b border-mist-green/40 shadow-lg relative z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center">
-                <Link href={"/"}>
-                  <Image
-                    src="/logo.png"
-                    alt="Logo"
-                    width={48}
-                    height={48}
-                    className="rounded-full"
-                  />
-                </Link>
+
+      <div className="flex min-h-screen relative z-10">
+        {/* === FULL-HEIGHT SIDEBAR === */}
+        <aside className="w-64 shrink-0 hidden md:flex flex-col glass-morphism border-r border-white/10 sticky top-0 h-screen z-20 overflow-hidden">
+          <div className="p-5 border-b border-white/10">
+            <Link href="/">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-red-800 rounded-lg flex items-center justify-center shrink-0">
+                  <Building className="w-5 h-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-white text-sm truncate">
+                    Hospital Dashboard
+                  </p>
+                  <p className="text-xs text-white/50 truncate">
+                    {user?.hospitalName || "Hospital"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-text-dark">
-                  Hospital Dashboard
-                </h1>
-                <p className="text-sm text-text-dark/80">{user?.hospitalName}</p>
+            </Link>
+          </div>
+
+          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+            {navItems.map(({ value, label, Icon }) => (
+              <button
+                key={value}
+                onClick={() => setActiveTab(value)}
+                className={cn(
+                  "flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-200 text-left",
+                  activeTab === value
+                    ? "bg-yellow-600 text-white shadow-sm"
+                    : "text-white/60 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="truncate">{label}</span>
+              </button>
+            ))}
+          </nav>
+
+          <div className="p-4 border-t border-white/10 flex items-center gap-3">
+            <UserButton />
+            <span className="text-xs text-white/50">Account</span>
+          </div>
+        </aside>
+
+        {/* === MAIN CONTENT AREA === */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Mobile nav bar */}
+          <div className="md:hidden glass-morphism border-b border-white/10 p-3 flex overflow-x-auto gap-1 shrink-0">
+            {navItems.map(({ value, short, Icon }) => (
+              <button
+                key={value}
+                onClick={() => setActiveTab(value)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all whitespace-nowrap shrink-0",
+                  activeTab === value
+                    ? "bg-yellow-600 text-white"
+                    : "text-white/60 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Icon className="w-3 h-3" />
+                {short}
+              </button>
+            ))}
+          </div>
+
+          {/* Top action bar */}
+          <div className="glass-morphism border-b border-white/10 px-6 py-3 flex items-center justify-between shrink-0">
+            <div className="md:hidden flex items-center gap-2">
+              <div className="w-7 h-7 bg-red-800 rounded-lg flex items-center justify-center">
+                <Building className="w-4 h-4 text-white" />
               </div>
+              <span className="text-white font-semibold text-sm">
+                Hospital Dashboard
+              </span>
             </div>
+            <div className="hidden md:block" />
             <div className="flex items-center gap-3">
               <Dialog open={showCreateAlert} onOpenChange={setShowCreateAlert}>
                 <DialogTrigger asChild>
@@ -930,13 +1015,14 @@ export default function HospitalDashboard() {
                   </div>
                 </DialogContent>
               </Dialog>
-              <UserButton />
+              <div className="md:hidden">
+                <UserButton />
+              </div>
             </div>
           </div>
-        </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto p-6">
         {/* Auto-Alert Checking Notification */}
         {checkingAutoAlerts && (
           <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/40 rounded-lg flex items-center gap-3 animate-pulse">
@@ -1015,37 +1101,8 @@ export default function HospitalDashboard() {
           </Card>
         </div>
 
-        <Tabs defaultValue="inventory" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 glass-morphism border border-accent/30">
-            <TabsTrigger
-              value="inventory"
-              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Blood Inventory
-            </TabsTrigger>
-            <TabsTrigger
-              value="alerts"
-              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Alerts ({activeAlerts.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="responses"
-              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Donor Responses
-            </TabsTrigger>
-            <TabsTrigger
-              value="analytics"
-              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
-            >
-              Analytics
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Blood Inventory Tab */}
-
-          <TabsContent value="inventory" className="space-y-6">
+        {activeTab === "inventory" && (
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-text-dark">
                 Blood Inventory Status
@@ -1120,7 +1177,8 @@ export default function HospitalDashboard() {
                 })}
               </div>
             )}
-          </TabsContent>
+          </div>
+          )}
           {isInvModalOpen && editingItem && (
             <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
               <div className="bg-white rounded-lg shadow-lg p-6 w-96">
@@ -1258,8 +1316,8 @@ export default function HospitalDashboard() {
             </div>
           )}
 
-          {/* Active Alerts Tab */}
-          <TabsContent value="alerts" className="space-y-6">
+          {activeTab === "alerts" && (
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-text-dark">
                 Emergency Alerts
@@ -1440,10 +1498,11 @@ export default function HospitalDashboard() {
                 ))}
               </div>
             )}
-          </TabsContent>
+          </div>
+          )}
 
-          {/* Donor Responses Tab */}
-          <TabsContent value="responses" className="space-y-6">
+          {activeTab === "responses" && (
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-text-dark">Donor Responses</h2>
               <div className="flex gap-3">
@@ -1611,9 +1670,11 @@ export default function HospitalDashboard() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
+          </div>
+          )}
+
+          {activeTab === "analytics" && (
+          <div className="space-y-6">
             <h2 className="text-2xl font-bold text-text-dark">
               Analytics & Reports
             </h2>
@@ -1689,8 +1750,10 @@ export default function HospitalDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+          )}
+          </div>
+        </div>
       </div>
 
       {/* Close Alert Modal */}

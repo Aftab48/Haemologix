@@ -45,7 +45,11 @@ const HomePage = () => {
   const { user, isSignedIn } = useUser();
   const [role, setRole] = useState<CurrentUserResponse["role"]>(null);
   const [dbUser, setDbUser] = useState<CurrentUserResponse | null>(null);
-  const userId = user?.id;
+  // Prefer DB registration id (alerts/inventory FK) over Clerk id in dashboard URLs
+  const userId =
+    dbUser?.user && "id" in dbUser.user && dbUser.user.id
+      ? dbUser.user.id
+      : user?.id;
 
   useEffect(() => {
     const fetchUser = async () => {

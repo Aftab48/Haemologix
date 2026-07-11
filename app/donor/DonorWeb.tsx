@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import {
   Heart,
@@ -25,6 +24,9 @@ import {
   XCircle,
   Phone,
   Navigation,
+  AlertTriangle,
+  Settings,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -34,13 +36,13 @@ import { getAllAvailableAlerts } from "@/lib/actions/alerts.actions";
 import {
   BloodTypeFormat,
   calculateNextEligible,
+  cn,
   formatLastActivity,
   getEligibilityProgress,
   isCompatible,
 } from "@/lib/utils";
 import Image from "next/image";
 import GradientBackground from "@/components/GradientBackground";
-import { Loader2 } from "lucide-react";
 
 type DashboardDonor = DonorData & {
   latitude?: string | null;
@@ -62,6 +64,7 @@ function DonorWebDashboard() {
   const [user, setUser] = useState<DashboardDonor | null>(null);
   const [isAvailable, setIsAvailable] = useState(true);
   const [alertsLoading, setAlertsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("alerts");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -376,103 +379,168 @@ function DonorWebDashboard() {
 
   console.log("lastDonation raw:", user?.lastDonation);
 
+  const navItems = [
+    {
+      value: "alerts",
+      label: `Active Alerts (${activeAlerts.length})`,
+      short: "Alerts",
+      Icon: AlertTriangle,
+    },
+    { value: "history", label: "Donation History", short: "History", Icon: Clock },
+    { value: "profile", label: "Profile Settings", short: "Profile", Icon: Settings },
+  ];
+
   return (
-    <GradientBackground className="flex flex-col">
+    <GradientBackground>
       <Image
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
         width={1200}
         height={800}
         unoptimized
-        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20"
+        className="w-full h-full object-cover absolute mix-blend-overlay opacity-20 z-0"
         alt=""
       />
 
-      {/* Header */}
-      <header className="glass-morphism border-b border-mist-green/40 shadow-lg relative z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-primary/10 border-2 border-primary animate-glow rounded-full flex items-center justify-center">
-                <Link href={"/"}>
-                  <Image
-                    src="/logo.png"
-                    alt="Logo"
-                    width={48}
-                    height={48}
-                    className="rounded-full"
-                  />
-                </Link>
+      <div className="flex min-h-screen relative z-10">
+        {/* === FULL-HEIGHT SIDEBAR === */}
+        <aside className="w-64 shrink-0 hidden md:flex flex-col glass-morphism border-r border-white/10 sticky top-0 h-screen z-20 overflow-hidden">
+          <div className="p-5 border-b border-white/10">
+            <Link href="/">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-red-800 rounded-lg flex items-center justify-center shrink-0">
+                  <Heart className="w-5 h-5 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-white text-sm truncate">
+                    Donor Dashboard
+                  </p>
+                  <p className="text-xs text-white/50 truncate">
+                    {user?.firstName
+                      ? `${user.firstName} ${user.lastName || ""}`.trim()
+                      : user?.email.split("@")[0] || "Donor"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-outfit font-bold text-text-dark">
-                  Donor Dashboard
-                </h1>
-                <p className="text-sm text-text-dark/80 font-dm-sans">
-                  Welcome back, {user?.firstName || user?.email.split("@")[0]}
-                </p>
+            </Link>
+          </div>
+
+          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+            {navItems.map(({ value, label, Icon }) => (
+              <button
+                key={value}
+                onClick={() => setActiveTab(value)}
+                className={cn(
+                  "flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-200 text-left",
+                  activeTab === value
+                    ? "bg-yellow-600 text-white shadow-sm"
+                    : "text-white/60 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="truncate">{label}</span>
+              </button>
+            ))}
+          </nav>
+
+          <div className="p-4 border-t border-white/10 flex items-center gap-3">
+            <UserButton />
+            <span className="text-xs text-white/50">Account</span>
+          </div>
+        </aside>
+
+        {/* === MAIN CONTENT AREA === */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Mobile nav bar */}
+          <div className="md:hidden glass-morphism border-b border-white/10 p-3 flex overflow-x-auto gap-1 shrink-0">
+            {navItems.map(({ value, short, Icon }) => (
+              <button
+                key={value}
+                onClick={() => setActiveTab(value)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all whitespace-nowrap shrink-0",
+                  activeTab === value
+                    ? "bg-yellow-600 text-white"
+                    : "text-white/60 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Icon className="w-3 h-3" />
+                {short}
+              </button>
+            ))}
+          </div>
+
+          {/* Top bar */}
+          <div className="glass-morphism border-b border-white/10 px-6 py-3 flex items-center justify-between shrink-0">
+            <div className="md:hidden flex items-center gap-2">
+              <div className="w-7 h-7 bg-red-800 rounded-lg flex items-center justify-center">
+                <Heart className="w-4 h-4 text-white" />
               </div>
+              <span className="text-white font-semibold text-sm">
+                Donor Dashboard
+              </span>
             </div>
+            <div className="hidden md:block" />
             <div className="flex items-center gap-3">
               <Button
                 variant="outline"
                 size="sm"
                 aria-label="View notifications"
                 className="bg-white/20 text-white border-white/30 hover:bg-white/30"
->
+              >
                 <Bell className="w-4 h-4 mr-2" aria-hidden="true" />
                 <span>Notifications</span>
                 <Badge
-                className="ml-2 gradient-ruby text-white"
-                aria-label="2 unread notifications"
-    >
-                2
+                  className="ml-2 gradient-ruby text-white"
+                  aria-label="2 unread notifications"
+                >
+                  2
                 </Badge>
-             </Button>
-
-              <UserButton />
+              </Button>
+              <div className="md:hidden">
+                <UserButton />
+              </div>
             </div>
           </div>
-        </div>
-      </header>
 
-      <Card className="mb-6 glass-morphism border border-accent/30 card-hover text-white">
-        <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-text-dark">
-              Are you currently available to donate?
-            </h2>
-            <p className="text-sm text-text-dark/80">
-              Toggle your availability to receive donation alerts.
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button
-              onClick={() => setIsAvailable(true)}
-              className={`${
-                isAvailable
-                  ? "gradient-mist hover:opacity-90"
-                  : "bg-white/20 border-white/30 hover:bg-white/30"
-              } text-white`}
-            >
-              Yes, Available
-            </Button>
-            <Button
-              onClick={() => setIsAvailable(false)}
-              className={`${
-                !isAvailable
-                  ? "gradient-ruby hover:opacity-90"
-                  : "bg-white/20 border-white/30 hover:bg-white/30"
-              } text-white`}
-            >
-              No, Unavailable
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <Card className="mb-6 glass-morphism border border-accent/30 card-hover text-white">
+              <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-text-dark">
+                    Are you currently available to donate?
+                  </h2>
+                  <p className="text-sm text-text-dark/80">
+                    Toggle your availability to receive donation alerts.
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => setIsAvailable(true)}
+                    className={`${
+                      isAvailable
+                        ? "gradient-mist hover:opacity-90"
+                        : "bg-white/20 border-white/30 hover:bg-white/30"
+                    } text-white`}
+                  >
+                    Yes, Available
+                  </Button>
+                  <Button
+                    onClick={() => setIsAvailable(false)}
+                    className={`${
+                      !isAvailable
+                        ? "gradient-ruby hover:opacity-90"
+                        : "bg-white/20 border-white/30 hover:bg-white/30"
+                    } text-white`}
+                  >
+                    No, Unavailable
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="glass-morphism border border-accent/30 card-hover text-white transition-all duration-300 hover:shadow-primary/50 hover:shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
@@ -599,35 +667,9 @@ function DonorWebDashboard() {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="alerts" className="space-y-6">
-          <TabsList
-            className="grid w-full grid-cols-3 glass-morphism border border-accent/30"
-             aria-label="Donor dashboard sections"
-                    >
-            <TabsTrigger
-              value="alerts"
-             aria-controls="alerts-panel"
-             className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
-            >
-              Active Alerts ({activeAlerts.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="history"
-              aria-controls="history-panel"
-              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
-            >
-              Donation History
-            </TabsTrigger>
-            <TabsTrigger
-              value="profile"aria-controls="profile-panel"
-              className="text-text-dark data-[state=active]:bg-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
-            >
-              Profile Settings
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Active Alerts Tab */}
-          <TabsContent value="alerts"id="alerts-panel"
+            {activeTab === "alerts" && (
+            <div
+            id="alerts-panel"
             role="tabpanel"
             tabIndex={0}
             className="space-y-6">
@@ -815,10 +857,11 @@ function DonorWebDashboard() {
                 ))}
               </div>
             )}
-          </TabsContent>
+            </div>
+            )}
 
-          {/* Donation History Tab */}
-          <TabsContent value="history" className="space-y-6">
+            {activeTab === "history" && (
+            <div className="space-y-6">
             <h2 className="text-2xl font-bold text-text-dark">
               Donation History
             </h2>
@@ -881,10 +924,11 @@ function DonorWebDashboard() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+            </div>
+            )}
 
-          {/* Profile Settings Tab */}
-          <TabsContent value="profile" className="space-y-6">
+            {activeTab === "profile" && (
+            <div className="space-y-6">
             <h2 className="text-2xl font-bold text-text-dark">
               Profile Settings
             </h2>
@@ -1000,8 +1044,10 @@ function DonorWebDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-        </Tabs>
+            </div>
+            )}
+          </div>
+        </div>
       </div>
     </GradientBackground>
   );

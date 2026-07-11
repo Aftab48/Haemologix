@@ -6,7 +6,7 @@ import { formatLastActivity } from "../utils";
 
 export async function createAlert(input: CreateAlertInput) {
   // Validate required fields
-  if (!input.bloodType || !input.urgency || !input.radius) {
+  if (!input.bloodType || !input.urgency || !input.radius || !input.hospitalId) {
     return { success: false, error: "Missing required fields" };
   }
 
@@ -45,7 +45,24 @@ export async function createAlert(input: CreateAlertInput) {
       console.error("Error triggering Hospital Agent:", agentError);
     }
 
-    return { success: true, alert };
+    // Return a plain serializable object (no Prisma Date instances)
+    return {
+      success: true,
+      alert: {
+        id: alert.id,
+        type: alert.type,
+        bloodType: alert.bloodType,
+        urgency: alert.urgency,
+        unitsNeeded: alert.unitsNeeded,
+        searchRadius: alert.searchRadius,
+        description: alert.description,
+        hospitalId: alert.hospitalId,
+        status: alert.status,
+        autoDetected: alert.autoDetected,
+        createdAt: alert.createdAt.toISOString(),
+        updatedAt: alert.updatedAt.toISOString(),
+      },
+    };
   } catch (err) {
     console.error("Error creating alert:", err);
     return { success: false, error: "Failed to create alert" };
@@ -54,17 +71,31 @@ export async function createAlert(input: CreateAlertInput) {
 
 // Fetch all alerts (optionally filter by hospitalId)
 export async function getAlerts(hospitalId: string) {
+  if (!hospitalId) {
+    console.error("[getAlerts] missing hospitalId");
+    return [];
+  }
+
   try {
     const alerts = await db.alert.findMany({
       where: { hospitalId },
-      include: { 
-        hospital: true,
-        responses: true, // Include all responses
+      include: {
+        hospital: {
+          select: {
+            id: true,
+            hospitalName: true,
+            hospitalAddress: true,
+            contactPhone: true,
+          },
+        },
+        responses: {
+          select: { confirmed: true },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    // transform DB → frontend-safe type with response counts
+    // Plain JSON only — raw Prisma models (Dates, enums) break Server Action serialization
     return alerts.map((a) => ({
       id: a.id,
       type: a.type,
@@ -77,9 +108,17 @@ export async function getAlerts(hospitalId: string) {
       createdAt: formatLastActivity(a.createdAt, false),
       status: a.status,
       autoDetected: a.autoDetected,
-      hospital: a.hospital,
-      responses: a.responses.length, // Total responses count
-      confirmed: a.responses.filter(r => r.confirmed).length, // Confirmed responses count
+      hospitalName: a.hospital?.hospitalName ?? "",
+      hospital: a.hospital
+        ? {
+            id: a.hospital.id,
+            hospitalName: a.hospital.hospitalName,
+            hospitalAddress: a.hospital.hospitalAddress,
+            contactPhone: a.hospital.contactPhone,
+          }
+        : null,
+      responses: a.responses.length,
+      confirmed: a.responses.filter((r) => r.confirmed).length,
     }));
   } catch (err) {
     console.error("[getAlerts] error:", err);
