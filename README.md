@@ -184,7 +184,7 @@ pnpm install
 Copy the example environment file and fill in your credentials:
 
 ```bash
-cp .example.env .env.local
+cp example.env .env.local
 ```
 
 Required environment variables:
@@ -195,7 +195,7 @@ Required environment variables:
 - **SMTP** (Email): Configure email service
 - **OpenCage** (Geocoding): Get API key from [opencagedata.com](https://opencagedata.com/)
 
-See [`.example.env`](.example.env) for all required variables.
+See [`example.env`](example.env) for all required variables.
 
 ### 4. Set Up Database
 
@@ -212,14 +212,34 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-### 6. (Optional) Generate Synthetic Data for ML
+### 6. Run with Docker (Optional)
+
+Docker runs the production Next.js server and uses the PostgreSQL/NeonDB
+connection configured in `.env.local`.
+
+```bash
+docker compose up --build
+```
+
+Or build and run the image directly:
+
+```bash
+docker build --secret id=env,src=.env.local -t haemologix .
+docker run --env-file .env.local -p 3000:3000 haemologix
+```
+
+The build secret makes build-time values available to Next.js without copying
+the environment file into an image layer. Stop Compose with
+`docker compose down`.
+
+### 7. (Optional) Generate Synthetic Data for ML
 
 ```bash
 npm run generate:data
 npm run export:data
 ```
 
-### 7. (Optional) Set Up ML Pipeline
+### 8. (Optional) Set Up ML Pipeline
 
 ```bash
 cd ml
@@ -242,7 +262,7 @@ We recommend deploying via **Vercel** for the best experience:
 
 ### Environment Variables in Production
 
-Make sure to set all required environment variables in your deployment platform. See [`.example.env`](.example.env) for the complete list.
+Make sure to set all required environment variables in your deployment platform. See [`example.env`](example.env) for the complete list.
 
 ---
 

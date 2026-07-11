@@ -1,0 +1,18 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      secrets:
+        - source: app_env
+          target: env
+    env_file:
+      - .env.local
+    init: true
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+secrets:
+  app_env:
+    file: .env.local
