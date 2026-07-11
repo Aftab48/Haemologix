@@ -143,11 +143,13 @@ export async function getAllAvailableAlerts() {
       location: a.hospital?.hospitalAddress || "",
       contactPhone: a.hospital?.contactPhone || "",
       timePosted: formatLastActivity(a.createdAt, false),
-      distance: "0 km", // TODO: Calculate distance based on donor location
-      responded: false, // TODO: Check if current donor has responded
+      distance: "0 km", // Calculated client-side from donor coordinates
+      responded: false, // Checked client-side against donorId
       hospitalId: a.hospitalId,
       latitude: a.latitude,
       longitude: a.longitude,
+      // Include responses array so clients can check donorId membership
+      responses: a.responses.map((r) => ({ donorId: r.donorId })),
     }));
   } catch (err) {
     console.error("[getAllAvailableAlerts] error:", err);

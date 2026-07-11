@@ -162,13 +162,65 @@ export default function DonorDashboard() {
 
   const [activeAlerts, setActiveAlerts] = useState<any[]>([]);
 
-  // Fetch alerts on mount
+  /** Haversine formula — returns distance in km */
+  function calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number {
+    const R = 6371; // Earth radius in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  // Fetch alerts on mount and poll every 30 seconds
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
         setIsLoadingAlerts(true);
         const alerts = await getAllAvailableAlerts();
-        setActiveAlerts(alerts);
+
+        // Enrich with distance and responded status
+        const enriched = alerts.map((alert: any) => {
+          let distance = "0 km";
+          let responded = false;
+
+          // Calculate distance if donor has coordinates
+          const donorUser = user as any;
+          if (
+            alert.latitude &&
+            alert.longitude &&
+            donorUser?.latitude &&
+            donorUser?.longitude
+          ) {
+            const lat1 = parseFloat(donorUser.latitude);
+            const lon1 = parseFloat(donorUser.longitude);
+            const lat2 = parseFloat(alert.latitude);
+            const lon2 = parseFloat(alert.longitude);
+            const dist = calculateDistance(lat1, lon1, lat2, lon2);
+            distance = `${dist.toFixed(1)} km`;
+          }
+
+          // Check if this demo donor has already responded
+          if (alert.responses && Array.isArray(alert.responses)) {
+            responded = alert.responses.some(
+              (r: any) => r.donorId === DEMO_NEONDB_DONOR_ID
+            );
+          }
+
+          return { ...alert, distance, responded };
+        });
+
+        setActiveAlerts(enriched);
       } catch (err) {
         console.error("[Demo Donor Dashboard] error loading alerts:", err);
       } finally {
@@ -177,7 +229,11 @@ export default function DonorDashboard() {
     };
 
     fetchAlerts();
-  }, []);
+
+    // Poll for new alerts every 30 seconds
+    const interval = setInterval(fetchAlerts, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const [donationHistory] = useState([
     {

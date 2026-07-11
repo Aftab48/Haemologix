@@ -54,8 +54,8 @@ import { useRouter } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { formatLastActivity, cn } from "@/lib/utils";
 import { fetchUserDataById } from "@/lib/actions/user.actions";
-import { getAlerts } from "@/lib/actions/alerts.actions";
-import { fetchHospitalInventory } from "@/lib/actions/hospital.actions";
+import { createAlert, getAlerts } from "@/lib/actions/alerts.actions";
+import { fetchHospitalInventory, updateHospitalInventory } from "@/lib/actions/hospital.actions";
 import StatCard from "@/components/dashboard/StatCard";
 import { pageContainer, fadeUp, listItem } from "@/components/dashboard/motion";
 
@@ -387,13 +387,38 @@ export default function HospitalDashboard() {
     };
 
     try {
-      //await createAlert(alertInput);
-      console.log("Alert created on server:", alertInput);
+      const result = await createAlert({
+        type: alertInput.type,
+        bloodType: alertInput.bloodType,
+        urgency: alertInput.urgency,
+        unitsNeeded: alertInput.unitsNeeded,
+        radius: alertInput.radius,
+        description: alertInput.description,
+        hospitalId: DEMO_HOSPITAL_ID,
+      });
+      console.log("Alert created on server:", result);
+
+      // Refresh alerts from DB
+      const updated = await getAlerts(DEMO_HOSPITAL_ID);
+      setActiveAlerts(updated as AlertWithType[]);
+
+      // Trigger agent check in the background
+      setCheckingAutoAlerts(true);
+      fetch("/api/demo/trigger-agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hospitalId: DEMO_HOSPITAL_ID,
+          bloodType: alertInput.bloodType || alertInput.type,
+        }),
+      })
+        .catch((err) => console.error("[Demo Hospital] trigger-agents error:", err))
+        .finally(() => setCheckingAutoAlerts(false));
     } catch (err) {
       console.error("Failed to create alert on server:", err);
-    } finally {
-      // Always update local state so the workflow continues
+      // Fallback: update local state so the workflow continues
       setActiveAlerts((prev) => [alertInput, ...prev]);
+    } finally {
       setShowCreateAlert(false);
     }
   };
@@ -453,12 +478,43 @@ export default function HospitalDashboard() {
     setIsInvModalOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingItem) return;
+
+    // Optimistically update local state
     setBloodInventory((prev) =>
       prev.map((b) => (b.type === editingItem.type ? editingItem : b))
     );
     setIsInvModalOpen(false);
+
+    // Persist to DB
+    setIsSavingInventory(true);
+    try {
+      await updateHospitalInventory(
+        DEMO_HOSPITAL_ID,
+        editingItem.type,
+        editingItem.current,
+        editingItem.minimum
+      );
+      console.log("[Demo Hospital] Inventory saved for", editingItem.type);
+
+      // Trigger agent check for this blood type
+      setCheckingAutoAlerts(true);
+      fetch("/api/demo/trigger-agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hospitalId: DEMO_HOSPITAL_ID,
+          bloodType: editingItem.type,
+        }),
+      })
+        .catch((err) => console.error("[Demo Hospital] trigger-agents error:", err))
+        .finally(() => setCheckingAutoAlerts(false));
+    } catch (err) {
+      console.error("[Demo Hospital] Failed to save inventory:", err);
+    } finally {
+      setIsSavingInventory(false);
+    }
   };
 
   const [justConfirmed, setJustConfirmed] = useState<string | null>(null);
@@ -574,6 +630,8 @@ export default function HospitalDashboard() {
     setOTSchedules((prev) => prev.map((s) => s.id === id ? { ...s, status } : s));
   };
   const [closeConfirmId, setCloseConfirmId] = useState<string | number | null>(null);
+  const [checkingAutoAlerts, setCheckingAutoAlerts] = useState(false);
+  const [isSavingInventory, setIsSavingInventory] = useState(false);
 
   const handleShareAlert = async (alertId: string | number) => {
     const url = `${typeof window !== "undefined" ? window.location.origin : ""}/hospital/alert/${alertId}`;
@@ -587,9 +645,23 @@ export default function HospitalDashboard() {
     }
   };
 
-  const handleCloseAlert = (alertId: string | number) => {
+  const handleCloseAlert = async (alertId: string | number) => {
+    // Optimistic local removal
     setActiveAlerts((prev) => prev.filter((a) => String(a.id) !== String(alertId)));
     setCloseConfirmId(null);
+
+    try {
+      await fetch("/api/demo/close-alert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ alertId: String(alertId) }),
+      });
+      // Refresh from DB to get accurate state
+      const updated = await getAlerts(DEMO_HOSPITAL_ID);
+      setActiveAlerts(updated as AlertWithType[]);
+    } catch (err) {
+      console.error("[Demo Hospital] close-alert error:", err);
+    }
   };
 
   const filteredDonors = useMemo(() => {
@@ -878,6 +950,14 @@ export default function HospitalDashboard() {
           animate="show"
           className="flex-1 overflow-y-auto p-6 dash-scroll"
         >
+          {/* AI Agent Processing Banner */}
+          {checkingAutoAlerts && (
+            <div className="mb-4 rounded-lg px-4 py-2.5 text-sm font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-2">
+              <span className="animate-pulse">🤖</span>
+              <span>AI Agent Processing — checking inventory and matching donors…</span>
+            </div>
+          )}
+
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <StatCard
@@ -1061,9 +1141,10 @@ export default function HospitalDashboard() {
                   </Button>
                   <Button
                     onClick={handleSave}
+                    disabled={isSavingInventory}
                     className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
                   >
-                    Save
+                    {isSavingInventory ? "Saving…" : "Save"}
                   </Button>
                 </div>
               </div>
@@ -1148,6 +1229,30 @@ export default function HospitalDashboard() {
                             >
                               {alert.unitsNeeded} units needed
                             </Badge>
+
+                            {/* Alert Status */}
+                            {alert.status && (
+                              <Badge
+                                className={
+                                  alert.status === "FULFILLED"
+                                    ? "bg-emerald-600 text-white"
+                                    : alert.status === "MATCHED"
+                                    ? "bg-blue-600 text-white"
+                                    : alert.status === "NOTIFIED"
+                                    ? "bg-amber-500 text-white"
+                                    : "bg-muted text-text-dark"
+                                }
+                              >
+                                {alert.status}
+                              </Badge>
+                            )}
+
+                            {/* Auto-detected badge */}
+                            {(alert as any).autoDetected && (
+                              <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-300">
+                                🤖 Auto-detected
+                              </Badge>
+                            )}
                           </div>
                           <p className="text-muted-foreground mb-3">
                             {alert.description}
