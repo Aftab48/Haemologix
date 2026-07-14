@@ -759,3 +759,19 @@ textarea:focus-visible {
     animation: none;
   }
 }
+
+/* Demo dashboards retain the production glass palette while sharing the newer sidebar geometry. */
+.demo-dashboard-glass .dash-card {
+  background: rgba(233, 216, 166, 0.25);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 28px -14px rgba(42, 31, 31, 0.35);
+}
+
+.demo-dashboard-glass .dash-card-interactive:hover {
+  border-color: rgba(233, 216, 166, 0.7);
+  box-shadow: 0 18px 40px -16px rgba(42, 31, 31, 0.45);
+}
+
+.demo-white-stat p {
+  color: white !important;
+}

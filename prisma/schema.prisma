@@ -562,3 +562,17 @@ model Donation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+/// A completely isolated, resettable judge sandbox. The single `global` row
+/// contains only synthetic demo data and is never related to production data.
+model DemoSandbox {
+  id             String   @id
+  schemaVersion  Int      @default(1)
+  revision       Int      @default(0)
+  state          Json
+  expiresAt      DateTime
+  lastActivityAt DateTime
+  lastResetAt    DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
