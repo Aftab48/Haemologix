@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { db } from "@/db";
-import { applyDemoAction, boundDemoState, materializeDemoState } from "./engine";
+import { haversineDistanceKm } from "@/lib/distanceEta";
+import { applyDemoAction, boundDemoState, canDonateTo, materializeDemoState } from "./engine";
 import { createDemoSeed, DEMO_PRIMARY_DONOR_ID, DEMO_PRIMARY_HOSPITAL_ID } from "./seed";
 import type {
   DemoAction,
@@ -14,7 +15,8 @@ import type {
   DemoState,
 } from "./types";
 
-const GLOBAL_ID = "global";
+export const DEMO_SANDBOX_ID = "global" as const;
+const GLOBAL_ID = DEMO_SANDBOX_ID;
 const SCHEMA_VERSION = 1;
 const EXPIRY_MS = 2 * 60 * 60 * 1000;
 const RESET_COOLDOWN_MS = 15_000;
@@ -100,24 +102,41 @@ function summarizeAlerts(state: DemoState): DemoAlertSummary[] {
   });
 }
 
-function donorView(state: DemoState): DemoDonorView {
+export function projectDemoDonorView(state: DemoState): DemoDonorView {
   const donor = state.donors.find((item) => item.id === DEMO_PRIMARY_DONOR_ID);
   if (!donor) throw new Error("Primary demo donor is missing");
   const summaries = summarizeAlerts(state);
   return {
     donor,
     alerts: summaries
-      .filter((alert) => alert.status !== "FULFILLED")
-      .map((alert) => ({
-        ...alert,
-        hospitalName: state.hospitals.find((hospital) => hospital.id === alert.hospitalId)?.name ?? "Demo hospital",
-        hospitalAddress: state.hospitals.find((hospital) => hospital.id === alert.hospitalId)?.address ?? "Kolkata",
-        response: state.responses.find(
-          (response) => response.alertId === alert.id && response.donorId === donor.id
-        ),
-      })),
+      .filter((alert) => alert.status !== "FULFILLED" && canDonateTo(donor.bloodGroup, alert.bloodType))
+      .map((alert) => {
+        const hospital = state.hospitals.find((item) => item.id === alert.hospitalId);
+        if (!hospital) throw new Error("Demo alert hospital is missing");
+        return {
+          ...alert,
+          hospitalName: hospital.name,
+          hospitalAddress: hospital.address,
+          hospitalPhone: hospital.phone,
+          hospitalLatitude: hospital.latitude,
+          hospitalLongitude: hospital.longitude,
+          distanceKm: Math.round(
+            haversineDistanceKm(donor.latitude, donor.longitude, hospital.latitude, hospital.longitude) * 10
+          ) / 10,
+          response: state.responses.find(
+            (response) => response.alertId === alert.id && response.donorId === donor.id
+          ),
+        };
+      }),
     history: state.donationHistory.filter((entry) => entry.donorId === donor.id),
-    notifications: state.notifications.filter((notification) => notification.audience === "DONOR").slice(0, 12),
+    notifications: state.notifications
+      .filter((notification) => {
+        if (notification.audience !== "DONOR") return false;
+        if (!notification.alertId) return true;
+        const alert = state.alerts.find((item) => item.id === notification.alertId);
+        return Boolean(alert && canDonateTo(donor.bloodGroup, alert.bloodType));
+      })
+      .slice(0, 12),
   };
 }
 
@@ -186,7 +205,7 @@ function adminView(state: DemoState): DemoAdminView {
 }
 
 function selectView(state: DemoState, view: "donor" | "hospital" | "admin") {
-  if (view === "donor") return donorView(state);
+  if (view === "donor") return projectDemoDonorView(state);
   if (view === "hospital") return hospitalView(state);
   return adminView(state);
 }
@@ -201,6 +220,7 @@ export async function getDemoSnapshot(
     const { row, state } = await prepare(tx, now);
     if (since === row.revision) return null;
     return {
+      sandboxId: DEMO_SANDBOX_ID,
       revision: row.revision,
       expiresAt: row.expiresAt.toISOString(),
       serverTime: now.toISOString(),
@@ -219,6 +239,7 @@ export async function getDemoAlertSnapshot(alertId: string): Promise<DemoSnapsho
     const hospital = state.hospitals.find((item) => item.id === alert.hospitalId);
     if (!hospital) return null;
     return {
+      sandboxId: DEMO_SANDBOX_ID,
       revision: row.revision,
       expiresAt: row.expiresAt.toISOString(),
       serverTime: now.toISOString(),

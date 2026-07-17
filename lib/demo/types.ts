@@ -149,6 +149,7 @@ export type DemoActivity = {
 
 export type DemoNotification = {
   id: string;
+  alertId?: string;
   audience: "DONOR" | "HOSPITAL" | "ADMIN";
   title: string;
   message: string;
@@ -227,6 +228,7 @@ export type DemoAction =
     };
 
 export type DemoSnapshot<T = unknown> = {
+  sandboxId: "global";
   revision: number;
   expiresAt: string;
   serverTime: string;
@@ -242,7 +244,17 @@ export type DemoAlertSummary = DemoAlert & {
 
 export type DemoDonorView = {
   donor: DemoDonor;
-  alerts: Array<DemoAlertSummary & { response?: DemoAlertResponse; hospitalName: string; hospitalAddress: string }>;
+  alerts: Array<
+    DemoAlertSummary & {
+      response?: DemoAlertResponse;
+      hospitalName: string;
+      hospitalAddress: string;
+      hospitalPhone: string;
+      hospitalLatitude: number;
+      hospitalLongitude: number;
+      distanceKm: number;
+    }
+  >;
   history: DemoDonationHistory[];
   notifications: DemoNotification[];
 };

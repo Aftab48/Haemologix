@@ -3,6 +3,7 @@ import test from "node:test";
 import { applyDemoAction, canDonateTo, materializeDemoState } from "./engine";
 import { deliveryProgress, deliveryStatusAt, interpolateTrack } from "./delivery";
 import { createDemoSeed, DEMO_PRIMARY_DONOR_ID } from "./seed";
+import { DEMO_SANDBOX_ID, projectDemoDonorView } from "./store";
 import type { DemoDeliveryTrack } from "./types";
 
 test("seed contains the agreed synthetic population", () => {
@@ -66,3 +67,53 @@ test("delivery interpolation and status are deterministic", () => {
   assert.equal(deliveryStatusAt(track, new Date("2026-07-15T10:00:30.000Z")), "DELIVERED");
 });
 
+test("donor projection identifies the global sandbox and includes safe hospital routing data", () => {
+  const state = createDemoSeed(new Date("2026-07-15T10:00:00.000Z"));
+  const view = projectDemoDonorView(state);
+  assert.equal(DEMO_SANDBOX_ID, "global");
+  assert.equal(view.donor.id, DEMO_PRIMARY_DONOR_ID);
+  assert.ok(view.alerts.length > 0);
+  assert.ok(view.alerts.every((alert) => alert.hospitalPhone.includes("00000")));
+  assert.ok(view.alerts.every((alert) => Number.isFinite(alert.hospitalLatitude)));
+  assert.ok(view.alerts.every((alert) => Number.isFinite(alert.hospitalLongitude)));
+  assert.ok(view.alerts.every((alert) => alert.distanceKm >= 0));
+});
+
+test("interactive donor responses notify once and reject invalid transitions", () => {
+  const now = new Date("2026-07-15T10:00:00.000Z");
+  const state = createDemoSeed(now);
+  applyDemoAction(state, {
+    type: "DONOR_RESPOND",
+    payload: { alertId: "demo-alert-active", outcome: "ACCEPTED" },
+  }, now);
+  assert.equal(
+    state.notifications.some((notification) => notification.audience === "DONOR" && notification.title === "Donation request accepted"),
+    true
+  );
+  assert.throws(
+    () => applyDemoAction(state, {
+      type: "DONOR_RESPOND",
+      payload: { alertId: "demo-alert-active", outcome: "DECLINED" },
+    }, new Date(now.getTime() + 1_000)),
+    /already responded/
+  );
+
+  applyDemoAction(state, {
+    type: "HOSPITAL_CREATE_ALERT",
+    payload: {
+      alertType: "Blood",
+      bloodType: "O-",
+      urgency: "HIGH",
+      unitsNeeded: 1,
+      searchRadius: 20,
+      description: "Compatibility validation alert",
+    },
+  }, now);
+  assert.throws(
+    () => applyDemoAction(state, {
+      type: "DONOR_RESPOND",
+      payload: { alertId: state.alerts[0].id, outcome: "ACCEPTED" },
+    }, now),
+    /not compatible/
+  );
+});

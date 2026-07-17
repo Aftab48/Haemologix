@@ -184,6 +184,21 @@ function recordResponse(
     `${donor.firstName} ${donor.lastName} ${outcome.toLowerCase()} the ${alert.bloodType} alert.`,
     outcome === "ACCEPTED" ? "low" : "medium"
   );
+
+  if (!automatic && donor.isPrimary) {
+    state.notifications.unshift({
+      id: id("notification"),
+      alertId,
+      audience: "DONOR",
+      title: outcome === "ACCEPTED" ? "Donation request accepted" : "Donation request declined",
+      message:
+        outcome === "ACCEPTED"
+          ? `You accepted the ${alert.bloodType} request from ${hospital.name}. Your simulated ETA is ${response.etaMinutes} minutes.`
+          : `You declined the ${alert.bloodType} request from ${hospital.name}.`,
+      channel: "IN_APP",
+      createdAt: now.toISOString(),
+    });
+  }
 }
 
 function rankPartnerHospitals(state: DemoState, alert: DemoAlert, now: Date) {
@@ -378,6 +393,7 @@ function queueAlertWorkflow(state: DemoState, now: Date, alert: DemoAlert) {
   });
   state.notifications.unshift({
     id: id("notification"),
+    alertId: alert.id,
     audience: "DONOR",
     title: `${alert.urgency} ${alert.bloodType} request`,
     message: `${hospital.name} needs ${alert.unitsNeeded} unit(s). Open the alert to respond.`,
@@ -512,6 +528,15 @@ export function applyDemoAction(state: DemoState, action: DemoAction, now = new 
       break;
     case "DONOR_RESPOND": {
       const donor = primaryDonor(state);
+      const alert = state.alerts.find((item) => item.id === action.payload.alertId);
+      if (!alert) throw new Error("Demo alert not found");
+      if (alert.status === "FULFILLED") throw new Error("This demo alert has already been fulfilled");
+      if (donor.status !== "APPROVED" || donor.suspended) throw new Error("The primary demo donor is not eligible to respond");
+      if (!canDonateTo(donor.bloodGroup, alert.bloodType)) throw new Error("The demo donor's blood type is not compatible with this alert");
+      const existing = state.responses.find(
+        (item) => item.alertId === alert.id && item.donorId === donor.id && item.outcome !== "PENDING"
+      );
+      if (existing) throw new Error("The demo donor has already responded to this alert");
       if (!donor.available && action.payload.outcome === "ACCEPTED") throw new Error("Set donor availability before accepting");
       recordResponse(state, now, action.payload.alertId, donor.id, action.payload.outcome, false);
       break;
