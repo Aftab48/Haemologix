@@ -565,3 +565,89 @@ export async function sendDonorOnboardWelcomeEmail(
     throw new Error(`Failed to send donor onboard welcome email: ${error.message}`);
   }
 }
+
+/**
+ * Notify the admin team that a user has requested account deletion
+ */
+export async function sendDeletionRequestAdminNotification(data: {
+  requestId: string;
+  email: string;
+  phone?: string | null;
+  reason?: string | null;
+  requestedAt: string;
+}) {
+  let html = await loadEmailTemplate("deletionRequestAdmin.html");
+  html = applyTemplate(html, {
+    requestId: data.requestId,
+    email: data.email,
+    phone: data.phone || "Not provided",
+    reason: (data.reason || "Not provided").replace(/\n/g, "<br>"),
+    requestedAt: data.requestedAt,
+  });
+
+  const adminEmail = process.env.CONTACT_ADMIN_EMAIL || "haemologix@gmail.com";
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"HaemoLogix" <${process.env.SMTP_USER}>`,
+      to: adminEmail,
+      subject: `Account deletion request from ${data.email}`,
+      html,
+    });
+
+    console.log(
+      `[Email] Deletion request admin notification sent to ${adminEmail}:`,
+      info.messageId
+    );
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    const error = getMailError(err);
+    console.error("❌ Deletion request admin notification email error:", {
+      message: error.message,
+      code: error.code,
+    });
+    throw new Error(
+      `Failed to send deletion request admin notification: ${error.message}`
+    );
+  }
+}
+
+/**
+ * Confirm to the user that their deletion request was received
+ */
+export async function sendDeletionRequestUserConfirmation(data: {
+  requestId: string;
+  email: string;
+  requestedAt: string;
+}) {
+  let html = await loadEmailTemplate("deletionRequestUser.html");
+  html = applyTemplate(html, {
+    requestId: data.requestId,
+    email: data.email,
+    requestedAt: data.requestedAt,
+  });
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"HaemoLogix" <${process.env.SMTP_USER}>`,
+      to: data.email,
+      subject: "Your HaemoLogix account deletion request",
+      html,
+    });
+
+    console.log(
+      `[Email] Deletion request confirmation sent to ${data.email}:`,
+      info.messageId
+    );
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    const error = getMailError(err);
+    console.error("❌ Deletion request user confirmation email error:", {
+      message: error.message,
+      code: error.code,
+    });
+    throw new Error(
+      `Failed to send deletion request confirmation: ${error.message}`
+    );
+  }
+}

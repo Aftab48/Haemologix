@@ -21,7 +21,7 @@ export default function PrivacyPolicyPage() {
               Privacy Policy
             </h1>
             <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
-              Last Updated: January 2024
+              Last Updated: 1 January 2026
             </p>
           </div>
         </div>
@@ -41,8 +41,9 @@ export default function PrivacyPolicyPage() {
                   your privacy and ensuring the security of your personal and
                   medical information. This Privacy Policy explains how we
                   collect, use, disclose, and safeguard your information when
-                  you use our blood donation platform and services (the
-                  "Service").
+                  you use our blood donation platform and services, including
+                  our website and the Haemologix For Donors mobile app (together,
+                  the "Service").
                 </p>
                 <p className="text-text-dark/80 font-dm-sans leading-relaxed">
                   By using our Service, you agree to the collection and use of
@@ -137,8 +138,9 @@ export default function PrivacyPolicyPage() {
                   </li>
                   <li>
                     <strong>Compliance:</strong> To comply with legal
-                    obligations, including HIPAA requirements and medical data
-                    protection laws
+                    obligations, including the Digital Personal Data Protection
+                    Act, 2023 (DPDPA) and applicable medical data protection
+                    laws
                   </li>
                   <li>
                     <strong>Security:</strong> To detect and prevent fraud,
@@ -200,30 +202,54 @@ export default function PrivacyPolicyPage() {
 
               <div>
                 <h2 className="text-3xl font-bold mb-4 text-text-dark">
-                  HIPAA Compliance
+                  DPDPA Compliance
                 </h2>
                 <p className="text-text-dark/80 font-dm-sans leading-relaxed mb-4">
-                  Haemologix is committed to maintaining HIPAA compliance for
-                  protected health information (PHI). We implement:
+                  Haemologix operates as a Data Fiduciary under India's Digital
+                  Personal Data Protection Act, 2023 (the "DPDP Act"). You are
+                  the Data Principal in respect of your personal data. We
+                  implement:
                 </p>
                 <ul className="list-disc list-inside space-y-2 ml-4 text-text-dark/80 font-dm-sans">
                   <li>
-                    <strong>Administrative safeguards:</strong> Access controls,
-                    workforce training, and security policies
+                    <strong>Lawful, consent-based processing:</strong> We
+                    process your personal data only for the specific purposes
+                    you consented to, and you may withdraw that consent at any
+                    time
                   </li>
                   <li>
-                    <strong>Physical safeguards:</strong> Secure data centers
-                    and facility access controls
+                    <strong>Purpose limitation and data minimisation:</strong>{" "}
+                    We collect only the data needed to match you with blood
+                    requests and confirm your eligibility to donate
                   </li>
                   <li>
-                    <strong>Technical safeguards:</strong> Encryption, audit
-                    controls, and integrity controls
+                    <strong>Reasonable security safeguards:</strong> Encryption,
+                    role-based access controls, audit logging and staff training
+                    to prevent personal data breaches
                   </li>
                   <li>
-                    <strong>Business Associate Agreements (BAAs):</strong> With
-                    third-party service providers handling PHI
+                    <strong>Data Processor obligations:</strong> Third parties
+                    who process personal data on our behalf do so under contract
+                    and only on our instructions
+                  </li>
+                  <li>
+                    <strong>Erasure on request:</strong> We delete your personal
+                    data when you withdraw consent or request deletion, except
+                    where retention is required by law
+                  </li>
+                  <li>
+                    <strong>Breach notification:</strong> We notify affected
+                    Data Principals and the Data Protection Board of India of
+                    personal data breaches as required by the DPDP Act
                   </li>
                 </ul>
+                <p className="text-text-dark/80 font-dm-sans leading-relaxed mt-4">
+                  If you are not satisfied with how we have handled your
+                  personal data, you may raise a grievance with us using the
+                  contact details below. If your grievance remains unresolved,
+                  you have the right to escalate it to the Data Protection Board
+                  of India.
+                </p>
               </div>
 
               <div>
@@ -282,7 +308,13 @@ export default function PrivacyPolicyPage() {
                   </li>
                   <li>
                     <strong>Deletion:</strong> Request deletion of your account
-                    and associated data
+                    and associated data at any time via our{" "}
+                    <Link
+                      href="/delete-account"
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      account deletion page
+                    </Link>
                   </li>
                   <li>
                     <strong>Portability:</strong> Request a copy of your data in
@@ -307,13 +339,36 @@ export default function PrivacyPolicyPage() {
                 <h2 className="text-3xl font-bold mb-4 text-text-dark">
                   Data Retention
                 </h2>
-                <p className="text-text-dark/80 font-dm-sans leading-relaxed">
+                <p className="text-text-dark/80 font-dm-sans leading-relaxed mb-4">
                   We retain your information for as long as necessary to provide
                   the Service and fulfill the purposes outlined in this Privacy
                   Policy, comply with legal obligations and medical record
                   retention requirements, and resolve disputes and enforce our
                   agreements. Medical records may be retained for extended
                   periods as required by law or medical best practices.
+                </p>
+                <p className="text-text-dark/80 font-dm-sans leading-relaxed mb-4">
+                  When you request deletion of your account, we verify that the
+                  request came from the account owner and then permanently
+                  delete your personal, contact, health and eligibility
+                  information, your uploaded documents, your location data and
+                  your responses to blood requests. Verified requests are
+                  completed within <strong>30 days</strong>.
+                </p>
+                <p className="text-text-dark/80 font-dm-sans leading-relaxed">
+                  We retain anonymised records of completed donations for
+                  medical traceability and hospital audit requirements. These
+                  records are stripped of all identifying information and cannot
+                  be linked back to you. We also retain records we are legally
+                  required to keep, for only as long as the law requires. Full
+                  details are on our{" "}
+                  <Link
+                    href="/delete-account"
+                    className="text-primary hover:underline font-semibold"
+                  >
+                    account deletion page
+                  </Link>
+                  .
                 </p>
               </div>
 
@@ -359,14 +414,22 @@ export default function PrivacyPolicyPage() {
                 </p>
                 <div className="bg-text-dark/5 p-4 rounded-lg text-text-dark/80 font-dm-sans">
                   <p className="font-semibold mb-2">Haemologix Privacy Team</p>
-                  <p>Email: haemologix@gmail.in</p>
+                  <p>
+                    Email:{" "}
+                    <a
+                      href="mailto:Haemologix@gmail.com"
+                      className="text-primary hover:underline"
+                    >
+                      Haemologix@gmail.com
+                    </a>
+                  </p>
                   <p>
                     Website:{" "}
                     <Link
                       href="/contact"
                       className="text-primary hover:underline"
                     >
-                      https://haemologix.in/contact
+                      https://Haemologix.in/contact
                     </Link>
                   </p>
                   <p className="mt-4 text-sm">
@@ -378,8 +441,9 @@ export default function PrivacyPolicyPage() {
 
               <div className="border-t border-text-dark/20 pt-6 mt-8">
                 <p className="text-text-dark/60 font-dm-sans text-sm italic">
-                  This Privacy Policy is effective as of January 2024 and
-                  applies to all users of the Haemologix platform.
+                  This Privacy Policy is effective as of 1 January 2026 and
+                  applies to all users of the Haemologix platform, including the
+                  Haemologix For Donors mobile app.
                 </p>
               </div>
             </CardContent>
@@ -395,7 +459,7 @@ export default function PrivacyPolicyPage() {
               <div className="flex items-center gap-2 mb-4">
                 <Heart className="w-6 h-6 text-slate-300" />
                 <span className="text-xl font-bold text-slate-300">
-                  HaemoLogix
+                  Haemologix
                 </span>
               </div>
               <p className="text-gray-400">
@@ -465,8 +529,8 @@ export default function PrivacyPolicyPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white">
-                    HIPAA Compliance
+                  <Link href="/delete-account" className="hover:text-white">
+                    Delete Account
                   </Link>
                 </li>
               </ul>
@@ -479,15 +543,15 @@ export default function PrivacyPolicyPage() {
             </p>
           </div>
           {/* Back to Top */}
-                    <div className="flex justify-center mt-6">
-                      <button
-                      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                      className="flex items-center gap-1 text-sm text-background/60 hover:text-white transition"
-                      >
-                        <ArrowUp className="w-4 h-4" />
-                            Back to Top
-                      </button>
-                    </div>
+          <div className="flex justify-center mt-6">
+            <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex items-center gap-1 text-sm text-background/60 hover:text-white transition"
+            >
+              <ArrowUp className="w-4 h-4" />
+              Back to Top
+            </button>
+          </div>
           
         </div>
       </footer>

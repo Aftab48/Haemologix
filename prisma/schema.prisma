@@ -576,3 +576,30 @@ model DemoSandbox {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
+/// A user-submitted request to delete an account and its associated data,
+/// raised from the public /delete-account page. Requests are recorded here
+/// and processed manually after identity verification — the public endpoint
+/// never deletes data directly, since it is unauthenticated.
+model AccountDeletionRequest {
+  id          String                 @id @default(uuid())
+  email       String
+  phone       String?
+  reason      String?
+  status      DeletionRequestStatus  @default(PENDING)
+  notes       String?
+  requestedAt DateTime               @default(now())
+  processedAt DateTime?
+  updatedAt   DateTime               @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([requestedAt])
+}
+
+enum DeletionRequestStatus {
+  PENDING
+  VERIFIED
+  COMPLETED
+  REJECTED
+}

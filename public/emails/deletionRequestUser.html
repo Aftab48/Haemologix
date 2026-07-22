@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Your HaemoLogix account deletion request</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #7f1d1d, #7f1d1d 50%, #ca8a04 100%);
+        color: white;
+        text-align: center;
+        padding: 25px 15px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 26px;
+      }
+      .content {
+        padding: 25px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .content h2 {
+        color: #7f1d1d;
+        margin-top: 0;
+      }
+      .message-box {
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      .message-content {
+        background-color: white;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 10px;
+        border-left: 4px solid #9b2226;
+      }
+      .data-list {
+        margin: 10px 0 0 0;
+        padding-left: 20px;
+      }
+      .data-list li {
+        margin-bottom: 6px;
+      }
+      .notice {
+        background-color: #fef3c7;
+        border-left: 4px solid #ca8a04;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 20px 0;
+        font-size: 14px;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888888;
+        padding: 15px;
+        background-color: #f9fafb;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>Account deletion request received</h1>
+      </div>
+      <div class="content">
+        <h2>Hello,</h2>
+        <p>
+          We have received a request to delete the HaemoLogix account associated
+          with <strong>{{email}}</strong>, along with its associated data.
+        </p>
+
+        <div class="message-box">
+          <p><strong>Reference ID:</strong></p>
+          <div class="message-content">{{requestId}}</div>
+          <p style="margin-bottom: 0">
+            <strong>Requested on:</strong> {{requestedAt}}
+          </p>
+        </div>
+
+        <p><strong>What will be deleted</strong></p>
+        <ul class="data-list">
+          <li>Your name, email address, phone number and postal address</li>
+          <li>Your date of birth, gender and blood group</li>
+          <li>Your health and eligibility details, including weight, height, BMI and medical history</li>
+          <li>Any identity or verification documents you uploaded</li>
+          <li>Your location data and saved alert preferences</li>
+          <li>Your responses to individual blood requests</li>
+        </ul>
+
+        <p style="margin-top: 20px"><strong>What we keep, and why</strong></p>
+        <ul class="data-list">
+          <li>
+            Anonymised records of completed donations, which are retained for
+            medical traceability and hospital audit requirements. These are
+            unlinked from your identity and cannot be traced back to you.
+          </li>
+          <li>
+            Records we are required to retain by law or by applicable blood-bank
+            regulations, kept only for the period the law requires.
+          </li>
+        </ul>
+
+        <div class="notice">
+          <strong>Next steps:</strong> To protect your account, we verify every
+          deletion request before acting on it. We may contact you at this email
+          address to confirm the request came from you. Your request will be
+          completed within <strong>30 days</strong>, and we will email you once
+          it is done.
+        </div>
+
+        <p>
+          If you did <strong>not</strong> make this request, please contact us
+          immediately by replying to this email so we can cancel it.
+        </p>
+
+        <p style="color: #666; margin-top: 30px">
+          Best regards,<br />
+          <strong>The HaemoLogix Team</strong>
+        </p>
+      </div>
+      <div class="footer">
+        © <span id="year"></span> Haemologix Pvt. Ltd. — Connecting Life, One Drop at a Time
+        <script>
+          document.getElementById("year").textContent = new Date().getFullYear();
+        </script>
+      </div>
+    </div>
+  </body>
+</html>
