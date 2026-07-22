@@ -56,7 +56,7 @@ export const steps = [
     icon: "🔔",
     title: "Instant Alerts",
     description:
-      "HaemoLogix instantly alerts nearby eligible donors (correct blood group, donation gap maintained)",
+      "Haemologix instantly alerts nearby eligible donors (correct blood group, donation gap maintained)",
     delay: "0.3s",
   },
   {

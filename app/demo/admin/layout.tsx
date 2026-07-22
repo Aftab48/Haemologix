@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard Demo | HaemoLogix",
+  title: "Admin Dashboard Demo | Haemologix",
   description:
-    "Explore HaemoLogix admin dashboard demo. No sign-in required. Manage users, pilot requests, and system analytics.",
+    "Explore Haemologix admin dashboard demo. No sign-in required. Manage users, pilot requests, and system analytics.",
   keywords: [
     "admin dashboard demo",
     "blood donation admin",
-    "HaemoLogix admin",
+    "Haemologix admin",
   ],
   openGraph: {
-    title: "Admin Dashboard Demo | HaemoLogix",
-    description: "Explore the admin dashboard demo on HaemoLogix. No sign-in required.",
+    title: "Admin Dashboard Demo | Haemologix",
+    description: "Explore the admin dashboard demo on Haemologix. No sign-in required.",
     url: "https://haemologix.in/demo/admin",
   },
   alternates: {

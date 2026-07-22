@@ -94,7 +94,7 @@ function createHospitals(now: Date): DemoHospital[] {
   return [
     {
       id: DEMO_PRIMARY_HOSPITAL_ID,
-      name: "HaemoLogix Demo Medical Centre",
+      name: "Haemologix Demo Medical Centre",
       email: "primary.hospital@example.com",
       phone: "+91-00000-20001",
       address: "AJC Bose Road, Kolkata, West Bengal",
@@ -259,7 +259,7 @@ export function createDemoSeed(now = new Date()): DemoState {
         id: "demo-history-primary-1",
         donorId: DEMO_PRIMARY_DONOR_ID,
         date: isoAt(now, -days(112)),
-        hospitalName: "HaemoLogix Demo Medical Centre",
+        hospitalName: "Haemologix Demo Medical Centre",
         type: "Whole Blood",
         units: 1,
         status: "Completed",

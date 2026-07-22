@@ -1,4 +1,4 @@
-# HaemoLogix 🩸
+# Haemologix 🩸
 
 **Real-time Blood Alert System**
 
@@ -7,11 +7,11 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-NeonDB-336791.svg)](https://neon.tech/)
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black.svg)](https://haemologix.vercel.app/)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black.svg)](https://Haemologix.vercel.app/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red.svg)](LICENSE)
 
-HaemoLogix connects verified hospitals to nearby, eligible blood donors — filtered by blood group, urgency, and location.  
+Haemologix connects verified hospitals to nearby, eligible blood donors — filtered by blood group, urgency, and location.  
 Hospitals raise an alert, donors accept in one tap, and donations are tracked with history, eligibility, and analytics.
 
 > **Because minutes matter. Every second counts when it comes to saving lives.** 💉
@@ -119,7 +119,7 @@ Hospitals raise an alert, donors accept in one tap, and donations are tracked wi
 
 ## 🏗️ Architecture
 
-HaemoLogix uses an **event-driven microservice architecture** powered by AI agents:
+Haemologix uses an **event-driven microservice architecture** powered by AI agents:
 
 - **Coordinator Agent**: Orchestrates system-wide events
 - **Donor Agent**: Matches and notifies eligible donors
@@ -268,7 +268,7 @@ Make sure to set all required environment variables in your deployment platform.
 
 ## 🤝 Contributing
 
-We welcome contributions from the community! HaemoLogix is open source and built with ❤️ for saving lives.
+We welcome contributions from the community! Haemologix is open source and built with ❤️ for saving lives.
 
 ### How to Contribute
 
@@ -323,7 +323,7 @@ Copyright (c) 2025 Haemologix Private Limited
 
 ## 👥 Team
 
-**HaemoLogix** is developed and maintained by [Haemologix Private Limited](https://haemologix.vercel.app/).
+**Haemologix** is developed and maintained by [Haemologix Private Limited](https://Haemologix.in).
 
 ### Core Contributors
 
@@ -335,7 +335,7 @@ Copyright (c) 2025 Haemologix Private Limited
 
 ### Special Thanks
 
-We're grateful to all contributors who help make HaemoLogix better!
+We're grateful to all contributors who help make Haemologix better!
 
 ---
 
@@ -351,7 +351,7 @@ We're grateful to all contributors who help make HaemoLogix better!
 ### Community
 
 - ⭐ **Star this repo** if you find it useful!
-- 🐦 Share HaemoLogix with your network
+- 🐦 Share Haemologix with your network
 - 🤝 Contribute to make it better
 
 ---
@@ -360,7 +360,7 @@ We're grateful to all contributors who help make HaemoLogix better!
 
 - ✅ **Version**: 0.5.1
 - ✅ **Status**: Active Development
-- ✅ **Production**: Live at [haemologix.vercel.app](https://haemologix.vercel.app/)
+- ✅ **Production**: Live at [Haemologix.in](https://Haemologix.in/)
 - ✅ **License**: MIT (Open Source)
 
 ---
@@ -380,7 +380,7 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and future roadmap.
 
 ## 🌟 Show Your Support
 
-If HaemoLogix helps your organization or inspires your project, please:
+If Haemologix helps your organization or inspires your project, please:
 
 - ⭐ **Star this repository**
 - 🔄 **Share it with others**
@@ -391,9 +391,9 @@ If HaemoLogix helps your organization or inspires your project, please:
 
 <div align="center">
 
-### Join HaemoLogix - Because Minutes Matter 🩸
+### Join Haemologix - Because Minutes Matter 🩸
 
-**[Try HaemoLogix Now](https://haemologix.vercel.app/)** | **[Documentation](docs/)** | **[Contributing](CONTRIBUTING.md)**
+**[Try Haemologix Now](https://Haemologix.in)** | **[Documentation](docs/)** | **[Contributing](CONTRIBUTING.md)**
 
 Made with ❤️ for humanity | Copyright © 2026 Haemologix Pvt. Ltd. | [MIT License](LICENSE)
 

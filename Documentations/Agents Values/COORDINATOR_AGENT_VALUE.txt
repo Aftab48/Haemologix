@@ -1,5 +1,5 @@
 ================================================================================
-HOW COORDINATOR AGENT IMPROVES HAEMOLOGIX
+HOW COORDINATOR AGENT IMPROVES Haemologix
 ================================================================================
 
 BEFORE (Manual Coordination)

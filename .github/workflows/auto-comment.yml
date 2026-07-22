@@ -23,7 +23,7 @@ jobs:
             const issueNumber = context.payload.issue.number;
             const issueAuthor = context.payload.issue.user.login;
             
-            const comment = `👋 Hello @${issueAuthor}! Thank you for opening this issue. We appreciate you taking the time to help improve HaemoLogix! 🩸
+            const comment = `👋 Hello @${issueAuthor}! Thank you for opening this issue. We appreciate you taking the time to help improve Haemologix! 🩸
 
             Our team will review this issue and get back to you as soon as possible. In the meantime, here are some helpful resources:
 
@@ -68,7 +68,7 @@ jobs:
             const prTitle = context.payload.pull_request.title;
             const prBody = context.payload.pull_request.body || '';
             
-            const comment = `🎉 Thank you @${prAuthor} for your contribution to HaemoLogix! We're excited to review your pull request. 🩸
+            const comment = `🎉 Thank you @${prAuthor} for your contribution to Haemologix! We're excited to review your pull request. 🩸
 
             ## 📋 Review Checklist
 

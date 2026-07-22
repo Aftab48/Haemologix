@@ -1,6 +1,6 @@
-# Contributing to HaemoLogix
+# Contributing to Haemologix
 
-First off, thank you for considering contributing to HaemoLogix! It's people like you that make HaemoLogix such a great tool for saving lives. 🩸
+First off, thank you for considering contributing to Haemologix! It's people like you that make Haemologix such a great tool for saving lives. 🩸
 
 ## Table of Contents
 
@@ -322,7 +322,7 @@ Contributors will be:
 - Credited in release notes
 - Part of saving lives! 🩸
 
-Thank you for contributing to HaemoLogix! Together, we're making blood donation more efficient and saving lives.
+Thank you for contributing to Haemologix! Together, we're making blood donation more efficient and saving lives.
 
 ---
 

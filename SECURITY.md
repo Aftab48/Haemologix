@@ -11,7 +11,7 @@ We release patches for security vulnerabilities in the following versions:
 
 ## Reporting a Vulnerability
 
-The HaemoLogix team takes security bugs seriously. We appreciate your efforts to responsibly disclose your findings.
+The Haemologix team takes security bugs seriously. We appreciate your efforts to responsibly disclose your findings.
 
 ### How to Report a Security Vulnerability
 
@@ -41,7 +41,7 @@ Please include the following information in your report:
 
 ## Security Best Practices for Deployment
 
-When deploying HaemoLogix, please ensure:
+When deploying Haemologix, please ensure:
 
 1. **Environment Variables**: Never commit `.env` files or expose API keys
 2. **Database Security**: Use strong passwords and enable SSL/TLS for database connections
@@ -56,18 +56,18 @@ When deploying HaemoLogix, please ensure:
 7. **Access Control**: Implement proper role-based access control
 8. **Data Privacy**: Follow GDPR/local privacy regulations for handling donor and patient data
 
-## Security Features in HaemoLogix
+## Security Features in Haemologix
 
 - **Authentication**: Clerk-based secure authentication
 - **Authorization**: Role-based access control (Admin, Hospital, Donor)
 - **Data Encryption**: SSL/TLS for data in transit
 - **Input Validation**: Zod schema validation on all forms
-- **HIPAA Considerations**: Designed with medical data privacy in mind
+- **DPDPA Considerations**: Designed with medical data privacy in mind
 - **Rate Limiting**: Middleware protection against brute force attacks
 
 ## Medical Data Compliance
 
-As HaemoLogix handles sensitive medical information:
+As Haemologix handles sensitive medical information:
 - Donor eligibility data
 - Blood type information
 - Health screening results
@@ -88,4 +88,4 @@ We follow a coordinated disclosure process:
 4. We release a security patch
 5. We publicly disclose the vulnerability (with your consent)
 
-Thank you for helping keep HaemoLogix and our users safe!
+Thank you for helping keep Haemologix and our users safe!

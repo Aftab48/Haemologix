@@ -297,7 +297,7 @@ export default function TermsAndConditionsPage() {
                       Limitation of Liability
                     </h3>
                     <p className="mb-2 font-semibold">
-                      TO THE MAXIMUM EXTENT PERMITTED BY LAW, HAEMOLOGIX SHALL
+                      TO THE MAXIMUM EXTENT PERMITTED BY LAW, Haemologix SHALL
                       NOT BE LIABLE FOR:
                     </p>
                     <ul className="list-disc list-inside space-y-1 ml-4">
@@ -524,7 +524,7 @@ export default function TermsAndConditionsPage() {
               <div className="flex items-center gap-2 mb-4">
                 <Heart className="w-6 h-6 text-slate-300" />
                 <span className="text-xl font-bold text-slate-300">
-                  HaemoLogix
+                  Haemologix
                 </span>
               </div>
               <p className="text-gray-400">
@@ -594,8 +594,8 @@ export default function TermsAndConditionsPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white">
-                    HIPAA Compliance
+                  <Link href="/privacy-policy" className="hover:text-white">
+                    DPDPA Compliance
                   </Link>
                 </li>
               </ul>
@@ -603,7 +603,7 @@ export default function TermsAndConditionsPage() {
           </div>
           <div className="border-t border-background/30 mt-8 pt-8 text-center text-background/70 font-dm-sans">
             <p>
-              &copy; 2025 HaemoLogix. All rights reserved. Built for saving
+              &copy; 2026 Haemologix. All rights reserved. Built for saving
               lives.
             </p>
           </div>

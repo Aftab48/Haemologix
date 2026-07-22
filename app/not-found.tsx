@@ -5,9 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Home, Search, Heart, ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "404 - Page Not Found | HaemoLogix",
+  title: "404 - Page Not Found | Haemologix",
   description:
-    "The page you're looking for doesn't exist. Return to HaemoLogix homepage or explore our blood donation platform features.",
+    "The page you're looking for doesn't exist. Return to Haemologix homepage or explore our blood donation platform features.",
   robots: {
     index: false,
     follow: false,

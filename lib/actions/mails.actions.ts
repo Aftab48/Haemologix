@@ -472,7 +472,7 @@ export async function sendContactAdminNotification(data: {
 
   try {
     const info = await transporter.sendMail({
-      from: `"HaemoLogix" <${process.env.SMTP_USER}>`,
+      from: `"Haemologix" <${process.env.SMTP_USER}>`,
       to: adminEmail,
       subject: `New Contact Form Submission from ${data.name}`,
       html,
@@ -506,9 +506,9 @@ export async function sendContactUserConfirmation(data: {
 
   try {
     const info = await transporter.sendMail({
-      from: `"HaemoLogix" <${process.env.SMTP_USER}>`,
+      from: `"Haemologix" <${process.env.SMTP_USER}>`,
       to: data.email,
-      subject: "Thank you for contacting HaemoLogix",
+      subject: "Thank you for contacting Haemologix",
       html,
     });
 
@@ -549,7 +549,7 @@ export async function sendDonorOnboardWelcomeEmail(
     const info = await transporter.sendMail({
       from: `"Haemologix" <${process.env.SMTP_USER}>`,
       to,
-      subject: "Welcome to HaemoLogix - Your Account Details",
+      subject: "Welcome to Haemologix - Your Account Details",
       html,
     });
 
@@ -589,7 +589,7 @@ export async function sendDeletionRequestAdminNotification(data: {
 
   try {
     const info = await transporter.sendMail({
-      from: `"HaemoLogix" <${process.env.SMTP_USER}>`,
+      from: `"Haemologix" <${process.env.SMTP_USER}>`,
       to: adminEmail,
       subject: `Account deletion request from ${data.email}`,
       html,
@@ -629,9 +629,9 @@ export async function sendDeletionRequestUserConfirmation(data: {
 
   try {
     const info = await transporter.sendMail({
-      from: `"HaemoLogix" <${process.env.SMTP_USER}>`,
+      from: `"Haemologix" <${process.env.SMTP_USER}>`,
       to: data.email,
-      subject: "Your HaemoLogix account deletion request",
+      subject: "Your Haemologix account deletion request",
       html,
     });
 

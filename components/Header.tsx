@@ -42,7 +42,7 @@ const Header = ({ activePage }: HeaderProps) => {
             />
           </div>
           <Link href={"/"} className="text-xl font-outfit font-bold text-primary">
-            {"HaemoLogix"}
+            {"Haemologix"}
           </Link>
         </div>
 

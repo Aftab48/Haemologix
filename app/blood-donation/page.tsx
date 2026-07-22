@@ -6,9 +6,9 @@ import { Heart, Shield } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 
 export const metadata: Metadata = {
-  title: "Blood Donation | How to Donate Blood | HaemoLogix",
+  title: "Blood Donation | How to Donate Blood | Haemologix",
   description:
-    "Learn about blood donation, how to donate blood, and why blood donation is important. Register as a blood donor on HaemoLogix and help save lives through emergency blood donations in India.",
+    "Learn about blood donation, how to donate blood, and why blood donation is important. Register as a blood donor on Haemologix and help save lives through emergency blood donations in India.",
   keywords: [
     "blood donation",
     "how to donate blood",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     "blood donation requirements",
   ],
   openGraph: {
-    title: "Blood Donation | How to Donate Blood | HaemoLogix",
+    title: "Blood Donation | How to Donate Blood | Haemologix",
     description:
       "Learn about blood donation and register as a blood donor to help save lives through emergency blood donations.",
     url: "https://haemologix.in/blood-donation",
@@ -90,7 +90,7 @@ export default function BloodDonationPage() {
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Registration</h3>
                     <p className="text-text-dark/80">
-                      Register as a blood donor on HaemoLogix platform. Provide your basic information, blood type, and location.
+                      Register as a blood donor on Haemologix platform. Provide your basic information, blood type, and location.
                     </p>
                   </div>
                 </div>

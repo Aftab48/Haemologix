@@ -103,7 +103,7 @@ Haemologix is a technology platform that facilitates connections between donors 
 ## Liability Limitations
 
 ### Limitation of Liability
-TO THE MAXIMUM EXTENT PERMITTED BY LAW, HAEMOLOGIX SHALL NOT BE LIABLE FOR:
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, Haemologix SHALL NOT BE LIABLE FOR:
 
 - Any indirect, incidental, special, consequential, or punitive damages
 - Loss of profits, revenue, data, or business opportunities

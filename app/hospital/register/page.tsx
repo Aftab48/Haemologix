@@ -346,7 +346,7 @@ export default function HospitalRegistration() {
           <CardContent className="p-12 text-center text-gray-900">
             <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
             <h1 className="text-3xl font-bold">Hospital Registration Successful!</h1>
-            <p className="mt-4">Thank you for registering your blood bank/hospital with HaemoLogix. Your application has been submitted for verification.</p>
+            <p className="mt-4">Thank you for registering your blood bank/hospital with Haemologix. Your application has been submitted for verification.</p>
             <Link href="/"><Button className="mt-6">Back to Home</Button></Link>
           </CardContent>
         </Card>

@@ -33,7 +33,7 @@ export default function DemoAlertDetailsPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <Link href="/demo/hospital"><Image src="/logo.png" alt="HaemoLogix" width={48} height={48} className="rounded-full" /></Link>
+              <Link href="/demo/hospital"><Image src="/logo.png" alt="Haemologix" width={48} height={48} className="rounded-full" /></Link>
               <div><h1 className="text-xl font-bold text-text-dark">Alert Details</h1><p className="text-sm text-text-dark/80">Alert ID: {alert.id.slice(0, 8)}... - Auto-refreshing every 2s</p><p className="text-xs text-text-dark/60">Last updated: {new Date(typed.serverTime).toLocaleTimeString()} - Demo workflow</p></div>
             </div>
             <div className="flex items-center gap-3"><Badge className={alert.status === "FULFILLED" ? "bg-green-600" : "bg-orange-600"}>{alert.status}</Badge><Button variant="outline" onClick={() => void refresh()}><RefreshCw className="w-4 h-4 mr-2" />Refresh</Button></div>

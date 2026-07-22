@@ -433,8 +433,9 @@ export default function PrivacyPolicyPage() {
                     </Link>
                   </p>
                   <p className="mt-4 text-sm">
-                    For medical data inquiries or HIPAA-related requests, please
-                    specify "HIPAA Request" in your communication.
+                    For medical data inquiries or requests to exercise your
+                    rights as a Data Principal, please specify "DPDPA Request"
+                    in your communication.
                   </p>
                 </div>
               </div>
@@ -529,8 +530,8 @@ export default function PrivacyPolicyPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/delete-account" className="hover:text-white">
-                    Delete Account
+                  <Link href="/privacy-policy" className="hover:text-white">
+                    DPDPA Compliance
                   </Link>
                 </li>
               </ul>

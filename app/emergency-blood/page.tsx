@@ -5,9 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle, Clock, MapPin, Heart } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Emergency Blood | Emergency Blood Request | HaemoLogix",
+  title: "Emergency Blood | Emergency Blood Request | Haemologix",
   description:
-    "Need emergency blood? HaemoLogix provides real-time emergency blood alerts connecting hospitals with blood donors instantly. Create emergency blood requests and save lives.",
+    "Need emergency blood? Haemologix provides real-time emergency blood alerts connecting hospitals with blood donors instantly. Create emergency blood requests and save lives.",
   keywords: [
     "emergency blood",
     "emergency blood request",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "emergency blood India",
   ],
   openGraph: {
-    title: "Emergency Blood | Emergency Blood Request | HaemoLogix",
+    title: "Emergency Blood | Emergency Blood Request | Haemologix",
     description:
       "Create emergency blood requests and connect with blood donors instantly. Real-time emergency blood alerts for urgent situations.",
     url: "https://haemologix.in/emergency-blood",
@@ -38,7 +38,7 @@ export default function EmergencyBloodPage() {
             Emergency Blood Requests
           </h1>
           <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
-            When every second counts, HaemoLogix helps you find emergency blood donors instantly. Our real-time alert system connects hospitals with eligible donors in minutes.
+            When every second counts, Haemologix helps you find emergency blood donors instantly. Our real-time alert system connects hospitals with eligible donors in minutes.
           </p>
         </div>
 
@@ -131,7 +131,7 @@ export default function EmergencyBloodPage() {
           <CardContent className="p-8 text-center">
             <h2 className="text-3xl font-bold mb-4">Need Emergency Blood Now?</h2>
             <p className="text-lg text-text-dark/80 mb-6">
-              Register your hospital on HaemoLogix to create emergency blood alerts and connect with donors instantly. Every second counts in emergency situations.
+              Register your hospital on Haemologix to create emergency blood alerts and connect with donors instantly. Every second counts in emergency situations.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/hospital/register">

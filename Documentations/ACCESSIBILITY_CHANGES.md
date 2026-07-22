@@ -65,4 +65,4 @@ The Donor Dashboard tabs now meet accessibility requirements for:
 - Screen reader support
 - ARIA tab semantics
 
-This improves usability and aligns with HaemoLogix’s accessibility goals.
+This improves usability and aligns with Haemologix’s accessibility goals.

@@ -5,9 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Phone, Clock, Users } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Find Blood Donor | Locate Blood Donors Near You | HaemoLogix",
+  title: "Find Blood Donor | Locate Blood Donors Near You | Haemologix",
   description:
-    "Find blood donors near you instantly with HaemoLogix. Search for blood donors by location, blood type, and availability. Connect with registered blood donors for emergency blood requests.",
+    "Find blood donors near you instantly with Haemologix. Search for blood donors by location, blood type, and availability. Connect with registered blood donors for emergency blood requests.",
   keywords: [
     "find blood donor",
     "blood donor near me",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "find blood donor India",
   ],
   openGraph: {
-    title: "Find Blood Donor | Locate Blood Donors Near You | HaemoLogix",
+    title: "Find Blood Donor | Locate Blood Donors Near You | Haemologix",
     description:
       "Find blood donors near you instantly. Search for blood donors by location and blood type for emergency blood requests.",
     url: "https://haemologix.in/find-blood-donor",
@@ -37,7 +37,7 @@ export default function FindBloodDonorPage() {
             Find Blood Donors Near You
           </h1>
           <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
-            Need blood urgently? HaemoLogix helps you find registered blood donors in your area instantly. Our platform uses geolocation to match you with nearby eligible donors.
+            Need blood urgently? Haemologix helps you find registered blood donors in your area instantly. Our platform uses geolocation to match you with nearby eligible donors.
           </p>
         </div>
 

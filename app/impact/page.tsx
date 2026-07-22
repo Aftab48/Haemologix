@@ -227,7 +227,7 @@ export default function ImpactAndProspects() {
       description:
         "Protecting sensitive health information while enabling real-time sharing",
       solution:
-        "End-to-end encryption, HIPAA compliance, blockchain verification",
+        "End-to-end encryption, DPDPA compliance, blockchain verification",
       priority: "Critical",
     },
     {

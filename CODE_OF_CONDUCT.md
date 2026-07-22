@@ -36,11 +36,11 @@ Examples of unacceptable behavior include:
 
 ## Healthcare-Specific Guidelines
 
-As HaemoLogix is a **healthcare application** that directly impacts lives, we have additional expectations:
+As Haemologix is a **healthcare application** that directly impacts lives, we have additional expectations:
 
 ### Medical Data & Privacy
 - **Never share real patient or donor data** - Use synthetic/test data only
-- **Respect HIPAA, GDPR, and local privacy regulations** - Privacy is paramount
+- **Respect the DPDP Act, GDPR, and local privacy regulations** - Privacy is paramount
 - **Report security vulnerabilities responsibly** - Follow our [Security Policy](SECURITY.md)
 
 ### Accuracy & Safety

@@ -4,7 +4,7 @@
 
 ### Project overview
 
-HaemoLogix is a Next.js 15 (App Router, Turbopack) full-stack blood donation management platform. See `README.md` for full architecture details.
+Haemologix is a Next.js 15 (App Router, Turbopack) full-stack blood donation management platform. See `README.md` for full architecture details.
 
 ### Services
 

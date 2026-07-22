@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Blood Bank Registration | Blood Bank Signup | HaemoLogix",
+  title: "Blood Bank Registration | Blood Bank Signup | Haemologix",
   description:
-    "Register your blood bank on HaemoLogix network. Join India's leading blood bank coordination platform for efficient blood inventory management and emergency response.",
+    "Register your blood bank on Haemologix network. Join India's leading blood bank coordination platform for efficient blood inventory management and emergency response.",
   keywords: [
     "blood bank registration",
     "blood bank signup",
@@ -13,9 +13,9 @@ export const metadata: Metadata = {
     "blood inventory system",
   ],
   openGraph: {
-    title: "Blood Bank Registration | Blood Bank Signup | HaemoLogix",
+    title: "Blood Bank Registration | Blood Bank Signup | Haemologix",
     description:
-      "Register your blood bank on HaemoLogix network for efficient blood inventory management and emergency response.",
+      "Register your blood bank on Haemologix network for efficient blood inventory management and emergency response.",
     url: "https://haemologix.in/bloodbank/register",
   },
   alternates: {

@@ -37,7 +37,7 @@ export default function TeamPage() {
         <div className="container mx-auto max-w-6xl">
           <ScrollReveal>
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-4 text-text-dark">About HaemoLogix</h2>
+              <h2 className="text-4xl font-bold mb-4 text-text-dark">About Haemologix</h2>
               <p className="text-lg text-text-dark/80 max-w-3xl mx-auto">
                 We are a dedicated team committed to saving lives through intelligent automation and seamless coordination.
               </p>
@@ -81,7 +81,7 @@ export default function TeamPage() {
                   </div>
                   <CardTitle>Our Story</CardTitle>
                   <CardDescription>
-                    Born from the urgent need to solve blood shortage challenges, HaemoLogix combines cutting-edge AI with human-centered design.
+                    Born from the urgent need to solve blood shortage challenges, Haemologix combines cutting-edge AI with human-centered design.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -97,7 +97,7 @@ export default function TeamPage() {
             <div className="text-center mb-12">
               <h2 className="text-4xl font-bold mb-4 text-text-dark">Meet Our Team</h2>
               <p className="text-lg text-text-dark/80 max-w-2xl mx-auto">
-                The talented individuals behind HaemoLogix
+                The talented individuals behind Haemologix
               </p>
             </div>
           </ScrollReveal>
@@ -116,7 +116,7 @@ export default function TeamPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-center">
-                      Brief bio and description of their contribution to HaemoLogix will appear here.
+                      Brief bio and description of their contribution to Haemologix will appear here.
                     </p>
                   </CardContent>
                 </Card>
@@ -147,7 +147,7 @@ export default function TeamPage() {
               <div className="flex items-center gap-2 mb-4">
                 <Heart className="w-6 h-6 text-slate-300" />
                 <span className="text-xl font-bold text-slate-300">
-                  HaemoLogix
+                  Haemologix
                 </span>
               </div>
               <p className="text-gray-400">
@@ -208,8 +208,8 @@ export default function TeamPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white">
-                    HIPAA Compliance
+                  <Link href="/privacy-policy" className="hover:text-white">
+                    DPDPA Compliance
                   </Link>
                 </li>
               </ul>

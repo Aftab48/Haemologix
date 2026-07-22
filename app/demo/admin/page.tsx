@@ -31,7 +31,7 @@ export default function DemoAdminDashboard() {
       await act({ type: "ADMIN_SET_USER_STATUS", payload: { userType: user.role, userId: user.id, status: next } });
       const message = `${user.name} marked ${next.toLowerCase()}. Demo email and SMS notifications were simulated.`;
       setActionMessage(message);
-      if (typeof Notification !== "undefined" && Notification.permission === "granted") new Notification("HaemoLogix demo notification", { body: message });
+      if (typeof Notification !== "undefined" && Notification.permission === "granted") new Notification("Haemologix demo notification", { body: message });
     } catch (cause) {
       setActionMessage(cause instanceof Error ? cause.message : "Demo action failed");
     }

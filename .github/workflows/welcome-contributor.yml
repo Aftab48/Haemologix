@@ -45,7 +45,7 @@ jobs:
             const contributor = '${{ steps.check-contributor.outputs.contributor }}';
             const prNumber = context.payload.pull_request.number;
             
-            const comment = `🎉 **Welcome to HaemoLogix, @${contributor}!** 🩸
+            const comment = `🎉 **Welcome to Haemologix, @${contributor}!** 🩸
 
             Thank you for making your first contribution to our project! We're thrilled to have you join our mission to make blood donation more efficient and save lives.
 
@@ -69,7 +69,7 @@ jobs:
             - Join our [Discussions](https://github.com/${{ github.repository }}/discussions)
             - Email us: mdalam4884@gmail.com
 
-            We're here to help! Thank you for contributing to HaemoLogix! 🙏
+            We're here to help! Thank you for contributing to Haemologix! 🙏
 
             ---
             *This is an automated welcome message for first-time contributors.*`;

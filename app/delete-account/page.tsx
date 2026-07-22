@@ -57,7 +57,7 @@ export default function DeleteAccountPage() {
       setSubmitStatus({
         type: "error",
         message:
-          "Could not reach the server. Please try again, or email us at haemologix@gmail.com.",
+          "Could not reach the server. Please try again, or email us at Haemologix@gmail.com.",
       });
     } finally {
       setIsSubmitting(false);
@@ -76,9 +76,9 @@ export default function DeleteAccountPage() {
               Delete Your Account
             </h1>
             <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
-              Request deletion of your HaemoLogix account and the data
+              Request deletion of your Haemologix account and the data
               associated with it — from the Haemologix For Donors app or the
-              HaemoLogix website.
+              Haemologix website.
             </p>
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function DeleteAccountPage() {
                   Requests are completed within{" "}
                   <strong>30 days</strong> of verification. Deletion is
                   permanent and cannot be undone — you would need to register
-                  again to use HaemoLogix.
+                  again to use Haemologix.
                 </p>
               </div>
             </CardContent>
@@ -243,7 +243,7 @@ export default function DeleteAccountPage() {
                       placeholder="you@example.com"
                     />
                     <p className="text-xs text-text-dark/60 font-dm-sans">
-                      Use the email address on your HaemoLogix account.
+                      Use the email address on your Haemologix account.
                     </p>
                   </div>
 
@@ -296,7 +296,7 @@ export default function DeleteAccountPage() {
                       I understand that deleting my account is permanent, that
                       my donation history and eligibility record will be
                       removed, and that I will need to register again to use
-                      HaemoLogix.
+                      Haemologix.
                     </Label>
                   </div>
 
@@ -326,10 +326,10 @@ export default function DeleteAccountPage() {
                 <p className="text-sm text-text-dark/70 font-dm-sans">
                   Prefer email? Write to{" "}
                   <a
-                    href="mailto:haemologix@gmail.com?subject=Account%20deletion%20request"
+                    href="mailto:Haemologix@gmail.com?subject=Account%20deletion%20request"
                     className="underline font-semibold"
                   >
-                    haemologix@gmail.com
+                    Haemologix@gmail.com
                   </a>{" "}
                   from your registered address with the subject &ldquo;Account
                   deletion request&rdquo;.

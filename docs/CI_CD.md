@@ -1,6 +1,6 @@
 # 🚀 CI/CD Pipeline Documentation
 
-HaemoLogix uses **GitHub Actions** for continuous integration, security scanning, and deployment previews.
+Haemologix uses **GitHub Actions** for continuous integration, security scanning, and deployment previews.
 
 ## 🛠️ Workflows Overview
 

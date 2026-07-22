@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact Us | Blood Donation Platform | HaemoLogix",
+  title: "Contact Us | Blood Donation Platform | Haemologix",
   description:
-    "Contact HaemoLogix for blood donation platform inquiries, hospital partnerships, donor support, or blood bank coordination. Get in touch with India's leading blood donation network.",
+    "Contact Haemologix for blood donation platform inquiries, hospital partnerships, donor support, or blood bank coordination. Get in touch with India's leading blood donation network.",
   keywords: [
     "contact blood donation platform",
-    "haemologix contact",
+    "Haemologix contact",
     "blood donation support",
     "hospital partnership",
   ],
   openGraph: {
-    title: "Contact Us | Blood Donation Platform | HaemoLogix",
-    description: "Get in touch with HaemoLogix for blood donation platform inquiries and support.",
+    title: "Contact Us | Blood Donation Platform | Haemologix",
+    description: "Get in touch with Haemologix for blood donation platform inquiries and support.",
     url: "https://haemologix.in/contact",
   },
   alternates: {

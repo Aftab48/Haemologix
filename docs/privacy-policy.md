@@ -47,7 +47,7 @@ We use the collected information for the following purposes:
 4. **Geolocation Services**: To find nearby donors and blood banks using location data
 5. **Notifications**: To send SMS alerts via Twilio and email notifications for emergency blood requests
 6. **Analytics**: To improve our Service, analyze usage patterns, and enhance user experience
-7. **Compliance**: To comply with legal obligations, including HIPAA requirements and medical data protection laws
+7. **Compliance**: To comply with legal obligations, including the Digital Personal Data Protection Act, 2023 (DPDPA) and applicable medical data protection laws
 8. **Security**: To detect and prevent fraud, abuse, and unauthorized access
 
 ## Data Sharing and Disclosure
@@ -65,21 +65,23 @@ We use the collected information for the following purposes:
 
 ### Legal Requirements
 We may disclose your information if required by law, court order, or government regulation, including:
-- Compliance with HIPAA and medical data protection laws
+- Compliance with the DPDP Act, 2023 and medical data protection laws
 - Response to legal processes or government requests
 - Protection of rights, property, or safety of users or the public
 
 ### Business Transfers
 In the event of a merger, acquisition, or sale of assets, your information may be transferred to the acquiring entity.
 
-## HIPAA Compliance
+## DPDPA Compliance
 
-Haemologix is committed to maintaining HIPAA compliance for protected health information (PHI). We implement:
+Haemologix operates as a Data Fiduciary under India's Digital Personal Data Protection Act, 2023 (the "DPDP Act"). You are the Data Principal in respect of your personal data. We implement:
 
-- Administrative safeguards: Access controls, workforce training, and security policies
-- Physical safeguards: Secure data centers and facility access controls
-- Technical safeguards: Encryption, audit controls, and integrity controls
-- Business Associate Agreements (BAAs) with third-party service providers handling PHI
+- Lawful, consent-based processing: We process your personal data only for the specific purposes you consented to, and you may withdraw that consent at any time
+- Purpose limitation and data minimisation: We collect only the data needed to match you with blood requests and confirm your eligibility to donate
+- Reasonable security safeguards: Encryption, role-based access controls, audit logging and staff training to prevent personal data breaches
+- Data Processor obligations: Third parties who process personal data on our behalf do so under contract and only on our instructions
+- Erasure on request: We delete your personal data when you withdraw consent or request deletion, except where retention is required by law
+- Breach notification: We notify affected Data Principals and the Data Protection Board of India of personal data breaches as required by the DPDP Act
 
 ## Data Security
 
@@ -150,7 +152,7 @@ If you have questions, concerns, or requests regarding this Privacy Policy or ou
 - Website: https://haemologix.in/contact
 - Address: remote
 
-For medical data inquiries or HIPAA-related requests, please specify "HIPAA Request" in your communication.
+For medical data inquiries or requests to exercise your rights as a Data Principal, please specify "DPDPA Request" in your communication.
 
 ---
 

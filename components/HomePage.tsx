@@ -160,7 +160,7 @@ const HomePage = () => {
               {
                 "@type": "Organization",
                 "@id": "https://haemologix.in/#organization",
-                name: "HaemoLogix",
+                name: "Haemologix",
               },
             ],
           }),
@@ -660,8 +660,8 @@ const HomePage = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-accent transition-colors">
-                    HIPAA Compliance
+                  <Link href="/privacy-policy" className="hover:text-accent transition-colors">
+                    DPDPA Compliance
                   </Link>
                 </li>
               </ul>

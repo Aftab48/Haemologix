@@ -1,14 +1,13 @@
 name: Feature Request
-description: Suggest an idea for HaemoLogix
+description: Suggest an idea for Haemologix
 title: "[Feature]: "
 labels: ["enhancement", "needs-review"]
-assignees: []
 
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for suggesting a new feature! Your ideas help make HaemoLogix better for everyone. 🩸
+        Thanks for suggesting a new feature! Your ideas help make Haemologix better for everyone. 🩸
 
   - type: textarea
     id: problem
@@ -56,7 +55,7 @@ body:
       label: Priority (Your Opinion)
       description: How important is this feature to you?
       options:
-        - Critical - Blocking my use of HaemoLogix
+        - Critical - Blocking my use of Haemologix
         - High - Would significantly improve my experience
         - Medium - Nice to have
         - Low - Minor improvement
@@ -104,7 +103,7 @@ body:
       options:
         - label: I have searched existing issues to avoid duplicates
           required: true
-        - label: This feature aligns with HaemoLogix's mission of efficient blood donation
+        - label: This feature aligns with Haemologix's mission of efficient blood donation
           required: true
         - label: I am willing to help test this feature if implemented
           required: false

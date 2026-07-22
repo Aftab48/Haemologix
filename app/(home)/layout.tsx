@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Blood Donation Platform | Emergency Blood Alerts | HaemoLogix",
+  title: "Blood Donation Platform | Emergency Blood Alerts | Haemologix",
   description:
-    "HaemoLogix connects hospitals with blood donors through real-time emergency blood alerts. Register as a blood donor, find blood donors near you, or manage your hospital's blood inventory. India's leading blood donation platform for emergency blood requests.",
+    "Haemologix connects hospitals with blood donors through real-time emergency blood alerts. Register as a blood donor, find blood donors near you, or manage your hospital's blood inventory. India's leading blood donation platform for emergency blood requests.",
   keywords: [
     "blood donation",
     "blood donation platform",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     "blood shortage alert",
   ],
   openGraph: {
-    title: "Blood Donation Platform | Emergency Blood Alerts | HaemoLogix",
+    title: "Blood Donation Platform | Emergency Blood Alerts | Haemologix",
     description:
       "Connect hospitals with blood donors through real-time emergency blood alerts. Register as a donor or manage blood inventory.",
     url: "https://haemologix.in",

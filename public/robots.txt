@@ -1,4 +1,4 @@
-# robots.txt for HaemoLogix
+# robots.txt for Haemologix
 # https://haemologix.in/robots.txt
 
 User-agent: *

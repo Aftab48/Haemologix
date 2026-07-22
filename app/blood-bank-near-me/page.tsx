@@ -5,9 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Building, MapPin, Phone, Clock } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Blood Bank Near Me | Find Blood Banks | HaemoLogix",
+  title: "Blood Bank Near Me | Find Blood Banks | Haemologix",
   description:
-    "Find blood banks near you with HaemoLogix. Search for registered blood banks by location, check blood inventory, and connect with blood banks for emergency blood needs.",
+    "Find blood banks near you with Haemologix. Search for registered blood banks by location, check blood inventory, and connect with blood banks for emergency blood needs.",
   keywords: [
     "blood bank near me",
     "find blood bank",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "locate blood bank",
   ],
   openGraph: {
-    title: "Blood Bank Near Me | Find Blood Banks | HaemoLogix",
+    title: "Blood Bank Near Me | Find Blood Banks | Haemologix",
     description:
       "Find blood banks near you. Search for registered blood banks by location and check blood inventory availability.",
     url: "https://haemologix.in/blood-bank-near-me",
@@ -38,7 +38,7 @@ export default function BloodBankNearMePage() {
             Find Blood Banks Near You
           </h1>
           <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
-            Search for registered blood banks in your area. HaemoLogix connects you with verified blood banks that are part of our network for efficient blood coordination.
+            Search for registered blood banks in your area. Haemologix connects you with verified blood banks that are part of our network for efficient blood coordination.
           </p>
         </div>
 
@@ -60,7 +60,7 @@ export default function BloodBankNearMePage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Verified Blood Banks</h3>
                   <p className="text-text-dark/80">
-                    All blood banks on HaemoLogix are verified and registered. They meet regulatory requirements and maintain proper blood storage facilities.
+                    All blood banks on Haemologix are verified and registered. They meet regulatory requirements and maintain proper blood storage facilities.
                   </p>
                 </div>
               </div>
@@ -91,7 +91,7 @@ export default function BloodBankNearMePage() {
             <CardContent className="p-6">
               <h2 className="text-2xl font-semibold mb-4">For Blood Banks</h2>
               <p className="text-text-dark/80 mb-4">
-                Register your blood bank on HaemoLogix network to increase visibility, manage inventory efficiently, and respond to emergency blood requests.
+                Register your blood bank on Haemologix network to increase visibility, manage inventory efficiently, and respond to emergency blood requests.
               </p>
               <Link href="/bloodbank/register">
                 <Button className="w-full">Register Your Blood Bank</Button>
@@ -114,7 +114,7 @@ export default function BloodBankNearMePage() {
 
         <Card className="bg-blue-50/50 border-blue-200">
           <CardContent className="p-8">
-            <h2 className="text-2xl font-semibold mb-4">Benefits of HaemoLogix Blood Bank Network</h2>
+            <h2 className="text-2xl font-semibold mb-4">Benefits of Haemologix Blood Bank Network</h2>
             <ul className="space-y-3 text-text-dark/80">
               <li>• Verified and registered blood banks only</li>
               <li>• Real-time blood inventory tracking</li>

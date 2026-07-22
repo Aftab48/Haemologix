@@ -100,7 +100,7 @@ export default function ContactPage() {
               </h1>
               <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
                 Get in touch with our team for emergency support, partnerships, or
-                general inquiries about HaemoLogix.
+                general inquiries about Haemologix.
               </p>
             </div>
           </ScrollReveal>
@@ -405,7 +405,7 @@ export default function ContactPage() {
               <div className="flex items-center gap-2 mb-4">
                 <Heart className="w-6 h-6 text-slate-300" />
                 <span className="text-xl font-bold text-slate-300">
-                  HaemoLogix
+                  Haemologix
                 </span>
               </div>
               <p className="text-gray-400">
@@ -482,8 +482,8 @@ export default function ContactPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white">
-                    HIPAA Compliance
+                  <Link href="/privacy-policy" className="hover:text-white">
+                    DPDPA Compliance
                   </Link>
                 </li>
               </ul>

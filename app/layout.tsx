@@ -8,16 +8,16 @@ import AccessibilityAnnouncerProvider from "@/providers/AccessibilityAnnouncerPr
 export const metadata: Metadata = {
   metadataBase: new URL("https://haemologix.in"),
   title: {
-    default: "HaemoLogix - Real-Time Blood Donation Platform | Emergency Blood Alerts",
-    template: "%s | HaemoLogix",
+    default: "Haemologix - Real-Time Blood Donation Platform | Emergency Blood Alerts",
+    template: "%s | Haemologix",
   },
   description:
-    "HaemoLogix (haemologix) connects hospitals with blood donors through real-time emergency blood alerts. Find blood donors, register as a donor, or manage blood bank inventory. India's leading blood donation platform for emergency blood requests.",
+    "Haemologix (Haemologix) connects hospitals with blood donors through real-time emergency blood alerts. Find blood donors, register as a donor, or manage blood bank inventory. India's leading blood donation platform for emergency blood requests.",
   keywords: [
     "blood donation",
     "blood donor",
+    "Haemologix",
     "haemologix",
-    "haemalogix",
     "emergency blood",
     "blood bank",
     "blood donation platform",
@@ -30,9 +30,9 @@ export const metadata: Metadata = {
     "blood bank management",
     "donor registration",
   ],
-  authors: [{ name: "HaemoLogix" }],
-  creator: "HaemoLogix",
-  publisher: "HaemoLogix",
+  authors: [{ name: "Haemologix" }],
+  creator: "Haemologix",
+  publisher: "Haemologix",
   alternates: {
     canonical: "https://haemologix.in",
   },
@@ -40,8 +40,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: "https://haemologix.in",
-    siteName: "HaemoLogix",
-    title: "HaemoLogix - Real-Time Blood Donation Platform | Emergency Blood Alerts",
+    siteName: "Haemologix",
+    title: "Haemologix - Real-Time Blood Donation Platform | Emergency Blood Alerts",
     description:
       "Connect hospitals with blood donors through real-time emergency blood alerts. Find blood donors, register as a donor, or manage blood bank inventory. India's leading blood donation platform.",
     images: [
@@ -49,13 +49,13 @@ export const metadata: Metadata = {
         url: "https://haemologix.in/logo.png",
         width: 1200,
         height: 630,
-        alt: "HaemoLogix - Blood Donation Platform",
+        alt: "Haemologix - Blood Donation Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "HaemoLogix - Real-Time Blood Donation Platform",
+    title: "Haemologix - Real-Time Blood Donation Platform",
     description:
       "Emergency blood shortage alert and donor mobilization system connecting hospitals with eligible donors through real-time notifications.",
     images: ["https://haemologix.in/logo.png"],

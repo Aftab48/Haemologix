@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Blood Donation Impact | Lives Saved | HaemoLogix",
+  title: "Blood Donation Impact | Lives Saved | Haemologix",
   description:
-    "See the impact of blood donation through HaemoLogix. Discover how many lives have been saved, blood units donated, and the positive change in communities across India.",
+    "See the impact of blood donation through Haemologix. Discover how many lives have been saved, blood units donated, and the positive change in communities across India.",
   keywords: [
     "blood donation impact",
     "lives saved",
@@ -11,8 +11,8 @@ export const metadata: Metadata = {
     "blood donation impact India",
   ],
   openGraph: {
-    title: "Blood Donation Impact | Lives Saved | HaemoLogix",
-    description: "See the impact of blood donation and lives saved through HaemoLogix platform.",
+    title: "Blood Donation Impact | Lives Saved | Haemologix",
+    description: "See the impact of blood donation and lives saved through Haemologix platform.",
     url: "https://haemologix.in/impact",
   },
   alternates: {

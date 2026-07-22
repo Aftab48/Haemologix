@@ -22,7 +22,7 @@ jobs:
           stale-issue-message: |
             👋 This issue has been automatically marked as stale because it has not had recent activity.
 
-            It will be closed if no further activity occurs within **7 days**. Thank you for your contributions to HaemoLogix! 🩸
+            It will be closed if no further activity occurs within **7 days**. Thank you for your contributions to Haemologix! 🩸
 
             If this issue is still relevant, please:
             - Add a comment to keep it active
@@ -36,7 +36,7 @@ jobs:
 
             If you believe this issue is still relevant, please feel free to reopen it or create a new issue with updated information.
 
-            Thank you for your interest in HaemoLogix! 🩸
+            Thank you for your interest in Haemologix! 🩸
           stale-issue-label: 'stale'
           days-before-issue-stale: 60
           days-before-issue-close: 7
@@ -45,7 +45,7 @@ jobs:
           stale-pr-message: |
             👋 This pull request has been automatically marked as stale because it has not had recent activity.
 
-            It will be closed if no further activity occurs within **7 days**. Thank you for your contributions to HaemoLogix! 🩸
+            It will be closed if no further activity occurs within **7 days**. Thank you for your contributions to Haemologix! 🩸
 
             If this PR is still relevant, please:
             - Add a comment to keep it active
@@ -59,7 +59,7 @@ jobs:
 
             If you'd like to continue working on this, please feel free to reopen it or create a new PR.
 
-            Thank you for your interest in contributing to HaemoLogix! 🩸
+            Thank you for your interest in contributing to Haemologix! 🩸
           stale-pr-label: 'stale'
           days-before-pr-stale: 30
           days-before-pr-close: 7
