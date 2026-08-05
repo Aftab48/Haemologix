@@ -160,7 +160,14 @@ export async function getCurrentUser(
           termsAccepted: true,
           status: onboardDonor.status,
           id: onboardDonor.id,
-        } as DonorData & { id: string; status: string },
+          password: onboardDonor.password,
+          isAvailable: onboardDonor.isAvailable,
+        } as DonorData & {
+          id: string;
+          status: string;
+          password: string | null;
+          isAvailable: boolean;
+        },
       };
     }
 
@@ -217,6 +224,128 @@ export async function getCurrentUser(
     return { role: null, user: null };
   } catch (err) {
     console.error("[getCurrentUser] error:", err);
+    throw err;
+  }
+}
+
+// Same resolution order as getCurrentUser (Donor, then DonorRegistration, then
+// hospital), keyed on phone instead of email. Kept as a separate function
+// rather than an overload so the existing getCurrentUser(email) call sites
+// don't need to change.
+export async function getCurrentUserByPhone(
+  phone: string
+): Promise<CurrentUserResponse> {
+  if (!phone) return { role: null, user: null };
+
+  try {
+    const onboardDonor = await db.donor.findFirst({
+      where: { phone },
+    });
+
+    if (onboardDonor) {
+      const nameParts = onboardDonor.name.split(" ");
+      return {
+        role: "DONOR",
+        user: {
+          firstName: nameParts[0] || onboardDonor.name,
+          lastName: nameParts.slice(1).join(" ") || "",
+          email: onboardDonor.email,
+          phone: onboardDonor.phone,
+          dateOfBirth: onboardDonor.dateOfBirth ? onboardDonor.dateOfBirth.toISOString() : "",
+          gender: onboardDonor.gender,
+          address: onboardDonor.address,
+          emergencyContact: "",
+          emergencyPhone: "",
+          weight: onboardDonor.weight,
+          height: onboardDonor.height,
+          bmi: onboardDonor.bmi,
+          lastDonation: onboardDonor.lastDonationDate
+            ? onboardDonor.lastDonationDate.toISOString()
+            : undefined,
+          donationCount: undefined,
+          neverDonated: !onboardDonor.hasDonatedBefore,
+          recentVaccinations: false,
+          vaccinationDetails: "",
+          medicalConditions: onboardDonor.diseases || "",
+          medications: "",
+          hivTest: "",
+          hepatitisBTest: "",
+          hepatitisCTest: "",
+          syphilisTest: "",
+          malariaTest: "",
+          hemoglobin: "",
+          bloodGroup: onboardDonor.bloodGroup,
+          plateletCount: "",
+          wbcCount: "",
+          bloodTestReport: null,
+          idProof: null,
+          medicalCertificate: null,
+          dataProcessingConsent: true,
+          medicalScreeningConsent: true,
+          termsAccepted: true,
+          status: onboardDonor.status,
+          id: onboardDonor.id,
+          password: onboardDonor.password,
+          isAvailable: onboardDonor.isAvailable,
+        } as DonorData & {
+          id: string;
+          status: string;
+          password: string | null;
+          isAvailable: boolean;
+        },
+      };
+    }
+
+    const donorRegistration = await db.donorRegistration.findFirst({
+      where: { phone },
+    });
+
+    if (donorRegistration) {
+      return {
+        role: "DONOR",
+        user: {
+          ...donorRegistration,
+          dateOfBirth: donorRegistration.dateOfBirth ? donorRegistration.dateOfBirth.toISOString() : "",
+          lastDonation: donorRegistration.lastDonation
+            ? donorRegistration.lastDonation.toISOString()
+            : null,
+        } as DonorData,
+      };
+    }
+
+    const hospital = await db.hospitalRegistration.findFirst({
+      where: {
+        OR: [{ contactPhone: phone }, { repPhone: phone }],
+      },
+    });
+
+    if (hospital) {
+      return {
+        role: "HOSPITAL",
+        user: {
+          ...hospital,
+          id: hospital.id,
+          licenseExpiryDate: hospital.licenseExpiryDate
+            ? hospital.licenseExpiryDate.toISOString()
+            : "",
+          nocExpiryDate: hospital.nocExpiryDate
+            ? hospital.nocExpiryDate.toISOString()
+            : "",
+          suspendedUntil: hospital.suspendedUntil
+            ? hospital.suspendedUntil.toISOString()
+            : null,
+          lastVerificationAt: hospital.lastVerificationAt
+            ? hospital.lastVerificationAt.toISOString()
+            : null,
+          createdAt: hospital.createdAt.toISOString(),
+          updatedAt: hospital.updatedAt.toISOString(),
+        } as HospitalData,
+      };
+    }
+
+    return { role: null, user: null };
+  } catch (err) {
+    console.error("[getCurrentUserByPhone] error:", err);
     throw err;
   }
 }

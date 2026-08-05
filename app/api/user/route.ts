@@ -1,30 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { getCurrentUser } from "@/lib/actions/user.actions";
+import { getCurrentUser, getCurrentUserByPhone } from "@/lib/actions/user.actions";
 import { verifyPassword } from "@/lib/password";
 
 /**
- * API endpoint to get current user by email
+ * API endpoint to get current user by email or phone
  * Used by the mobile donor app for authentication
  *
  * @deprecated Unauthenticated — it returns a donor's full profile to anyone who
- * knows their email address. Kept only so mobile builds shipped before password
- * login existed keep working; new clients must use POST below. Remove once
- * those builds are retired.
+ * knows their email address or phone number. Kept only so mobile builds shipped
+ * before password login existed keep working; new clients must use POST below.
+ * Remove once those builds are retired.
  */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const email = searchParams.get("email");
+    const phone = searchParams.get("phone");
 
-    if (!email) {
+    if (!email && !phone) {
       return NextResponse.json(
-        { success: false, error: "Email is required" },
+        { success: false, error: "Email or phone is required" },
         { status: 400 }
       );
     }
 
-    const result = await getCurrentUser(email);
+    const result = email ? await getCurrentUser(email) : await getCurrentUserByPhone(phone!);
 
     // Return the result as-is (it already has the correct structure)
     return NextResponse.json(result);
