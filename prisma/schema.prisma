@@ -17,8 +17,6 @@ model Donor {
   state               String
   pincode             String
   dateOfBirth         DateTime
-  gender              String
-  bloodGroup          String
   weight              String
   height              String
   bmi                 String
@@ -26,10 +24,16 @@ model Donor {
   lastDonationDate    DateTime?
   diseases            String?
   clerkUserId         String?
+  /// Hashed (never plaintext) copy of the credential emailed at onboarding.
+  /// Optional because donors created before this column existed have none.
+  password            String?
   donorRegistrationId String?
   status              ApprovalStatus     @default(PENDING)
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
+  bloodGroup          String
+  gender              String
+  isAvailable         Boolean            @default(true)
   donorRegistration   DonorRegistration? @relation(fields: [donorRegistrationId], references: [id])
 
   @@index([email])
@@ -74,35 +78,35 @@ model DonorRegistration {
   medicalScreeningConsent Boolean                @default(false)
   termsAccepted           Boolean                @default(false)
   status                  ApprovalStatus         @default(PENDING)
-  verificationAttempts    Int                    @default(0)
-  suspendedUntil          DateTime?
-  lastVerificationAt      DateTime?
   createdAt               DateTime               @default(now())
   updatedAt               DateTime               @updatedAt
   latitude                String?
   longitude               String?
+  lastVerificationAt      DateTime?
+  suspendedUntil          DateTime?
+  verificationAttempts    Int                    @default(0)
   availableForEmergency   Boolean                @default(true)
   responses               AlertResponse[]
   approvals               Approval[]             @relation("DonorApprovals")
-  verifications           DonorVerification[]
-  responseHistory         DonorResponseHistory[] @relation("DonorHistory")
   onboardDonors           Donor[]
+  responseHistory         DonorResponseHistory[] @relation("DonorHistory")
+  verifications           DonorVerification[]
 }
 
 model OTSchedule {
   id            String               @id @default(cuid())
   hospitalId    String
-  hospital      HospitalRegistration @relation(fields: [hospitalId], references: [id])
   patientName   String
   surgeryType   String
   bloodType     String
   unitsRequired Int
-  scheduledDate DateTime // stored as date, time component ignored
-  scheduledTime String // "HH:MM"
-  status        String               @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+  scheduledDate DateTime
+  scheduledTime String
+  status        String               @default("SCHEDULED")
   notes         String?
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
+  hospital      HospitalRegistration @relation(fields: [hospitalId], references: [id])
 
   @@index([hospitalId])
   @@index([hospitalId, scheduledDate])
@@ -151,20 +155,20 @@ model HospitalRegistration {
   dataProcessingConsent         Boolean
   networkParticipationAgreement Boolean
   status                        ApprovalStatus       @default(PENDING)
-  verificationAttempts          Int                  @default(0)
-  suspendedUntil                DateTime?
-  lastVerificationAt            DateTime?
   createdAt                     DateTime             @default(now())
   updatedAt                     DateTime             @updatedAt
   latitude                      String?
   longitude                     String?
+  lastVerificationAt            DateTime?
+  suspendedUntil                DateTime?
+  verificationAttempts          Int                  @default(0)
   alerts                        Alert[]
   approvals                     Approval[]           @relation("HospitalApprovals")
-  inventory                     InventoryUnit[]
   inventoryThresholds           InventoryThreshold[]
+  inventory                     InventoryUnit[]
+  otSchedules                   OTSchedule[]
   transportsFrom                TransportRequest[]   @relation("TransportFrom")
   transportsTo                  TransportRequest[]   @relation("TransportTo")
-  otSchedules                   OTSchedule[]
 }
 
 model Admin {
@@ -191,7 +195,6 @@ model Approval {
 
 model Alert {
   id           String               @id @default(uuid())
-  type         String               @default("Blood")
   bloodType    String
   latitude     String?
   longitude    String?
@@ -199,11 +202,12 @@ model Alert {
   unitsNeeded  String
   searchRadius String
   description  String?
-  status       String               @default("PENDING") // PENDING, NOTIFIED, MATCHED, FULFILLED
-  autoDetected Boolean              @default(false) // True if auto-created by Hospital Agent
   hospitalId   String
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
+  status       String               @default("PENDING")
+  autoDetected Boolean              @default(false)
+  type         String               @default("Blood")
   hospital     HospitalRegistration @relation(fields: [hospitalId], references: [id])
   responses    AlertResponse[]
 }
@@ -213,10 +217,310 @@ model AlertResponse {
   alertId   String
   donorId   String
   status    ResponseStatus    @default(PENDING)
-  confirmed Boolean           @default(false)
   createdAt DateTime          @default(now())
+  confirmed Boolean           @default(false)
   alert     Alert             @relation(fields: [alertId], references: [id])
   donor     DonorRegistration @relation(fields: [donorId], references: [id])
+}
+
+model Document {
+  id        Int      @id @default(autoincrement())
+  fileUrl   String
+  createdAt DateTime @default(now())
+}
+
+model DonorVerification {
+  id                 String             @id @default(cuid())
+  donorId            String
+  docType            DonorDocumentType
+  docUrl             String
+  status             VerificationStatus @default(PENDING)
+  confidence         Float?
+  extractedFields    Json?
+  mismatchFields     Json?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  eligibilityChecked Boolean            @default(false)
+  eligibilityPassed  Boolean            @default(false)
+  failedCriteria     Json?
+  donor              DonorRegistration  @relation(fields: [donorId], references: [id])
+}
+
+model AgentEvent {
+  id        String   @id @default(uuid())
+  type      String
+  payload   Json
+  processed Boolean  @default(false)
+  agentType String?
+  createdAt DateTime @default(now())
+
+  @@index([type, processed])
+  @@index([createdAt])
+}
+
+model WorkflowState {
+  id              String   @id @default(uuid())
+  requestId       String   @unique
+  status          String
+  currentStep     String
+  metadata        Json
+  fulfillmentPlan Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([requestId])
+  @@index([status])
+}
+
+model AgentDecision {
+  id         String   @id @default(uuid())
+  agentType  String
+  eventType  String
+  eventId    String?
+  requestId  String?
+  decision   Json
+  confidence Float?
+  createdAt  DateTime @default(now())
+
+  @@index([agentType, createdAt])
+  @@index([requestId])
+}
+
+model InventoryUnit {
+  id          String               @id @default(uuid())
+  hospitalId  String
+  bloodType   String
+  units       Int
+  expiryDate  DateTime
+  reserved    Boolean              @default(false)
+  reservedFor String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  hospital    HospitalRegistration @relation(fields: [hospitalId], references: [id])
+
+  @@index([hospitalId, bloodType])
+  @@index([reserved])
+  @@index([expiryDate])
+}
+
+model InventoryThreshold {
+  id              String               @id @default(uuid())
+  hospitalId      String
+  bloodType       String
+  minimumRequired Int
+  optimalLevel    Int?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  hospital        HospitalRegistration @relation(fields: [hospitalId], references: [id])
+
+  @@unique([hospitalId, bloodType])
+  @@index([hospitalId])
+}
+
+model TransportRequest {
+  id              String               @id @default(uuid())
+  fromHospitalId  String
+  toHospitalId    String
+  bloodType       String
+  units           Int
+  status          String
+  eta             DateTime?
+  pickupTime      DateTime?
+  deliveryTime    DateTime?
+  transportMethod String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  fromHospital    HospitalRegistration @relation("TransportFrom", fields: [fromHospitalId], references: [id])
+  toHospital      HospitalRegistration @relation("TransportTo", fields: [toHospitalId], references: [id])
+
+  @@index([status])
+  @@index([fromHospitalId])
+  @@index([toHospitalId])
+}
+
+model DonorResponseHistory {
+  id              String            @id @default(uuid())
+  donorId         String
+  requestId       String
+  notifiedAt      DateTime
+  respondedAt     DateTime?
+  responseTime    Int?
+  status          String
+  confirmed       Boolean           @default(false)
+  noShow          Boolean           @default(false)
+  distance        Float?
+  score           Float?
+  createdAt       DateTime          @default(now())
+  expectedArrival DateTime?
+  donor           DonorRegistration @relation("DonorHistory", fields: [donorId], references: [id])
+
+  @@index([donorId])
+  @@index([requestId])
+  @@index([status])
+}
+
+model PilotRequest {
+  id            String   @id @default(uuid())
+  hospitalName  String
+  contactPerson String
+  email         String
+  phone         String
+  location      String
+  hasBloodBank  Boolean
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model PilotAnalytics {
+  id          String   @id @default(uuid())
+  eventType   String
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmContent  String?
+  referrer    String?
+  userAgent   String?
+  ipAddress   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([eventType])
+  @@index([utmMedium])
+  @@index([createdAt])
+  @@index([eventType, createdAt])
+}
+
+model TrainingExample {
+  id              String   @id @default(uuid())
+  taskType        String
+  inputFeatures   Json
+  outputLabel     Json
+  outcome         Json?
+  agentDecisionId String?
+  requestId       String?
+  usedForTraining Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([taskType, usedForTraining])
+  @@index([agentDecisionId])
+  @@index([requestId])
+  @@index([createdAt])
+}
+
+model CustomModel {
+  id          String            @id @default(uuid())
+  version     String            @unique
+  taskType    String
+  modelPath   String
+  config      Json
+  metrics     Json?
+  status      String            @default("training")
+  isActive    Boolean           @default(false)
+  trainedAt   DateTime          @default(now())
+  deployedAt  DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  predictions ModelPrediction[]
+
+  @@index([taskType, isActive])
+  @@index([status])
+}
+
+model ModelPrediction {
+  id            String      @id @default(uuid())
+  modelId       String
+  taskType      String
+  inputFeatures Json
+  prediction    Json
+  confidence    Float?
+  actualOutcome Json?
+  feedback      String?
+  requestId     String?
+  createdAt     DateTime    @default(now())
+  model         CustomModel @relation(fields: [modelId], references: [id])
+
+  @@index([modelId])
+  @@index([taskType, createdAt])
+  @@index([requestId])
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String?
+  email     String     @unique
+  clerkId   String     @unique
+  password  String?
+  role      UserRole   @default(DONOR)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  donations Donation[]
+  feedback  Feedback[]
+}
+
+model Feedback {
+  id         String   @id @default(uuid())
+  userId     String
+  role       UserRole
+  type       String
+  message    String
+  screenshot String?
+  status     String   @default("OPEN")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Donation {
+  id        String   @id @default(uuid())
+  amount    Int
+  status    String   @default("PENDING")
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+/// A completely isolated, resettable judge sandbox. The single `global` row
+/// contains only synthetic demo data and is never related to production data.
+model DemoSandbox {
+  id             String   @id
+  schemaVersion  Int      @default(1)
+  revision       Int      @default(0)
+  state          Json
+  expiresAt      DateTime
+  lastActivityAt DateTime
+  lastResetAt    DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+/// A user-submitted request to delete an account and its associated data,
+/// raised from the public /delete-account page. Requests are recorded here
+/// and processed manually after identity verification — the public endpoint
+/// never deletes data directly, since it is unauthenticated.
+model AccountDeletionRequest {
+  id          String                @id @default(uuid())
+  email       String
+  phone       String?
+  reason      String?
+  status      DeletionRequestStatus @default(PENDING)
+  notes       String?
+  requestedAt DateTime              @default(now())
+  processedAt DateTime?
+  updatedAt   DateTime              @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([requestedAt])
 }
 
 enum ApprovalStatus {
@@ -242,165 +546,18 @@ enum ResponseStatus {
   DECLINED
 }
 
-model Document {
-  id        Int      @id @default(autoincrement())
-  fileUrl   String
-  createdAt DateTime @default(now())
-}
-
 enum VerificationStatus {
-  PENDING // doc uploaded, waiting for AI check
-  AUTO_REJECTED // AI found mismatch / unsafe values
-  MATCHED_FOR_ADMIN // AI passed, awaiting admin approval
-  ADMIN_REJECTED // admin manually rejected
-  APPROVED // admin approved
+  PENDING
+  AUTO_REJECTED
+  MATCHED_FOR_ADMIN
+  ADMIN_REJECTED
+  APPROVED
 }
 
 enum DonorDocumentType {
   BLOOD_TEST
   ID_PROOF
   MEDICAL_CERTIFICATE
-}
-
-model DonorVerification {
-  id      String            @id @default(cuid())
-  donorId String
-  donor   DonorRegistration @relation(fields: [donorId], references: [id])
-
-  docType DonorDocumentType
-  docUrl  String
-  status  VerificationStatus @default(PENDING)
-
-  confidence      Float?
-  extractedFields Json?
-  mismatchFields  Json?
-
-  // Eligibility screening fields
-  eligibilityChecked Boolean @default(false)
-  eligibilityPassed  Boolean @default(false)
-  failedCriteria     Json? // Stores which eligibility criteria failed
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// Agentic AI Tables
-
-model AgentEvent {
-  id        String   @id @default(uuid())
-  type      String // "shortage.request", "donor.candidate", etc.
-  payload   Json // Event data
-  processed Boolean  @default(false)
-  agentType String? // Which agent created this event
-  createdAt DateTime @default(now())
-
-  @@index([type, processed])
-  @@index([createdAt])
-}
-
-model WorkflowState {
-  id              String   @id @default(uuid())
-  requestId       String   @unique // Links to Alert.id
-  status          String // "pending", "matching", "fulfilled", "failed"
-  currentStep     String // Current workflow step
-  metadata        Json // Workflow metadata (matched donors, inventory, etc.)
-  fulfillmentPlan Json? // Fulfillment strategy and details
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([requestId])
-  @@index([status])
-}
-
-model AgentDecision {
-  id         String   @id @default(uuid())
-  agentType  String // "hospital", "donor", "coordinator", etc.
-  eventType  String // Type of decision made
-  eventId    String? // Related event ID
-  requestId  String? // Related shortage request ID
-  decision   Json // Decision details and reasoning
-  confidence Float? // Confidence score (0-1)
-  createdAt  DateTime @default(now())
-
-  @@index([agentType, createdAt])
-  @@index([requestId])
-}
-
-model InventoryUnit {
-  id          String   @id @default(uuid())
-  hospitalId  String
-  bloodType   String // "O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"
-  units       Int // Number of units available
-  expiryDate  DateTime // Expiry date of units
-  reserved    Boolean  @default(false)
-  reservedFor String? // Request ID if reserved
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  hospital HospitalRegistration @relation(fields: [hospitalId], references: [id])
-
-  @@index([hospitalId, bloodType])
-  @@index([reserved])
-  @@index([expiryDate])
-}
-
-model InventoryThreshold {
-  id              String   @id @default(uuid())
-  hospitalId      String
-  bloodType       String // "O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"
-  minimumRequired Int // Minimum units required (critical threshold = minimumRequired * 0.4)
-  optimalLevel    Int? // Optimal stock level
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  hospital HospitalRegistration @relation(fields: [hospitalId], references: [id])
-
-  @@unique([hospitalId, bloodType]) // One threshold per blood type per hospital
-  @@index([hospitalId])
-}
-
-model TransportRequest {
-  id              String    @id @default(uuid())
-  fromHospitalId  String
-  toHospitalId    String
-  bloodType       String
-  units           Int
-  status          String // "pending", "picked_up", "in_transit", "delivered", "cancelled"
-  eta             DateTime?
-  pickupTime      DateTime?
-  deliveryTime    DateTime?
-  transportMethod String? // "ambulance", "courier", "scheduled"
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  fromHospital HospitalRegistration @relation("TransportFrom", fields: [fromHospitalId], references: [id])
-  toHospital   HospitalRegistration @relation("TransportTo", fields: [toHospitalId], references: [id])
-
-  @@index([status])
-  @@index([fromHospitalId])
-  @@index([toHospitalId])
-}
-
-model DonorResponseHistory {
-  id              String    @id @default(uuid())
-  donorId         String
-  requestId       String // Alert ID
-  notifiedAt      DateTime
-  respondedAt     DateTime?
-  responseTime    Int? // Response time in seconds
-  status          String // "notified", "accepted", "declined", "no_response"
-  confirmed       Boolean   @default(false) // Did they show up?
-  noShow          Boolean   @default(false)
-  distance        Float? // Distance in km
-  score           Float? // Donor score at time of selection
-  expectedArrival DateTime? // Expected arrival time (calculated when accepted)
-  createdAt       DateTime  @default(now())
-
-  donor DonorRegistration @relation("DonorHistory", fields: [donorId], references: [id])
-
-  @@index([donorId])
-  @@index([requestId])
-  @@index([status])
 }
 
 enum AgentType {
@@ -422,179 +579,10 @@ enum WorkflowStatus {
   CANCELLED
 }
 
-model PilotRequest {
-  id            String   @id @default(uuid())
-  hospitalName  String
-  contactPerson String
-  email         String
-  phone         String
-  location      String
-  hasBloodBank  Boolean
-  status        String   @default("PENDING") // PENDING, CONTACTED, APPROVED, REJECTED
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([email])
-  @@index([status])
-  @@index([createdAt])
-}
-
-model PilotAnalytics {
-  id          String   @id @default(uuid())
-  eventType   String // "qr_scan", "page_view", "form_submission"
-  utmSource   String?
-  utmMedium   String?
-  utmCampaign String?
-  utmContent  String?
-  referrer    String?
-  userAgent   String?
-  ipAddress   String?
-  metadata    Json? // Additional event data
-  createdAt   DateTime @default(now())
-
-  @@index([eventType])
-  @@index([utmMedium])
-  @@index([createdAt])
-  @@index([eventType, createdAt])
-}
-
-// ML Training and Model Management
-
-model TrainingExample {
-  id              String   @id @default(uuid())
-  taskType        String // "donor_selection", "urgency_assessment", "inventory_selection", "transport_planning", "eligibility_analysis"
-  inputFeatures   Json // Structured input features for the model
-  outputLabel     Json // Expected output/label (decision, outcome, etc.)
-  outcome         Json? // Actual outcome (success/failure, metrics, etc.)
-  agentDecisionId String? // Link to AgentDecision for traceability
-  requestId       String? // Related request/alert ID
-  usedForTraining Boolean  @default(false) // Whether this example was used in training
-  createdAt       DateTime @default(now())
-
-  @@index([taskType, usedForTraining])
-  @@index([agentDecisionId])
-  @@index([requestId])
-  @@index([createdAt])
-}
-
-model CustomModel {
-  id         String    @id @default(uuid())
-  version    String    @unique // Model version identifier (e.g., "v1.0.0")
-  taskType   String // Which task this model handles (or "multi_task")
-  modelPath  String // Path to saved model file
-  config     Json // Model configuration and hyperparameters
-  metrics    Json? // Training and validation metrics
-  status     String    @default("training") // "training", "active", "archived", "failed"
-  isActive   Boolean   @default(false) // Whether this is the active model for production
-  trainedAt  DateTime  @default(now())
-  deployedAt DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-
-  predictions ModelPrediction[]
-
-  @@index([taskType, isActive])
-  @@index([status])
-}
-
-model ModelPrediction {
-  id            String      @id @default(uuid())
-  modelId       String
-  model         CustomModel @relation(fields: [modelId], references: [id])
-  taskType      String // Task type for this prediction
-  inputFeatures Json // Input features used
-  prediction    Json // Model prediction output
-  confidence    Float? // Confidence score
-  actualOutcome Json? // Actual outcome (for feedback loop)
-  feedback      String? // Human feedback or correction
-  requestId     String? // Related request ID
-  createdAt     DateTime    @default(now())
-
-  @@index([modelId])
-  @@index([taskType, createdAt])
-  @@index([requestId])
-}
-
 enum UserRole {
   ADMIN
   HOSPITAL
   DONOR
-}
-
-model User {
-  id        String     @id @default(uuid())
-  name      String?
-  email     String     @unique
-  clerkId   String     @unique
-  password  String?
-  role      UserRole   @default(DONOR)
-  donations Donation[]
-  feedback  Feedback[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-}
-
-model Feedback {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role       UserRole
-  type       String
-  message    String
-  screenshot String?
-  status     String   @default("OPEN")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
-}
-
-model Donation {
-  id     String @id @default(uuid())
-  amount Int
-  status String @default("PENDING") // Or use an Enum if you have one
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-/// A completely isolated, resettable judge sandbox. The single `global` row
-/// contains only synthetic demo data and is never related to production data.
-model DemoSandbox {
-  id             String   @id
-  schemaVersion  Int      @default(1)
-  revision       Int      @default(0)
-  state          Json
-  expiresAt      DateTime
-  lastActivityAt DateTime
-  lastResetAt    DateTime
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
-/// A user-submitted request to delete an account and its associated data,
-/// raised from the public /delete-account page. Requests are recorded here
-/// and processed manually after identity verification — the public endpoint
-/// never deletes data directly, since it is unauthenticated.
-model AccountDeletionRequest {
-  id          String                 @id @default(uuid())
-  email       String
-  phone       String?
-  reason      String?
-  status      DeletionRequestStatus  @default(PENDING)
-  notes       String?
-  requestedAt DateTime               @default(now())
-  processedAt DateTime?
-  updatedAt   DateTime               @updatedAt
-
-  @@index([email])
-  @@index([status])
-  @@index([requestedAt])
 }
 
 enum DeletionRequestStatus {

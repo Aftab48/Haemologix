@@ -109,25 +109,9 @@ export async function getCurrentUser(
   if (!email) return { role: null, user: null };
 
   try {
-    // Check DonorRegistration first (full registration)
-    const donorRegistration = await db.donorRegistration.findUnique({
-      where: { email },
-    });
-
-    if (donorRegistration) {
-      return {
-        role: "DONOR",
-        user: {
-          ...donorRegistration,
-          dateOfBirth: donorRegistration.dateOfBirth ? donorRegistration.dateOfBirth.toISOString() : "",
-          lastDonation: donorRegistration.lastDonation
-            ? donorRegistration.lastDonation.toISOString()
-            : null,
-        } as DonorData,
-      };
-    }
-
-    // Check Donor table (onboard donors)
+    // Check the Donor table first (onboard donors). /donor/onboard is the live
+    // signup path and Donor is the row password login authenticates against, so
+    // when an email exists in both tables this one is the source of truth.
     const onboardDonor = await db.donor.findUnique({
       where: { email },
     });
@@ -177,6 +161,25 @@ export async function getCurrentUser(
           status: onboardDonor.status,
           id: onboardDonor.id,
         } as DonorData & { id: string; status: string },
+      };
+    }
+
+    // Fall back to DonorRegistration (the retired /donor/register flow) so
+    // legacy donors who never came through onboarding still resolve.
+    const donorRegistration = await db.donorRegistration.findUnique({
+      where: { email },
+    });
+
+    if (donorRegistration) {
+      return {
+        role: "DONOR",
+        user: {
+          ...donorRegistration,
+          dateOfBirth: donorRegistration.dateOfBirth ? donorRegistration.dateOfBirth.toISOString() : "",
+          lastDonation: donorRegistration.lastDonation
+            ? donorRegistration.lastDonation.toISOString()
+            : null,
+        } as DonorData,
       };
     }
 

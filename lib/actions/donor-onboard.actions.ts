@@ -6,6 +6,7 @@ import { donorOnboardSchema, type DonorOnboardFormData } from "@/lib/validations
 import { sendDonorOnboardWelcomeEmail } from "@/lib/actions/mails.actions";
 import { sendApplicationApprovedEmail, sendApplicationRejectedEmail } from "@/lib/actions/mails.actions";
 import { processOnboardDonorVerification } from "@/lib/agents/onboardDonorVerification";
+import { hashPassword } from "@/lib/password";
 import { ZodError } from "zod";
 
 function asErrorRecord(error: unknown): Record<string, unknown> {
@@ -81,8 +82,10 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
       };
     }
 
-    // Generate random password
+    // Generate random password — the plaintext is emailed to the donor once and
+    // only ever stored as a hash.
     const generatedPassword = generateRandomPassword();
+    const hashedPassword = await hashPassword(generatedPassword);
 
     // Create Clerk user
     let clerkUser;
@@ -163,6 +166,7 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
           : null,
         diseases: validatedData.diseases || null,
         clerkUserId: clerkUser?.id || null,
+        password: hashedPassword,
         status: "PENDING",
       },
     });

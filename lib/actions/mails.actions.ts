@@ -567,6 +567,45 @@ export async function sendDonorOnboardWelcomeEmail(
 }
 
 /**
+ * Send a donor the one-time link that opens /donor/forgot-password/[id],
+ * where [id] is the donor's own row id (not their Clerk user id).
+ */
+export async function sendDonorPasswordResetEmail(
+  to: string,
+  name: string,
+  resetUrl: string,
+  expiresInMinutes: number
+) {
+  let html = await loadEmailTemplate("donorPasswordReset.html");
+  html = applyTemplate(html, {
+    name,
+    email: to,
+    resetUrl,
+    expiresInMinutes: String(expiresInMinutes),
+  });
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Haemologix" <${process.env.SMTP_USER}>`,
+      to,
+      subject: "Reset your Haemologix password",
+      html,
+    });
+
+    console.log(`[Email] Donor password reset email sent to ${to}:`, info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    const error = getMailError(err);
+    console.error("❌ Donor password reset email error:", {
+      message: error.message,
+      code: error.code,
+      to,
+    });
+    throw new Error(`Failed to send donor password reset email: ${error.message}`);
+  }
+}
+
+/**
  * Notify the admin team that a user has requested account deletion
  */
 export async function sendDeletionRequestAdminNotification(data: {
