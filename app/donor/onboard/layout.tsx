@@ -16,18 +16,17 @@ export const metadata: Metadata = {
     title: "Become a Blood Donor | Blood Donor Registration | Haemologix",
     description:
       "Register as a blood donor and help save lives. Join Haemologix network of blood donors for emergency blood requests.",
-    url: "https://haemologix.in/donor/register",
+    url: "https://haemologix.in/donor/onboard",
   },
   alternates: {
-    canonical: "https://haemologix.in/donor/register",
+    canonical: "https://haemologix.in/donor/onboard",
   },
 };
 
-export default function DonorRegisterLayout({
+export default function DonorOnboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return <>{children}</>;
 }
-

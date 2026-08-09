@@ -7,7 +7,7 @@ import { writeFile, unlink } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
 import { markDonorAsApplied } from "./user.actions";
-import type { DonorRegistration } from "@prisma/client";
+import type { DonorWithProfile } from "@/lib/agents/donorAgent";
 import {
   sendApplicationRejectedEmail,
   sendAccountSuspensionEmail,
@@ -160,18 +160,23 @@ async function downloadFromS3ToTemp(s3Key: string): Promise<string> {
  */
 function compareFields(
   extracted: Record<string, string>,
-  donor: DonorRegistration,
+  donor: DonorWithProfile,
   docType: "BLOOD_TEST" | "ID_PROOF" | "MEDICAL_CERTIFICATE"
 ): VerificationResult {
   const mismatches: MismatchDetail[] = [];
   let totalFields = 0;
   let matchedFields = 0;
 
+  // `Donor` stores one `name`; the documents are compared part by part.
+  const [donorFirstName = "", ...donorNameRest] = donor.name.trim().split(/\s+/);
+  const donorLastName = donorNameRest.join(" ");
+  // Lab results live on the profile and may not have been captured yet.
+  const donorHemoglobin = donor.profile?.hemoglobin ?? "";
+
   if (docType === "BLOOD_TEST") {
     // Check firstName
     totalFields++;
     const extractedFirstName = extracted.firstName || "";
-    const donorFirstName = donor.firstName || "";
     const nameSimilarity = calculateSimilarity(extractedFirstName, donorFirstName);
     
     if (nameSimilarity >= 0.8) {
@@ -188,7 +193,6 @@ function compareFields(
     // Check lastName
     totalFields++;
     const extractedLastName = extracted.lastName || "";
-    const donorLastName = donor.lastName || "";
     const lastNameSimilarity = calculateSimilarity(extractedLastName, donorLastName);
     
     if (lastNameSimilarity >= 0.8) {
@@ -205,7 +209,7 @@ function compareFields(
     // Check hemoglobin
     totalFields++;
     const extractedHb = parseFloat(extracted.hemoglobin || "0");
-    const donorHb = parseFloat(donor.hemoglobin || "0");
+    const donorHb = parseFloat(donorHemoglobin || "0");
     
     if (Math.abs(extractedHb - donorHb) <= 0.5) {
       matchedFields++;
@@ -255,7 +259,6 @@ function compareFields(
     // Check firstName
     totalFields++;
     const extractedFirstName = extracted.firstName || "";
-    const donorFirstName = donor.firstName || "";
     const nameSimilarity = calculateSimilarity(extractedFirstName, donorFirstName);
     
     if (nameSimilarity >= 0.8) {
@@ -272,7 +275,6 @@ function compareFields(
     // Check lastName
     totalFields++;
     const extractedLastName = extracted.lastName || "";
-    const donorLastName = donor.lastName || "";
     const lastNameSimilarity = calculateSimilarity(extractedLastName, donorLastName);
     
     if (lastNameSimilarity >= 0.8) {
@@ -389,8 +391,9 @@ async function processDocument(
     const extracted = await extractData(tempPath);
 
     // Get donor data
-    const donor = await db.donorRegistration.findUnique({
+    const donor = await db.donor.findUnique({
       where: { id: donorId },
+      include: { profile: true },
     });
 
     if (!donor) {
@@ -469,8 +472,9 @@ async function handleVerificationResult(
   allMismatches: MismatchDetail[],
   hasTechnicalError: boolean
 ) {
-  const donor = await db.donorRegistration.findUnique({
+  const donor = await db.donor.findUnique({
     where: { id: donorId },
+    include: { profile: true },
   });
 
   if (!donor) {
@@ -492,7 +496,7 @@ async function handleVerificationResult(
       // All checks passed: Mark as applied and flag for admin review
       await markDonorAsApplied();
 
-      await db.donorRegistration.update({
+      await db.donor.update({
         where: { id: donorId },
         data: {
           status: "PENDING",
@@ -508,7 +512,7 @@ async function handleVerificationResult(
       const suspendedUntil = new Date();
       suspendedUntil.setDate(suspendedUntil.getDate() + 14);
 
-      await db.donorRegistration.update({
+      await db.donor.update({
         where: { id: donorId },
         data: {
           status: "REJECTED",
@@ -559,7 +563,7 @@ async function handleVerificationResult(
 
       await sendEligibilityRejectionEmail(
         donor.email,
-        donor.firstName,
+        donor.name,
         failedCriteria
       );
 
@@ -569,7 +573,7 @@ async function handleVerificationResult(
     // Document verification failed
     // Don't increment attempts if it's a technical error
     if (hasTechnicalError) {
-      await db.donorRegistration.update({
+      await db.donor.update({
         where: { id: donorId },
         data: {
           status: "PENDING", // Keep pending for manual review
@@ -595,7 +599,7 @@ async function handleVerificationResult(
       const suspendedUntil = new Date();
       suspendedUntil.setDate(suspendedUntil.getDate() + 14);
 
-      await db.donorRegistration.update({
+      await db.donor.update({
         where: { id: donorId },
         data: {
           status: "REJECTED",
@@ -606,11 +610,11 @@ async function handleVerificationResult(
       });
 
       // Send suspension email with document mismatch details
-      await sendAccountSuspensionEmail(donor.email, donor.firstName, allMismatches);
+      await sendAccountSuspensionEmail(donor.email, donor.name, allMismatches);
       console.log(`[Verification] Donor ${donorId} suspended for 14 days after 3 failed document attempts`);
     } else {
       // Allow retry
-      await db.donorRegistration.update({
+      await db.donor.update({
         where: { id: donorId },
         data: {
           status: "PENDING",
@@ -620,7 +624,7 @@ async function handleVerificationResult(
       });
 
       // Send document rejection email with mismatch details
-      await sendApplicationRejectedEmail(donor.email, donor.firstName, allMismatches);
+      await sendApplicationRejectedEmail(donor.email, donor.name, allMismatches);
       console.log(`[Verification] Donor ${donorId} document verification failed (attempt ${newAttempts}/3)`);
     }
   }
@@ -633,19 +637,26 @@ export async function verifyDonorDocuments(donorId: string) {
   try {
     console.log(`Starting verification for donor ${donorId}`);
 
-    const donor = await db.donorRegistration.findUnique({
+    const donor = await db.donor.findUnique({
       where: { id: donorId },
+      include: { profile: true },
     });
 
     if (!donor) {
       throw new Error("Donor not found");
     }
 
-    // Process all three documents
+    // Uploaded documents live on the profile. A donor with no profile row has
+    // uploaded nothing yet — `processDocument` already treats a null key as
+    // "not provided", so this needs no extra branch.
     const [bloodTestResult, idProofResult, medicalCertResult] = await Promise.all([
-      processDocument(donorId, "BLOOD_TEST", donor.bloodTestReport),
-      processDocument(donorId, "ID_PROOF", donor.idProof),
-      processDocument(donorId, "MEDICAL_CERTIFICATE", donor.medicalCertificate),
+      processDocument(donorId, "BLOOD_TEST", donor.profile?.bloodTestReport ?? null),
+      processDocument(donorId, "ID_PROOF", donor.profile?.idProof ?? null),
+      processDocument(
+        donorId,
+        "MEDICAL_CERTIFICATE",
+        donor.profile?.medicalCertificate ?? null
+      ),
     ]);
 
     // Collect all mismatches
@@ -686,4 +697,6 @@ export async function verifyHospitalDocuments(hospitalId: string) {
   console.log(`Hospital verification for ${hospitalId} - to be implemented`);
   return { success: true, passed: true, mismatches: [] };
 }
+
+
 

@@ -5,13 +5,20 @@
 
 import { db } from "@/db";
 import { AgentType } from "@prisma/client";
-import type { DonorRegistration } from "@prisma/client";
+import type { Donor, DonorProfile } from "@prisma/client";
 import { parseShortageRequestEvent, publishEvent } from "./eventBus";
 import { scoreDonor, DonorScores } from "./donorScoring";
 import { sendDonorBloodRequestEmail } from "../actions/mails.actions";
 import { sendUrgentBloodRequestSMS } from "../actions/sms.actions";
 import { reasonAboutDonorMatchingStrategy } from "./llmReasoning";
 import { getHistoricalPatterns } from "./outcomeTracking";
+
+/**
+ * A donor with the detail collected after onboarding joined on. `profile` is null
+ * for anyone who has not filled in the later forms, which is the normal state for
+ * a newly onboarded donor.
+ */
+export type DonorWithProfile = Donor & { profile: DonorProfile | null };
 
 export interface RankedDonor {
   id: string;
@@ -23,6 +30,17 @@ export interface RankedDonor {
   distanceKm: number;
   scores: DonorScores;
   rank: number;
+  /**
+   * No serology or haemoglobin on file. Still notified — screening happens at the
+   * donation centre — but ranked below donors whose results are known.
+   */
+  unscreened: boolean;
+}
+
+/** `Donor.name` is a single column; downstream email and SMS want the parts. */
+function splitName(name: string): { firstName: string; lastName: string } {
+  const parts = name.trim().split(/\s+/);
+  return { firstName: parts[0] ?? name, lastName: parts.slice(1).join(" ") };
 }
 
 /**
@@ -100,67 +118,87 @@ export function calculateDistance(
 /**
  * Check if donor is medically eligible
  */
-export function isDonorEligible(donor: DonorRegistration): {
+export function isDonorEligible(donor: DonorWithProfile): {
   eligible: boolean;
+  /** Medical data is missing, not bad — the donor is notified but ranked lower. */
+  unscreened: boolean;
   reason?: string;
 } {
-  // Check approval status
+  const ineligible = (reason: string) => ({ eligible: false, unscreened: false, reason });
+
+  // --- Hard gates, all from data captured at onboarding --------------------
+
   if (donor.status !== "APPROVED") {
-    return { eligible: false, reason: "Not approved" };
+    return ineligible("Not approved");
   }
 
-  // Check age (18-65)
   const age =
     (Date.now() - new Date(donor.dateOfBirth).getTime()) /
     (1000 * 60 * 60 * 24 * 365);
   if (age < 18 || age > 65) {
-    return { eligible: false, reason: "Age out of range (18-65)" };
+    return ineligible("Age out of range (18-65)");
   }
 
-  // Check weight (>= 50kg)
+  // A blank or unparseable value must not slip past as "not less than 50" —
+  // `parseFloat("") < 50` is false, which would silently admit an unknown weight.
   const weight = parseFloat(donor.weight);
+  if (!Number.isFinite(weight)) {
+    return ineligible("Weight not recorded");
+  }
   if (weight < 50) {
-    return { eligible: false, reason: "Weight below 50kg" };
+    return ineligible("Weight below 50kg");
   }
 
-  // Check last donation (>= 90 days for male, >= 120 days for female)
-  if (donor.lastDonation) {
+  if (donor.lastDonationDate) {
     const daysSinceLastDonation =
-      (Date.now() - new Date(donor.lastDonation).getTime()) /
+      (Date.now() - new Date(donor.lastDonationDate).getTime()) /
       (1000 * 60 * 60 * 24);
     const minDays = donor.gender.toLowerCase() === "male" ? 90 : 120;
 
     if (daysSinceLastDonation < minDays) {
-      return {
-        eligible: false,
-        reason: `Last donation too recent (need ${minDays} days)`,
-      };
+      return ineligible(`Last donation too recent (need ${minDays} days)`);
     }
   }
 
-  // Check hemoglobin
-  const hb = parseFloat(donor.hemoglobin);
+  // --- Medical detail, collected after onboarding --------------------------
+  //
+  // A recorded bad result excludes the donor. A *missing* result does not: it
+  // means we have not asked yet, and the donation centre screens on arrival
+  // regardless. Those donors are flagged `unscreened` and ranked below screened
+  // ones instead of being hidden from an alert that may be critical.
+
+  const profile = donor.profile;
+  let unscreened = false;
+
+  const hbRaw = profile?.hemoglobin;
+  const hb = hbRaw ? parseFloat(hbRaw) : NaN;
   const minHb = donor.gender.toLowerCase() === "male" ? 13.0 : 12.5;
-  if (hb < minHb) {
-    return { eligible: false, reason: "Hemoglobin too low" };
+
+  if (!Number.isFinite(hb)) {
+    // Previously this passed silently, because NaN < 13.0 is false.
+    unscreened = true;
+  } else if (hb < minHb) {
+    return ineligible("Hemoglobin too low");
   }
 
-  // Check disease tests (case-insensitive: "NEGATIVE", "negative", "Negative" all pass)
   const diseaseTests = [
-    donor.hivTest,
-    donor.hepatitisBTest,
-    donor.hepatitisCTest,
-    donor.syphilisTest,
-    donor.malariaTest,
+    profile?.hivTest,
+    profile?.hepatitisBTest,
+    profile?.hepatitisCTest,
+    profile?.syphilisTest,
+    profile?.malariaTest,
   ];
-  const allNegative = diseaseTests.every(
-    (test) => test && test.toUpperCase() === "NEGATIVE"
-  );
-  if (!allNegative) {
-    return { eligible: false, reason: "Disease test positive" };
+
+  // Any result on file that is not negative is disqualifying, whatever else is missing.
+  if (diseaseTests.some((test) => test && test.toUpperCase() !== "NEGATIVE")) {
+    return ineligible("Disease test positive");
   }
 
-  return { eligible: true };
+  if (diseaseTests.some((test) => !test)) {
+    unscreened = true;
+  }
+
+  return { eligible: true, unscreened };
 }
 
 /**
@@ -183,28 +221,34 @@ export async function findAndRankDonors(
     `[DonorAgent] Compatible donor types: ${compatibleDonorTypes.join(", ")}`
   );
 
-  // Find all approved donors with compatible blood types (database-level filtering)
-  const allDonors = await db.donorRegistration.findMany({
+  // Find all approved donors with compatible blood types (database-level filtering).
+  // `profile` carries the medical detail collected after onboarding; it is often
+  // null, which the eligibility check handles as "unscreened" rather than a fail.
+  const allDonors = await db.donor.findMany({
     where: {
       status: "APPROVED",
       bloodGroup: {
         in: compatibleDonorTypes,
       },
+      // A donor who switched off emergency alerts must not be notified.
+      isAvailable: true,
     },
+    include: { profile: true },
   });
 
   console.log(
     `[DonorAgent] Found ${
       allDonors.length
-    } approved donors with compatible blood types (${compatibleDonorTypes.join(
+    } approved, available donors with compatible blood types (${compatibleDonorTypes.join(
       ", "
     )})`
   );
 
   const eligibleDonors: Array<{
-    donor: DonorRegistration;
+    donor: DonorWithProfile;
     distance: number;
     scores: DonorScores;
+    unscreened: boolean;
   }> = [];
 
   for (const donor of allDonors) {
@@ -223,9 +267,19 @@ export async function findAndRankDonors(
       continue;
     }
 
-    // Calculate distance
-    const donorLat = parseFloat(donor.latitude || "0");
-    const donorLng = parseFloat(donor.longitude || "0");
+    // Calculate distance. A donor with no coordinates cannot be placed, and
+    // defaulting to 0,0 would put them in the Atlantic and silently drop them —
+    // skip them explicitly instead, so the reason shows up in the logs.
+    const donorLat = donor.latitude ? parseFloat(donor.latitude) : NaN;
+    const donorLng = donor.longitude ? parseFloat(donor.longitude) : NaN;
+
+    if (!Number.isFinite(donorLat) || !Number.isFinite(donorLng)) {
+      console.warn(
+        `[DonorAgent] Donor ${donor.id} has no usable coordinates; cannot match on distance`
+      );
+      continue;
+    }
+
     const distance = calculateDistance(
       hospitalLat,
       hospitalLng,
@@ -254,39 +308,61 @@ export async function findAndRankDonors(
           60 // Convert to minutes
         : 10; // Default 10 min
 
-    // Calculate scores
-    const scores = scoreDonor(donor, distance, searchRadiusKm, urgency, {
-      totalAlerts,
-      accepted,
-      avgResponseTime,
-    });
+    // Calculate scores. Health inputs come from the profile, which may be absent.
+    const scores = scoreDonor(
+      {
+        lastDonation: donor.lastDonationDate,
+        hemoglobin: donor.profile?.hemoglobin ?? null,
+        bmi: donor.bmi,
+        recentVaccinations: donor.profile?.recentVaccinations ?? null,
+        medications: donor.profile?.medications ?? null,
+      },
+      distance,
+      searchRadiusKm,
+      urgency,
+      {
+        totalAlerts,
+        accepted,
+        avgResponseTime,
+      },
+      { unscreened: eligibility.unscreened }
+    );
 
     eligibleDonors.push({
       donor,
       distance,
       scores,
+      unscreened: eligibility.unscreened,
     });
   }
 
+  const unscreenedCount = eligibleDonors.filter((d) => d.unscreened).length;
   console.log(
-    `[DonorAgent] ${eligibleDonors.length} donors passed eligibility checks`
+    `[DonorAgent] ${eligibleDonors.length} donors passed eligibility checks ` +
+      `(${unscreenedCount} without medical results on file)`
   );
 
-  // Sort by final score (descending)
+  // Sort by final score (descending). The unscreened penalty is already applied
+  // inside scoreDonor, so screened donors surface first without a separate pass.
   eligibleDonors.sort((a, b) => b.scores.final - a.scores.final);
 
   // Create ranked list
-  const rankedDonors: RankedDonor[] = eligibleDonors.map((item, index) => ({
-    id: item.donor.id,
-    firstName: item.donor.firstName,
-    lastName: item.donor.lastName,
-    email: item.donor.email,
-    phone: item.donor.phone,
-    bloodGroup: item.donor.bloodGroup,
-    distanceKm: item.distance,
-    scores: item.scores,
-    rank: index + 1,
-  }));
+  const rankedDonors: RankedDonor[] = eligibleDonors.map((item, index) => {
+    const { firstName, lastName } = splitName(item.donor.name);
+
+    return {
+      id: item.donor.id,
+      firstName,
+      lastName,
+      email: item.donor.email,
+      phone: item.donor.phone,
+      bloodGroup: item.donor.bloodGroup,
+      distanceKm: item.distance,
+      scores: item.scores,
+      rank: index + 1,
+      unscreened: item.unscreened,
+    };
+  });
 
   return rankedDonors;
 }

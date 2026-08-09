@@ -1,4 +1,5 @@
-import type { DonorRegistration, HospitalRegistration } from "@prisma/client";
+import type { HospitalRegistration } from "@prisma/client";
+import type { DonorWithProfile } from "./donorAgent";
 import type { MatchedDonor } from "./coordinatorAgent";
 import type { RankedInventoryUnit } from "./inventoryAgent";
 import type { EligibilityCheckResult } from "./verificationAgent";
@@ -760,7 +761,7 @@ Respond in JSON:
  */
 export async function reasonAboutEligibility(
   eligibilityResult: EligibilityCheckResult,
-  donor: DonorRegistration
+  donor: DonorWithProfile
 ): Promise<{
   finalDecision: "approved" | "rejected" | "needs_review";
   reasoning: string;
@@ -776,11 +777,11 @@ DONOR PROFILE:
   } years
 - Weight: ${donor.weight} kg
 - BMI: ${donor.bmi}
-- Hemoglobin: ${donor.hemoglobin} g/dL
+- Hemoglobin: ${donor.profile?.hemoglobin ?? "not provided"} g/dL
 - Gender: ${donor.gender}
 - Last Donation: ${
-    donor.lastDonation
-      ? new Date(donor.lastDonation).toLocaleDateString()
+    donor.lastDonationDate
+      ? new Date(donor.lastDonationDate).toLocaleDateString()
       : "Never"
   }
 

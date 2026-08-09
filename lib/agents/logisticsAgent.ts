@@ -505,7 +505,7 @@ export async function calculateDonorETA(
     }
 
     // Fetch donor and hospital
-    const donor = await db.donorRegistration.findUnique({
+    const donor = await db.donor.findUnique({
       where: { id: donorId },
     });
 

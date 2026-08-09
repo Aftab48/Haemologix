@@ -171,24 +171,8 @@ export async function getCurrentUser(
       };
     }
 
-    // Fall back to DonorRegistration (the retired /donor/register flow) so
-    // legacy donors who never came through onboarding still resolve.
-    const donorRegistration = await db.donorRegistration.findUnique({
-      where: { email },
-    });
-
-    if (donorRegistration) {
-      return {
-        role: "DONOR",
-        user: {
-          ...donorRegistration,
-          dateOfBirth: donorRegistration.dateOfBirth ? donorRegistration.dateOfBirth.toISOString() : "",
-          lastDonation: donorRegistration.lastDonation
-            ? donorRegistration.lastDonation.toISOString()
-            : null,
-        } as DonorData,
-      };
-    }
+    // `Donor` is now the only donor table — the DonorRegistration fallback that
+    // used to sit here was removed when that table was retired.
 
     // hospital — match contact or representative email
     const hospital = await db.hospitalRegistration.findFirst({
@@ -228,10 +212,9 @@ export async function getCurrentUser(
   }
 }
 
-// Same resolution order as getCurrentUser (Donor, then DonorRegistration, then
-// hospital), keyed on phone instead of email. Kept as a separate function
-// rather than an overload so the existing getCurrentUser(email) call sites
-// don't need to change.
+// Same resolution order as getCurrentUser (Donor, then hospital), keyed on phone
+// instead of email. Kept as a separate function rather than an overload so the
+// existing getCurrentUser(email) call sites don't need to change.
 export async function getCurrentUserByPhone(
   phone: string
 ): Promise<CurrentUserResponse> {
@@ -296,23 +279,6 @@ export async function getCurrentUserByPhone(
       };
     }
 
-    const donorRegistration = await db.donorRegistration.findFirst({
-      where: { phone },
-    });
-
-    if (donorRegistration) {
-      return {
-        role: "DONOR",
-        user: {
-          ...donorRegistration,
-          dateOfBirth: donorRegistration.dateOfBirth ? donorRegistration.dateOfBirth.toISOString() : "",
-          lastDonation: donorRegistration.lastDonation
-            ? donorRegistration.lastDonation.toISOString()
-            : null,
-        } as DonorData,
-      };
-    }
-
     const hospital = await db.hospitalRegistration.findFirst({
       where: {
         OR: [{ contactPhone: phone }, { repPhone: phone }],
@@ -356,7 +322,12 @@ export async function fetchUserDataById(
 ) {
   try {
     if (type === "donor") {
-      const donor = await db.donorRegistration.findUnique({ where: { id } });
+      // The profile carries everything collected after onboarding; admin views
+      // expect the flattened shape the old single table produced.
+      const donor = await db.donor.findUnique({
+        where: { id },
+        include: { profile: true },
+      });
       return donor ? { ...donor, userType: "donor" } : null;
     }
 
@@ -384,11 +355,11 @@ export async function updateUserStatus(
 
   try {
     if (userType === "donor") {
-      const existing = await db.donorRegistration.findUnique({
+      const existing = await db.donor.findUnique({
         where: { id: userId },
         select: { verificationAttempts: true },
       });
-      return await db.donorRegistration.update({
+      return await db.donor.update({
         where: { id: userId },
         data: {
           status,

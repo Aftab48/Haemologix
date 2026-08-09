@@ -3,7 +3,6 @@
  * 5-factor algorithm for optimal donor matching
  */
 
-import type { DonorRegistration } from "@prisma/client";
 
 export interface DonorScores {
   distance: number;
@@ -98,16 +97,20 @@ export function calculateTimeOfDayScore(urgency: string): number {
  * Better health indicators = higher score
  */
 export function calculateHealthScore(donor: {
-  hemoglobin: string;
-  bmi: string;
-  recentVaccinations: boolean;
+  hemoglobin: string | null;
+  bmi: string | null;
+  recentVaccinations: boolean | null;
   medications: string | null;
 }): number {
   let score = 0;
 
-  // Hemoglobin (40 points)
-  const hb = parseFloat(donor.hemoglobin);
-  if (hb > 14) {
+  // Hemoglobin (40 points). Health detail is collected after onboarding, so a
+  // missing value is normal — it scores as the lowest band rather than being
+  // treated as a good result.
+  const hb = donor.hemoglobin ? parseFloat(donor.hemoglobin) : NaN;
+  if (!Number.isFinite(hb)) {
+    score += 24;
+  } else if (hb > 14) {
     score += 40;
   } else if (hb >= 13 && hb <= 14) {
     score += 32;
@@ -116,8 +119,10 @@ export function calculateHealthScore(donor: {
   }
 
   // BMI (30 points)
-  const bmi = parseFloat(donor.bmi);
-  if (bmi >= 18.5 && bmi <= 24.9) {
+  const bmi = donor.bmi ? parseFloat(donor.bmi) : NaN;
+  if (!Number.isFinite(bmi)) {
+    score += 18;
+  } else if (bmi >= 18.5 && bmi <= 24.9) {
     score += 30;
   } else if (bmi >= 25 && bmi <= 29.9) {
     score += 24;
@@ -125,8 +130,8 @@ export function calculateHealthScore(donor: {
     score += 18;
   }
 
-  // Recent vaccinations (15 points)
-  score += donor.recentVaccinations ? 10 : 15;
+  // Recent vaccinations (15 points). Unknown is treated as the safer "recent".
+  score += donor.recentVaccinations === false ? 15 : 10;
 
   // Medications (15 points)
   if (!donor.medications || donor.medications === "none") {
@@ -160,11 +165,22 @@ export function calculateCompositeScore(
 /**
  * Calculate all scores for a donor
  */
+/**
+ * The health inputs scoring needs, gathered from a `Donor` and its optional
+ * `DonorProfile`. Everything except `bmi` lives on the profile, so all of it is
+ * nullable — a donor who has not completed the later forms still has to be
+ * scoreable.
+ */
+export interface DonorScoringInput {
+  lastDonation: Date | null;
+  hemoglobin: string | null;
+  bmi: string | null;
+  recentVaccinations: boolean | null;
+  medications: string | null;
+}
+
 export function scoreDonor(
-  donor: Pick<
-    DonorRegistration,
-    "lastDonation" | "hemoglobin" | "bmi" | "recentVaccinations" | "medications"
-  >,
+  donor: DonorScoringInput,
   distanceKm: number,
   maxRadiusKm: number,
   urgency: string,
@@ -172,6 +188,14 @@ export function scoreDonor(
     totalAlerts: number;
     accepted: number;
     avgResponseTime: number;
+  },
+  options?: {
+    /**
+     * Donor has no serology or haemoglobin on file. They are still notified —
+     * final screening happens at the donation centre — but they rank below
+     * donors whose results are known, so a hospital reaches screened people first.
+     */
+    unscreened?: boolean;
   }
 ): DonorScores {
   // Calculate days since last donation
@@ -197,13 +221,18 @@ export function scoreDonor(
   });
 
   // Calculate final composite score
-  const final = calculateCompositeScore(
+  const composite = calculateCompositeScore(
     distance,
     history,
     responsiveness,
     timeOfDay,
     health
   );
+
+  // Screened donors sort first. A multiplier rather than a fixed subtraction, so
+  // a nearby unscreened donor can still outrank a distant screened one — the
+  // point is ordering, not exclusion.
+  const final = options?.unscreened ? composite * 0.75 : composite;
 
   return {
     distance: Math.round(distance * 10) / 10,

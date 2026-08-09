@@ -127,7 +127,7 @@ export default function BloodDonationPage() {
             <p className="text-lg text-text-dark/80 mb-8">
               Join thousands of donors saving lives across India. Register now and start making a difference.
             </p>
-            <Link href="/donor/register">
+            <Link href="/donor/onboard">
               <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white">
                 Register as Blood Donor
               </Button>

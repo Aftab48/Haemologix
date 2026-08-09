@@ -1,99 +1,56 @@
 "use server";
 
 import { db } from "@/db";
+import type { Donor, DonorProfile } from "@prisma/client";
 import { getCoordinatesFromAddress } from "../geocoding";
 import { uploadDonorFile } from "./awsupload.actions";
 import { verifyDonorDocuments } from "./verification.actions";
 
-export async function submitDonorRegistration(formData: DonorData) {
-  try {
-    let latitude: string | null = null;
-    let longitude: string | null = null;
+type DonorWithProfile = Donor & { profile: DonorProfile | null };
 
-    try {
-      const coords = await getCoordinatesFromAddress(formData.address);
-      latitude = coords.latitude;
-      longitude = coords.longitude;
-    } catch (geoError) {
-      console.warn(
-        "Geocoding failed, continuing without coordinates:",
-        geoError
-      );
-    }
+/**
+ * Present a donor in the flat shape the admin and edit screens were built
+ * against, back when everything lived in one table.
+ *
+ * Donor identity now lives on `Donor` and the rest on `DonorProfile`, but the UI
+ * has no reason to care — flattening here means the split stays a database
+ * concern rather than rippling into every component. Profile fields are null
+ * when a donor has not filled in the later forms yet.
+ */
+export async function flattenDonor(donor: DonorWithProfile) {
+  const [firstName = "", ...rest] = donor.name.trim().split(/\s+/);
 
-    // 1️⃣ Create donor first (no files yet)
-    const newDonor = await db.donorRegistration.create({
-      data: {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        dateOfBirth: new Date(formData.dateOfBirth),
-        gender: formData.gender,
-        address: formData.address,
-        emergencyContact: formData.emergencyContact,
-        emergencyPhone: formData.emergencyPhone,
-        weight: formData.weight,
-        height: formData.height,
-        bmi: formData.bmi,
-        neverDonated: formData.neverDonated,
-        lastDonation: formData.lastDonation
-          ? new Date(formData.lastDonation)
-          : null,
-        donationCount: formData.donationCount,
-        recentVaccinations: formData.recentVaccinations,
-        vaccinationDetails: formData.vaccinationDetails,
-        medicalConditions: formData.medicalConditions,
-        medications: formData.medications,
-        hivTest: formData.hivTest || "",
-        hepatitisBTest: formData.hepatitisBTest || "",
-        hepatitisCTest: formData.hepatitisCTest || "",
-        syphilisTest: formData.syphilisTest || "",
-        malariaTest: formData.malariaTest || "",
-        hemoglobin: formData.hemoglobin || "",
-        bloodGroup: formData.bloodGroup || "",
-        plateletCount: formData.plateletCount || "",
-        wbcCount: formData.wbcCount || "",
-        dataProcessingConsent: formData.dataProcessingConsent,
-        medicalScreeningConsent: formData.medicalScreeningConsent,
-        termsAccepted: formData.termsAccepted,
-        latitude,
-        longitude,
-        availableForEmergency: formData.availableForEmergency ?? true,
-
-      },
-    });
-    
-    const fileFields: DonorFileField[] = [
-      "bloodTestReport",
-      "idProof",
-      "medicalCertificate",
-    ];
-
-    await Promise.all(
-      fileFields.map(async (field) => {
-        const file = formData[field] as unknown as File | null;
-        if (file) {
-          await uploadDonorFile(field, file, newDonor.id);
-        }
-      })
-    );
-
-    // Trigger AI verification (markDonorAsApplied will be called inside if verification passes)
-    await verifyDonorDocuments(newDonor.id);
-
-    return { success: true, donorId: newDonor.id };
-  } catch (error) {
-    console.error("Error creating donor:", error);
-    return { success: false, error: "Failed to create donor" };
-  }
+  return {
+    ...donor,
+    ...donor.profile,
+    // `id` must stay the Donor id — spreading the profile would overwrite it
+    // with the profile row's own id.
+    id: donor.id,
+    firstName,
+    lastName: rest.join(" "),
+    medicalConditions: donor.diseases,
+    lastDonation: donor.lastDonationDate,
+    neverDonated: !donor.hasDonatedBefore,
+    availableForEmergency: donor.isAvailable,
+  };
 }
 
-export async function updateDonorRegistration(donorId: string, formData: DonorData) {
+/**
+ * Update a donor from the edit forms.
+ *
+ * Identity goes to `Donor`, medical detail to `DonorProfile` — upserted, because
+ * a donor who has not completed the later pages has no profile row yet.
+ */
+export async function updateDonorRegistration(
+  donorId: string,
+  formData: DonorData
+) {
   try {
-    // Check suspension status first
-    const donor = await db.donorRegistration.findUnique({ where: { id: donorId } });
-    
+    const donor = await db.donor.findUnique({
+      where: { id: donorId },
+      include: { profile: true },
+    });
+
     if (!donor) {
       return { success: false, error: "Donor not found" };
     }
@@ -109,8 +66,9 @@ export async function updateDonorRegistration(donorId: string, formData: DonorDa
     let latitude: string | null = donor.latitude;
     let longitude: string | null = donor.longitude;
 
-    // Update geocoding if address changed
-    if (formData.address !== donor.address) {
+    // Re-geocode only when the address actually changed — each lookup is a call
+    // to an external, rate-limited service.
+    if (formData.address && formData.address !== donor.address) {
       try {
         const coords = await getCoordinatesFromAddress(formData.address);
         latitude = coords.latitude;
@@ -120,47 +78,69 @@ export async function updateDonorRegistration(donorId: string, formData: DonorDa
       }
     }
 
-    // Update donor data
-    await db.donorRegistration.update({
+    const name = [formData.firstName, formData.lastName]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+
+    await db.donor.update({
       where: { id: donorId },
       data: {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        dateOfBirth: new Date(formData.dateOfBirth),
-        gender: formData.gender,
-        address: formData.address,
-        emergencyContact: formData.emergencyContact,
-        emergencyPhone: formData.emergencyPhone,
-        weight: formData.weight,
-        height: formData.height,
-        bmi: formData.bmi,
-        neverDonated: formData.neverDonated,
-        lastDonation: formData.lastDonation
+        ...(name ? { name } : {}),
+        ...(formData.email ? { email: formData.email } : {}),
+        ...(formData.phone ? { phone: formData.phone } : {}),
+        ...(formData.dateOfBirth
+          ? { dateOfBirth: new Date(formData.dateOfBirth) }
+          : {}),
+        ...(formData.gender ? { gender: formData.gender } : {}),
+        ...(formData.address ? { address: formData.address } : {}),
+        ...(formData.weight ? { weight: formData.weight } : {}),
+        ...(formData.height ? { height: formData.height } : {}),
+        ...(formData.bmi ? { bmi: formData.bmi } : {}),
+        ...(formData.bloodGroup ? { bloodGroup: formData.bloodGroup } : {}),
+        ...(formData.medicalConditions !== undefined
+          ? { diseases: formData.medicalConditions }
+          : {}),
+        ...(formData.neverDonated !== undefined
+          ? { hasDonatedBefore: !formData.neverDonated }
+          : {}),
+        lastDonationDate: formData.lastDonation
           ? new Date(formData.lastDonation)
           : null,
-        donationCount: formData.donationCount,
-        recentVaccinations: formData.recentVaccinations,
-        vaccinationDetails: formData.vaccinationDetails,
-        medicalConditions: formData.medicalConditions,
-        medications: formData.medications,
-        hivTest: formData.hivTest || "",
-        hepatitisBTest: formData.hepatitisBTest || "",
-        hepatitisCTest: formData.hepatitisCTest || "",
-        syphilisTest: formData.syphilisTest || "",
-        malariaTest: formData.malariaTest || "",
-        hemoglobin: formData.hemoglobin || "",
-        bloodGroup: formData.bloodGroup || "",
-        plateletCount: formData.plateletCount || "",
-        wbcCount: formData.wbcCount || "",
-        dataProcessingConsent: formData.dataProcessingConsent,
-        medicalScreeningConsent: formData.medicalScreeningConsent,
-        termsAccepted: formData.termsAccepted,
+        ...(formData.availableForEmergency !== undefined
+          ? { isAvailable: formData.availableForEmergency }
+          : {}),
         latitude,
         longitude,
-        availableForEmergency: formData.availableForEmergency,
       },
+    });
+
+    const profileData = {
+      emergencyContact: formData.emergencyContact ?? null,
+      emergencyPhone: formData.emergencyPhone ?? null,
+      donationCount: formData.donationCount ?? null,
+      recentVaccinations: formData.recentVaccinations ?? null,
+      vaccinationDetails: formData.vaccinationDetails ?? null,
+      medications: formData.medications ?? null,
+      // Empty strings are stored as null: "not answered" and "answered blank"
+      // must not be distinguishable to the eligibility check.
+      hivTest: formData.hivTest || null,
+      hepatitisBTest: formData.hepatitisBTest || null,
+      hepatitisCTest: formData.hepatitisCTest || null,
+      syphilisTest: formData.syphilisTest || null,
+      malariaTest: formData.malariaTest || null,
+      hemoglobin: formData.hemoglobin || null,
+      plateletCount: formData.plateletCount || null,
+      wbcCount: formData.wbcCount || null,
+      dataProcessingConsent: formData.dataProcessingConsent ?? false,
+      medicalScreeningConsent: formData.medicalScreeningConsent ?? false,
+      termsAccepted: formData.termsAccepted ?? false,
+    };
+
+    await db.donorProfile.upsert({
+      where: { donorId },
+      create: { donorId, ...profileData },
+      update: profileData,
     });
 
     // Re-upload files if changed
@@ -169,7 +149,7 @@ export async function updateDonorRegistration(donorId: string, formData: DonorDa
       "idProof",
       "medicalCertificate",
     ];
-    
+
     await Promise.all(
       fileFields.map(async (field) => {
         const file = formData[field] as unknown as File | null;
@@ -192,26 +172,30 @@ export async function updateDonorRegistration(donorId: string, formData: DonorDa
 export async function fetchAllDonors(includeFiles: boolean = false) {
   void includeFiles;
   try {
-    // Always fetch all data - file URLs are now direct S3 URLs (no presigned URL generation needed)
-    const donors = await db.donorRegistration.findMany();
-    return donors;
+    const donors = await db.donor.findMany({
+      include: { profile: true },
+      orderBy: { createdAt: "desc" },
+    });
+    return Promise.all(donors.map(flattenDonor));
   } catch (error) {
     console.error("Error fetching donors:", error);
     return [];
   }
 }
 
-export async function fetchDonorById(donorId: string, includeFiles: boolean = true) {
+export async function fetchDonorById(
+  donorId: string,
+  includeFiles: boolean = true
+) {
   void includeFiles;
   try {
-    // Return all data - file URLs are now direct S3 URLs (no presigned URL generation needed)
-    const donor = await db.donorRegistration.findUnique({
+    const donor = await db.donor.findUnique({
       where: { id: donorId },
+      include: { profile: true },
     });
     if (!donor) return null;
 
-    // Return direct S3 URLs (no presigned URL generation needed since RLS is disabled)
-    return donor;
+    return flattenDonor(donor);
   } catch (error) {
     console.error("Error fetching donor by ID:", error);
     return null;

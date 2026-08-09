@@ -6,7 +6,7 @@
 
 import { db } from "@/db";
 import { AgentType, Prisma } from "@prisma/client";
-import type { DonorRegistration } from "@prisma/client";
+import type { DonorWithProfile } from "./donorAgent";
 import { publishEvent } from "./eventBus";
 import { reasonAboutEligibility } from "./llmReasoning";
 
@@ -29,11 +29,15 @@ export interface EligibilityCheckResult {
 }
 
 /**
- * Check donor eligibility based on registration data
- * Criteria based on DonorRegistration model and form validation
+ * Screen a donor against the medical criteria.
+ *
+ * Unlike `isDonorEligible` in donorAgent — which is deciding whether to *notify*
+ * someone and tolerates missing results — this runs when a donor submits their
+ * documents for verification. Here a missing value is a genuine failure: the
+ * whole point of the step is to confirm the donor supplied it.
  */
 export function checkDonorEligibility(
-  donor: DonorRegistration
+  donor: DonorWithProfile
 ): EligibilityCheckResult {
   const failedCriteria: EligibilityCriterion[] = [];
   const allCriteria: EligibilityCriterion[] = [];
@@ -80,25 +84,27 @@ export function checkDonorEligibility(
   if (!bmiCheck.passed) failedCriteria.push(bmiCheck);
 
   // 4. Hemoglobin Check (minimum 12.5 g/dL)
-  const hemoglobin = parseFloat(donor.hemoglobin);
+  const profile = donor.profile;
+  const hemoglobin = profile?.hemoglobin ? parseFloat(profile.hemoglobin) : NaN;
   const hemoglobinCheck: EligibilityCriterion = {
     criterion: "Hemoglobin",
-    value: `${hemoglobin} g/dL`,
+    value: Number.isFinite(hemoglobin) ? `${hemoglobin} g/dL` : "Not provided",
     required: "Minimum 12.5 g/dL",
     reason:
       "Hemoglobin level must be at least 12.5 g/dL to donate blood safely",
-    passed: hemoglobin >= 12.5,
+    // Not provided fails: an unparseable value must never satisfy a medical gate.
+    passed: Number.isFinite(hemoglobin) && hemoglobin >= 12.5,
   };
   allCriteria.push(hemoglobinCheck);
   if (!hemoglobinCheck.passed) failedCriteria.push(hemoglobinCheck);
 
   // 5. Disease Tests Check (all must be negative)
   const diseaseTests = [
-    { name: "HIV", value: donor.hivTest },
-    { name: "Hepatitis B", value: donor.hepatitisBTest },
-    { name: "Hepatitis C", value: donor.hepatitisCTest },
-    { name: "Syphilis", value: donor.syphilisTest },
-    { name: "Malaria", value: donor.malariaTest },
+    { name: "HIV", value: profile?.hivTest ?? null },
+    { name: "Hepatitis B", value: profile?.hepatitisBTest ?? null },
+    { name: "Hepatitis C", value: profile?.hepatitisCTest ?? null },
+    { name: "Syphilis", value: profile?.syphilisTest ?? null },
+    { name: "Malaria", value: profile?.malariaTest ?? null },
   ];
 
   diseaseTests.forEach((test) => {
@@ -108,7 +114,7 @@ export function checkDonorEligibility(
     );
     const testCheck: EligibilityCriterion = {
       criterion: `${test.name} Test`,
-      value: test.value,
+      value: test.value ?? "Not provided",
       required: "Negative",
       reason: `${test.name} test must be negative for blood donation eligibility`,
       passed: isNegative,
@@ -118,8 +124,8 @@ export function checkDonorEligibility(
   });
 
   // 6. Donation Interval Check (if not first-time donor)
-  if (!donor.neverDonated && donor.lastDonation) {
-    const lastDonation = new Date(donor.lastDonation);
+  if (donor.hasDonatedBefore && donor.lastDonationDate) {
+    const lastDonation = new Date(donor.lastDonationDate);
     const monthsDiff =
       (today.getTime() - lastDonation.getTime()) / (1000 * 60 * 60 * 24 * 30);
     const requiredGap = donor.gender === "male" ? 3 : 4;
@@ -172,8 +178,9 @@ export async function processDonorVerification(
       `[VerificationAgent] Processing verification for donor: ${donorId}`
     );
 
-    const donor = await db.donorRegistration.findUnique({
+    const donor = await db.donor.findUnique({
       where: { id: donorId },
+      include: { profile: true },
     });
 
     if (!donor) {

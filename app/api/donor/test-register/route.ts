@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
+import { upsertSyntheticDonor } from "@/lib/testing/syntheticDonors";
 
 /**
  * TEMPORARY TEST ENDPOINT - Donor Registration for Testing
@@ -10,7 +10,9 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     
-    // Extract required fields with defaults for testing
+    // Extract required fields with defaults for testing. The serology, consent
+    // and blood-count values a caller might send are ignored: `upsertSyntheticDonor`
+    // fills a complete, negative-serology profile, which is what a test donor needs.
     const {
       firstName = "Test",
       lastName = "Donor",
@@ -19,58 +21,33 @@ export async function POST(req: NextRequest) {
       dateOfBirth = "2000-01-01",
       gender = "male",
       address = "Test Address, Test City, Test State",
-      emergencyContact = "Emergency Contact",
-      emergencyPhone = "9876543210",
       weight = "50.1",
       height = "165",
       bmi = "18.4",
       hemoglobin = "12.5",
       bloodGroup = "O+",
-      hivTest = "NEGATIVE",
-      hepatitisBTest = "NEGATIVE",
-      hepatitisCTest = "NEGATIVE",
-      syphilisTest = "NEGATIVE",
-      malariaTest = "NEGATIVE",
-      plateletCount = "250000",
-      wbcCount = "7000",
-      neverDonated = true,
-      dataProcessingConsent = true,
-      medicalScreeningConsent = true,
-      termsAccepted = true,
+      /** Pass `screened: false` to create a donor with no medical profile. */
+      screened = true,
     } = body;
 
-    // Create donor registration
-    const newDonor = await db.donorRegistration.create({
-      data: {
-        firstName,
-        lastName,
-        email,
-        phone,
-        dateOfBirth: new Date(dateOfBirth),
-        gender,
-        address,
-        emergencyContact,
-        emergencyPhone,
-        weight,
-        height,
-        bmi,
-        hemoglobin,
-        bloodGroup,
-        hivTest,
-        hepatitisBTest,
-        hepatitisCTest,
-        syphilisTest,
-        malariaTest,
-        plateletCount,
-        wbcCount,
-        neverDonated,
-        dataProcessingConsent,
-        medicalScreeningConsent,
-        termsAccepted,
-        status: "APPROVED", // Auto-approve for testing
-        latitude: "22.5726", // Default test coordinates
-        longitude: "88.3639",
-      },
+    // Creates the Donor row and its DonorProfile together — see
+    // lib/testing/syntheticDonors.ts for why that is centralised.
+    const newDonor = await upsertSyntheticDonor({
+      name: `${firstName} ${lastName}`.trim(),
+      email,
+      phone,
+      dateOfBirth: new Date(dateOfBirth),
+      gender,
+      address,
+      weight,
+      height,
+      bmi,
+      bloodGroup,
+      hemoglobin,
+      screened,
+      status: "APPROVED", // Auto-approve for testing
+      latitude: "22.5726", // Default test coordinates
+      longitude: "88.3639",
     });
 
     console.log(`[Test API] Created test donor: ${newDonor.id}`);
