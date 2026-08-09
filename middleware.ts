@@ -11,7 +11,8 @@ const isPublicRoute = createRouteMatcher([
   '/demo(.*)',
   '/donor/onboard',
   '/donor/forgot-password(.*)',
-  '/donor/register(.*)',
+  // '/donor/register' was the original long-form signup; it was replaced by
+  // /donor/onboard and the page has been removed.
   '/hospital/register(.*)',
   '/bloodbank/register(.*)',
 ]);

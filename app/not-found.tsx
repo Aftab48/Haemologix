@@ -40,7 +40,7 @@ export default function NotFound() {
                   Go to Homepage
                 </Button>
               </Link>
-              <Link href="/donor/register">
+              <Link href="/donor/onboard">
                 <Button className="w-full" size="lg" variant="outline">
                   <Heart className="w-4 h-4 mr-2" />
                   Become a Donor

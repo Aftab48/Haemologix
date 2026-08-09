@@ -198,7 +198,7 @@ const HomePage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-center">
                   <Button
                     size="lg"
-                    onClick={() => handleClick("/donor/register")}
+                    onClick={() => handleClick("/donor/onboard")}
                     className="gradient-ruby hover:opacity-90 text-lg px-8 py-3 w-64 text-white shadow-lg hover:shadow-primary/50 transition-all duration-300"
                   >
                     <Heart className="w-5 h-5 mr-2" />
@@ -549,7 +549,7 @@ const HomePage = () => {
           <>
             {(!isSignedIn || !role) && (
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/donor/register">
+                <Link href="/donor/onboard">
                   <Button
                     size="lg"
                     variant="secondary"

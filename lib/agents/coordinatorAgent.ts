@@ -84,7 +84,8 @@ export async function processDonorResponse(
         status: "notified",
       },
       include: {
-        donor: true,
+        // `profile` carries the medical detail collected after onboarding.
+        donor: { include: { profile: true } },
       },
     });
 
@@ -204,7 +205,7 @@ export async function processDonorResponse(
         // Send hospital details to accepting donor
         await sendDonorSelectedEmail({
           to: donor.email,
-          donorName: `${donor.firstName} ${donor.lastName}`,
+          donorName: donor.name,
           hospitalName: hospital.hospitalName,
           hospitalAddress: hospital.hospitalAddress,
           hospitalPhone: hospital.contactPhone,
@@ -214,7 +215,7 @@ export async function processDonorResponse(
         });
 
         console.log(
-          `[CoordinatorAgent] Hospital details sent to ${donor.firstName} ${donor.lastName}`
+          `[CoordinatorAgent] Hospital details sent to ${donor.name}`
         );
 
         // Update alert status to MATCHED if this is the first acceptance
@@ -291,7 +292,8 @@ export async function selectOptimalMatch(requestId: string): Promise<{
         status: "accepted",
       },
       include: {
-        donor: true,
+        // `profile` carries the medical detail collected after onboarding.
+        donor: { include: { profile: true } },
       },
     });
 
@@ -343,8 +345,11 @@ export async function selectOptimalMatch(requestId: string): Promise<{
       const reliability_rate =
         totalResponses > 0 ? completedDonations / totalResponses : 0.5;
 
-      // Health score (simplified from donor scoring)
-      const hemoglobin = parseFloat(donor.hemoglobin);
+      // Health score (simplified from donor scoring). Hemoglobin lives on the
+      // profile and is absent until the donor completes the medical section.
+      const hemoglobin = donor.profile?.hemoglobin
+        ? parseFloat(donor.profile.hemoglobin)
+        : NaN;
       let health_score = 100;
       if (isNaN(hemoglobin)) health_score = 70;
       else if (donor.gender === "male" && hemoglobin < 14.0) health_score = 80;
@@ -361,7 +366,7 @@ export async function selectOptimalMatch(requestId: string): Promise<{
 
       scoredDonors.push({
         donor_id: donor.id,
-        donor_name: `${donor.firstName} ${donor.lastName}`,
+        donor_name: donor.name,
         donor_email: donor.email,
         donor_phone: donor.phone,
         distance_km,

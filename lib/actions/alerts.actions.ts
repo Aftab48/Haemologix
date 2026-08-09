@@ -139,9 +139,9 @@ export async function getAlertResponseStats(alertId: string) {
 
   const formattedDonors = donorResponses.map((r) => ({
     id: r.donor.id,
-    donorName: `${r.donor.firstName} ${r.donor.lastName}`,
-    lastDonation: r.donor.lastDonation
-      ? r.donor.lastDonation.toDateString()
+    donorName: r.donor.name,
+    lastDonation: r.donor.lastDonationDate
+      ? r.donor.lastDonationDate.toDateString()
       : "Never",
     bloodType: r.donor.bloodGroup,
     distance: "0", // TODO: calculate or fetch

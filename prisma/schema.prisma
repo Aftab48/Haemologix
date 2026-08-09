@@ -7,91 +7,107 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// The single source of truth for a donor.
+///
+/// Created by `/donor/onboard` from a deliberately short form, then enriched over
+/// time: the optional `profile` holds everything asked for later, page by page.
+/// Every donor-related record hangs off this row.
 model Donor {
-  id                  String             @id @default(uuid())
-  name                String
-  phone               String
-  email               String             @unique
-  address             String
-  city                String
-  state               String
-  pincode             String
-  dateOfBirth         DateTime
-  weight              String
-  height              String
-  bmi                 String
-  hasDonatedBefore    Boolean            @default(false)
-  lastDonationDate    DateTime?
-  diseases            String?
-  clerkUserId         String?
+  id                   String         @id @default(uuid())
+  name                 String
+  phone                String
+  email                String         @unique
+  address              String
+  city                 String
+  state                String
+  pincode              String
+  dateOfBirth          DateTime
+  weight               String
+  height               String
+  bmi                  String
+  hasDonatedBefore     Boolean        @default(false)
+  lastDonationDate     DateTime?
+  diseases             String?
+  clerkUserId          String?
   /// Hashed (never plaintext) copy of the credential emailed at onboarding.
   /// Optional because donors created before this column existed have none.
-  password            String?
-  donorRegistrationId String?
-  status              ApprovalStatus     @default(PENDING)
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  bloodGroup          String
-  gender              String
-  isAvailable         Boolean            @default(true)
-  donorRegistration   DonorRegistration? @relation(fields: [donorRegistrationId], references: [id])
+  password             String?
+  status               ApprovalStatus @default(PENDING)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  bloodGroup           String
+  gender               String
+  isAvailable          Boolean        @default(true)
+  /// Geocoded from the address at onboarding, or replaced by a device GPS fix
+  /// from the mobile app. The matching agent discards donors outside an alert's
+  /// search radius, so a donor without these can never be matched.
+  latitude             String?
+  longitude            String?
+  /// Verification state. Lives here rather than on a form record because it
+  /// describes the donor, and outlives any single submission.
+  verificationAttempts Int            @default(0)
+  suspendedUntil       DateTime?
+  lastVerificationAt   DateTime?
+
+  profile         DonorProfile?
+  responses       AlertResponse[]
+  responseHistory DonorResponseHistory[] @relation("DonorHistory")
+  verifications   DonorVerification[]
+  approvals       Approval[]             @relation("DonorApprovals")
 
   @@index([email])
   @@index([status])
   @@index([createdAt])
+  @@index([status, bloodGroup])
 }
 
-model DonorRegistration {
-  id                      String                 @id @default(uuid())
-  firstName               String
-  lastName                String
-  email                   String                 @unique
-  phone                   String
-  dateOfBirth             DateTime
-  gender                  String
-  address                 String
-  emergencyContact        String
-  emergencyPhone          String
-  weight                  String
-  height                  String
-  bmi                     String
-  lastDonation            DateTime?
-  donationCount           String?
-  neverDonated            Boolean                @default(false)
-  recentVaccinations      Boolean                @default(false)
-  vaccinationDetails      String?
-  medicalConditions       String?
-  medications             String?
-  hivTest                 String
-  hepatitisBTest          String
-  hepatitisCTest          String
-  syphilisTest            String
-  malariaTest             String
-  hemoglobin              String
-  bloodGroup              String
-  plateletCount           String
-  wbcCount                String
-  bloodTestReport         String?
-  idProof                 String?
-  medicalCertificate      String?
-  dataProcessingConsent   Boolean                @default(false)
-  medicalScreeningConsent Boolean                @default(false)
-  termsAccepted           Boolean                @default(false)
-  status                  ApprovalStatus         @default(PENDING)
-  createdAt               DateTime               @default(now())
-  updatedAt               DateTime               @updatedAt
-  latitude                String?
-  longitude               String?
-  lastVerificationAt      DateTime?
-  suspendedUntil          DateTime?
-  verificationAttempts    Int                    @default(0)
-  availableForEmergency   Boolean                @default(true)
-  responses               AlertResponse[]
-  approvals               Approval[]             @relation("DonorApprovals")
-  onboardDonors           Donor[]
-  responseHistory         DonorResponseHistory[] @relation("DonorHistory")
-  verifications           DonorVerification[]
+/// Detail collected after onboarding, a section at a time.
+///
+/// Every column is nullable by design — a donor may have answered none, some, or
+/// all of it. Code reading these must treat absence as "not yet screened", never
+/// as a pass: see `isDonorEligible` in lib/agents/donorAgent.ts.
+model DonorProfile {
+  id      String @id @default(uuid())
+  donorId String @unique
+
+  emergencyContact   String?
+  emergencyPhone     String?
+  medications        String?
+  recentVaccinations Boolean?
+  vaccinationDetails String?
+  donationCount      String?
+
+  /// Serology. "NEGATIVE" (in any case) is the only value that clears the gate;
+  /// null means not yet tested, which is not the same as negative.
+  hivTest        String?
+  hepatitisBTest String?
+  hepatitisCTest String?
+  syphilisTest   String?
+  malariaTest    String?
+
+  hemoglobin    String?
+  plateletCount String?
+  wbcCount      String?
+
+  /// Kept as columns rather than a separate documents table so `uploadDonorFile`
+  /// can go on writing them by dynamic field name.
+  bloodTestReport    String?
+  idProof            String?
+  medicalCertificate String?
+
+  dataProcessingConsent   Boolean @default(false)
+  medicalScreeningConsent Boolean @default(false)
+  termsAccepted           Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  donor Donor @relation(fields: [donorId], references: [id], onDelete: Cascade)
 }
+
+// `DonorRegistration` was the original donor model — one long form, most of it
+// optional in practice. It was replaced by `Donor` + `DonorProfile` above, which
+// separate the short onboarding record from the detail gathered later.
 
 model OTSchedule {
   id            String               @id @default(cuid())
@@ -189,7 +205,7 @@ model Approval {
   hospitalId String?
   donorId    String?
   admin      Admin                 @relation(fields: [approvedBy], references: [id])
-  donor      DonorRegistration?    @relation("DonorApprovals", fields: [donorId], references: [id])
+  donor      Donor?                @relation("DonorApprovals", fields: [donorId], references: [id])
   hospital   HospitalRegistration? @relation("HospitalApprovals", fields: [hospitalId], references: [id])
 }
 
@@ -213,14 +229,16 @@ model Alert {
 }
 
 model AlertResponse {
-  id        String            @id @default(uuid())
+  id        String         @id @default(uuid())
   alertId   String
   donorId   String
-  status    ResponseStatus    @default(PENDING)
-  createdAt DateTime          @default(now())
-  confirmed Boolean           @default(false)
-  alert     Alert             @relation(fields: [alertId], references: [id])
-  donor     DonorRegistration @relation(fields: [donorId], references: [id])
+  status    ResponseStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  confirmed Boolean        @default(false)
+  alert     Alert          @relation(fields: [alertId], references: [id])
+  donor     Donor          @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@unique([alertId, donorId])
 }
 
 model Document {
@@ -243,7 +261,9 @@ model DonorVerification {
   eligibilityChecked Boolean            @default(false)
   eligibilityPassed  Boolean            @default(false)
   failedCriteria     Json?
-  donor              DonorRegistration  @relation(fields: [donorId], references: [id])
+  donor              Donor              @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@index([donorId])
 }
 
 model AgentEvent {
@@ -350,13 +370,14 @@ model DonorResponseHistory {
   noShow          Boolean           @default(false)
   distance        Float?
   score           Float?
-  createdAt       DateTime          @default(now())
+  createdAt       DateTime  @default(now())
   expectedArrival DateTime?
-  donor           DonorRegistration @relation("DonorHistory", fields: [donorId], references: [id])
+  donor           Donor     @relation("DonorHistory", fields: [donorId], references: [id], onDelete: Cascade)
 
   @@index([donorId])
   @@index([requestId])
   @@index([status])
+  @@index([donorId, requestId])
 }
 
 model PilotRequest {
@@ -521,6 +542,92 @@ model AccountDeletionRequest {
   @@index([email])
   @@index([status])
   @@index([requestedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Tables owned by the mobile backend (app-backend), declared here ONLY so that
+// `prisma db push` from this repo leaves them alone.
+//
+// Prisma reconciles the whole database to whichever schema it is run from, so a
+// table missing here is a table `db push` will DROP — which is exactly what
+// happened the first time this migration ran. This app never reads or writes
+// them; change them in app-backend/prisma/schema.prisma and mirror the result
+// here.
+//
+// `donorId` is intentionally a plain column with no foreign key: app-backend
+// must not constrain tables this app owns.
+// ---------------------------------------------------------------------------
+
+model AppRefreshToken {
+  id           String    @id @default(uuid())
+  donorId      String
+  tokenHash    String    @unique
+  deviceId     String?
+  userAgent    String?
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById String?
+  createdAt    DateTime  @default(now())
+
+  @@index([donorId])
+  @@index([expiresAt])
+}
+
+model AppOtpChallenge {
+  id         String    @id @default(uuid())
+  phoneE164  String
+  otpHash    String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  sendCount  Int       @default(1)
+  consumedAt DateTime?
+  lastSentAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+
+  @@index([phoneE164, expiresAt])
+}
+
+model AppDeviceToken {
+  id         String    @id @default(uuid())
+  donorId    String
+  token      String    @unique
+  platform   String
+  appVersion String?
+  lastSeenAt DateTime  @default(now())
+  disabledAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([donorId, disabledAt])
+}
+
+model AppNotification {
+  id        String    @id @default(uuid())
+  donorId   String
+  type      String
+  title     String
+  body      String
+  data      Json?
+  alertId   String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([donorId, createdAt])
+  @@index([donorId, readAt])
+}
+
+model AppDonorLocation {
+  donorId   String   @id
+  latitude  Float
+  longitude Float
+  accuracyM Float?
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model AppJobCheckpoint {
+  job       String   @id
+  position  DateTime
+  updatedAt DateTime @updatedAt
 }
 
 enum ApprovalStatus {

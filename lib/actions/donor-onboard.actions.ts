@@ -7,6 +7,7 @@ import { sendDonorOnboardWelcomeEmail } from "@/lib/actions/mails.actions";
 import { sendApplicationApprovedEmail, sendApplicationRejectedEmail } from "@/lib/actions/mails.actions";
 import { processOnboardDonorVerification } from "@/lib/agents/onboardDonorVerification";
 import { hashPassword } from "@/lib/password";
+import { getCoordinatesFromAddress } from "@/lib/geocoding";
 import { ZodError } from "zod";
 
 function asErrorRecord(error: unknown): Record<string, unknown> {
@@ -144,6 +145,35 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
       console.warn("Continuing without Clerk user creation");
     }
 
+    // Geocode the address so the donor can be matched by distance.
+    //
+    // This is not optional decoration: the donor agent discards anyone outside an
+    // alert's search radius, so a donor stored without coordinates is invisible to
+    // every alert. Failure is tolerated — the donor is still created, and the
+    // mobile app can supply a real GPS fix later — but it is logged loudly.
+    let latitude: string | null = null;
+    let longitude: string | null = null;
+
+    try {
+      const fullAddress = [
+        validatedData.address,
+        validatedData.city,
+        validatedData.state,
+        validatedData.pincode,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      const coords = await getCoordinatesFromAddress(fullAddress);
+      latitude = coords.latitude;
+      longitude = coords.longitude;
+    } catch (geoError) {
+      console.error(
+        "[DonorOnboard] Geocoding failed — this donor will not be matched to alerts until coordinates are set:",
+        geoError
+      );
+    }
+
     // Create Donor record in database (initially PENDING)
     const newDonor = await db.donor.create({
       data: {
@@ -168,6 +198,8 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
         clerkUserId: clerkUser?.id || null,
         password: hashedPassword,
         status: "PENDING",
+        latitude,
+        longitude,
       },
     });
 

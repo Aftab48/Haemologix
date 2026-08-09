@@ -10,6 +10,7 @@
  */
 
 import { db } from "@/db";
+import { upsertSyntheticDonor } from "@/lib/testing/syntheticDonors";
 
 // Kolkata coordinates (for hospital)
 const KOLKATA_HOSPITAL = {
@@ -111,64 +112,26 @@ async function main() {
     // Step 3: Create test donors
     console.log("\n📋 Step 3: Creating test donors...");
     const createdDonors = [];
-    for (const donorData of TEST_DONORS) {
-      // Check if donor already exists
-      let donor = await db.donorRegistration.findUnique({
-        where: { email: donorData.email },
+    for (const [index, donorData] of TEST_DONORS.entries()) {
+      // Every third donor is left without a medical profile, so the simulation
+      // also exercises the `unscreened` path — notified, but ranked lower.
+      const screened = index % 3 !== 2;
+
+      const donor = await upsertSyntheticDonor({
+        name: `${donorData.firstName} ${donorData.lastName}`.trim(),
+        email: donorData.email,
+        phone: donorData.phone,
+        bloodGroup: donorData.bloodGroup,
+        latitude: donorData.latitude,
+        longitude: donorData.longitude,
+        address: donorData.address,
+        status: "APPROVED",
+        screened,
       });
 
-      if (!donor) {
-        donor = await db.donorRegistration.create({
-          data: {
-            firstName: donorData.firstName,
-            lastName: donorData.lastName,
-            email: donorData.email,
-            phone: donorData.phone,
-            bloodGroup: donorData.bloodGroup,
-            latitude: donorData.latitude,
-            longitude: donorData.longitude,
-            address: donorData.address,
-            // Required fields
-            dateOfBirth: new Date("1990-01-01"),
-            gender: "Male",
-            emergencyContact: "Emergency Contact",
-            emergencyPhone: "+919999999999",
-            weight: "70",
-            height: "170",
-            bmi: "24.2",
-            neverDonated: false,
-            recentVaccinations: false,
-            hivTest: "Negative",
-            hepatitisBTest: "Negative",
-            hepatitisCTest: "Negative",
-            syphilisTest: "Negative",
-            malariaTest: "Negative",
-            hemoglobin: "14.5",
-            plateletCount: "250000",
-            wbcCount: "7000",
-            dataProcessingConsent: true,
-            medicalScreeningConsent: true,
-            termsAccepted: true,
-            status: "APPROVED",
-          },
-        });
-        console.log(`✅ Created donor: ${donor.firstName} ${donor.lastName} (ID: ${donor.id})`);
-      } else {
-        // Update coordinates if missing
-        if (!donor.latitude || !donor.longitude) {
-          donor = await db.donorRegistration.update({
-            where: { id: donor.id },
-            data: {
-              latitude: donorData.latitude,
-              longitude: donorData.longitude,
-              address: donorData.address,
-            },
-          });
-          console.log(`✅ Updated donor coordinates: ${donor.firstName} ${donor.lastName}`);
-        } else {
-          console.log(`✅ Using existing donor: ${donor.firstName} ${donor.lastName}`);
-        }
-      }
+      console.log(
+        `✅ Donor ready: ${donor.name} (${screened ? "screened" : "UNSCREENED"}) (ID: ${donor.id})`
+      );
       createdDonors.push(donor);
     }
 
@@ -190,7 +153,7 @@ async function main() {
         },
       });
       responseHistories.push(history);
-      console.log(`✅ Created response history for ${donor.firstName} ${donor.lastName}`);
+      console.log(`✅ Created response history for ${donor.name}`);
     }
 
     // Step 5: Create alert responses with CONFIRMED status
@@ -206,7 +169,7 @@ async function main() {
         },
       });
       alertResponses.push(response);
-      console.log(`✅ Created CONFIRMED response for ${donor.firstName} ${donor.lastName}`);
+      console.log(`✅ Created CONFIRMED response for ${donor.name}`);
     }
 
     // Step 6: Update alert status to MATCHED
@@ -225,7 +188,7 @@ async function main() {
     console.log(`   Location: ${hospital.latitude}, ${hospital.longitude}`);
     console.log(`\n👥 Accepted Donors (${createdDonors.length}):`);
     createdDonors.forEach((donor, index) => {
-      console.log(`   ${index + 1}. ${donor.firstName} ${donor.lastName}`);
+      console.log(`   ${index + 1}. ${donor.name}`);
       console.log(`      Location: ${donor.latitude}, ${donor.longitude}`);
       console.log(`      Blood Group: ${donor.bloodGroup}`);
     });
@@ -250,4 +213,5 @@ main()
     console.error("\n💥 Script failed:", error);
     process.exit(1);
   });
+
 

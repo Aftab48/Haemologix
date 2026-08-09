@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
+import { upsertSyntheticDonor } from "@/lib/testing/syntheticDonors";
 
 // Kolkata coordinates (for hospital)
 const KOLKATA_HOSPITAL = {
@@ -106,57 +107,18 @@ export async function POST(req: NextRequest) {
     // Step 3: Create test donors and responses
     const createdDonors = [];
     for (const donorData of TEST_DONORS) {
-      let donor = await db.donorRegistration.findUnique({
-        where: { email: donorData.email },
+      // Upsert keeps this endpoint repeatable, and refreshes the coordinates of
+      // any donor that already exists without them.
+      const donor = await upsertSyntheticDonor({
+        name: `${donorData.firstName} ${donorData.lastName}`.trim(),
+        email: donorData.email,
+        phone: donorData.phone,
+        bloodGroup: donorData.bloodGroup,
+        latitude: donorData.latitude,
+        longitude: donorData.longitude,
+        address: donorData.address,
+        status: "APPROVED",
       });
-
-      if (!donor) {
-        donor = await db.donorRegistration.create({
-          data: {
-            firstName: donorData.firstName,
-            lastName: donorData.lastName,
-            email: donorData.email,
-            phone: donorData.phone,
-            bloodGroup: donorData.bloodGroup,
-            latitude: donorData.latitude,
-            longitude: donorData.longitude,
-            address: donorData.address,
-            dateOfBirth: new Date("1990-01-01"),
-            gender: "Male",
-            emergencyContact: "Emergency Contact",
-            emergencyPhone: "+919999999999",
-            weight: "70",
-            height: "170",
-            bmi: "24.2",
-            neverDonated: false,
-            recentVaccinations: false,
-            hivTest: "Negative",
-            hepatitisBTest: "Negative",
-            hepatitisCTest: "Negative",
-            syphilisTest: "Negative",
-            malariaTest: "Negative",
-            hemoglobin: "14.5",
-            plateletCount: "250000",
-            wbcCount: "7000",
-            dataProcessingConsent: true,
-            medicalScreeningConsent: true,
-            termsAccepted: true,
-            status: "APPROVED",
-          },
-        });
-      } else {
-        // Update coordinates if missing
-        if (!donor.latitude || !donor.longitude) {
-          donor = await db.donorRegistration.update({
-            where: { id: donor.id },
-            data: {
-              latitude: donorData.latitude,
-              longitude: donorData.longitude,
-              address: donorData.address,
-            },
-          });
-        }
-      }
       createdDonors.push(donor);
 
       // Create response history
@@ -196,7 +158,7 @@ export async function POST(req: NextRequest) {
       },
       donors: createdDonors.map((d) => ({
         id: d.id,
-        name: `${d.firstName} ${d.lastName}`,
+        name: d.name,
         latitude: d.latitude,
         longitude: d.longitude,
         bloodGroup: d.bloodGroup,

@@ -6,32 +6,88 @@ import { hashPassword, verifyPasswordResetToken } from "@/lib/password";
 import { resetPasswordSchema } from "@/lib/validations/password.schema";
 import { ZodError } from "zod";
 
-// Fields that must never be overwritten by a client-supplied profile update.
-const IMMUTABLE_FIELDS = new Set([
-  "id",
-  "password",
-  "clerkUserId",
-  "status",
-  "verificationAttempts",
-  "suspendedUntil",
-  "lastVerificationAt",
-  "createdAt",
-  "updatedAt",
+// A donor's own details are split across two tables, so an incoming update has to
+// be split too. Allowlists rather than a denylist: a column added to either model
+// later is not writable from a client until someone deliberately lists it here.
+const DONOR_FIELDS = new Set([
+  "name",
+  "phone",
+  "email",
+  "address",
+  "city",
+  "state",
+  "pincode",
+  "dateOfBirth",
+  "weight",
+  "height",
+  "bmi",
+  "bloodGroup",
+  "gender",
+  "diseases",
+  "hasDonatedBefore",
+  "lastDonationDate",
+  "isAvailable",
+  "latitude",
+  "longitude",
+]);
+
+const PROFILE_FIELDS = new Set([
+  "emergencyContact",
+  "emergencyPhone",
+  "medications",
+  "recentVaccinations",
+  "vaccinationDetails",
+  "donationCount",
+  "hivTest",
+  "hepatitisBTest",
+  "hepatitisCTest",
+  "syphilisTest",
+  "malariaTest",
+  "hemoglobin",
+  "plateletCount",
+  "wbcCount",
+  "bloodTestReport",
+  "idProof",
+  "medicalCertificate",
+  "dataProcessingConsent",
+  "medicalScreeningConsent",
+  "termsAccepted",
 ]);
 
 // Stored as DateTime in Prisma but sent as strings (or null) from the donor app.
-const DATE_FIELDS = new Set(["dateOfBirth", "lastDonation"]);
+const DATE_FIELDS = new Set(["dateOfBirth", "lastDonationDate"]);
+
+// Names the old single-table API accepted, mapped onto where they live now, so
+// clients written against the previous shape keep working.
+const FIELD_ALIASES: Record<string, string> = {
+  lastDonation: "lastDonationDate",
+  medicalConditions: "diseases",
+  availableForEmergency: "isAvailable",
+};
 
 function sanitizeDonorUpdate(data: Record<string, unknown>) {
-  const clean: Record<string, unknown> = {};
+  const donor: Record<string, unknown> = {};
+  const profile: Record<string, unknown> = {};
 
-  for (const [key, value] of Object.entries(data)) {
-    if (IMMUTABLE_FIELDS.has(key) || value === undefined) continue;
+  for (const [rawKey, rawValue] of Object.entries(data)) {
+    if (rawValue === undefined) continue;
 
-    clean[key] = DATE_FIELDS.has(key) && value ? new Date(value as string) : value;
+    const key = FIELD_ALIASES[rawKey] ?? rawKey;
+    const value = DATE_FIELDS.has(key) && rawValue ? new Date(rawValue as string) : rawValue;
+
+    if (DONOR_FIELDS.has(key)) donor[key] = value;
+    else if (PROFILE_FIELDS.has(key)) profile[key] = value;
+    // Anything else — id, password, clerkUserId, status, verification counters —
+    // is silently dropped. Those are not the client's to set.
   }
 
-  return clean;
+  // `firstName`/`lastName` predate the single `name` column.
+  if (typeof data.firstName === "string" || typeof data.lastName === "string") {
+    const name = [data.firstName, data.lastName].filter(Boolean).join(" ").trim();
+    if (name) donor.name = name;
+  }
+
+  return { donor, profile };
 }
 
 // export async function GET() {
@@ -62,25 +118,12 @@ function sanitizeDonorUpdate(data: Record<string, unknown>) {
 //   }
 // }
 
-export async function GET() {
-  try {
-    const result = await db.donorRegistration.updateMany({
-      data: { status: "PENDING" },
-    });
-
-    return NextResponse.json({
-      success: true,
-      updatedCount: result.count,
-      newStatus: "PENDING",
-    });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json(
-      { error: "Failed to reset users" },
-      { status: 500 }
-    );
-  }
-}
+// A GET handler used to live here that reset EVERY donor's status to PENDING.
+// It was a debugging shortcut from when this table held only synthetic rows.
+// `/api/*` is public, so it was an unauthenticated endpoint that could un-approve
+// the entire donor base — harmless against seed data, not against real donors.
+// Removed rather than repointed at `Donor`. If a bulk reset is needed again, put
+// it behind an admin check and a POST.
 
 /**
  * Password reset for an onboarded donor.
@@ -229,9 +272,12 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const donor = await db.donorRegistration.update({
+      // One column, one table. This used to write
+      // `DonorRegistration.availableForEmergency` while every read came from
+      // `Donor.isAvailable`, so the toggle silently did nothing.
+      const donor = await db.donor.update({
         where: { email },
-        data: { availableForEmergency: body.isAvailable as boolean },
+        data: { isAvailable: body.isAvailable as boolean },
       });
 
       return NextResponse.json({ success: true, user: donor });
@@ -247,18 +293,34 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const data = sanitizeDonorUpdate(partialDonorData);
+    const { donor: donorData, profile: profileData } =
+      sanitizeDonorUpdate(partialDonorData);
 
-    if (Object.keys(data).length === 0) {
+    if (
+      Object.keys(donorData).length === 0 &&
+      Object.keys(profileData).length === 0
+    ) {
       return NextResponse.json(
         { success: false, error: "No updatable fields provided" },
         { status: 400 }
       );
     }
 
-    const donor = await db.donorRegistration.update({
+    // Upsert the profile: a donor who has not reached the later forms has no
+    // profile row yet, and the first field they submit should create one.
+    const donor = await db.donor.update({
       where: { id: userId },
-      data,
+      data: {
+        ...donorData,
+        ...(Object.keys(profileData).length > 0
+          ? {
+              profile: {
+                upsert: { create: profileData, update: profileData },
+              },
+            }
+          : {}),
+      },
+      include: { profile: true },
     });
 
     return NextResponse.json({ success: true, user: donor });

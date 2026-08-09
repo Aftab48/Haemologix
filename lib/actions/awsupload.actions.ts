@@ -41,9 +41,12 @@ export async function uploadDonorFile(
     await s3.send(cmd);
     const fileUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 
-    await db.donorRegistration.update({
-      where: { id: donorId },
-      data: { [field]: fileUrl },
+    // Document URLs live on the profile, which a donor may not have yet — upsert
+    // so an upload during onboarding creates the row rather than failing.
+    await db.donorProfile.upsert({
+      where: { donorId },
+      create: { donorId, [field]: fileUrl },
+      update: { [field]: fileUrl },
     });
 
     return fileUrl;

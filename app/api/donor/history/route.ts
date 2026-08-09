@@ -29,8 +29,7 @@ export async function GET(req: NextRequest) {
         donor: {
           select: {
             id: true,
-            firstName: true,
-            lastName: true,
+            name: true,
             bloodGroup: true,
           },
         },
