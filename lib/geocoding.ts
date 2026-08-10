@@ -34,6 +34,58 @@ export async function getCoordinatesFromAddress(
   throw new Error("All geocoding services failed for this address");
 }
 
+export interface DonorAddressParts {
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+}
+
+export interface DonorCoordinates extends Coordinates {
+  /** How specific the match was — useful when deciding whether to ask for a GPS fix. */
+  precision: "address" | "locality" | "pincode" | "region";
+}
+
+/**
+ * Geocode a donor's address, falling back to coarser queries.
+ *
+ * A full Indian street address ("Tulip Garden Apartments, Block-D, 4th Floor…")
+ * is usually not in OpenStreetMap, so asking for it verbatim fails for most real
+ * donors. But precision to the street is not what this is for: the matching agent
+ * only needs to know whether a donor is inside an alert's search radius, which is
+ * kilometres wide. A pincode- or city-level fix answers that perfectly well, and
+ * the mobile app replaces it with a real GPS fix the first time the donor opens it.
+ *
+ * Returning *something* therefore beats returning nothing — a donor with no
+ * coordinates is invisible to every alert.
+ */
+export async function geocodeDonorAddress(
+  parts: DonorAddressParts
+): Promise<DonorCoordinates> {
+  const join = (...values: (string | null | undefined)[]) =>
+    values.filter(Boolean).join(", ");
+
+  const attempts: { query: string; precision: DonorCoordinates["precision"] }[] = [
+    { query: join(parts.address, parts.city, parts.state, parts.pincode), precision: "address" },
+    { query: join(parts.city, parts.state, parts.pincode), precision: "locality" },
+    { query: join(parts.pincode, "India"), precision: "pincode" },
+    { query: join(parts.city, parts.state, "India"), precision: "region" },
+  ];
+
+  for (const attempt of attempts) {
+    if (!attempt.query) continue;
+
+    try {
+      const coords = await getCoordinatesFromAddress(attempt.query);
+      return { ...coords, precision: attempt.precision };
+    } catch {
+      // Try the next, coarser query.
+    }
+  }
+
+  throw new Error("Could not geocode this address at any level of precision");
+}
+
 /**
  * OpenCage geocoding service
  */

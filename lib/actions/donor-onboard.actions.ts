@@ -7,7 +7,7 @@ import { sendDonorOnboardWelcomeEmail } from "@/lib/actions/mails.actions";
 import { sendApplicationApprovedEmail, sendApplicationRejectedEmail } from "@/lib/actions/mails.actions";
 import { processOnboardDonorVerification } from "@/lib/agents/onboardDonorVerification";
 import { hashPassword } from "@/lib/password";
-import { getCoordinatesFromAddress } from "@/lib/geocoding";
+import { geocodeDonorAddress } from "@/lib/geocoding";
 import { ZodError } from "zod";
 
 function asErrorRecord(error: unknown): Record<string, unknown> {
@@ -155,16 +155,16 @@ export async function submitDonorOnboardForm(data: DonorOnboardFormData) {
     let longitude: string | null = null;
 
     try {
-      const fullAddress = [
-        validatedData.address,
-        validatedData.city,
-        validatedData.state,
-        validatedData.pincode,
-      ]
-        .filter(Boolean)
-        .join(", ");
+      // Falls back to locality/pincode precision when the full street address is
+      // not in OpenStreetMap, which is the common case for Indian addresses. A
+      // coarse fix still places the donor inside or outside an alert radius.
+      const coords = await geocodeDonorAddress({
+        address: validatedData.address,
+        city: validatedData.city,
+        state: validatedData.state,
+        pincode: validatedData.pincode,
+      });
 
-      const coords = await getCoordinatesFromAddress(fullAddress);
       latitude = coords.latitude;
       longitude = coords.longitude;
     } catch (geoError) {
