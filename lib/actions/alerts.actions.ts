@@ -25,21 +25,21 @@ export async function createAlert(input: CreateAlertInput) {
       },
     });
 
-    // 🤖 AGENTIC: Automatically trigger Hospital Agent
+    // 🤖 AGENTIC: Automatically trigger Hospital Agent. Awaited: on Vercel the
+    // function is frozen once the response is sent, so a fire-and-forget fetch
+    // never completes.
     try {
-      // In production, use full URL. In dev, relative path works
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      
-      // Trigger Hospital Agent asynchronously (non-blocking)
-      fetch(`${baseUrl}/api/agents/hospital`, {
+
+      const agentResponse = await fetch(`${baseUrl}/api/agents/hospital`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ alertId: alert.id }),
-      }).catch((err) => {
-        console.error("Failed to trigger Hospital Agent:", err);
       });
 
-      console.log(`[Alert Created] Triggered Hospital Agent for alert: ${alert.id}`);
+      console.log(
+        `[Alert Created] Hospital Agent responded ${agentResponse.status} for alert: ${alert.id}`
+      );
     } catch (agentError) {
       // Don't fail alert creation if agent trigger fails
       console.error("Error triggering Hospital Agent:", agentError);

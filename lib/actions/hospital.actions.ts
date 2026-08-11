@@ -237,19 +237,17 @@ export async function updateHospitalInventory(
     try {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
       
-      // Trigger Hospital Agent to check if alert should be created
-      fetch(`${baseUrl}/api/agents/hospital/check-inventory`, {
+      // Awaited: a fire-and-forget fetch dies when the Vercel function freezes
+      const checkResponse = await fetch(`${baseUrl}/api/agents/hospital/check-inventory`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          hospitalId, 
-          bloodType 
+        body: JSON.stringify({
+          hospitalId,
+          bloodType
         }),
-      }).catch((err) => {
-        console.error("Failed to trigger auto-alert check:", err);
       });
 
-      console.log(`[updateHospitalInventory] Auto-alert check triggered for ${bloodType}`);
+      console.log(`[updateHospitalInventory] Auto-alert check responded ${checkResponse.status} for ${bloodType}`);
     } catch (agentError) {
       // Don't fail inventory update if agent trigger fails
       console.error("Error triggering auto-alert check:", agentError);
