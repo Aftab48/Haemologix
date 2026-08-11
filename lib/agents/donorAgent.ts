@@ -570,7 +570,6 @@ export async function processShortageEvent(eventId: string): Promise<{
         alertId: requestId,
         donorId: donor.id,
         status: "PENDING" as const,
-        confirmed: false,
       })),
       skipDuplicates: true,
     });

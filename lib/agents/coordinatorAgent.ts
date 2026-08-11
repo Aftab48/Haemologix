@@ -121,7 +121,6 @@ export async function processDonorResponse(
               : responseData.status === "declined"
               ? "DECLINED"
               : "PENDING",
-          confirmed: responseData.status === "accepted",
         },
       });
     } else {
@@ -136,7 +135,6 @@ export async function processDonorResponse(
               : responseData.status === "declined"
               ? "DECLINED"
               : "PENDING",
-          confirmed: responseData.status === "accepted",
         },
       });
     }

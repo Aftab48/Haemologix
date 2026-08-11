@@ -89,7 +89,7 @@ export async function getAlerts(hospitalId: string) {
           },
         },
         responses: {
-          select: { confirmed: true },
+          select: { status: true },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -118,7 +118,7 @@ export async function getAlerts(hospitalId: string) {
           }
         : null,
       responses: a.responses.length,
-      confirmed: a.responses.filter((r) => r.confirmed).length,
+      confirmed: a.responses.filter((r) => r.status === "CONFIRMED").length,
     }));
   } catch (err) {
     console.error("[getAlerts] error:", err);
@@ -130,7 +130,7 @@ export async function getAlerts(hospitalId: string) {
 export async function getAlertResponseStats(alertId: string) {
   const [responses, confirmed, donorResponses] = await Promise.all([
     db.alertResponse.count({ where: { alertId } }),
-    db.alertResponse.count({ where: { alertId, confirmed: true } }),
+    db.alertResponse.count({ where: { alertId, status: "CONFIRMED" } }),
     db.alertResponse.findMany({
       where: { alertId },
       include: { donor: true },
@@ -146,7 +146,9 @@ export async function getAlertResponseStats(alertId: string) {
     bloodType: r.donor.bloodGroup,
     distance: "0", // TODO: calculate or fetch
     eta: "—", // TODO: calculate ETA if applicable
-    status: (r.confirmed ? "Confirmed" : "Pending") as "Confirmed" | "Pending",
+    status: (r.status === "CONFIRMED" ? "Confirmed" : "Pending") as
+      | "Confirmed"
+      | "Pending",
     phone: r.donor.phone,
   }));
 
