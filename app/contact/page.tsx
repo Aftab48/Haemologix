@@ -448,7 +448,7 @@ export default function ContactPage() {
 
               <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="/faq" className="hover:text-white">
                     Help Center
                   </Link>
                 </li>

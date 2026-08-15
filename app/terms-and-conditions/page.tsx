@@ -21,7 +21,7 @@ export default function TermsAndConditionsPage() {
               Terms and Conditions
             </h1>
             <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
-              Last Updated: January 2024
+              Last Updated: 1 January 2026
             </p>
           </div>
         </div>
@@ -507,8 +507,8 @@ export default function TermsAndConditionsPage() {
 
               <div className="border-t border-text-dark/20 pt-6 mt-8">
                 <p className="text-text-dark/60 font-dm-sans text-sm italic">
-                  These Terms and Conditions are effective as of November 2025
-                  and apply to all users of the Haemologix platform.
+                  These Terms and Conditions are effective as of 1 January
+                  2026 and apply to all users of the Haemologix platform.
                 </p>
               </div>
             </CardContent>
@@ -559,7 +559,7 @@ export default function TermsAndConditionsPage() {
               </h4>
               <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="/faq" className="hover:text-white">
                     Help Center
                   </Link>
                 </li>

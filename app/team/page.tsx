@@ -178,7 +178,7 @@ export default function TeamPage() {
               <h4 className="font-outfit font-semibold mb-4 text-background">Support</h4>
               <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
-                  <Link href="#" className="hover:text-white">
+                  <Link href="/faq" className="hover:text-white">
                     Help Center
                   </Link>
                 </li>
