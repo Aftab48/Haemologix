@@ -199,7 +199,7 @@ export async function checkOTInventoryAndAlert(hospitalId: string): Promise<{
 
   const fired: { bloodType: string; urgency: string; day: string }[] = [];
   for (const alert of toFire) {
-    await db.alert.create({
+    const created = await db.alert.create({
       data: {
         bloodType: alert.bloodType,
         urgency: alert.urgency,
@@ -213,15 +213,18 @@ export async function checkOTInventoryAndAlert(hospitalId: string): Promise<{
       },
     });
 
-    // Trigger Hospital Agent async
+    // Trigger Hospital Agent. Awaited: a fire-and-forget fetch dies when the
+    // Vercel function freezes.
     try {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      fetch(`${baseUrl}/api/agents/hospital`, {
+      await fetch(`${baseUrl}/api/agents/hospital`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ alertId: "ot-auto" }),
-      }).catch(() => {});
-    } catch {}
+        body: JSON.stringify({ alertId: created.id }),
+      });
+    } catch (err) {
+      console.error("[OT] Failed to trigger Hospital Agent:", err);
+    }
 
     fired.push({ bloodType: alert.bloodType, urgency: alert.urgency, day: alert.description });
   }

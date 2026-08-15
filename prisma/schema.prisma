@@ -234,11 +234,11 @@ model AlertResponse {
   donorId   String
   status    ResponseStatus @default(PENDING)
   createdAt DateTime       @default(now())
-  confirmed Boolean        @default(false)
   alert     Alert          @relation(fields: [alertId], references: [id])
   donor     Donor          @relation(fields: [donorId], references: [id], onDelete: Cascade)
 
   @@unique([alertId, donorId])
+  @@index([donorId])
 }
 
 model Document {

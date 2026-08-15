@@ -142,7 +142,6 @@ export async function POST(req: NextRequest) {
           alertId: alert.id,
           donorId: donor.id,
           status: "CONFIRMED",
-          confirmed: true,
         },
       });
     }

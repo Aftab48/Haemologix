@@ -451,18 +451,14 @@ export async function processInventorySearch(requestId: string): Promise<{
     try {
       const baseUrl =
         process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      fetch(`${baseUrl}/api/agents/logistics`, {
+      // Awaited: a fire-and-forget fetch dies when the Vercel function freezes
+      await fetch(`${baseUrl}/api/agents/logistics`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "plan_transport",
           transport_id: transportRequest.id,
         }),
-      }).catch((err) => {
-        console.error(
-          "[InventoryAgent] Failed to trigger Logistics Agent:",
-          err
-        );
       });
     } catch (error) {
       console.error(

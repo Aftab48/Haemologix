@@ -497,12 +497,11 @@ export async function processShortageEvent(eventId: string): Promise<{
       try {
         const baseUrl =
           process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-        fetch(`${baseUrl}/api/agents/inventory`, {
+        // Awaited: a fire-and-forget fetch dies when the Vercel function freezes
+        await fetch(`${baseUrl}/api/agents/inventory`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ request_id: requestId }),
-        }).catch((err) => {
-          console.error("[DonorAgent] Failed to trigger Inventory Agent:", err);
         });
       } catch (error) {
         console.error("[DonorAgent] Error triggering Inventory Agent:", error);
@@ -517,16 +516,15 @@ export async function processShortageEvent(eventId: string): Promise<{
         `[DonorAgent] ${insufficientReason}. Triggering Inventory Agent in parallel.`
       );
 
-      // Trigger Inventory Agent immediately (parallel to donor notifications)
+      // Trigger Inventory Agent before donor notifications. Awaited: a
+      // fire-and-forget fetch dies when the Vercel function freezes.
       try {
         const baseUrl =
           process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-        fetch(`${baseUrl}/api/agents/inventory`, {
+        await fetch(`${baseUrl}/api/agents/inventory`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ request_id: requestId }),
-        }).catch((err) => {
-          console.error("[DonorAgent] Failed to trigger Inventory Agent:", err);
         });
       } catch (error) {
         console.error("[DonorAgent] Error triggering Inventory Agent:", error);
@@ -570,7 +568,6 @@ export async function processShortageEvent(eventId: string): Promise<{
         alertId: requestId,
         donorId: donor.id,
         status: "PENDING" as const,
-        confirmed: false,
       })),
       skipDuplicates: true,
     });

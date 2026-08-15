@@ -37,17 +37,16 @@ export async function POST(req: NextRequest) {
     // Trigger Donor Agent in background (fire and forget)
     console.log(`[HospitalAgent API] Shortage event created: ${result.eventId}`);
     
-    // Trigger Donor Agent
+    // Trigger Donor Agent. Awaited: on Vercel the function is frozen as soon as
+    // the response is sent, so a fire-and-forget fetch never completes.
     try {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      fetch(`${baseUrl}/api/agents/donor`, {
+      const donorResponse = await fetch(`${baseUrl}/api/agents/donor`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventId: result.eventId })
-      }).catch(err => {
-        console.error("[HospitalAgent API] Failed to trigger Donor Agent:", err);
       });
-      console.log(`[HospitalAgent API] Triggered Donor Agent`);
+      console.log(`[HospitalAgent API] Donor Agent responded: ${donorResponse.status}`);
     } catch (error) {
       console.error("[HospitalAgent API] Error triggering Donor Agent:", error);
     }

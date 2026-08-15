@@ -97,7 +97,6 @@ interface DonorResponse {
   id: string;
   donorId: string;
   status: string;
-  confirmed?: boolean;
   donor: {
     id: string;
     firstName: string;
@@ -176,7 +175,7 @@ export default function AlertDetailsPage() {
   useEffect(() => {
     const acceptedDonors = donorResponses.filter(
       (response) =>
-        (response.status === "CONFIRMED" || response.confirmed === true) &&
+        response.status === "CONFIRMED" &&
         response.donor.latitude &&
         response.donor.longitude
     );
@@ -947,14 +946,16 @@ export default function AlertDetailsPage() {
                     </div>
                     <Badge
                       className={
-                        response.confirmed
+                        response.status === "CONFIRMED"
                           ? "bg-green-600 text-white"
                           : response.status === "DECLINED"
                           ? "bg-red-600 text-white"
                           : "bg-yellow-600 text-white"
                       }
                     >
-                      {response.confirmed ? "Confirmed" : response.status}
+                      {response.status === "CONFIRMED"
+                        ? "Confirmed"
+                        : response.status}
                     </Badge>
                   </div>
                 ))}
@@ -968,7 +969,7 @@ export default function AlertDetailsPage() {
           // Filter accepted donors with valid coordinates
           const acceptedDonors = donorResponses.filter(
             (response) =>
-              (response.status === "CONFIRMED" || response.confirmed === true) &&
+              response.status === "CONFIRMED" &&
               response.donor.latitude &&
               response.donor.longitude &&
               !isNaN(parseFloat(response.donor.latitude)) &&

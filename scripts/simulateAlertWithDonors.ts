@@ -165,7 +165,6 @@ async function main() {
           alertId: alert.id,
           donorId: donor.id,
           status: "CONFIRMED",
-          confirmed: true,
         },
       });
       alertResponses.push(response);

@@ -38,16 +38,14 @@ export async function POST(req: NextRequest) {
         if (agentDecision?.eventId) {
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
           
-          // Trigger Donor Agent in the background
-          fetch(`${baseUrl}/api/agents/donor`, {
+          // Awaited: a fire-and-forget fetch dies when the Vercel function freezes
+          const donorResponse = await fetch(`${baseUrl}/api/agents/donor`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ eventId: agentDecision.eventId }),
-          }).catch((err) => {
-            console.error("[API] Failed to trigger Donor Agent:", err);
           });
 
-          console.log(`[API] Donor Agent triggered with eventId: ${agentDecision.eventId}`);
+          console.log(`[API] Donor Agent responded ${donorResponse.status} for eventId: ${agentDecision.eventId}`);
         } else {
           console.error("[API] No event ID found for alert, cannot trigger Donor Agent");
         }

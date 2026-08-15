@@ -79,3 +79,4 @@ ml/models/*.onnx
 ml/models/*.tflite
 # clerk configuration (can include secrets)
 /.clerk/
+*.tsbuildinfo

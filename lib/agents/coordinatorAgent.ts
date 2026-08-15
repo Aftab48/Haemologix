@@ -121,7 +121,6 @@ export async function processDonorResponse(
               : responseData.status === "declined"
               ? "DECLINED"
               : "PENDING",
-          confirmed: responseData.status === "accepted",
         },
       });
     } else {
@@ -136,7 +135,6 @@ export async function processDonorResponse(
               : responseData.status === "declined"
               ? "DECLINED"
               : "PENDING",
-          confirmed: responseData.status === "accepted",
         },
       });
     }
@@ -608,15 +606,11 @@ export async function handleNoResponseTimeout(requestId: string): Promise<{
     try {
       const baseUrl =
         process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      fetch(`${baseUrl}/api/agents/inventory`, {
+      // Awaited: a fire-and-forget fetch dies when the Vercel function freezes
+      await fetch(`${baseUrl}/api/agents/inventory`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ request_id: requestId }),
-      }).catch((err) => {
-        console.error(
-          "[CoordinatorAgent] Failed to trigger Inventory Agent:",
-          err
-        );
       });
     } catch (error) {
       console.error(
