@@ -468,7 +468,7 @@ export async function sendContactAdminNotification(data: {
     message: data.message.replace(/\n/g, "<br>"),
   });
 
-  const adminEmail = process.env.CONTACT_ADMIN_EMAIL || "haemologix@gmail.com";
+  const adminEmail = process.env.CONTACT_ADMIN_EMAIL || "founders@haemologix.in";
 
   try {
     const info = await transporter.sendMail({
@@ -624,7 +624,7 @@ export async function sendDeletionRequestAdminNotification(data: {
     requestedAt: data.requestedAt,
   });
 
-  const adminEmail = process.env.CONTACT_ADMIN_EMAIL || "haemologix@gmail.com";
+  const adminEmail = process.env.CONTACT_ADMIN_EMAIL || "founders@haemologix.in";
 
   try {
     const info = await transporter.sendMail({

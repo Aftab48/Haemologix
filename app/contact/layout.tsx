@@ -13,10 +13,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Contact Us | Blood Donation Platform | Haemologix",
     description: "Get in touch with Haemologix for blood donation platform inquiries and support.",
-    url: "https://haemologix.in/contact",
+    url: "https://www.haemologix.in/contact",
   },
   alternates: {
-    canonical: "https://haemologix.in/contact",
+    canonical: "https://www.haemologix.in/contact",
   },
 };
 

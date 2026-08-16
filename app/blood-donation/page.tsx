@@ -22,10 +22,10 @@ export const metadata: Metadata = {
     title: "Blood Donation | How to Donate Blood | Haemologix",
     description:
       "Learn about blood donation and register as a blood donor to help save lives through emergency blood donations.",
-    url: "https://haemologix.in/blood-donation",
+    url: "https://www.haemologix.in/blood-donation",
   },
   alternates: {
-    canonical: "https://haemologix.in/blood-donation",
+    canonical: "https://www.haemologix.in/blood-donation",
   },
 };
 

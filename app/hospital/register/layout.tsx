@@ -16,10 +16,10 @@ export const metadata: Metadata = {
     title: "Hospital Blood Management | Hospital Registration | Haemologix",
     description:
       "Register your hospital for efficient blood bank management and connect with blood donors instantly.",
-    url: "https://haemologix.in/hospital/register",
+    url: "https://www.haemologix.in/hospital/register",
   },
   alternates: {
-    canonical: "https://haemologix.in/hospital/register",
+    canonical: "https://www.haemologix.in/hospital/register",
   },
 };
 

@@ -57,7 +57,7 @@ export default function DeleteAccountPage() {
       setSubmitStatus({
         type: "error",
         message:
-          "Could not reach the server. Please try again, or email us at Haemologix@gmail.com.",
+          "Could not reach the server. Please try again, or email us at founders@haemologix.in.",
       });
     } finally {
       setIsSubmitting(false);
@@ -326,10 +326,10 @@ export default function DeleteAccountPage() {
                 <p className="text-sm text-text-dark/70 font-dm-sans">
                   Prefer email? Write to{" "}
                   <a
-                    href="mailto:Haemologix@gmail.com?subject=Account%20deletion%20request"
+                    href="mailto:founders@haemologix.in?subject=Account%20deletion%20request"
                     className="underline font-semibold"
                   >
-                    Haemologix@gmail.com
+                    founders@haemologix.in
                   </a>{" "}
                   from your registered address with the subject &ldquo;Account
                   deletion request&rdquo;.

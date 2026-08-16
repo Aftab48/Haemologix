@@ -12,10 +12,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Admin Dashboard Demo | Haemologix",
     description: "Explore the admin dashboard demo on Haemologix. No sign-in required.",
-    url: "https://haemologix.in/demo/admin",
+    url: "https://www.haemologix.in/demo/admin",
   },
   alternates: {
-    canonical: "https://haemologix.in/demo/admin",
+    canonical: "https://www.haemologix.in/demo/admin",
   },
 };
 

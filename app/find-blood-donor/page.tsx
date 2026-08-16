@@ -21,10 +21,10 @@ export const metadata: Metadata = {
     title: "Find Blood Donor | Locate Blood Donors Near You | Haemologix",
     description:
       "Find blood donors near you instantly. Search for blood donors by location and blood type for emergency blood requests.",
-    url: "https://haemologix.in/find-blood-donor",
+    url: "https://www.haemologix.in/find-blood-donor",
   },
   alternates: {
-    canonical: "https://haemologix.in/find-blood-donor",
+    canonical: "https://www.haemologix.in/find-blood-donor",
   },
 };
 

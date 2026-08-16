@@ -14,13 +14,14 @@ import {
 } from "@clerk/nextjs";
 
 interface HeaderProps {
-  activePage?: "team" | "pricing" | "impact" | "contact" | "pilot";
+  activePage?: "about" | "team" | "pricing" | "impact" | "contact" | "pilot";
 }
 
 const Header = ({ activePage }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
+    { href: "/about", label: "About", key: "about" },
     { href: "/team", label: "Team", key: "team" },
     { href: "/pricing", label: "Pricing", key: "pricing" },
     { href: "/impact", label: "Impact", key: "impact" },

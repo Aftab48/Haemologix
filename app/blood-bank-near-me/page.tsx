@@ -21,10 +21,10 @@ export const metadata: Metadata = {
     title: "Blood Bank Near Me | Find Blood Banks | Haemologix",
     description:
       "Find blood banks near you. Search for registered blood banks by location and check blood inventory availability.",
-    url: "https://haemologix.in/blood-bank-near-me",
+    url: "https://www.haemologix.in/blood-bank-near-me",
   },
   alternates: {
-    canonical: "https://haemologix.in/blood-bank-near-me",
+    canonical: "https://www.haemologix.in/blood-bank-near-me",
   },
 };
 

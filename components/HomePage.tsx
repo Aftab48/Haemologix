@@ -8,7 +8,7 @@ import { ArrowUp } from "lucide-react";
 import { Heart, Shield, Activity, Droplets } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import PasskeyModal from "@/components/PasskeyModal";
 import { stats, features, steps, CarouselData } from "@/constants";
 import { getCurrentUser } from "@/lib/actions/user.actions";
@@ -23,8 +23,15 @@ const HomePage = () => {
   const featuresRef = useRef<HTMLElement | null>(null);
   const stepsRef = useRef<HTMLElement | null>(null);
 
-  const searchParams = useSearchParams();
-  const isAdmin = searchParams.get("admin") === "true";
+  // Read ?admin=true after mount instead of via useSearchParams(): the hook
+  // forces the whole page to bail out of server rendering, which left crawlers
+  // with an empty "Loading..." shell. The passkey modal is client-only anyway.
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    setIsAdmin(
+      new URLSearchParams(window.location.search).get("admin") === "true"
+    );
+  }, []);
 
   const router = useRouter();
 
@@ -150,23 +157,8 @@ const HomePage = () => {
           backgroundSize: '180px 180px'
         }}
       />
-      {/* Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@graph": [
-              {
-                "@type": "Organization",
-                "@id": "https://haemologix.in/#organization",
-                name: "Haemologix",
-              },
-            ],
-          }),
-        }}
-      />
-      
+      {/* Organization schema lives in app/layout.tsx (every page) */}
+
       {/* Header */}
       <Header />
 
@@ -186,9 +178,10 @@ const HomePage = () => {
             <span className="block text-secondary mt-2">Real-Time Blood Alerts</span>
           </h1>
           <p className="text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-text-dark font-dm-sans animate-slide-in-up">
-            Connect hospitals in critical need with eligible donors instantly.
-            Our platform uses geolocation matching and real-time notifications
-            to mobilize donors when every second counts.
+            Haemologix is India&apos;s real-time emergency blood network. We
+            connect hospitals and blood banks in critical need with nearby
+            eligible donors, using geolocation matching and instant alerts to
+            mobilize donors when every second counts.
           </p>
 
           <div className="mb-12">
@@ -630,18 +623,23 @@ const HomePage = () => {
               <h4 className="font-outfit font-semibold mb-4 text-background">Support</h4>
               <ul className="space-y-2 text-background/80 font-dm-sans">
                 <li>
-                  <Link href="#" className="hover:text-accent transition-colors">
+                  <Link href="/faq" className="hover:text-accent transition-colors">
                     Help Center
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-accent transition-colors">
+                  <Link href="/about" className="hover:text-accent transition-colors">
+                    About Haemologix
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="hover:text-accent transition-colors">
                     Contact Us
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-accent transition-colors">
-                    Emergency
+                  <Link href="/emergency-blood" className="hover:text-accent transition-colors">
+                    Emergency Blood
                   </Link>
                 </li>
               </ul>

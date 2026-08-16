@@ -492,7 +492,7 @@ export default function TermsAndConditionsPage() {
                 </p>
                 <div className="bg-text-dark/5 p-4 rounded-lg text-text-dark/80 font-dm-sans">
                   <p className="font-semibold mb-2">Haemologix Legal Team</p>
-                  <p>Email: haemologix@gmail.in</p>
+                  <p>Email: founders@haemologix.in</p>
                   <p>
                     Website:{" "}
                     <Link

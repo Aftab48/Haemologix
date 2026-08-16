@@ -82,7 +82,7 @@ export default function HospitalDashboard() {
   const user = {
     id: "151206",
     name: "City General Hospital",
-    email: "mdalam4884@gmail.com",
+    email: "founders@haemologix.in",
     role: "Hospital",
   };
 

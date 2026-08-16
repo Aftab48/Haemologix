@@ -41,7 +41,7 @@ export default function DonorDashboard() {
   const user = {
     id: "1233",
     name: "Aftab Alam",
-    email: "mdalam4884@gmail.com",
+    email: "founders@haemologix.in",
     bloodGroup: "O+",
     dateOfBirth: "2005-08-14",
     lastDonation: "",

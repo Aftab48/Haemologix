@@ -7,104 +7,7 @@ import GradientBackground from "@/components/GradientBackground";
 import Header from "@/components/Header";
 import ScrollReveal from "@/components/ScrollReveal";
 import { ArrowUp, ChevronDown, Heart } from "lucide-react";
-
-interface FaqItem {
-  question: string;
-  answer: string;
-}
-
-interface FaqCategory {
-  title: string;
-  items: FaqItem[];
-}
-
-const faqCategories: FaqCategory[] = [
-  {
-    title: "General",
-    items: [
-      {
-        question: "What is Haemologix?",
-        answer:
-          "Haemologix is a real-time blood donation platform that connects verified hospitals and blood banks with eligible blood donors through emergency alerts, geolocation-based matching, and donor management tools.",
-      },
-      {
-        question: "Is Haemologix a medical service provider?",
-        answer:
-          "No. Haemologix is a technology platform that facilitates connections between donors and hospitals. We do not provide medical advice, diagnosis, or treatment, and we do not verify the medical accuracy of user-provided information.",
-      },
-      {
-        question: "Is there a cost to use Haemologix?",
-        answer:
-          "Donor registration and use of the platform is free. Hospitals and blood banks can join our pilot program at no cost; pricing for the full platform is available on our Pricing page.",
-      },
-    ],
-  },
-  {
-    title: "For Donors",
-    items: [
-      {
-        question: "Who is eligible to register as a donor?",
-        answer:
-          "You must be between 18 and 65 years of age, weigh at least 50 kg, be in good general health, and have no medical conditions that would disqualify you from donating blood.",
-      },
-      {
-        question: "How do emergency blood alerts work?",
-        answer:
-          "When a hospital raises an alert for a specific blood type, Haemologix notifies nearby eligible donors via SMS and email. If you accept a request, your contact information is shared with the requesting hospital so they can coordinate the donation.",
-      },
-      {
-        question: "Am I obligated to donate once I accept a request?",
-        answer:
-          "By accepting a donation request, you commit to fulfilling it if you remain medically eligible. Emergency requests are time-sensitive, so repeatedly failing to honor accepted requests may result in account restrictions.",
-      },
-      {
-        question: "Can I delete my account and data?",
-        answer:
-          "Yes. You can request deletion of your account and all associated data at any time from our account deletion page. Verified requests are completed within 30 days, in line with our Privacy Policy.",
-      },
-    ],
-  },
-  {
-    title: "For Hospitals & Blood Banks",
-    items: [
-      {
-        question: "Who can register as a hospital or blood bank?",
-        answer:
-          "Any licensed medical facility with valid registration and license documents, and authorization to request blood donations, can register. All hospital and blood bank accounts are verified before they can raise alerts.",
-      },
-      {
-        question: "How do I join the pilot program?",
-        answer:
-          "You can apply through our Pilot page. The pilot is free, runs for 7-14 days, and includes onboarding support, training, and direct access to our team.",
-      },
-      {
-        question: "What are our responsibilities when requesting blood?",
-        answer:
-          "Hospitals are responsible for verifying the urgency and legitimacy of blood requests, conducting appropriate medical screening of donors, and complying with all applicable medical and regulatory requirements.",
-      },
-    ],
-  },
-  {
-    title: "Privacy & Data",
-    items: [
-      {
-        question: "What data does Haemologix collect?",
-        answer:
-          "We collect information such as your name and contact details, medical information relevant to donation eligibility (blood type, hemoglobin levels, screening results), and usage data. Full details are in our Privacy Policy.",
-      },
-      {
-        question: "Is Haemologix compliant with Indian data protection law?",
-        answer:
-          "Yes. Haemologix operates as a Data Fiduciary under India's Digital Personal Data Protection Act, 2023 (DPDPA), and follows consent-based processing, purpose limitation, and reasonable security safeguards.",
-      },
-      {
-        question: "Who can see my medical information?",
-        answer:
-          "Your blood type, location, and eligibility status are shared only with verified hospitals and blood banks when they raise a relevant alert. Your contact information is shared only after you accept a donation request.",
-      },
-    ],
-  },
-];
+import { faqCategories } from "@/constants/faq";
 
 export default function FaqPage() {
   const [openIndex, setOpenIndex] = useState<string | null>(null);
@@ -159,13 +62,14 @@ export default function FaqPage() {
                           />
                         </div>
                       </CardHeader>
-                      {isOpen && (
-                        <CardContent>
-                          <p className="text-text-dark/80 font-dm-sans leading-relaxed">
-                            {faq.answer}
-                          </p>
-                        </CardContent>
-                      )}
+                      {/* Always rendered (hidden when collapsed) so the answer
+                          text is in the server HTML for search engines and AI
+                          crawlers, and matches the FAQPage schema in layout.tsx */}
+                      <CardContent className={isOpen ? "" : "hidden"}>
+                        <p className="text-text-dark/80 font-dm-sans leading-relaxed">
+                          {faq.answer}
+                        </p>
+                      </CardContent>
                     </Card>
                   );
                 })}
@@ -182,14 +86,14 @@ export default function FaqPage() {
                 Reach out to our team and we&apos;ll get back to you.
               </p>
               <div className="bg-text-dark/5 p-4 rounded-lg text-text-dark/80 font-dm-sans">
-                <p>Email: Haemologix@gmail.com</p>
+                <p>Email: founders@haemologix.in</p>
                 <p>
                   Website:{" "}
                   <Link
                     href="/contact"
                     className="text-primary hover:underline"
                   >
-                    https://haemologix.in/contact
+                    haemologix.in/contact
                   </Link>
                 </p>
               </div>
@@ -251,8 +155,8 @@ export default function FaqPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white">
-                    Emergency
+                  <Link href="/emergency-blood" className="hover:text-white">
+                    Emergency Blood
                   </Link>
                 </li>
               </ul>

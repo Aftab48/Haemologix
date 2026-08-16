@@ -1,5 +1,5 @@
 # robots.txt for Haemologix
-# https://haemologix.in/robots.txt
+# https://www.haemologix.in/robots.txt
 
 User-agent: *
 Allow: /
@@ -10,7 +10,7 @@ Disallow: /post-login/
 Disallow: /suspended/
 
 # Sitemap location
-Sitemap: https://haemologix.in/sitemap.xml
+Sitemap: https://www.haemologix.in/sitemap.xml
 
 # Crawl-delay (optional, helps prevent server overload)
 Crawl-delay: 1

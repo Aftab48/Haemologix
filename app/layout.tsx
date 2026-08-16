@@ -4,20 +4,21 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
 import AccessibilityAnnouncerProvider from "@/providers/AccessibilityAnnouncerProvider";
+import { ORG, SITE_URL, organizationJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://haemologix.in"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Haemologix - Real-Time Blood Donation Platform | Emergency Blood Alerts",
+    default: `Haemologix – ${ORG.tagline}`,
     template: "%s | Haemologix",
   },
-  description:
-    "Haemologix (Haemologix) connects hospitals with blood donors through real-time emergency blood alerts. Find blood donors, register as a donor, or manage blood bank inventory. India's leading blood donation platform for emergency blood requests.",
+  description: ORG.description,
+  applicationName: "Haemologix",
   keywords: [
+    "Haemologix",
+    "Haemologix India",
     "blood donation",
     "blood donor",
-    "Haemologix",
-    "haemologix",
     "emergency blood",
     "blood bank",
     "blood donation platform",
@@ -30,35 +31,34 @@ export const metadata: Metadata = {
     "blood bank management",
     "donor registration",
   ],
-  authors: [{ name: "Haemologix" }],
+  authors: [{ name: "Haemologix", url: SITE_URL }],
   creator: "Haemologix",
   publisher: "Haemologix",
-  alternates: {
-    canonical: "https://haemologix.in",
-  },
+  // NOTE: no site-wide `alternates.canonical` here on purpose. A root-level
+  // canonical is inherited by every page that doesn't override it, which told
+  // Google that /pricing, /team, /pilot etc. were duplicates of the homepage.
+  // Each indexable page declares its own canonical instead.
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://haemologix.in",
+    url: SITE_URL,
     siteName: "Haemologix",
-    title: "Haemologix - Real-Time Blood Donation Platform | Emergency Blood Alerts",
-    description:
-      "Connect hospitals with blood donors through real-time emergency blood alerts. Find blood donors, register as a donor, or manage blood bank inventory. India's leading blood donation platform.",
+    title: `Haemologix – ${ORG.tagline}`,
+    description: ORG.description,
     images: [
       {
-        url: "https://haemologix.in/logo.png",
-        width: 1200,
-        height: 630,
-        alt: "Haemologix - Blood Donation Platform",
+        url: ORG.logo,
+        width: ORG.logoSize.width,
+        height: ORG.logoSize.height,
+        alt: "Haemologix – emergency blood network for India",
       },
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Haemologix - Real-Time Blood Donation Platform",
-    description:
-      "Emergency blood shortage alert and donor mobilization system connecting hospitals with eligible donors through real-time notifications.",
-    images: ["https://haemologix.in/logo.png"],
+    card: "summary",
+    title: `Haemologix – ${ORG.tagline}`,
+    description: ORG.description,
+    images: [ORG.logo],
   },
   robots: {
     index: true,
@@ -71,6 +71,11 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  // Google Search Console: set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION in Vercel
+  // once the property is created; nothing is emitted while it's unset.
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 export default function RootLayout({
@@ -82,6 +87,11 @@ export default function RootLayout({
     <ClerkProvider>
       <html className="scroll-smooth" lang="en">
         <body className="font-dm-sans antialiased">
+          {/* Organization / WebSite / SoftwareApplication schema on every page */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
+          />
           <Analytics />
           <AccessibilityAnnouncerProvider>
             {children}

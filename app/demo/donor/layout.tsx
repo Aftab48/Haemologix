@@ -14,10 +14,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Donor Dashboard Demo | Blood Donor App | Haemologix",
     description: "Explore the donor dashboard and blood donor app demo on Haemologix.",
-    url: "https://haemologix.in/demo/donor",
+    url: "https://www.haemologix.in/demo/donor",
   },
   alternates: {
-    canonical: "https://haemologix.in/demo/donor",
+    canonical: "https://www.haemologix.in/demo/donor",
   },
 };
 

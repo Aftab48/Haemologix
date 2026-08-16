@@ -324,16 +324,10 @@ export default function ContactPage() {
                     </p>
                     <div className="space-y-3">
                       <a
-                        href="mailto:haemologix@gmail.com"
+                        href="mailto:founders@haemologix.in"
                         className="block text-text-dark hover:text-primary transition-colors font-medium"
                       >
-                        haemologix@gmail.com
-                      </a>
-                      <a
-                        href="mailto:support@haemologix.in"
-                        className="block text-text-dark/80 hover:text-primary transition-colors text-sm"
-                      >
-                        support@haemologix.in
+                        founders@haemologix.in
                       </a>
                     </div>
                   </CardContent>

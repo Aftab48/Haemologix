@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 // Define public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
   '/',
+  '/about',
+  '/faq',
   '/admin(.*)',
   '/auth/sign-in(.*)',
   '/auth/sign-up(.*)',

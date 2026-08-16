@@ -206,7 +206,7 @@ export default function SuspendedPage() {
 
           <div className="bg-white/5 rounded-lg p-4 mb-8 border border-white/10">
             <p className="text-sm text-text-dark/70 mb-2">Need help? Contact our support team:</p>
-            <p className="text-text-dark font-semibold">support@haemologix.com</p>
+            <p className="text-text-dark font-semibold">founders@haemologix.in</p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

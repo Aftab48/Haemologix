@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
+import { ORG, SITE_URL } from "@/lib/seo";
+
+// Brand first: for a brand-name query ("haemologix") the <title> is the
+// strongest on-page signal Google has for which entity this page is about.
+const title = `Haemologix – ${ORG.tagline}`;
 
 export const metadata: Metadata = {
-  title: "Blood Donation Platform | Emergency Blood Alerts | Haemologix",
-  description:
-    "Haemologix connects hospitals with blood donors through real-time emergency blood alerts. Register as a blood donor, find blood donors near you, or manage your hospital's blood inventory. India's leading blood donation platform for emergency blood requests.",
+  title: { absolute: title },
+  description: ORG.description,
   keywords: [
-    "blood donation",
+    "Haemologix",
+    "Haemologix India",
+    "emergency blood network",
     "blood donation platform",
     "emergency blood alerts",
     "blood donor",
@@ -15,13 +21,12 @@ export const metadata: Metadata = {
     "blood shortage alert",
   ],
   openGraph: {
-    title: "Blood Donation Platform | Emergency Blood Alerts | Haemologix",
-    description:
-      "Connect hospitals with blood donors through real-time emergency blood alerts. Register as a donor or manage blood inventory.",
-    url: "https://haemologix.in",
+    title,
+    description: ORG.description,
+    url: SITE_URL,
   },
   alternates: {
-    canonical: "https://haemologix.in",
+    canonical: SITE_URL,
   },
 };
 
@@ -32,4 +37,3 @@ export default function HomeLayout({
 }) {
   return <>{children}</>;
 }
-

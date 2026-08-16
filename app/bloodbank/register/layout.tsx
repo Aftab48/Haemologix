@@ -16,10 +16,10 @@ export const metadata: Metadata = {
     title: "Blood Bank Registration | Blood Bank Signup | Haemologix",
     description:
       "Register your blood bank on Haemologix network for efficient blood inventory management and emergency response.",
-    url: "https://haemologix.in/bloodbank/register",
+    url: "https://www.haemologix.in/bloodbank/register",
   },
   alternates: {
-    canonical: "https://haemologix.in/bloodbank/register",
+    canonical: "https://www.haemologix.in/bloodbank/register",
   },
 };
 

@@ -13,10 +13,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Blood Donation Impact | Lives Saved | Haemologix",
     description: "See the impact of blood donation and lives saved through Haemologix platform.",
-    url: "https://haemologix.in/impact",
+    url: "https://www.haemologix.in/impact",
   },
   alternates: {
-    canonical: "https://haemologix.in/impact",
+    canonical: "https://www.haemologix.in/impact",
   },
 };
 

@@ -417,10 +417,10 @@ export default function PrivacyPolicyPage() {
                   <p>
                     Email:{" "}
                     <a
-                      href="mailto:Haemologix@gmail.com"
+                      href="mailto:founders@haemologix.in"
                       className="text-primary hover:underline"
                     >
-                      Haemologix@gmail.com
+                      founders@haemologix.in
                     </a>
                   </p>
                   <p>

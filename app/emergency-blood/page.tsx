@@ -21,10 +21,10 @@ export const metadata: Metadata = {
     title: "Emergency Blood | Emergency Blood Request | Haemologix",
     description:
       "Create emergency blood requests and connect with blood donors instantly. Real-time emergency blood alerts for urgent situations.",
-    url: "https://haemologix.in/emergency-blood",
+    url: "https://www.haemologix.in/emergency-blood",
   },
   alternates: {
-    canonical: "https://haemologix.in/emergency-blood",
+    canonical: "https://www.haemologix.in/emergency-blood",
   },
 };
 

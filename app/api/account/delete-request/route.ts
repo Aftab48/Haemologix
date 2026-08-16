@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       {
         success: false,
         error:
-          "Failed to submit your request. Please try again later, or email us directly at haemologix@gmail.com.",
+          "Failed to submit your request. Please try again later, or email us directly at founders@haemologix.in.",
       },
       { status: 500 }
     );
