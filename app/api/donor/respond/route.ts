@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
+import { parseResponseToken } from "@/lib/donorResponseToken";
 
 /**
  * Donor Response Endpoint
@@ -22,17 +23,17 @@ export async function GET(req: NextRequest) {
     }
 
     // Parse token: {donor_id}-{request_id}-{timestamp}
-    const parts = token.split("-");
-    if (parts.length < 3) {
+    // donor_id / request_id are UUIDs (which themselves contain dashes), so a
+    // naive split("-") can never work; match two UUIDs + a numeric timestamp,
+    // and fall back to the legacy split for non-UUID ids.
+    const parsed = parseResponseToken(token);
+    if (!parsed) {
       return NextResponse.json(
         { success: false, error: "Invalid token format" },
         { status: 400 }
       );
     }
-
-    const donor_id = parts[0];
-    const request_id = parts[1];
-    const timestamp = parseInt(parts[2]);
+    const { donor_id, request_id, timestamp } = parsed;
 
     // Check token expiry (4 hours = 14400000 ms)
     const now = Date.now();
@@ -107,19 +108,16 @@ export async function GET(req: NextRequest) {
             // Calculate and store expected arrival time
             const expectedArrival = new Date(Date.now() + eta_minutes * 60 * 1000);
             
-            // Update response history with expected arrival
+            // Store expected arrival only. The Coordinator Agent (called below)
+            // owns the status transition notified → accepted; flipping it here
+            // made the coordinator's `status: "notified"` lookup fail.
             await db.donorResponseHistory.updateMany({
               where: {
                 donorId: donor_id,
                 requestId: request_id,
                 status: "notified",
               },
-              data: {
-                respondedAt: new Date(),
-                responseTime: Math.floor(response_time / 1000), // Convert to seconds
-                status: "accepted",
-                expectedArrival,
-              },
+              data: { expectedArrival },
             });
             
             console.log(`[DonorResponse] Expected arrival stored: ${expectedArrival.toISOString()}`);

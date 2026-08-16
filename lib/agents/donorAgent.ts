@@ -10,8 +10,13 @@ import { parseShortageRequestEvent, publishEvent } from "./eventBus";
 import { scoreDonor, DonorScores } from "./donorScoring";
 import { sendDonorBloodRequestEmail } from "../actions/mails.actions";
 import { sendUrgentBloodRequestSMS } from "../actions/sms.actions";
-import { reasonAboutDonorMatchingStrategy } from "./llmReasoning";
-import { getHistoricalPatterns } from "./outcomeTracking";
+import { calculateDonorEta } from "@/lib/distanceEta";
+import { buildResponseToken } from "@/lib/donorResponseToken";
+import { consultModel, nowTimeContext, type ConsultItem } from "@/lib/ml/agentBridge";
+import { explainNotification } from "@/lib/ml/explain";
+import { alertWindowFeatures, donorNotificationFeatures, donorShowFeatures, type DonorFeatureInput } from "@/lib/ml/features";
+import { getAlertWindowHours } from "@/lib/ml/flags";
+import { chooseNotificationBatch, deterministicNotifyDecision } from "@/lib/ml/policy/donorNotifyPolicy";
 
 /**
  * A donor with the detail collected after onboarding joined on. `profile` is null
@@ -35,6 +40,16 @@ export interface RankedDonor {
    * donation centre — but ranked below donors whose results are known.
    */
   unscreened: boolean;
+  /** Response history summary (feeds the model features and the ranking). */
+  history: {
+    totalAlerts: number;
+    accepted: number;
+    arrived: number;
+    noShows: number;
+    avgResponseMinutes: number | null;
+    alertsLast7Days: number;
+  };
+  daysSinceLastDonation: number | null;
 }
 
 /** `Donor.name` is a single column; downstream email and SMS want the parts. */
@@ -118,7 +133,28 @@ export function calculateDistance(
 /**
  * Check if donor is medically eligible
  */
-export function isDonorEligible(donor: DonorWithProfile): {
+/**
+ * The subset of donor fields the eligibility rules read. Production passes a full
+ * `DonorWithProfile`; the simulator passes a synthetic donor with the same shape.
+ */
+export type EligibilityDonorInput = Pick<DonorWithProfile, "status" | "weight" | "gender"> & {
+  dateOfBirth: Date | string;
+  lastDonationDate: Date | string | null;
+  profile: Pick<
+    DonorProfile,
+    | "hemoglobin"
+    | "hivTest"
+    | "hepatitisBTest"
+    | "hepatitisCTest"
+    | "syphilisTest"
+    | "malariaTest"
+  > | null;
+};
+
+export function isDonorEligible(
+  donor: EligibilityDonorInput,
+  now: number = Date.now()
+): {
   eligible: boolean;
   /** Medical data is missing, not bad — the donor is notified but ranked lower. */
   unscreened: boolean;
@@ -133,7 +169,7 @@ export function isDonorEligible(donor: DonorWithProfile): {
   }
 
   const age =
-    (Date.now() - new Date(donor.dateOfBirth).getTime()) /
+    (now - new Date(donor.dateOfBirth).getTime()) /
     (1000 * 60 * 60 * 24 * 365);
   if (age < 18 || age > 65) {
     return ineligible("Age out of range (18-65)");
@@ -151,7 +187,7 @@ export function isDonorEligible(donor: DonorWithProfile): {
 
   if (donor.lastDonationDate) {
     const daysSinceLastDonation =
-      (Date.now() - new Date(donor.lastDonationDate).getTime()) /
+      (now - new Date(donor.lastDonationDate).getTime()) /
       (1000 * 60 * 60 * 24);
     const minDays = donor.gender.toLowerCase() === "male" ? 90 : 120;
 
@@ -249,7 +285,12 @@ export async function findAndRankDonors(
     distance: number;
     scores: DonorScores;
     unscreened: boolean;
+    history: RankedDonor["history"];
+    daysSinceLastDonation: number | null;
   }> = [];
+
+  const now = Date.now();
+  const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
 
   for (const donor of allDonors) {
     // Blood type compatibility already filtered at database level
@@ -301,12 +342,19 @@ export async function findAndRankDonors(
     const accepted = responseHistory.filter(
       (r) => r.status === "accepted"
     ).length;
+    const arrived = responseHistory.filter((r) => r.confirmed).length;
+    const noShows = responseHistory.filter((r) => r.noShow).length;
+    const responded = responseHistory.filter((r) => r.responseTime != null);
     const avgResponseTime =
-      responseHistory.length > 0
-        ? responseHistory.reduce((sum, r) => sum + (r.responseTime || 600), 0) /
-          responseHistory.length /
+      responded.length > 0
+        ? responded.reduce((sum, r) => sum + (r.responseTime || 600), 0) /
+          responded.length /
           60 // Convert to minutes
         : 10; // Default 10 min
+    const alertsLast7Days = responseHistory.filter((r) => r.notifiedAt >= sevenDaysAgo).length;
+    const daysSinceLastDonation = donor.lastDonationDate
+      ? Math.round((now - new Date(donor.lastDonationDate).getTime()) / 86_400_000)
+      : null;
 
     // Calculate scores. Health inputs come from the profile, which may be absent.
     const scores = scoreDonor(
@@ -333,6 +381,15 @@ export async function findAndRankDonors(
       distance,
       scores,
       unscreened: eligibility.unscreened,
+      history: {
+        totalAlerts,
+        accepted,
+        arrived,
+        noShows,
+        avgResponseMinutes: responded.length > 0 ? avgResponseTime : null,
+        alertsLast7Days,
+      },
+      daysSinceLastDonation,
     });
   }
 
@@ -361,10 +418,43 @@ export async function findAndRankDonors(
       scores: item.scores,
       rank: index + 1,
       unscreened: item.unscreened,
+      history: item.history,
+      daysSinceLastDonation: item.daysSinceLastDonation,
     };
   });
 
   return rankedDonors;
+}
+
+/** Build the model feature input for one ranked donor (shared with the coordinator). */
+export function rankedDonorFeatureInput(
+  d: RankedDonor,
+  alert: { bloodType: string; urgency: string; unitsNeeded: number; searchRadiusKm: number },
+  notifiedCount: number,
+  eligibleCount: number,
+  time: { hour: number; dayOfWeek: number }
+): DonorFeatureInput {
+  return {
+    donorBloodType: d.bloodGroup,
+    distanceKm: d.distanceKm,
+    daysSinceLastDonation: d.daysSinceLastDonation,
+    priorAlerts: d.history.totalAlerts,
+    priorAccepted: d.history.accepted,
+    priorArrived: d.history.arrived,
+    priorNoShows: d.history.noShows,
+    avgResponseMinutes: d.history.avgResponseMinutes,
+    alertsLast7Days: d.history.alertsLast7Days,
+    unscreened: d.unscreened,
+    scores: d.scores,
+    rank: d.rank,
+    alertBloodType: alert.bloodType,
+    urgency: alert.urgency,
+    unitsNeeded: alert.unitsNeeded,
+    searchRadiusKm: alert.searchRadiusKm,
+    notifiedCount,
+    eligibleCount,
+    time,
+  };
 }
 
 /**
@@ -410,65 +500,91 @@ export async function processShortageEvent(eventId: string): Promise<{
       hospitalLng
     );
 
-    // Use LLM reasoning to determine matching strategy (AGENTIC AI)
-    let shouldTriggerInventory = false;
-    let insufficientReason = "";
-    let notificationStrategy = "";
-    let llmUsed: boolean = false;
-
-    try {
-      console.log(
-        "[DonorAgent] Using LLM reasoning to determine matching strategy..."
-      );
-
-      const historicalPatterns = await getHistoricalPatterns(AgentType.DONOR, {
-        bloodType,
-        urgency,
-      });
-
-      const strategyResult = await reasonAboutDonorMatchingStrategy({
-        eligibleDonors: rankedDonors.length,
-        urgency: urgency || "medium",
-        bloodType,
-        searchRadius,
-        historicalResponseRate: historicalPatterns.donorResponseRate,
-      });
-
-      shouldTriggerInventory = strategyResult.shouldTriggerInventory;
-      notificationStrategy = strategyResult.notificationStrategy;
-      insufficientReason = strategyResult.reasoning;
-      llmUsed = true;
-
-      console.log(
-        `[DonorAgent] LLM strategy: ${
-          shouldTriggerInventory
-            ? "Dual strategy (donors + inventory)"
-            : "Donor-only strategy"
-        }`
-      );
-    } catch (error) {
-      console.warn(
-        "[DonorAgent] LLM reasoning failed, using algorithmic fallback:",
-        error
-      );
-      // Fallback to algorithmic logic
-      const urgencyLower = urgency?.toLowerCase();
-      if (urgencyLower === "critical" && rankedDonors.length <= 5) {
-        shouldTriggerInventory = true;
-        insufficientReason = `Only ${rankedDonors.length} eligible donors found for CRITICAL urgency (need >5)`;
-      } else if (urgencyLower === "high" && rankedDonors.length <= 2) {
-        shouldTriggerInventory = true;
-        insufficientReason = `Only ${rankedDonors.length} eligible donors found for HIGH urgency (need >2)`;
-      } else if (urgencyLower === "medium" && rankedDonors.length === 0) {
-        shouldTriggerInventory = true;
-        insufficientReason = `No eligible donors found for MEDIUM urgency`;
+    // ------------------------------------------------------------------
+    // Notification strategy: model predictions (P(accept), P(show)) + policy.
+    // Hard constraints (compatibility, eligibility, radius) were applied in
+    // findAndRankDonors; the policy only chooses among valid donors and falls
+    // back to the deterministic rule whenever the model is unavailable.
+    // ------------------------------------------------------------------
+    const time = nowTimeContext();
+    const alertCtx = { bloodType, urgency: urgency || "medium", unitsNeeded, searchRadiusKm: searchRadius };
+    const provisionalBatch = Math.min(Math.max(10, unitsNeeded * 2), Math.min(50, rankedDonors.length));
+    const consultItems: ConsultItem[] = rankedDonors.slice(0, 60).flatMap((d) => {
+      const fi = rankedDonorFeatureInput(d, alertCtx, provisionalBatch, rankedDonors.length, time);
+      const eta = calculateDonorEta(d.distanceKm, time.hour).recommendedEtaMinutes;
+      return [
+        { task: "donor_accept" as const, ref: `accept:${d.id}`, subjectId: d.id, features: donorNotificationFeatures(fi) },
+        {
+          task: "donor_show" as const,
+          ref: `show:${d.id}`,
+          subjectId: d.id,
+          features: donorShowFeatures({ ...fi, responseMinutes: d.history.avgResponseMinutes ?? 10, etaMinutes: eta, acceptTime: time }),
+        },
+      ];
+    });
+    // Alert-level: will this resolve inside the window? (used by the coordinator's escalation policy)
+    const [networkUnits, hospitalRow] = await Promise.all([
+      db.inventoryUnit.findMany({
+        where: {
+          bloodType: { in: getCompatibleDonorTypes(bloodType) },
+          units: { gt: 0 },
+          reserved: false,
+          expiryDate: { gt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
+          hospitalId: { not: payload.hospital_id },
+        },
+        select: { units: true, hospital: { select: { latitude: true, longitude: true, bloodBankLicense: true } } },
+        take: 200,
+      }),
+      db.hospitalRegistration.findUnique({ where: { id: payload.hospital_id }, select: { latitude: true, longitude: true } }),
+    ]);
+    let nearestInventoryKm: number | null = null;
+    let bloodBanksInRange = 0;
+    if (hospitalRow?.latitude && hospitalRow?.longitude) {
+      for (const u of networkUnits) {
+        if (!u.hospital.latitude || !u.hospital.longitude) continue;
+        const dKm = calculateDistance(parseFloat(hospitalRow.latitude), parseFloat(hospitalRow.longitude), parseFloat(u.hospital.latitude), parseFloat(u.hospital.longitude));
+        nearestInventoryKm = nearestInventoryKm === null ? dKm : Math.min(nearestInventoryKm, dKm);
+        if (u.hospital.bloodBankLicense && dKm <= 60) bloodBanksInRange++;
       }
-      notificationStrategy = `Notify top ${Math.min(
-        10,
-        rankedDonors.length
-      )} donors`;
-      llmUsed = false;
     }
+    const windowFeatures = alertWindowFeatures({
+      bloodType,
+      urgency: urgency || "medium",
+      unitsNeeded,
+      searchRadiusKm: searchRadius,
+      eligibleDonors: rankedDonors.length,
+      notifiedDonors: provisionalBatch,
+      sumScoreFinal: rankedDonors.slice(0, provisionalBatch).reduce((s, d) => s + d.scores.final, 0),
+      networkUnitsAvailable: networkUnits.reduce((s, u) => s + u.units, 0),
+      nearestInventoryKm,
+      bloodBanksInRange,
+      activeAlertsSameType: await db.alert.count({ where: { bloodType, id: { not: requestId }, status: { in: ["PENDING", "NOTIFIED", "MATCHED"] } } }),
+      windowHours: getAlertWindowHours(),
+      time,
+    });
+    consultItems.push({ task: "alert_resolves_in_window" as const, ref: "window", subjectId: requestId, features: windowFeatures });
+
+    const ml = await consultModel({ agent: "DONOR", requestId, items: consultItems });
+    const candidates = rankedDonors.map((d) => ({ id: d.id, rank: d.rank, scoreFinal: d.scores.final, distanceKm: d.distanceKm }));
+    const predictions = ml.ok
+      ? {
+          accept: new Map(rankedDonors.map((d) => [d.id, ml.scalar(`accept:${d.id}`) ?? 0.2])),
+          show: new Map(rankedDonors.map((d) => [d.id, ml.scalar(`show:${d.id}`) ?? 0.7])),
+        }
+      : null;
+    const policyInput = { candidates, shortfall: Math.max(1, unitsNeeded), urgency: urgency || "medium", predictions };
+    const policyDecision = chooseNotificationBatch(policyInput);
+    const ruleDecision = deterministicNotifyDecision(policyInput);
+    // Act on the policy only with authority; otherwise deterministic (policy logged for comparison)
+    const decision = ml.hasAuthority ? policyDecision : ruleDecision;
+    const shouldTriggerInventory = decision.triggerInventoryNow;
+    const insufficientReason = decision.reason;
+    const strategyReasoning = explainNotification(
+      decision,
+      { mode: ml.mode, modelVersion: ml.modelVersion, fallbackReason: ml.fallbackReason },
+      { eligible: rankedDonors.length, urgency: urgency || "medium", unitsNeeded }
+    );
+    console.log(`[DonorAgent] Strategy (${decision.source}, mode ${ml.mode}): ${decision.reason}`);
 
     if (rankedDonors.length === 0) {
       console.log("[DonorAgent] No eligible donors found");
@@ -531,22 +647,10 @@ export async function processShortageEvent(eventId: string): Promise<{
       }
     }
 
-    // Determine how many donors to notify (use LLM strategy if available)
-    let notifyCount: number;
-    if (notificationStrategy.includes("Notify top")) {
-      const match = notificationStrategy.match(/Notify top (\d+)/);
-      notifyCount = match
-        ? parseInt(match[1])
-        : Math.min(10, rankedDonors.length);
-    } else {
-      // Fallback to algorithmic calculation
-      notifyCount = Math.min(
-        Math.max(10, unitsNeeded * 2), // At least 10, or 2x units needed
-        Math.min(50, rankedDonors.length) // Max 50
-      );
-    }
-
-    const topDonors = rankedDonors.slice(0, notifyCount);
+    // Who to notify: the decision's ordered id list (policy re-ranks by expected
+    // arrival when it has authority; deterministic rank order otherwise).
+    const byId = new Map(rankedDonors.map((d) => [d.id, d]));
+    const topDonors = decision.notifyIds.map((id) => byId.get(id)).filter((d): d is RankedDonor => Boolean(d));
 
     console.log(
       `[DonorAgent] Notifying top ${topDonors.length} donors via email...`
@@ -580,7 +684,7 @@ export async function processShortageEvent(eventId: string): Promise<{
     for (const donor of topDonors) {
       try {
         // Generate response token
-        const token = `${donor.id}-${requestId}-${Date.now()}`;
+        const token = buildResponseToken(donor.id, requestId);
         const baseUrl =
           process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
         const acceptUrl = `${baseUrl}/api/donor/respond?token=${token}&status=accept`;
@@ -675,32 +779,31 @@ export async function processShortageEvent(eventId: string): Promise<{
           insufficient_reason: shouldTriggerInventory
             ? insufficientReason
             : undefined,
-          reasoning:
-            insufficientReason ||
-            (shouldTriggerInventory
-              ? `${insufficientReason}. Notifying available ${
-                  topDonors.length
-                } donor(s) AND searching inventory in parallel. Highest score: ${topDonors[0]?.scores.final.toFixed(
-                  1
-                )}/100. Average distance: ${(
-                  topDonors.reduce((sum, d) => sum + d.distanceKm, 0) /
-                  topDonors.length
-                ).toFixed(1)}km.`
-              : `Selected top ${topDonors.length} donors from ${
-                  rankedDonors.length
-                } eligible candidates. Highest score: ${topDonors[0]?.scores.final.toFixed(
-                  1
-                )}/100. Average distance: ${(
-                  topDonors.reduce((sum, d) => sum + d.distanceKm, 0) /
-                  topDonors.length
-                ).toFixed(1)}km.`),
+          reasoning: strategyReasoning,
+          decision_source: decision.source,
+          expected_arrivals: policyDecision.expectedArrivals,
+          pool_expected_arrivals: policyDecision.poolExpectedArrivals,
+          p_resolves_in_window: ml.scalar("window"),
+          // What the policy WOULD have done (for shadow/advise comparison)
+          policy_suggestion: {
+            notify_count: policyDecision.notifyIds.length,
+            trigger_inventory: policyDecision.triggerInventoryNow,
+            reason: policyDecision.reason,
+            source: policyDecision.source,
+          },
+          rule_suggestion: {
+            notify_count: ruleDecision.notifyIds.length,
+            trigger_inventory: ruleDecision.triggerInventoryNow,
+          },
           top_donors: topDonors.slice(0, 5).map((d: RankedDonor) => ({
             rank: d.rank,
             name: `${d.firstName} ${d.lastName}`,
             score: d.scores.final,
             distance_km: d.distanceKm,
+            p_accept: ml.scalar(`accept:${d.id}`),
+            p_show: ml.scalar(`show:${d.id}`),
           })),
-          llm_used: llmUsed,
+          ...ml.meta(),
         },
         confidence: 0.95,
       },

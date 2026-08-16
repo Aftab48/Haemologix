@@ -70,8 +70,10 @@ export function calculateResponsivenessScore(
  * Calculate time-of-day score (10% weight)
  * Best response times during business hours
  */
-export function calculateTimeOfDayScore(urgency: string): number {
-  const hour = new Date().getHours();
+export function calculateTimeOfDayScore(
+  urgency: string,
+  hour: number = new Date().getHours()
+): number {
 
   // Critical urgency: all times are equal
   if (urgency === "critical") {
@@ -196,11 +198,21 @@ export function scoreDonor(
      * donors whose results are known, so a hospital reaches screened people first.
      */
     unscreened?: boolean;
+    /**
+     * Injectable clock (epoch ms). Production leaves this unset; the simulator
+     * passes its own virtual time so scores depend on scenario time, not wall clock.
+     */
+    now?: number;
+    /** Hour of day (0-23) for the time-of-day score; defaults to local hour of `now`. */
+    hour?: number;
   }
 ): DonorScores {
+  const nowMs = options?.now ?? Date.now();
+  const hour = options?.hour ?? new Date(nowMs).getHours();
+
   // Calculate days since last donation
   const daysSinceLastDonation = donor.lastDonation
-    ? (Date.now() - new Date(donor.lastDonation).getTime()) /
+    ? (nowMs - new Date(donor.lastDonation).getTime()) /
       (1000 * 60 * 60 * 24)
     : 365; // Default to 1 year if never donated
 
@@ -212,7 +224,7 @@ export function scoreDonor(
     responseHistory?.accepted || 0,
     responseHistory?.avgResponseTime || 10
   );
-  const timeOfDay = calculateTimeOfDayScore(urgency);
+  const timeOfDay = calculateTimeOfDayScore(urgency, hour);
   const health = calculateHealthScore({
     hemoglobin: donor.hemoglobin,
     bmi: donor.bmi,

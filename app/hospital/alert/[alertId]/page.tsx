@@ -46,7 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import LLMReasoningCard from "@/components/LLMReasoningCard";
+import ModelReasoningCard from "@/components/ModelReasoningCard";
 import DonorLocationMap from "@/components/DonorLocationMap";
 
 interface AlertDetails {
@@ -72,9 +72,10 @@ interface WorkflowState {
 
 interface AgentDecisionPayload {
   reasoning?: string;
-  llm_used?: boolean;
-  model_used?: string;
-  llm_confidence?: number;
+  model_version?: string | null;
+  ml_mode?: string | null;
+  policy_applied?: boolean;
+  fallback_reason?: string | null;
   confidence?: number;
   response_time?: number | string;
   distance_km?: number;
@@ -788,11 +789,13 @@ export default function AlertDetailsPage() {
                     reasoningText = "";
                   }
 
-                  // Check if LLM was used
-                  const llmUsed = decisionPayload.llm_used === true;
-                  const modelUsed =
-                    decisionPayload.model_used ||
-                    (llmUsed ? "claude-4.5" : "unknown");
+                  // Was the Haemologix model consulted for this decision?
+                  const modelConsulted =
+                    typeof decisionPayload.model_version === "string" &&
+                    decisionPayload.model_version.length > 0;
+                  const modelUsed = modelConsulted
+                    ? (decisionPayload.model_version as string)
+                    : "rules";
 
                   // Extract and format response time from reasoning text
                   const responseTimeMatch = extractResponseTime(reasoningText);
@@ -800,16 +803,18 @@ export default function AlertDetailsPage() {
                     reasoningText = responseTimeMatch.cleanText;
                   }
 
-                  // If LLM was used, use the enhanced LLMReasoningCard component
-                  if (llmUsed && reasoningText) {
+                  // If the model was consulted, use the structured reasoning card
+                  if (modelConsulted && reasoningText) {
                     return (
-                      <LLMReasoningCard
+                      <ModelReasoningCard
                         key={decision.id}
                         reasoning={reasoningText}
                         modelUsed={modelUsed}
+                        mlMode={decisionPayload.ml_mode ?? null}
+                        policyApplied={decisionPayload.policy_applied === true}
+                        fallbackReason={decisionPayload.fallback_reason ?? null}
                         confidence={
                           decision.confidence ||
-                          decisionPayload.llm_confidence ||
                           decisionPayload.confidence
                         }
                         agentType={decision.agentType}

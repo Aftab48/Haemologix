@@ -49,7 +49,7 @@ import { updateUserStatus } from "@/lib/actions/user.actions";
 import GradientBackground from "@/components/GradientBackground";
 import AgenticDashboard from "@/components/AgenticDashboard";
 import AIAgentLogs from "@/components/AIAgentLogs";
-import LLMReasoningView from "@/components/LLMReasoningView";
+import ModelReasoningView from "@/components/ModelReasoningView";
 import {
   sendApplicationApprovedEmail,
   sendApplicationRejectedEmail,
@@ -400,7 +400,7 @@ function AdminWebDashboard() {
     { value: "donors", label: "Donors", Icon: Heart },
     { value: "agentic", label: "Agentic AI", Icon: Bot },
     { value: "activity", label: "Agent Logs", Icon: Activity },
-    { value: "llm-reasoning", label: "LLM Reasoning", Icon: Brain },
+    { value: "llm-reasoning", label: "Model Reasoning", Icon: Brain },
     { value: "analytics", label: "System Analytics", Icon: BarChart3 },
   ];
 
@@ -1386,10 +1386,10 @@ function AdminWebDashboard() {
             </div>
             )}
 
-            {/* LLM Reasoning Tab */}
+            {/* Model Reasoning Tab */}
             {activeTab === "llm-reasoning" && (
             <div className="space-y-6">
-              <LLMReasoningView />
+              <ModelReasoningView />
             </div>
             )}
           </div>

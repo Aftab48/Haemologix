@@ -61,8 +61,10 @@ export interface DonorEtaResult {
  * Compute expected ETA from donor to hospital by transport mode.
  * Uses same speeds and prep/check-in buffer (25 min) as LogisticsAgent.
  */
-export function calculateDonorEta(distanceKm: number): DonorEtaResult {
-  const hour = new Date().getHours();
+export function calculateDonorEta(
+  distanceKm: number,
+  hour: number = new Date().getHours()
+): DonorEtaResult {
   const trafficMultiplier = getTrafficMultiplier(hour);
 
   const transportSpeeds = {

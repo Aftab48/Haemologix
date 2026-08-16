@@ -1,198 +1,117 @@
-# Haemologix ML Model
+# Haemologix Decision Intelligence (ML)
 
-Custom neural network model for Haemologix agent decision-making.
+The Haemologix model **replaces the external LLM** as the reasoning layer for the
+agents. Deterministic rules stay authoritative for hard constraints; the model
+predicts *outcomes*; a thin policy layer turns predictions into decisions; and
+everything the model says is logged so it can be judged against reality before it
+is trusted.
 
-## Overview
-
-This directory contains a production-ready custom neural network implementation using PyTorch, optimized for 5 agent decision types:
-- Donor Selection
-- Urgency Assessment
-- Inventory Selection
-- Transport Planning
-- Eligibility Analysis
-
-## Setup
-
-### Quick Setup (Recommended)
-
-**Windows (Command Prompt):**
-```cmd
-cd ml
-setup.bat
+```
+Agent (lib/agents/*) ── hard constraints ──► candidates + features (lib/ml/features.ts)
+        │
+        ├──► lib/ml/agentBridge.consultModel ──HTTP──► ml/haemologix/api.py (FastAPI, active version)
+        │             │ off / timeout / down → deterministic fallback (fallback_reason logged)
+        ▼             ▼
+   lib/ml/policy/*   predictions → decision (vetoes: compatibility, eligibility, cold chain)
+   lib/ml/explain    structured explanation (replaces LLM prose)
+   lib/ml/record     ModelPrediction rows → outcomes back-filled → real training data
 ```
 
-**Windows (PowerShell):**
-```powershell
-cd ml
-.\setup.bat
+## Prediction tasks (one model head each)
+
+| task | kind | label |
+|---|---|---|
+| `donor_accept` | binary | donor accepts the notification |
+| `donor_show` | binary | donor arrives given acceptance |
+| `donor_response_time` | regression | minutes to respond |
+| `donor_eta` | regression | minutes from acceptance to arrival |
+| `inventory_delivery_ok` | binary | reserved unit delivered usable, in time |
+| `delivery_time` | regression | minutes reservation → delivery |
+| `urgency_priority` | 4-class | oracle urgency (LOW/MEDIUM/HIGH/CRITICAL) |
+| `alert_resolves_in_window` | binary | alert fully resolved before deadline |
+| `eligibility_needs_review` | binary | reviewer would flag the deterministic result |
+
+Feature builders live in `lib/ml/features.ts` and are shared by the simulator and
+the agents, so train/serve skew is structurally impossible.
+
+## Lifecycle (plan §2)
+
+```
+Simulate → Train → Evaluate → Pilot (shadow) → Observe → Validate → Retrain → Approve → Activate → Repeat
 ```
 
-**Linux/Mac:**
+### 1. Simulate (TypeScript, no DB)
+
 ```bash
-cd ml
-chmod +x setup.sh
-./setup.sh
+npm run sim:run -- --n 100000 --seed 42 --out ml/data/sim/v1 --version sim-v1
+npm run sim:run -- --n 500 --kind B --quality          # policy quality only
+npx tsx scripts/sim/compare.ts --n 400                  # deterministic vs ML policy (oracle / noisy)
+npm run test:sim
 ```
 
-This will:
-- Create a virtual environment (`.venv`)
-- Install all Python dependencies
-- Set up the environment for development
+`lib/sim/` runs the full alert lifecycle with the agents' own deterministic
+functions; behaviour comes from `lib/sim/priors.ts` (assumptions — recalibrate with
+`npm run sim:calibrate` once real outcomes exist). Scenario families A–G cover the
+plan's edge cases; `random` samples the combinatorial space. Output: one JSONL per
+task + `manifest.json` (seed, mix, priors hash, git sha).
 
-### Manual Setup
+### 2. Train / evaluate (Python)
 
-1. **Create virtual environment:**
-   ```bash
-   cd ml
-   python -m venv .venv
-   ```
+```bash
+cd ml && ./setup.sh   # or setup.bat  → .venv
+python -m haemologix.train --version haemologix-model-1.0 --data data/sim/v1 --max-rows 400000
+```
 
-2. **Activate virtual environment:**
-   - Windows: `.venv\Scripts\activate.bat`
-   - Linux/Mac: `source .venv/bin/activate`
+Per task: rules baseline (what agents assume today) vs GBDT vs PyTorch MLP on a
+group-split held-out set; winner saved with its preprocessor; `model_card.json`
+records dataset lineage, metrics, whether each task beats the baseline, and
+limitations. `pytest ml/tests` covers preprocessing, models, training and the API.
 
-3. **Install Python dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 3. Serve
 
-4. **Set up environment variables:**
-   Copy `env.ml.example` to `.env.ml` and update with your values:
-   ```cmd
-   copy env.ml.example .env.ml
-   ```
+```bash
+cd ml && python serve.py                        # or: docker compose up ml-api
+curl localhost:8000/health
+```
 
-5. **Run database migrations:**
-   ```bash
-   npx prisma migrate dev
-   ```
+`ML_API_URL`, `ML_API_SECRET`, `ML_TIMEOUT_MS` in `ml/.env` (and the app env).
+`ml/checkpoints/active` names the served version (`ML_ACTIVE_VERSION` overrides).
 
-## Directory Structure
+### 4. Pilot (shadow → advise → authority)
+
+Per-agent authority via env: `ML_MODE_DEFAULT` and `ML_MODE_{HOSPITAL,DONOR,COORDINATOR,INVENTORY,LOGISTICS,VERIFICATION}`
+∈ `off | shadow | advise | authority`. In shadow/advise the model is consulted and
+logged but the deterministic decision is applied. Every consult writes
+`ModelPrediction` rows; agents and the scheduler (`/api/cron/agent-tick`) back-fill
+`actualOutcome`/`error`. Compare at `/api/ml/report` and the admin "Model Reasoning" tab.
+
+### 5. Learn (controlled retraining, human approval)
+
+```bash
+npm run ml:harvest -- --out ml/data/real/v1                     # real outcomes → JSONL
+npm run sim:calibrate                                           # priors vs observed
+cd ml && python -m haemologix.retrain --version haemologix-model-1.1 --sim data/sim/v1 --real data/real/v1 --min-real-rows 200
+npm run ml:register -- --version haemologix-model-1.1
+npm run ml:approve  -- --version haemologix-model-1.1 --by "<name>" --confirm   # gate: beats baseline, no regression vs active
+npm run ml:activate -- --version haemologix-model-1.1                          # flips pointer + reloads service; rollback = activate previous
+```
+
+Nothing ever activates automatically; production behaviour changes only through
+`ml:activate` after `ml:approve`.
+
+## Layout
 
 ```
 ml/
-├── models/              # Model architecture
-│   ├── haemologix_decision_network.py
-│   └── components/      # Feature encoder, reasoning layer, task heads
-├── data/               # Data processing
-│   ├── dataset.py      # PyTorch Dataset
-│   ├── preprocessing.py
-│   └── loaders.py
-├── training/           # Training pipeline
-│   ├── train.py
-│   ├── trainer.py
-│   └── losses.py
-├── api/                # FastAPI server
-│   ├── server.py
-│   └── schemas.py
-├── config/             # Configuration files
-│   ├── model_config.yaml
-│   └── training_config.yaml
-├── scripts/            # Utility scripts
-│   ├── train.py
-│   ├── export_data.py
-│   ├── evaluate.py
-│   ├── eda.py          # Exploratory Data Analysis
-│   └── export_model.py
-└── utils/             # Utilities
-    ├── metrics.py
-    └── logging.py
+  haemologix/         package: tasks, data, models (mlp/gbdt/rules), metrics, train, retrain, registry, api
+  tests/              pytest
+  data/sim/<ver>/     simulator datasets (JSONL, gitignored) + manifest.json
+  data/real/<ver>/    harvested outcomes
+  checkpoints/<ver>/  model_card.json + per-task preprocessor/model/metrics ; `active` pointer
+  legacy/             the retired imitation model (not imported)
+  serve.py, Dockerfile, requirements.txt, .env (from env.ml.example)
+lib/ml/               types, flags, features, modelClient, agentBridge, policy/*, explain, record
+lib/sim/              rng, types, priors, world, behaviour, engine, scenarios, metrics, dataset, policy, mlPolicy
+scripts/sim/          run.ts, compare.ts, calibrate.ts
+scripts/ml/           loadEnv, seedBaseline, harvestTrainingData, registerModel, approveModel, activateModel
 ```
-
-## Usage
-
-### Training
-
-1. **Collect training data:**
-   The system automatically collects training examples from agent decisions via `lib/ml/dataCollection.ts`.
-
-2. **Export training data:**
-   ```bash
-   python ml/scripts/export_data.py --task-type donor_selection --output ml/data/train_data.json
-   ```
-
-3. **Train model:**
-   ```bash
-   python ml/scripts/train.py
-   ```
-
-### Exploratory Data Analysis (EDA)
-
-Before training, it's recommended to analyze your training data to understand distributions, identify issues, and ensure data quality.
-
-1. **Run EDA on all task types:**
-   ```bash
-   cd ml
-   python scripts/eda.py
-   ```
-
-2. **Run EDA on a specific task type:**
-   ```bash
-   python scripts/eda.py --task-type donor_selection
-   ```
-
-3. **Customize output locations:**
-   ```bash
-   python scripts/eda.py --data-dir ml/data --output-dir ml/eda_output --report ml/EDA_REPORT.md
-   ```
-
-The EDA script will:
-- Analyze data size and train/val splits
-- Examine feature distributions (numerical and categorical)
-- Analyze label distributions
-- Check for class imbalances
-- Generate visualization plots
-- Create a summary report
-
-Outputs:
-- Visualizations saved to `ml/eda_output/` (default)
-- Summary report saved to `ml/EDA_REPORT.md` (default)
-
-### Inference
-
-1. **Start the API server:**
-   ```bash
-   cd ml
-   uvicorn api.server:app --host 0.0.0.0 --port 8000
-   ```
-
-2. **Use from TypeScript:**
-   ```typescript
-   import { predictDonorSelection, isMLModelAvailable } from '@/lib/ml/modelClient';
-   
-   if (await isMLModelAvailable()) {
-     const result = await predictDonorSelection({
-       candidates: [...],
-       alert: {...},
-       context: {...}
-     });
-   }
-   ```
-
-## Model Architecture
-
-- **FeatureEncoder**: Encodes structured inputs (numerical + categorical)
-- **MultiFactorReasoningLayer**: Attention-based reasoning for multi-factor decisions
-- **Task-Specific Heads**: Specialized heads for each decision type
-- **ConfidenceEstimator**: Predicts confidence scores
-
-## Configuration
-
-Edit `ml/config/model_config.yaml` for model architecture hyperparameters.
-Edit `ml/config/training_config.yaml` for training hyperparameters.
-
-## Integration
-
-The model integrates with the existing agent system:
-- Replaces LLM calls in `lib/agents/llmReasoning.ts` with model API calls
-- Automatically collects training data from agent decisions
-- Falls back to external LLM if model unavailable
-
-## Next Steps
-
-1. Collect at least 1,000 examples per task type (5,000 total minimum)
-2. Train initial models for each task type
-3. Deploy model API server
-4. Update agent code to use model client
-5. Monitor performance and collect feedback for continuous improvement
-

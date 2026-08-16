@@ -1,27 +1,21 @@
-# Python Dependencies for Haemologix ML
+# Python dependencies for the Haemologix ML service
 
 # Core ML
-torch>=2.0.0
-torchvision>=0.15.0
-numpy>=1.24.0
+torch>=2.2.0
+numpy>=1.26.0
 pandas>=2.0.0
-scikit-learn>=1.3.0
+scikit-learn>=1.4.0
+joblib>=1.3.0
 
 # API
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
 pydantic>=2.5.0
 
-# Data processing
+# Config / utils
 pyyaml>=6.0
+python-dotenv>=1.0.0
 
-# Optional: TensorBoard for logging
-tensorboard>=2.14.0
-
-# Data visualization for EDA
-matplotlib>=3.7.0
-seaborn>=0.12.0
-
-# Database (if using direct DB access)
-# psycopg2-binary>=2.9.0  # Uncomment if needed
-
+# Tests
+pytest>=8.0.0
+httpx>=0.27.0

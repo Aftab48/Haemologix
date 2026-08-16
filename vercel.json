@@ -1,0 +1,6 @@
+{
+  "crons": [
+    { "path": "/api/cron/agent-tick", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/monitor-inventory", "schedule": "*/30 * * * *" }
+  ]
+}

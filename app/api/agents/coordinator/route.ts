@@ -4,11 +4,12 @@ import {
   selectOptimalMatch,
   handleNoResponseTimeout,
   confirmDonorArrival,
+  checkFulfillmentProgress,
 } from "@/lib/agents/coordinatorAgent";
 
 /**
  * Coordinator Agent API Endpoint
- * Handles donor responses, match selection, and fulfillment coordination.
+ * Handles donor responses, match selection, and fulfillment coordination.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -131,7 +132,28 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           success: true,
           message: result.message,
+          fulfilled: result.fulfilled,
+          unitsCollected: result.unitsCollected,
+          unitsNeeded: result.unitsNeeded,
         });
+      }
+
+      case "check_progress": {
+        const { request_id } = data;
+        if (!request_id) {
+          return NextResponse.json(
+            { success: false, error: "request_id is required" },
+            { status: 400 }
+          );
+        }
+        const result = await checkFulfillmentProgress(request_id);
+        if (!result.success) {
+          return NextResponse.json(
+            { success: false, error: result.error },
+            { status: 400 }
+          );
+        }
+        return NextResponse.json({ ...result, success: true });
       }
 
       default:
@@ -161,6 +183,7 @@ export async function GET() {
       "select_optimal_match",
       "handle_timeout",
       "confirm_arrival",
+      "check_progress",
     ],
   });
 }

@@ -1,240 +1,211 @@
 /**
- * TypeScript client for calling Python model API
- * Replaces OpenRouter calls in lib/agents/llmReasoning.ts
- * Fallback to external LLM if model unavailable
+ * TypeScript client for the Haemologix model service (ml/haemologix/api.py).
+ *
+ * This is the ONLY place agents talk to the model. Behaviour:
+ *  - one batched call per agent step (`predictBatch`)
+ *  - short timeout (ML_TIMEOUT_MS, default 3 s) + one retry
+ *  - shared-secret header (ML_API_SECRET)
+ *  - never throws: returns null on any failure so the caller falls back to
+ *    deterministic logic and records `fallback_reason`
+ *  - health is cached for 30 s to avoid hammering /health from every request
  */
 
-const ML_API_URL = process.env.ML_API_URL || "http://localhost:8000";
+import { getMlConnection } from "./flags";
+import type {
+  MlHealth,
+  PredictBatchRequest,
+  PredictBatchResponse,
+  PredictRequest,
+  PredictResult,
+  PredictionTask,
+} from "./types";
+import { PREDICTION_TASKS } from "./types";
 
-interface ModelPredictionResponse {
-  decision: unknown;
-  reasoning: string;
-  confidence: number;
-  alternatives?: unknown[];
+export interface PredictOptions {
+  timeoutMs?: number;
+  retries?: number;
+  modelVersion?: string;
+  /** Injectable fetch for tests. */
+  fetchImpl?: typeof fetch;
+  env?: Record<string, string | undefined>;
 }
 
-type JsonRecord = Record<string, unknown>;
+export interface PredictFailure {
+  ok: false;
+  reason: string;
+  status?: number;
+  latencyMs: number;
+}
+export interface PredictSuccess {
+  ok: true;
+  response: PredictBatchResponse;
+  latencyMs: number;
+}
+export type PredictOutcome = PredictSuccess | PredictFailure;
 
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
-function toFiniteNumber(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value !== "string" || value.trim() === "") return null;
-
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function parseModelPrediction(value: unknown): ModelPredictionResponse {
-  if (
-    !isRecord(value) ||
-    !("decision" in value) ||
-    typeof value.reasoning !== "string" ||
-    (value.alternatives !== undefined && !Array.isArray(value.alternatives))
-  ) {
-    throw new Error("ML API returned an invalid prediction");
-  }
-
-  const confidence = toFiniteNumber(value.confidence);
-  if (confidence === null) {
-    throw new Error("ML API returned an invalid prediction");
-  }
-
+function parseResult(v: unknown): PredictResult | null {
+  if (!isRecord(v) || typeof v.task !== "string") return null;
+  if (!(PREDICTION_TASKS as readonly string[]).includes(v.task)) return null;
+  const pred = v.prediction;
+  const okPred =
+    typeof pred === "number" || (Array.isArray(pred) && pred.every((x) => typeof x === "number"));
+  if (!okPred || typeof v.confidence !== "number") return null;
   return {
-    decision: value.decision,
-    reasoning: value.reasoning,
-    confidence,
-    alternatives: value.alternatives,
+    task: v.task as PredictionTask,
+    ref: typeof v.ref === "string" ? v.ref : undefined,
+    prediction: pred as number | number[],
+    confidence: v.confidence,
+    featureImportance: isRecord(v.featureImportance) ? (v.featureImportance as Record<string, number>) : undefined,
+    backend: typeof v.backend === "string" ? v.backend : undefined,
   };
 }
 
-interface DonorSelectionRequest {
-  candidates: Array<{
-    distance: number;
-    eta: number;
-    score: number;
-    reliability: number;
-    health: number;
-  }>;
-  alert: {
-    bloodType: string;
-    urgency: string;
-    unitsNeeded: number;
-    location?: { latitude: number; longitude: number };
-  };
-  context?: {
-    timeOfDay?: string;
-    trafficConditions?: string;
-    historicalPatterns?: JsonRecord;
-  };
+function parseBatchResponse(v: unknown): PredictBatchResponse | null {
+  if (!isRecord(v) || typeof v.modelVersion !== "string" || !Array.isArray(v.results)) return null;
+  const results: PredictResult[] = [];
+  for (const r of v.results) {
+    const p = parseResult(r);
+    if (!p) return null;
+    results.push(p);
+  }
+  return { modelVersion: v.modelVersion, results, latencyMs: typeof v.latencyMs === "number" ? v.latencyMs : 0 };
 }
 
-interface UrgencyAssessmentRequest {
-  bloodType: string;
-  currentUnits: number;
-  daysRemaining: number;
-  dailyUsage: number;
-  hospitalContext?: JsonRecord;
-  timeOfDay?: string;
-}
-
-interface InventorySelectionRequest {
-  rankedUnits: Array<{
-    distance: number;
-    expiry: number;
-    quantity: number;
-    scores: { [key: string]: number };
-  }>;
-  request: {
-    bloodType: string;
-    unitsNeeded: number;
-    urgency: string;
-  };
-}
-
-interface TransportPlanningRequest {
-  fromHospital: JsonRecord;
-  toHospital: JsonRecord;
-  distanceKm: number;
-  urgency: string;
-  bloodType: string;
-  units: number;
-  timeOfDay: string;
-  trafficConditions?: string;
-}
-
-interface EligibilityAnalysisRequest {
-  donor: {
-    age: number;
-    weight: number;
-    bmi: number;
-    hemoglobin: number;
-    gender: string;
-    lastDonation?: number;
-  };
-  eligibilityResult: {
-    passed: boolean;
-    failedCriteria: JsonRecord[];
-    allCriteria: JsonRecord[];
-  };
-}
-
-/**
- * Check if ML API is available
- */
-async function checkMLApiHealth(): Promise<boolean> {
+async function fetchWithTimeout(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: RequestInit,
+  timeoutMs: number
+): Promise<Response> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const response = await fetch(`${ML_API_URL}/health`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(5000), // 5 second timeout
-    });
-
-    if (!response.ok) {
-      return false;
-    }
-
-    const data: unknown = await response.json();
-    return isRecord(data) && data.model_loaded === true;
-  } catch (error) {
-    console.warn("[ModelClient] ML API health check failed:", error);
-    return false;
+    return await fetchImpl(url, { ...init, signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
   }
 }
 
 /**
- * Call ML API with retry logic
+ * Detailed variant: tells the caller *why* it failed (recorded as fallback_reason).
  */
-async function callMLApi(
-  endpoint: string,
-  data: unknown,
-  retries: number = 2
-): Promise<ModelPredictionResponse | null> {
+export async function predictBatchDetailed(
+  requests: PredictRequest[],
+  opts: PredictOptions = {}
+): Promise<PredictOutcome> {
+  const started = Date.now();
+  if (requests.length === 0) {
+    return { ok: true, response: { modelVersion: "none", results: [], latencyMs: 0 }, latencyMs: 0 };
+  }
+  const conn = getMlConnection(opts.env);
+  const fetchImpl = opts.fetchImpl ?? fetch;
+  const timeoutMs = opts.timeoutMs ?? conn.timeoutMs;
+  const retries = opts.retries ?? 1;
+  const body: PredictBatchRequest = { requests, ...(opts.modelVersion ? { modelVersion: opts.modelVersion } : {}) };
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (conn.apiSecret) headers["X-ML-Secret"] = conn.apiSecret;
+
+  let lastReason = "unknown";
+  let lastStatus: number | undefined;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const response = await fetch(`${ML_API_URL}${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        signal: AbortSignal.timeout(10000), // 10 second timeout
-      });
-
-      if (!response.ok) {
-        if (attempt < retries) {
-          await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
-          continue;
-        }
-        throw new Error(`ML API error: ${response.status}`);
-      }
-
-      return parseModelPrediction(await response.json());
-    } catch (error) {
-      if (attempt < retries) {
-        console.warn(
-          `[ModelClient] Attempt ${attempt + 1} failed, retrying...`,
-          error
-        );
-        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+      const res = await fetchWithTimeout(
+        fetchImpl,
+        `${conn.apiUrl}/predict/batch`,
+        { method: "POST", headers, body: JSON.stringify(body) },
+        timeoutMs
+      );
+      lastStatus = res.status;
+      if (!res.ok) {
+        lastReason = `http_${res.status}`;
+        // 4xx are not retryable (bad request / auth / no head for task)
+        if (res.status >= 400 && res.status < 500) break;
         continue;
       }
-      console.error("[ModelClient] All retry attempts failed:", error);
-      return null;
+      const parsed = parseBatchResponse(await res.json());
+      if (!parsed) {
+        lastReason = "invalid_response";
+        break;
+      }
+      return { ok: true, response: parsed, latencyMs: Date.now() - started };
+    } catch (err) {
+      lastReason = err instanceof Error && err.name === "AbortError" ? "timeout" : "network_error";
+      if (attempt < retries) await new Promise((r) => setTimeout(r, 200 * (attempt + 1)));
     }
   }
-  return null;
+  return { ok: false, reason: lastReason, status: lastStatus, latencyMs: Date.now() - started };
 }
 
-/**
- * Predict donor selection using ML model
- */
-export async function predictDonorSelection(
-  request: DonorSelectionRequest
-): Promise<ModelPredictionResponse | null> {
-  return await callMLApi("/predict/donor-selection", request);
+/** Convenience: response or null. */
+export async function predictBatch(
+  requests: PredictRequest[],
+  opts: PredictOptions = {}
+): Promise<PredictBatchResponse | null> {
+  const out = await predictBatchDetailed(requests, opts);
+  return out.ok ? out.response : null;
 }
 
-/**
- * Predict urgency assessment using ML model
- */
-export async function predictUrgencyAssessment(
-  request: UrgencyAssessmentRequest
-): Promise<ModelPredictionResponse | null> {
-  return await callMLApi("/predict/urgency-assessment", request);
+// ---------------------------------------------------------------------------
+// Health (cached)
+// ---------------------------------------------------------------------------
+
+let healthCache: { at: number; value: MlHealth } | null = null;
+const HEALTH_TTL_MS = 30_000;
+
+export async function getMlHealth(opts: PredictOptions = {}): Promise<MlHealth> {
+  if (healthCache && Date.now() - healthCache.at < HEALTH_TTL_MS && !opts.fetchImpl) return healthCache.value;
+  const conn = getMlConnection(opts.env);
+  const fetchImpl = opts.fetchImpl ?? fetch;
+  let value: MlHealth = { status: "down", modelLoaded: false, activeVersion: null, tasks: {} };
+  try {
+    const res = await fetchWithTimeout(fetchImpl, `${conn.apiUrl}/health`, { method: "GET" }, Math.min(conn.timeoutMs, 2500));
+    if (res.ok) {
+      const j: unknown = await res.json();
+      if (isRecord(j)) {
+        value = {
+          status: j.model_loaded === true ? "healthy" : "degraded",
+          modelLoaded: j.model_loaded === true,
+          activeVersion: typeof j.activeVersion === "string" ? j.activeVersion : null,
+          tasks: isRecord(j.tasks) ? (j.tasks as MlHealth["tasks"]) : {},
+        };
+      }
+    }
+  } catch {
+    /* down */
+  }
+  if (!opts.fetchImpl) healthCache = { at: Date.now(), value };
+  return value;
 }
 
-/**
- * Predict inventory selection using ML model
- */
-export async function predictInventorySelection(
-  request: InventorySelectionRequest
-): Promise<ModelPredictionResponse | null> {
-  return await callMLApi("/predict/inventory-selection", request);
+export async function isMLModelAvailable(opts: PredictOptions = {}): Promise<boolean> {
+  return (await getMlHealth(opts)).modelLoaded;
 }
 
-/**
- * Predict transport planning using ML model
- */
-export async function predictTransportPlanning(
-  request: TransportPlanningRequest
-): Promise<ModelPredictionResponse | null> {
-  return await callMLApi("/predict/transport-planning", request);
+/** For tests. */
+export function __resetHealthCache() {
+  healthCache = null;
 }
 
-/**
- * Predict eligibility analysis using ML model
- */
-export async function predictEligibilityAnalysis(
-  request: EligibilityAnalysisRequest
-): Promise<ModelPredictionResponse | null> {
-  return await callMLApi("/predict/eligibility-analysis", request);
+// ---------------------------------------------------------------------------
+// Helpers for callers
+// ---------------------------------------------------------------------------
+
+/** Index results by ref for O(1) lookup; results without ref are keyed by position. */
+export function indexByRef(resp: PredictBatchResponse | null): Map<string, PredictResult> {
+  const m = new Map<string, PredictResult>();
+  if (!resp) return m;
+  resp.results.forEach((r, i) => m.set(r.ref ?? String(i), r));
+  return m;
 }
 
-/**
- * Check if ML model is available and ready
- */
-export async function isMLModelAvailable(): Promise<boolean> {
-  return await checkMLApiHealth();
+export function scalar(r: PredictResult | undefined): number | null {
+  return r && typeof r.prediction === "number" ? r.prediction : null;
 }
 
+export function vector(r: PredictResult | undefined): number[] | null {
+  return r && Array.isArray(r.prediction) ? r.prediction : null;
+}

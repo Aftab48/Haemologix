@@ -8,9 +8,30 @@ services:
           target: env
     env_file:
       - .env.local
+    environment:
+      # Inside the compose network the model service is reachable by service name.
+      ML_API_URL: http://ml-api:8000
     init: true
     ports:
       - "3000:3000"
+    depends_on:
+      ml-api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Haemologix model service (FastAPI + PyTorch/sklearn). Serves ml/checkpoints/<active>.
+  ml-api:
+    build:
+      context: .
+      dockerfile: ml/Dockerfile
+    env_file:
+      - ml/.env
+    environment:
+      ML_MODEL_DIR: /app/checkpoints
+    volumes:
+      - ./ml/checkpoints:/app/checkpoints:ro
+    ports:
+      - "8000:8000"
     restart: unless-stopped
 
 secrets:

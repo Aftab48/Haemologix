@@ -6,11 +6,14 @@
 import { db } from "@/db";
 import { AgentType, UrgencyLevel } from "@prisma/client";
 import { publishEvent, ShortageRequestEvent } from "./eventBus";
-import { reasonAboutUrgency } from "./llmReasoning";
+import { consultModel, nowTimeContext } from "@/lib/ml/agentBridge";
+import { explainUrgency } from "@/lib/ml/explain";
+import { urgencyFeatures } from "@/lib/ml/features";
+import { assessUrgency } from "@/lib/ml/policy/urgencyPolicy";
 
-type Urgency = "low" | "medium" | "high" | "critical";
+export type Urgency = "low" | "medium" | "high" | "critical";
 
-function normalizeUrgency(value: string): Urgency {
+export function normalizeUrgency(value: string): Urgency {
   const normalized = value.toLowerCase();
   return normalized === "low" ||
     normalized === "medium" ||
@@ -39,7 +42,7 @@ export interface ShortageDetection {
 /**
  * Calculate urgency based on blood type rarity and stock level
  */
-function calculateUrgency(
+export function calculateUrgency(
   bloodType: string,
   daysRemaining: number,
   currentUnits: number
@@ -80,7 +83,7 @@ function calculateUrgency(
 /**
  * Calculate priority score (0-100) for shortage request
  */
-function calculatePriorityScore(
+export function calculatePriorityScore(
   urgency: string,
   bloodType: string,
   daysRemaining: number
@@ -129,7 +132,7 @@ function calculatePriorityScore(
 /**
  * Calculate recommended search radius based on urgency
  */
-function calculateSearchRadius(urgency: string): number {
+export function calculateSearchRadius(urgency: string): number {
   switch (urgency) {
     case "critical":
       return 20; // 20km
@@ -236,52 +239,55 @@ export async function processAlert(alertId: string): Promise<{
       daysRemaining,
     });
 
-    // Use LLM reasoning to assess urgency (AGENTIC AI)
-    let urgency: Urgency;
-    let priorityScore: number;
-    let urgencyReasoning: string;
-    let recommendedAction: string;
-    let llmUsed: boolean = false;
-
-    try {
-      console.log("[HospitalAgent] Using LLM reasoning to assess urgency...");
-      const llmUrgency = await reasonAboutUrgency({
-        bloodType: alert.bloodType,
-        currentUnits,
-        daysRemaining,
-        dailyUsage,
-        hospitalContext: {
-          hospitalName: alert.hospital.hospitalName,
-          operationalStatus: alert.hospital.operationalStatus,
-        },
-        timeOfDay: new Date().toLocaleTimeString(),
-      });
-
-      urgency = llmUrgency.urgency;
-      priorityScore = llmUrgency.priorityScore;
-      urgencyReasoning = llmUrgency.reasoning;
-      recommendedAction = llmUrgency.recommendedAction;
-      llmUsed = true;
-
-      console.log(
-        `[HospitalAgent] LLM assessed urgency: ${urgency} (priority: ${priorityScore})`
-      );
-    } catch (error) {
-      console.warn(
-        "[HospitalAgent] LLM reasoning failed, using algorithmic fallback:",
-        error
-      );
-      // Fallback to algorithmic assessment
-      urgency = normalizeUrgency(alert.urgency);
-      priorityScore = calculatePriorityScore(
-        urgency,
-        alert.bloodType,
-        daysRemaining
-      );
-      urgencyReasoning = `Algorithmic assessment: ${urgency} urgency based on stock levels.`;
-      recommendedAction = "Standard donor notification process";
-      llmUsed = false;
-    }
+    // Urgency: the hospital-declared / rule urgency is authoritative; the model
+    // may adjust by at most one level (never below CRITICAL). See urgencyPolicy.
+    const ruleUrgency: Urgency = normalizeUrgency(alert.urgency);
+    const [threshold, activeSameType] = await Promise.all([
+      db.inventoryThreshold.findUnique({
+        where: { hospitalId_bloodType: { hospitalId: alert.hospitalId, bloodType: alert.bloodType } },
+        select: { minimumRequired: true },
+      }),
+      db.alert.count({
+        where: { bloodType: alert.bloodType, id: { not: alertId }, status: { in: ["PENDING", "NOTIFIED", "MATCHED"] } },
+      }),
+    ]);
+    const features = urgencyFeatures({
+      bloodType: alert.bloodType,
+      currentUnits,
+      dailyUsage,
+      daysRemaining,
+      minimumRequired: threshold?.minimumRequired ?? null,
+      activeAlertsSameType: activeSameType,
+      hospitalIsBloodBank: false,
+      time: nowTimeContext(),
+    });
+    const ml = await consultModel({
+      agent: "HOSPITAL",
+      requestId: alertId,
+      items: [{ task: "urgency_priority", ref: "urgency", features, subjectId: alert.bloodType }],
+    });
+    const policy = assessUrgency({
+      ruleUrgency,
+      bloodType: alert.bloodType,
+      daysRemaining,
+      probs: ml.vector("urgency"),
+    });
+    const urgency: Urgency = ml.hasAuthority ? policy.urgency : ruleUrgency;
+    const priorityScore = ml.hasAuthority
+      ? policy.priorityScore
+      : calculatePriorityScore(ruleUrgency, alert.bloodType, daysRemaining);
+    const urgencyReasoning = explainUrgency(policy, {
+      mode: ml.mode,
+      modelVersion: ml.modelVersion,
+      fallbackReason: ml.fallbackReason,
+    });
+    const recommendedAction =
+      urgency === "critical"
+        ? "Immediate donor notification + parallel inventory search"
+        : urgency === "high"
+        ? "Donor notification with early inventory fallback"
+        : "Standard donor notification process";
+    console.log(`[HospitalAgent] Urgency: ${urgency} (rule ${ruleUrgency}, model ${policy.modelUrgency ?? "n/a"}, mode ${ml.mode})`);
 
     const searchRadius =
       parseInt(alert.searchRadius) || calculateSearchRadius(urgency);
@@ -333,10 +339,13 @@ export async function processAlert(alertId: string): Promise<{
           reasoning:
             urgencyReasoning ||
             `Hospital ${alert.hospital.hospitalName} requires ${eventPayload.units_needed} units of ${alert.bloodType}. Urgency: ${urgency}. Search radius: ${searchRadius}km.`,
-          llm_used: llmUsed,
+          rule_urgency: ruleUrgency,
+          model_urgency: policy.modelUrgency ?? null,
+          model_confidence: policy.modelConfidence ?? null,
           recommended_action: recommendedAction,
+          ...ml.meta(),
         },
-        confidence: 1.0,
+        confidence: ml.ok ? Math.max(0.5, policy.modelConfidence ?? 0.5) : 1.0,
       },
     });
 

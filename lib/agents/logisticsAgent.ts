@@ -2,8 +2,11 @@ import { db } from "@/db";
 import { AgentType } from "@prisma/client";
 import { publishEvent } from "./eventBus";
 import { calculateDistance } from "./donorAgent";
-import { reasonAboutTransport } from "./llmReasoning";
-import { getTrafficConditions } from "./outcomeTracking";
+import { consultModel, nowTimeContext } from "@/lib/ml/agentBridge";
+import { explainTransport } from "@/lib/ml/explain";
+import { donorShowFeatures, inventoryUnitFeatures } from "@/lib/ml/features";
+import { getAlertWindowHours } from "@/lib/ml/flags";
+import { chooseTransportMethod } from "@/lib/ml/policy/inventoryPolicy";
 
 /**
  * LOGISTICS AGENT
@@ -31,7 +34,7 @@ export type TransportPlan = {
 /**
  * Calculate time-of-day traffic multiplier
  */
-function getTrafficMultiplier(hour: number): number {
+export function getTrafficMultiplier(hour: number): number {
   // Rush hours: 7-9am, 5-7pm
   if ((hour >= 7 && hour < 9) || (hour >= 17 && hour < 19)) {
     return 1.5; // 50% slower
@@ -51,7 +54,7 @@ function getTrafficMultiplier(hour: number): number {
 /**
  * Calculate base travel time based on distance and road type
  */
-function calculateBaseTime(distanceKm: number): number {
+export function calculateBaseTime(distanceKm: number): number {
   // Assume average speed: 40 km/h urban, 60 km/h highway
   // For simplicity, use 40 km/h as base
   const avgSpeedKmh = 40;
@@ -62,10 +65,12 @@ function calculateBaseTime(distanceKm: number): number {
 /**
  * Select optimal transport method based on distance and urgency
  */
-function selectTransportMethod(
+export type TransportMethod = "ambulance" | "courier" | "scheduled";
+
+export function selectTransportMethod(
   distanceKm: number,
   urgency: string
-): "ambulance" | "courier" | "scheduled" {
+): TransportMethod {
   const urgencyLower = urgency?.toLowerCase();
 
   // Ambulance for critical short distance
@@ -88,10 +93,10 @@ function selectTransportMethod(
 /**
  * Calculate ETA with transport method adjustments
  */
-function calculateETA(
+export function calculateETA(
   baseTimeMinutes: number,
   trafficMultiplier: number,
-  method: "ambulance" | "courier" | "scheduled"
+  method: TransportMethod
 ): number {
   let adjustedTime = baseTimeMinutes * trafficMultiplier;
 
@@ -117,9 +122,9 @@ function calculateETA(
 /**
  * Validate cold chain compliance
  */
-function validateColdChain(
+export function validateColdChain(
   etaMinutes: number,
-  method: "ambulance" | "courier" | "scheduled"
+  method: TransportMethod
 ): { compliant: boolean; reason?: string } {
   const maxTransportHours = 6;
   const etaHours = etaMinutes / 60;
@@ -191,108 +196,69 @@ export async function planTransport(transportRequestId: string): Promise<{
       parseFloat(toHospital.longitude)
     );
 
-    // Use LLM reasoning to plan transport (AGENTIC AI)
-    let method: "ambulance" | "courier" | "scheduled";
-    let adjustedEtaMinutes: number;
-    let transportReasoning: string;
-    let routeOptimization: string;
-    let coldChainCompliant: boolean | undefined;
-    let llmUsed: boolean = false;
+    // Related alert (for urgency / window) via workflow state
+    const workflowState = await db.workflowState.findFirst({
+      where: { metadata: { path: ["transport_id"], equals: transportRequestId } },
+    });
+    const alert = workflowState ? await db.alert.findUnique({ where: { id: workflowState.requestId } }) : null;
+    const urgency = (alert?.urgency || "medium").toLowerCase();
+    const requestId = alert?.id ?? null;
 
-    try {
-      console.log("[LogisticsAgent] Using LLM reasoning to plan transport...");
-
-      // Try to find related alert through workflow state
-      const workflowState = await db.workflowState.findFirst({
-        where: {
-          metadata: {
-            path: ["transport_id"],
-            equals: transportRequestId,
-          },
-        },
-      });
-
-      const alert = workflowState
-        ? await db.alert.findUnique({
-            where: { id: workflowState.requestId },
-          })
-        : null;
-
-      const timeOfDay = new Date().toLocaleTimeString();
-      const trafficConditions = getTrafficConditions(timeOfDay);
-
-      const llmResult = await reasonAboutTransport({
-        fromHospital,
-        toHospital,
-        distanceKm,
-        urgency: alert?.urgency || "medium",
-        bloodType: transportRequest.bloodType,
-        units: transportRequest.units,
-        timeOfDay,
-        trafficConditions,
-      });
-
-      method = llmResult.method;
-      adjustedEtaMinutes = llmResult.etaMinutes;
-      transportReasoning = llmResult.reasoning;
-      routeOptimization = llmResult.routeOptimization;
-      coldChainCompliant = llmResult.coldChainCompliant;
-      llmUsed = true;
-
-      console.log(
-        `[LogisticsAgent] LLM selected: ${method} transport, ETA: ${adjustedEtaMinutes}min`
-      );
-    } catch (error) {
-      console.warn(
-        "[LogisticsAgent] LLM reasoning failed, using algorithmic fallback:",
-        error
-      );
-      // Fallback to algorithmic planning
-      const workflowState = await db.workflowState.findFirst({
-        where: {
-          metadata: {
-            path: ["transport_id"],
-            equals: transportRequestId,
-          },
-        },
-      });
-
-      const alert = workflowState
-        ? await db.alert.findUnique({
-            where: { id: workflowState.requestId },
-          })
-        : null;
-      const urgency = alert?.urgency || "medium";
-      method = selectTransportMethod(distanceKm, urgency);
-      const baseTimeMinutes = calculateBaseTime(distanceKm);
-      const currentHour = new Date().getHours();
-      const trafficMultiplier = getTrafficMultiplier(currentHour);
-      adjustedEtaMinutes = calculateETA(
-        baseTimeMinutes,
-        trafficMultiplier,
-        method
-      );
-      transportReasoning = `Algorithmic selection: ${method} for ${distanceKm.toFixed(
-        1
-      )}km.`;
-      routeOptimization = "Standard route";
-      coldChainCompliant = undefined; // Will use validation function
-      llmUsed = false;
-    }
-
-    // Calculate base time and traffic multiplier for logging
+    // Deterministic plan (authoritative for method; the model may only upgrade)
+    const time = nowTimeContext();
     const baseTimeMinutes = calculateBaseTime(distanceKm);
-    const currentHour = new Date().getHours();
+    const currentHour = time.hour;
     const trafficMultiplier = getTrafficMultiplier(currentHour);
+    const ruleMethod = selectTransportMethod(distanceKm, urgency);
+    const ruleEtaMinutes = calculateETA(baseTimeMinutes, trafficMultiplier, ruleMethod);
+    const windowMs = getAlertWindowHours() * 3_600_000;
+    const minutesLeft = alert ? Math.max(0, (alert.createdAt.getTime() + windowMs - Date.now()) / 60_000) : Infinity;
 
-    // Validate cold chain (use LLM result if available)
-    const coldChainValidation =
-      coldChainCompliant !== undefined
-        ? {
-            compliant: coldChainCompliant,
-            reason: coldChainCompliant ? "Compliant" : "Non-compliant",
-          }
-        : validateColdChain(adjustedEtaMinutes, method);
+    // Model: predicted delivery time for this transfer
+    const features = inventoryUnitFeatures({
+      sourceType: fromHospital.bloodBankLicense ? "blood_bank" : "hospital",
+      distanceKm,
+      unitsAvailable: transportRequest.units,
+      unitsNeeded: alert ? parseInt(alert.unitsNeeded) || transportRequest.units : transportRequest.units,
+      unitsRequested: transportRequest.units,
+      daysToExpiry: 21, // not tracked on TransportRequest; neutral value
+      unitBloodType: transportRequest.bloodType,
+      alertBloodType: alert?.bloodType ?? transportRequest.bloodType,
+      urgency,
+      transportMethod: ruleMethod,
+      etaMinutes: ruleEtaMinutes,
+      scores: { proximity: Math.max(0, 100 - (distanceKm / 200) * 100), expiry: 60, quantity: 50, feasibility: fromHospital.networkParticipationAgreement ? 100 : 50, final: 0 },
+      rank: 1,
+      candidateCount: 1,
+      networkAgreement: fromHospital.networkParticipationAgreement,
+      coldStorage: fromHospital.coldStorageFacility,
+      time,
+    });
+    const ml = await consultModel({
+      agent: "LOGISTICS",
+      requestId,
+      items: [{ task: "delivery_time", ref: "time", subjectId: transportRequestId, features }],
+    });
+    const predictedMinutes = ml.scalar("time");
+    const transportDecision = chooseTransportMethod({
+      distanceKm,
+      urgency,
+      etaMinutes: ruleEtaMinutes,
+      minutesLeft,
+      predictedMinutes: ml.hasAuthority ? predictedMinutes : null,
+    });
+    const method: TransportMethod = transportDecision.method;
+    const adjustedEtaMinutes =
+      method === ruleMethod ? ruleEtaMinutes : calculateETA(baseTimeMinutes, trafficMultiplier, method);
+    const transportReasoning = explainTransport(transportDecision, { mode: ml.mode, modelVersion: ml.modelVersion, fallbackReason: ml.fallbackReason });
+    const routeOptimization =
+      predictedMinutes !== null
+        ? `Model predicts ${Math.round(predictedMinutes)} min door-to-door (rule ETA ${ruleEtaMinutes} min)`
+        : "Standard route";
+    console.log(`[LogisticsAgent] Plan: ${method}, ETA ${adjustedEtaMinutes} min (predicted ${predictedMinutes ?? "n/a"}, mode ${ml.mode})`);
+
+    // Cold chain is always validated deterministically (never delegated)
+    const coldChainValidation = validateColdChain(adjustedEtaMinutes, method);
 
     if (!coldChainValidation.compliant) {
       console.error(
@@ -417,8 +383,12 @@ export async function planTransport(transportRequestId: string): Promise<{
               .slice(0, 5)}, delivery at ${estimatedDelivery
               .toTimeString()
               .slice(0, 5)}.`,
-          llm_used: llmUsed,
           route_optimization: routeOptimization,
+          rule_method: ruleMethod,
+          rule_eta_minutes: ruleEtaMinutes,
+          predicted_delivery_minutes: predictedMinutes,
+          decision_source: transportDecision.source,
+          ...ml.meta(),
         },
         confidence: 0.9,
       },
@@ -581,21 +551,59 @@ export async function calculateDonorETA(
 
     // Recommend mode based on distance
     let recommendedMode: string;
-    let recommendedEta: number;
+    let ruleEta: number;
 
     if (distanceKm <= 1.5) {
       recommendedMode = "walking";
-      recommendedEta = etaOptions.walking;
+      ruleEta = etaOptions.walking;
     } else if (distanceKm <= 5) {
       recommendedMode = "bicycle";
-      recommendedEta = etaOptions.bicycle;
+      ruleEta = etaOptions.bicycle;
     } else if (distanceKm <= 10) {
       recommendedMode = "publicTransport";
-      recommendedEta = etaOptions.publicTransport;
+      ruleEta = etaOptions.publicTransport;
     } else {
       recommendedMode = "car";
-      recommendedEta = etaOptions.car;
+      ruleEta = etaOptions.car;
     }
+
+    // Model: predicted arrival minutes for THIS donor (learned from actual arrivals).
+    // Rule ETA stays the floor/ceiling: with authority the prediction is used but
+    // clamped to [0.7, 1.6] × rule so a bad prediction cannot mislead the hospital.
+    const alert = await db.alert.findUnique({ where: { id: requestId }, select: { bloodType: true, urgency: true, unitsNeeded: true, searchRadius: true } });
+    const history = await db.donorResponseHistory.findMany({ where: { donorId }, select: { status: true, confirmed: true, noShow: true, responseTime: true, notifiedAt: true } });
+    const responded = history.filter((h) => h.responseTime != null);
+    const time = nowTimeContext();
+    const showFeatures = donorShowFeatures({
+      donorBloodType: donor.bloodGroup,
+      distanceKm,
+      daysSinceLastDonation: donor.lastDonationDate ? Math.round((Date.now() - new Date(donor.lastDonationDate).getTime()) / 86_400_000) : null,
+      priorAlerts: history.length,
+      priorAccepted: history.filter((h) => h.status === "accepted").length,
+      priorArrived: history.filter((h) => h.confirmed).length,
+      priorNoShows: history.filter((h) => h.noShow).length,
+      avgResponseMinutes: responded.length ? responded.reduce((s, h) => s + (h.responseTime ?? 600), 0) / responded.length / 60 : null,
+      alertsLast7Days: history.filter((h) => h.notifiedAt >= new Date(Date.now() - 7 * 86_400_000)).length,
+      unscreened: false,
+      scores: { distance: Math.max(0, 100 - (distanceKm / 35) * 100), history: 60, responsiveness: 50, timeOfDay: 80, health: 70, final: 65 },
+      rank: 1,
+      alertBloodType: alert?.bloodType ?? donor.bloodGroup,
+      urgency: (alert?.urgency ?? "medium").toLowerCase(),
+      unitsNeeded: alert ? parseInt(alert.unitsNeeded) || 1 : 1,
+      searchRadiusKm: alert ? parseInt(alert.searchRadius) || 35 : 35,
+      notifiedCount: 10,
+      eligibleCount: 10,
+      time,
+      responseMinutes: responded.length ? Math.max(1, (responded[responded.length - 1].responseTime ?? 600) / 60) : 10,
+      etaMinutes: ruleEta,
+      acceptTime: time,
+    });
+    const ml = await consultModel({ agent: "LOGISTICS", requestId, items: [{ task: "donor_eta", ref: "eta", subjectId: donorId, features: showFeatures }] });
+    const predictedEta = ml.scalar("eta");
+    const recommendedEta =
+      ml.hasAuthority && predictedEta !== null
+        ? Math.round(Math.min(ruleEta * 1.6, Math.max(ruleEta * 0.7, predictedEta)))
+        : ruleEta;
 
     // Log decision with all transport modes
     await db.agentDecision.create({
@@ -611,9 +619,14 @@ export async function calculateDonorETA(
           eta_options: etaOptions,
           recommended_mode: recommendedMode,
           recommended_eta: recommendedEta,
+          rule_eta: ruleEta,
+          predicted_eta: predictedEta,
           reasoning: `Donor is ${distanceKm.toFixed(
             1
-          )}km away. Calculated ETAs for all transport modes (includes 25min prep+check-in). Traffic multiplier: ${trafficMultiplier}x. Recommended: ${recommendedMode} (${recommendedEta}min).`,
+          )}km away. Calculated ETAs for all transport modes (includes 25min prep+check-in). Traffic multiplier: ${trafficMultiplier}x. Recommended: ${recommendedMode} (${recommendedEta}min${
+            predictedEta !== null ? `; model predicts ${Math.round(predictedEta)}min, rule ${ruleEta}min` : ""
+          }).`,
+          ...ml.meta(),
         },
         confidence: 0.85,
       },

@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 // all in fixtures is set to tailwind v3 as interims solutions
 
@@ -137,7 +138,8 @@ const config: Config = {
   		}
   	}
   },
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  plugins: [require("tailwindcss-animate")],
+  // `import` rather than `require`: Node ≥ 22 loads this .ts config as an ES module
+  // in `next dev`, where `require` is not defined (crashed the dev server on any page).
+  plugins: [tailwindcssAnimate],
 };
 export default config;

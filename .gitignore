@@ -50,10 +50,22 @@ __pycache__/
 ml/data/*_train.json
 ml/data/*_val.json
 ml/data/*_test.json
+# Generated datasets (GBs) — regenerate with `npm run sim:run` / `npm run ml:harvest`; manifests are kept
+ml/data/**/*.jsonl
 
-# ML Model Checkpoints
-ml/checkpoints/*.pt
-ml/checkpoints/*.pth
+# ML model checkpoints — trained artifacts are reproducible (`python -m haemologix.train`, see ml/README.md)
+# and are NOT tracked; only each version's model_card.json (lineage + metrics) is kept for review.
+ml/checkpoints/**
+!ml/checkpoints/
+!ml/checkpoints/*/
+!ml/checkpoints/*/model_card.json
+# Retired imitation-model code (kept locally for reference; the originals live in git history)
+ml/legacy/
+ml/.venv/
+.ml-api.log
+.ml-api.err.log
+.next-dev-*.log
+.pytest_cache/
 
 # ML Environment files
 ml/.env.ml

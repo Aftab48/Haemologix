@@ -8,7 +8,10 @@ import { db } from "@/db";
 import { AgentType, Prisma } from "@prisma/client";
 import type { DonorWithProfile } from "./donorAgent";
 import { publishEvent } from "./eventBus";
-import { reasonAboutEligibility } from "./llmReasoning";
+import { consultModel } from "@/lib/ml/agentBridge";
+import { explainEligibility } from "@/lib/ml/explain";
+import { eligibilityReviewFeatures } from "@/lib/ml/features";
+import { decideEligibility } from "@/lib/ml/policy/eligibilityPolicy";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -241,70 +244,57 @@ export async function processDonorVerification(
 
     const eligibilityResult = checkDonorEligibility(donor);
 
-    // Use LLM reasoning for eligibility decision (AGENTIC AI)
-    let finalDecision: "approved" | "rejected" | "needs_review";
-    let eligibilityReasoning: string;
-    let edgeCases: string[] = [];
-    let recommendations: string[] = [];
-    let llmUsed: boolean = false;
-    let confidence: number = 1.0;
-
-    try {
-      console.log(
-        "[VerificationAgent] Using LLM reasoning to analyze eligibility..."
-      );
-      const llmResult = await reasonAboutEligibility(eligibilityResult, donor);
-
-      finalDecision = llmResult.finalDecision;
-      eligibilityReasoning = llmResult.reasoning;
-      edgeCases = llmResult.edgeCases;
-      recommendations = llmResult.recommendations;
-      confidence = llmResult.confidence;
-      llmUsed = true;
-
-      console.log(
-        `[VerificationAgent] LLM decision: ${finalDecision} (confidence: ${(
-          confidence * 100
-        ).toFixed(1)}%)`
-      );
-    } catch (error) {
-      console.warn(
-        "[VerificationAgent] LLM reasoning failed, using algorithmic decision:",
-        error
-      );
-      // Fallback to algorithmic decision
-      finalDecision = eligibilityResult.passed ? "approved" : "rejected";
-      eligibilityReasoning = eligibilityResult.passed
-        ? "All eligibility criteria met. Donor approved."
-        : `Donor failed ${
-            eligibilityResult.failedCriteria.length
-          } eligibility criteria: ${eligibilityResult.failedCriteria
-            .map((c) => c.criterion)
-            .join(", ")}`;
-      llmUsed = false;
-    }
-
-    // Override LLM decision if hard medical requirements failed (safety first)
-    if (!eligibilityResult.passed) {
-      // Check for critical failures that cannot be overridden
-      const criticalFailures = eligibilityResult.failedCriteria.filter(
-        (c) =>
-          c.criterion === "Age" ||
-          c.criterion.includes("Test") ||
-          c.criterion === "Weight" ||
-          c.criterion === "Hemoglobin"
-      );
-
-      if (criticalFailures.length > 0 && finalDecision === "approved") {
-        console.warn(
-          "[VerificationAgent] LLM suggested approval but critical medical requirements failed. Overriding to rejected."
-        );
-        finalDecision = "rejected";
-        eligibilityReasoning = `Critical medical requirements failed: ${criticalFailures
-          .map((c) => c.criterion)
-          .join(", ")}. Safety override applied.`;
-      }
-    }
+    // Deterministic screening is the decision. The model only estimates whether
+    // a reviewer would want a second look (borderline / missing data) and can
+    // flag `needs_review`; it can never approve a failed donor or reject a passed one.
+    const criticalFailures = eligibilityResult.failedCriteria.filter(
+      (c) =>
+        c.criterion === "Age" ||
+        c.criterion.includes("Test") ||
+        c.criterion === "Weight" ||
+        c.criterion === "Hemoglobin"
+    );
+    const hardFailure = criticalFailures.length > 0;
+    const ageYears = Math.floor((Date.now() - new Date(donor.dateOfBirth).getTime()) / (365.25 * 86_400_000));
+    const bmiNum = donor.bmi ? parseFloat(donor.bmi) : NaN;
+    const hbNum = donor.profile?.hemoglobin ? parseFloat(donor.profile.hemoglobin) : NaN;
+    const reviewFeatures = eligibilityReviewFeatures({
+      age: ageYears,
+      weightKg: parseFloat(donor.weight) || 0,
+      bmi: Number.isFinite(bmiNum) ? bmiNum : null,
+      hemoglobin: Number.isFinite(hbNum) ? hbNum : null,
+      gender: donor.gender,
+      daysSinceLastDonation: donor.lastDonationDate ? Math.round((Date.now() - new Date(donor.lastDonationDate).getTime()) / 86_400_000) : null,
+      passed: eligibilityResult.passed,
+      failedCount: eligibilityResult.failedCriteria.length,
+      hardFailure,
+    });
+    const ml = await consultModel({
+      agent: "VERIFICATION",
+      requestId: donorId,
+      items: [{ task: "eligibility_needs_review", ref: "review", subjectId: donorId, features: reviewFeatures }],
+    });
+    const pNeedsReview = ml.scalar("review");
+    const policy = decideEligibility({
+      passed: eligibilityResult.passed,
+      failedCriteria: eligibilityResult.failedCriteria.map((c) => c.criterion),
+      hardFailure,
+      pNeedsReview: ml.hasAuthority ? pNeedsReview : null,
+    });
+    const shadowPolicy = decideEligibility({
+      passed: eligibilityResult.passed,
+      failedCriteria: eligibilityResult.failedCriteria.map((c) => c.criterion),
+      hardFailure,
+      pNeedsReview,
+    });
+    const finalDecision = policy.finalDecision;
+    const eligibilityReasoning = explainEligibility(policy, { mode: ml.mode, modelVersion: ml.modelVersion, fallbackReason: ml.fallbackReason });
+    const confidence = policy.confidence;
+    const edgeCases: string[] = shadowPolicy.needsReview
+      ? [`Model estimates ${Math.round((pNeedsReview ?? 0) * 100)}% chance a reviewer would flag this result (min margin ratio ${reviewFeatures.minMarginRatio})`]
+      : [];
+    const recommendations: string[] = eligibilityResult.failedCriteria.map((c) => c.reason);
+    console.log(`[VerificationAgent] Decision: ${finalDecision} (rule ${eligibilityResult.passed ? "passed" : "failed"}, P(review)=${pNeedsReview ?? "n/a"}, mode ${ml.mode})`);
 
     // Publish eligibility check event
     const eventId = await publishEvent(
@@ -351,10 +341,13 @@ export async function processDonorVerification(
                 } eligibility criteria: ${eligibilityResult.failedCriteria
                   .map((c) => c.criterion)
                   .join(", ")}`),
-          llm_used: llmUsed,
           edge_cases: edgeCases.length > 0 ? edgeCases : undefined,
           recommendations:
             recommendations.length > 0 ? recommendations : undefined,
+          p_needs_review: pNeedsReview,
+          policy_suggestion: { final_decision: shadowPolicy.finalDecision, needs_review: shadowPolicy.needsReview },
+          decision_source: policy.source,
+          ...ml.meta(),
         },
         confidence: confidence,
       },

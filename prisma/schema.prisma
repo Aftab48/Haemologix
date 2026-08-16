@@ -224,8 +224,20 @@ model Alert {
   status       String               @default("PENDING")
   autoDetected Boolean              @default(false)
   type         String               @default("Blood")
+  // --- Outcome capture (decision-intelligence layer) -----------------------
+  /// When the alert reached a terminal state (fulfilled/partial/failed/cancelled).
+  resolvedAt     DateTime?
+  /// Units actually secured (donor arrivals + delivered transfers).
+  unitsCollected Int       @default(0)
+  /// FULFILLED | PARTIAL | ESCALATED | FAILED | CANCELLED (see lib/ml/types.ts ALERT_OUTCOMES)
+  outcome        String?
+  /// donors | inventory | mixed | external
+  fulfilledBy    String?
   hospital     HospitalRegistration @relation(fields: [hospitalId], references: [id])
   responses    AlertResponse[]
+
+  @@index([status])
+  @@index([outcome])
 }
 
 model AlertResponse {
@@ -348,6 +360,9 @@ model TransportRequest {
   pickupTime      DateTime?
   deliveryTime    DateTime?
   transportMethod String?
+  /// Set by the scheduler once delivered/cancelled: usable units arrived in time.
+  deliveredOk       Boolean?
+  coldChainBreached Boolean              @default(false)
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
   fromHospital    HospitalRegistration @relation("TransportFrom", fields: [fromHospitalId], references: [id])
@@ -372,6 +387,9 @@ model DonorResponseHistory {
   score           Float?
   createdAt       DateTime  @default(now())
   expectedArrival DateTime?
+  /// When the hospital confirmed the donor arrived (label for donor_show / donor_eta).
+  arrivedAt         DateTime?
+  donationCompleted Boolean   @default(false)
   donor           Donor     @relation("DonorHistory", fields: [donorId], references: [id], onDelete: Cascade)
 
   @@index([donorId])
@@ -425,18 +443,27 @@ model TrainingExample {
   agentDecisionId String?
   requestId       String?
   usedForTraining Boolean  @default(false)
+  /// sim | real
+  source          String   @default("real")
+  /// Simulator scenario id (grouped splits) or production requestId.
+  scenarioId      String?
+  datasetVersion  String?
   createdAt       DateTime @default(now())
 
   @@index([taskType, usedForTraining])
   @@index([agentDecisionId])
   @@index([requestId])
   @@index([createdAt])
+  @@index([source, datasetVersion])
 }
 
+/// One row per model VERSION (e.g. "haemologix-model-1.0"). A version bundles every
+/// prediction task; per-task metrics live in `metrics`. Status lifecycle:
+/// training → evaluated → approved → active → retired.
 model CustomModel {
   id          String            @id @default(uuid())
   version     String            @unique
-  taskType    String
+  taskType    String            @default("all")
   modelPath   String
   config      Json
   metrics     Json?
@@ -444,6 +471,16 @@ model CustomModel {
   isActive    Boolean           @default(false)
   trainedAt   DateTime          @default(now())
   deployedAt  DateTime?
+  // --- Lineage / model card ------------------------------------------------
+  datasetVersion String?
+  /// {"sim": n, "real": n}
+  datasetMix     Json?
+  /// {"donor_accept": [...feature names], ...}
+  features       Json?
+  limitations    String?
+  approvedBy     String?
+  approvedAt     DateTime?
+  notes          String?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   predictions ModelPrediction[]
@@ -452,6 +489,9 @@ model CustomModel {
   @@index([status])
 }
 
+/// One row per prediction the model service made for a live agent step.
+/// `actualOutcome` / `error` are back-filled by the scheduler once the real
+/// outcome is known, which is what makes shadow-mode evaluation possible.
 model ModelPrediction {
   id            String      @id @default(uuid())
   modelId       String
@@ -462,12 +502,24 @@ model ModelPrediction {
   actualOutcome Json?
   feedback      String?
   requestId     String?
+  /// Which agent asked (HOSPITAL | DONOR | COORDINATOR | INVENTORY | LOGISTICS | VERIFICATION)
+  agentType     String?
+  /// shadow | advise | authority
+  mode          String      @default("shadow")
+  latencyMs     Int?
+  /// Secondary key inside a request (e.g. donorId for donor_accept rows).
+  subjectId     String?
+  outcomeAt     DateTime?
+  /// |prediction - actual| for regression / binary; set with actualOutcome.
+  error         Float?
   createdAt     DateTime    @default(now())
   model         CustomModel @relation(fields: [modelId], references: [id])
 
   @@index([modelId])
   @@index([taskType, createdAt])
   @@index([requestId])
+  @@index([requestId, taskType, subjectId])
+  @@index([agentType, mode])
 }
 
 model User {

@@ -3,7 +3,12 @@ import { AgentType } from "@prisma/client";
 import type { HospitalRegistration } from "@prisma/client";
 import { parseShortageRequestEvent, publishEvent } from "./eventBus";
 import { calculateDistance } from "./donorAgent";
-import { reasonAboutInventorySelection } from "./llmReasoning";
+import { calculateBaseTime, calculateETA, getTrafficMultiplier, selectTransportMethod, validateColdChain } from "./logisticsAgent";
+import { consultModel, nowTimeContext } from "@/lib/ml/agentBridge";
+import { explainInventory } from "@/lib/ml/explain";
+import { inventoryUnitFeatures } from "@/lib/ml/features";
+import { getAlertWindowHours } from "@/lib/ml/flags";
+import { chooseInventorySource, chooseTransportMethod, deterministicInventoryDecision } from "@/lib/ml/policy/inventoryPolicy";
 
 /**
  * INVENTORY AGENT
@@ -78,7 +83,7 @@ function isBloodTypeCompatible(
  * Calculate proximity score (0-100)
  * Weight: 40%
  */
-function calculateProximityScore(distanceKm: number): number {
+export function calculateProximityScore(distanceKm: number): number {
   return Math.max(0, 100 - (distanceKm / 200) * 100);
 }
 
@@ -86,9 +91,9 @@ function calculateProximityScore(distanceKm: number): number {
  * Calculate expiry score (0-100) - prefer units expiring sooner (FIFO)
  * Weight: 30%
  */
-function calculateExpiryScore(expiryDate: Date): number {
+export function calculateExpiryScore(expiryDate: Date, now: number = Date.now()): number {
   const daysUntilExpiry = Math.floor(
-    (expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    (expiryDate.getTime() - now) / (1000 * 60 * 60 * 24)
   );
 
   if (daysUntilExpiry <= 14) return 100; // Expire soon, use first
@@ -101,7 +106,7 @@ function calculateExpiryScore(expiryDate: Date): number {
  * Calculate quantity score (0-100) - prefer hospitals with surplus
  * Weight: 20%
  */
-function calculateQuantityScore(
+export function calculateQuantityScore(
   hospitalUnits: number,
   unitsNeeded: number,
   hospitalDailyUsage: number = 2 // Simplified average
@@ -115,7 +120,13 @@ function calculateQuantityScore(
  * Calculate feasibility score (0-100) - based on hospital participation
  * Weight: 10%
  */
-function calculateFeasibilityScore(hospital: HospitalRegistration): number {
+/** The subset of hospital fields the feasibility score depends on (so the simulator can supply them). */
+export type FeasibilityInput = Pick<
+  HospitalRegistration,
+  "networkParticipationAgreement" | "coldStorageFacility" | "temperatureStandards"
+>;
+
+export function calculateFeasibilityScore(hospital: FeasibilityInput): number {
   // Check if hospital is in network and has sharing agreement
   if (!hospital.networkParticipationAgreement) return 50;
   if (!hospital.coldStorageFacility) return 70;
@@ -123,24 +134,27 @@ function calculateFeasibilityScore(hospital: HospitalRegistration): number {
   return 100; // Fully compliant and willing to share
 }
 
-/**
- * Calculate composite score for an inventory unit
- */
-function scoreInventoryUnit(
-  distanceKm: number,
-  expiryDate: Date,
-  hospitalUnits: number,
-  unitsNeeded: number,
-  hospital: HospitalRegistration
-): {
+export type InventoryScores = {
   proximity: number;
   expiry: number;
   quantity: number;
   feasibility: number;
   final: number;
-} {
+};
+
+/**
+ * Calculate composite score for an inventory unit
+ */
+export function scoreInventoryUnit(
+  distanceKm: number,
+  expiryDate: Date,
+  hospitalUnits: number,
+  unitsNeeded: number,
+  hospital: FeasibilityInput,
+  now: number = Date.now()
+): InventoryScores {
   const proximity = calculateProximityScore(distanceKm);
-  const expiry = calculateExpiryScore(expiryDate);
+  const expiry = calculateExpiryScore(expiryDate, now);
   const quantity = calculateQuantityScore(hospitalUnits, unitsNeeded);
   const feasibility = calculateFeasibilityScore(hospital);
 
@@ -345,53 +359,94 @@ export async function processInventorySearch(requestId: string): Promise<{
       return { success: true, unitsFound: 0, reserved: false };
     }
 
-    // 3. Use LLM reasoning to select optimal source (AGENTIC AI)
-    let topUnit: RankedInventoryUnit;
-    let selectionReasoning: string;
-    let transportStrategy: string;
-    let confidence: number;
-    let llmUsed: boolean = false;
-
-    try {
-      console.log(
-        "[InventoryAgent] Using LLM reasoning to select optimal inventory source..."
-      );
-
-      const alert = await db.alert.findUnique({
-        where: { id: requestId },
-        include: { hospital: true },
-      });
-
-      const llmResult = await reasonAboutInventorySelection(rankedUnits, {
-        bloodType,
+    // 3. Source selection: model predictions (P(delivery ok), delivery time) + policy.
+    //    Cold-chain compliance is a hard constraint enforced before the policy sees a unit.
+    const alert = await db.alert.findUnique({
+      where: { id: requestId },
+      include: { hospital: { select: { hospitalName: true, bloodBankLicense: true, networkParticipationAgreement: true, coldStorageFacility: true } } },
+    });
+    const urgency = (alert?.urgency || "medium").toLowerCase();
+    const time = nowTimeContext();
+    const traffic = getTrafficMultiplier(time.hour);
+    const windowMs = getAlertWindowHours() * 3_600_000;
+    const minutesLeft = alert ? Math.max(0, (alert.createdAt.getTime() + windowMs - Date.now()) / 60_000) : Infinity;
+    const hospitalsById = new Map(
+      (await db.hospitalRegistration.findMany({
+        where: { id: { in: rankedUnits.slice(0, 20).map((u) => u.hospital_id) } },
+        select: { id: true, bloodBankLicense: true, networkParticipationAgreement: true, coldStorageFacility: true },
+      })).map((h) => [h.id, h])
+    );
+    const candidates = rankedUnits.slice(0, 20).map((u) => {
+      const method = selectTransportMethod(u.distance_km, urgency);
+      const etaMinutes = calculateETA(calculateBaseTime(u.distance_km), traffic, method);
+      const h = hospitalsById.get(u.hospital_id);
+      return { u, method, etaMinutes, h, coldChainOk: validateColdChain(etaMinutes, method).compliant };
+    });
+    const validCandidates = candidates.filter((c) => c.coldChainOk);
+    const items = validCandidates.flatMap((c) => {
+      const features = inventoryUnitFeatures({
+        sourceType: c.h?.bloodBankLicense ? "blood_bank" : "hospital",
+        distanceKm: c.u.distance_km,
+        unitsAvailable: c.u.units_available,
         unitsNeeded,
-        urgency: alert?.urgency || "medium",
-        requestingHospital: alert?.hospital,
+        unitsRequested: Math.min(c.u.units_available, unitsNeeded),
+        daysToExpiry: Math.floor((c.u.expiry_date.getTime() - Date.now()) / 86_400_000),
+        unitBloodType: c.u.blood_type,
+        alertBloodType: bloodType,
+        urgency,
+        transportMethod: c.method,
+        etaMinutes: c.etaMinutes,
+        scores: c.u.scores,
+        rank: c.u.rank,
+        candidateCount: validCandidates.length,
+        networkAgreement: Boolean(c.h?.networkParticipationAgreement),
+        coldStorage: Boolean(c.h?.coldStorageFacility),
+        time,
       });
-
-      topUnit = llmResult.selectedSource;
-      selectionReasoning = llmResult.reasoning;
-      transportStrategy = llmResult.transportStrategy;
-      confidence = llmResult.confidence;
-      llmUsed = true;
-
-      console.log(
-        `[InventoryAgent] LLM selected: ${
-          topUnit.hospital_name
-        } (confidence: ${(confidence * 100).toFixed(1)}%)`
-      );
-    } catch (error) {
-      console.warn(
-        "[InventoryAgent] LLM reasoning failed, using algorithmic fallback:",
-        error
-      );
-      // Fallback to algorithmic selection
-      topUnit = rankedUnits[0];
-      selectionReasoning = `Algorithmic selection: Highest score (${topUnit.scores.final}/100).`;
-      transportStrategy = topUnit.distance_km < 15 ? "Ambulance" : "Courier";
-      confidence = topUnit.scores.final / 100;
-      llmUsed = false;
-    }
+      return [
+        { task: "inventory_delivery_ok" as const, ref: `ok:${c.u.unit_id}`, subjectId: c.u.unit_id, features },
+        { task: "delivery_time" as const, ref: `time:${c.u.unit_id}`, subjectId: c.u.unit_id, features },
+      ];
+    });
+    const ml = await consultModel({ agent: "INVENTORY", requestId, items });
+    const policyInput = {
+      candidates: validCandidates.map((c) => ({
+        id: c.u.unit_id,
+        rank: c.u.rank,
+        scoreFinal: c.u.scores.final,
+        distanceKm: c.u.distance_km,
+        unitsAvailable: c.u.units_available,
+        etaMinutes: c.etaMinutes,
+        method: c.method,
+      })),
+      shortfall: unitsNeeded,
+      urgency,
+      minutesLeft,
+      predictions: ml.ok
+        ? {
+            deliveryOk: new Map(validCandidates.map((c) => [c.u.unit_id, ml.scalar(`ok:${c.u.unit_id}`) ?? 0.5])),
+            deliveryMinutes: new Map(validCandidates.map((c) => [c.u.unit_id, ml.scalar(`time:${c.u.unit_id}`) ?? c.etaMinutes])),
+          }
+        : null,
+    };
+    const policyDecision = chooseInventorySource(policyInput);
+    const ruleDecision = deterministicInventoryDecision(policyInput);
+    const decision = ml.hasAuthority ? policyDecision : ruleDecision;
+    const chosenId = decision.unitId ?? rankedUnits[0]?.unit_id;
+    const topUnit: RankedInventoryUnit = rankedUnits.find((u) => u.unit_id === chosenId) ?? rankedUnits[0];
+    const chosenCandidate = candidates.find((c) => c.u.unit_id === topUnit.unit_id);
+    const predictedMinutes = ml.scalar(`time:${topUnit.unit_id}`);
+    const transportDecision = chooseTransportMethod({
+      distanceKm: topUnit.distance_km,
+      urgency,
+      etaMinutes: chosenCandidate?.etaMinutes ?? Math.ceil((topUnit.distance_km / 40) * 60),
+      minutesLeft,
+      predictedMinutes: ml.hasAuthority ? predictedMinutes : null,
+    });
+    const selectionReasoning = explainInventory(decision, { mode: ml.mode, modelVersion: ml.modelVersion, fallbackReason: ml.fallbackReason });
+    const transportStrategy = `${transportDecision.method} — ${transportDecision.reason}`;
+    const confidence = policyDecision.pOk ?? topUnit.scores.final / 100;
+    console.log(`[InventoryAgent] Selected ${topUnit.hospital_name} (${decision.source}, mode ${ml.mode}); transport ${transportDecision.method}`);
 
     // Check if top unit has enough
     const unitsToReserve = Math.min(topUnit.units_available, unitsNeeded);
@@ -435,8 +490,8 @@ export async function processInventorySearch(requestId: string): Promise<{
         bloodType: bloodType,
         units: unitsToReserve,
         status: "pending",
-        transportMethod: topUnit.distance_km < 15 ? "ambulance" : "courier",
-        eta: new Date(Date.now() + (topUnit.distance_km / 40) * 60 * 60 * 1000), // Simple ETA
+        transportMethod: transportDecision.method,
+        eta: new Date(Date.now() + (chosenCandidate?.etaMinutes ?? (topUnit.distance_km / 40) * 60) * 60 * 1000),
       },
     });
 
@@ -490,16 +545,25 @@ export async function processInventorySearch(requestId: string): Promise<{
             }/100. Distance: ${topUnit.distance_km.toFixed(
               1
             )}km. ${unitsToReserve} units reserved.`,
-          llm_used: llmUsed,
+          decision_source: decision.source,
           transport_strategy: transportStrategy,
+          transport_source: transportDecision.source,
+          p_delivery_ok: policyDecision.pOk ?? null,
+          predicted_delivery_minutes: predictedMinutes,
+          deterministic_eta_minutes: chosenCandidate?.etaMinutes ?? null,
+          policy_suggestion: { unit_id: policyDecision.unitId, reason: policyDecision.reason },
+          rule_suggestion: { unit_id: ruleDecision.unitId },
           top_alternatives: rankedUnits.slice(0, 3).map((u) => ({
             rank: u.rank,
             hospital: u.hospital_name,
             score: u.scores.final,
             distance_km: u.distance_km,
+            p_ok: ml.scalar(`ok:${u.unit_id}`),
+            predicted_minutes: ml.scalar(`time:${u.unit_id}`),
           })),
+          ...ml.meta(),
         },
-        confidence: topUnit.scores.final / 100,
+        confidence,
       },
     });
 

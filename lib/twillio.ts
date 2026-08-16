@@ -36,8 +36,15 @@ function normalizePhoneNumber(phone: string): string {
   return cleaned;
 }
 
+const SMS_SANDBOXED =
+  process.env.SANDBOX_NOTIFICATIONS === "1" || process.env.SANDBOX_NOTIFICATIONS === "true";
+
 // Helper wrapper for sending SMS
 export async function sendSMS(to: string, body: string) {
+  if (SMS_SANDBOXED) {
+    console.warn(`[Sandbox SMS] To: ${to}, Body: ${body}`);
+    return { success: true, sid: "sandbox-sid" };
+  }
   if (!twilioClient) {
     console.warn(`[Mock SMS] To: ${to}, Body: ${body}`);
     return { success: true, sid: "mock-sid-env-missing" };
