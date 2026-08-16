@@ -39,9 +39,10 @@ export const ORG = {
   /**
    * External profiles that describe the same entity. Every URL here should
    * link back to SITE_URL and use ORG.description as its first sentence.
-   * TODO: confirm the LinkedIn company slug and add X / Product Hunt once live.
+   * LinkedIn slug confirmed 2026-08-16. Add X / Product Hunt once live.
    */
   sameAs: [
+    "https://www.wikidata.org/wiki/Q141102668",
     "https://www.linkedin.com/company/haemologix",
     "https://github.com/Aftab48/Haemologix",
     "https://devfolio.co/projects/haemologix-d4d7",
