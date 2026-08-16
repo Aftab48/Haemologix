@@ -6,7 +6,8 @@
 # escalation, stale-alert closure) and every 30 minutes /api/cron/monitor-inventory.
 #
 # Required repository secrets:
-#   APP_URL      e.g. https://haemologix.in   (no trailing slash)
+#   APP_URL      e.g. https://www.haemologix.in   (canonical host, no trailing slash —
+#                the apex 308-redirects to www; curl -L follows it, but prefer www)
 #   CRON_SECRET  same value as the CRON_SECRET env var on Vercel
 #
 # Note: GitHub schedules are best-effort (can lag 5–15 min at busy times); if you
@@ -34,7 +35,7 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$APP_URL" && test -n "$CRON_SECRET"
-          code=$(curl -sS -m 90 -o /tmp/tick.json -w "%{http_code}" \
+          code=$(curl -sSL --post301 --post302 --post303 -m 90 -o /tmp/tick.json -w "%{http_code}" \
             -H "x-cron-secret: $CRON_SECRET" "$APP_URL/api/cron/agent-tick")
           echo "agent-tick → $code"; cat /tmp/tick.json; echo
           test "$code" = "200"
@@ -49,7 +50,7 @@ jobs:
           set -euo pipefail
           m=$(date -u +%M)
           if [ "$m" -ge 5 ] && [ "$m" -lt 30 ] || [ "$m" -ge 35 ]; then echo "skip ($m)"; exit 0; fi
-          code=$(curl -sS -m 90 -o /tmp/mon.json -w "%{http_code}" \
+          code=$(curl -sSL --post301 --post302 --post303 -m 90 -o /tmp/mon.json -w "%{http_code}" \
             -H "x-cron-secret: $CRON_SECRET" "$APP_URL/api/cron/monitor-inventory")
           echo "monitor-inventory → $code"; cat /tmp/mon.json; echo
           test "$code" = "200"
