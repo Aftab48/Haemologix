@@ -53,12 +53,9 @@ ml/data/*_test.json
 # Generated datasets (GBs) — regenerate with `npm run sim:run` / `npm run ml:harvest`; manifests are kept
 ml/data/**/*.jsonl
 
-# ML model checkpoints — trained artifacts are reproducible (`python -m haemologix.train`, see ml/README.md)
-# and are NOT tracked; only each version's model_card.json (lineage + metrics) is kept for review.
-ml/checkpoints/**
-!ml/checkpoints/
-!ml/checkpoints/*/
-!ml/checkpoints/*/model_card.json
+# ML model checkpoints ARE tracked (a few MB per version): the App Runner image bakes
+# ml/checkpoints/ in, so what is in git is exactly what serves. Regenerate with
+# `python -m haemologix.train` (see ml/README.md); promote with ml:approve / ml:activate.
 # Retired imitation-model code (kept locally for reference; the originals live in git history)
 ml/legacy/
 ml/.venv/

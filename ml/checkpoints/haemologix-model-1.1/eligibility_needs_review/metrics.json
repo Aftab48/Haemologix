@@ -1,0 +1,90 @@
+{
+  "task": "eligibility_needs_review",
+  "kind": "binary",
+  "backend": "mlp",
+  "rows": {
+    "total": 400000,
+    "train": 279941,
+    "val": 59875,
+    "test": 60184
+  },
+  "features": [
+    "age",
+    "bmi",
+    "daysSinceLastDonation",
+    "failedCount",
+    "hemoglobin",
+    "minMarginRatio",
+    "weightKg",
+    "bmiMissing",
+    "hardFailure",
+    "hemoglobinMissing",
+    "neverDonated",
+    "passed",
+    "gender=female",
+    "gender=male"
+  ],
+  "n_features": 14,
+  "metrics": {
+    "n": 60184,
+    "positive_rate": 0.39292835305064466,
+    "auroc": 0.7138080601235832,
+    "auprc": 0.5728663266970293,
+    "brier": 0.20438401401042938,
+    "log_loss": 0.5857937932014465,
+    "ece": 0.005226630751869545,
+    "accuracy@0.5": 0.6633158314502193
+  },
+  "candidates": {
+    "gbdt": {
+      "n": 60184,
+      "positive_rate": 0.39292835305064466,
+      "auroc": 0.7136151152649264,
+      "auprc": 0.5742455260717179,
+      "brier": 0.2043413668870926,
+      "log_loss": 0.5857201814651489,
+      "ece": 0.004304229141085878,
+      "accuracy@0.5": 0.6634321414329389
+    },
+    "mlp": {
+      "n": 60184,
+      "positive_rate": 0.39292835305064466,
+      "auroc": 0.7138080601235832,
+      "auprc": 0.5728663266970293,
+      "brier": 0.20438401401042938,
+      "log_loss": 0.5857937932014465,
+      "ece": 0.005226630751869545,
+      "accuracy@0.5": 0.6633158314502193
+    }
+  },
+  "baseline_metrics": {
+    "n": 60184,
+    "positive_rate": 0.39292835305064466,
+    "auroc": 0.5,
+    "auprc": 0.39292835305064466,
+    "brier": 0.23853814601898193,
+    "log_loss": 0.6700452566146851,
+    "ece": 0.001579800149504873,
+    "accuracy@0.5": 0.6070716469493553
+  },
+  "primary_metric": "auroc",
+  "beats_baseline": true,
+  "feature_importance": {
+    "hardFailure": 0.1757017970085144,
+    "minMarginRatio": 0.13161404430866241,
+    "passed": 0.08330030739307404,
+    "hemoglobinMissing": 0.07992694526910782,
+    "bmiMissing": 0.06466731429100037,
+    "neverDonated": 0.06268850713968277,
+    "failedCount": 0.06055108457803726,
+    "gender=male": 0.05992903560400009,
+    "hemoglobin": 0.05960743874311447,
+    "gender=female": 0.05725697800517082,
+    "bmi": 0.046865835785865784,
+    "weightKg": 0.04440225660800934,
+    "daysSinceLastDonation": 0.037099193781614304,
+    "age": 0.03638930991292
+  },
+  "trained_at": "2026-08-16T19:56:53.089384+00:00",
+  "seconds": 73.3
+}

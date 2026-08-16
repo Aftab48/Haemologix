@@ -21,7 +21,7 @@ yarn-error.log*
 .venv
 venv
 __pycache__
-ml/checkpoints
+# ml/checkpoints is INCLUDED: ml/Dockerfile bakes the model versions into the image
 ml/data
 ml/logs
 ml/runs

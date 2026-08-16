@@ -1,0 +1,86 @@
+{
+  "task": "urgency_priority",
+  "kind": "multiclass",
+  "backend": "gbdt",
+  "rows": {
+    "total": 400000,
+    "train": 280219,
+    "val": 60094,
+    "test": 59687
+  },
+  "features": [
+    "activeAlertsSameType",
+    "currentUnits",
+    "dailyUsage",
+    "dayOfWeek",
+    "daysRemaining",
+    "hour",
+    "minimumRequired",
+    "rarity",
+    "stockRatio",
+    "trafficMultiplier",
+    "hospitalIsBloodBank",
+    "isNight",
+    "isWeekend",
+    "bloodType=A+",
+    "bloodType=A-",
+    "bloodType=AB+",
+    "bloodType=AB-",
+    "bloodType=B+",
+    "bloodType=B-",
+    "bloodType=O+",
+    "bloodType=O-"
+  ],
+  "n_features": 21,
+  "metrics": {
+    "n": 59687,
+    "accuracy": 0.8357096185098932,
+    "macro_f1": 0.5583696785430323,
+    "within_one": 0.9155595020691273,
+    "log_loss": 0.3655196726322174
+  },
+  "candidates": {
+    "gbdt": {
+      "n": 59687,
+      "accuracy": 0.8357096185098932,
+      "macro_f1": 0.5583696785430323,
+      "within_one": 0.9155595020691273,
+      "log_loss": 0.3655196726322174
+    },
+    "mlp": {
+      "n": 59687,
+      "accuracy": 0.8350394558279022,
+      "macro_f1": 0.5552762318845053,
+      "within_one": 0.9148055690518874,
+      "log_loss": 0.36476242542266846
+    }
+  },
+  "baseline_metrics": {
+    "n": 59687,
+    "accuracy": 0.6503426206711679,
+    "macro_f1": 0.1970326078128807,
+    "within_one": 0.7939752374889004,
+    "log_loss": 0.9812114834785461
+  },
+  "primary_metric": "macro_f1",
+  "beats_baseline": true,
+  "feature_importance": {
+    "stockRatio": 0.4752831947164496,
+    "currentUnits": 0.4029775715142912,
+    "minimumRequired": 0.07751942054591829,
+    "rarity": 0.029323867369461038,
+    "hour": 0.010919883164892738,
+    "bloodType=B-": 0.0022243786287885355,
+    "isNight": 0.0008018755878866743,
+    "bloodType=A+": 0.0005338763794422716,
+    "isWeekend": 0.00029007595675064403,
+    "trafficMultiplier": 0.00012585374439734798,
+    "activeAlertsSameType": 0.0,
+    "dailyUsage": 0.0,
+    "dayOfWeek": 0.0,
+    "daysRemaining": 0.0,
+    "hospitalIsBloodBank": 0.0
+  },
+  "trained_at": "2026-08-16T18:02:55.570608+00:00",
+  "seconds": 67.4
+}

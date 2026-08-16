@@ -1,0 +1,81 @@
+{
+  "task": "alert_resolves_in_window",
+  "numeric_cols": [
+    "activeAlertsSameType",
+    "bloodBanksInRange",
+    "dayOfWeek",
+    "donorsPerUnit",
+    "eligibleDonors",
+    "hour",
+    "nearestInventoryKm",
+    "networkUnitsAvailable",
+    "notifiedDonors",
+    "rarity",
+    "searchRadiusKm",
+    "sumScoreFinal",
+    "trafficMultiplier",
+    "unitsNeeded",
+    "windowHours"
+  ],
+  "bool_cols": [
+    "hasInventoryOption",
+    "isNight",
+    "isWeekend"
+  ],
+  "cat_cols": [
+    "bloodType",
+    "urgency"
+  ],
+  "cat_vocab": {
+    "bloodType": [
+      "A+",
+      "A-",
+      "AB+",
+      "AB-",
+      "B+",
+      "B-",
+      "O+",
+      "O-"
+    ],
+    "urgency": [
+      "critical",
+      "high",
+      "low",
+      "medium"
+    ]
+  },
+  "num_mean": {
+    "activeAlertsSameType": 0.4100820296543273,
+    "bloodBanksInRange": 1.2664031707828698,
+    "dayOfWeek": 2.9948993673890723,
+    "donorsPerUnit": 2.056622100533248,
+    "eligibleDonors": 28.012078121377392,
+    "hour": 13.530885324088898,
+    "nearestInventoryKm": 61.7165362067633,
+    "networkUnitsAvailable": 70.42819921172041,
+    "notifiedDonors": 8.491968159687337,
+    "rarity": 6.2914978416154215,
+    "searchRadiusKm": 26.936749947558432,
+    "sumScoreFinal": 559.3967132936617,
+    "trafficMultiplier": 1.0223345882508805,
+    "unitsNeeded": 5.970246309769588,
+    "windowHours": 6.001346920299856
+  },
+  "num_std": {
+    "activeAlertsSameType": 1.0231643283106577,
+    "bloodBanksInRange": 0.9428839980736015,
+    "dayOfWeek": 2.0047462465434798,
+    "donorsPerUnit": 2.180319659147888,
+    "eligibleDonors": 35.46779280327425,
+    "hour": 6.0942324819627185,
+    "nearestInventoryKm": 213.05346213834991,
+    "networkUnitsAvailable": 87.35876896380887,
+    "notifiedDonors": 5.69211492370162,
+    "rarity": 2.722052454488525,
+    "searchRadiusKm": 14.04152837240208,
+    "sumScoreFinal": 394.22447059715984,
+    "trafficMultiplier": 0.25994504578826394,
+    "unitsNeeded": 2.8439060623431147,
+    "windowHours": 1.1773230557753256
+  }
+}

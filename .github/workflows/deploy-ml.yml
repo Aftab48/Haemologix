@@ -1,0 +1,125 @@
+name: deploy-ml
+
+# Model service (ml/) → ECR → App Runner, same pattern as Haemologix-Donor-Backend.
+# Runs the Python tests on every push/PR that touches ml/; ships only from main.
+# Until the AWS secrets exist the deploy job is skipped, not failed.
+on:
+  push:
+    branches: [main]
+    paths: ["ml/**", ".github/workflows/deploy-ml.yml"]
+  pull_request:
+    branches: [main]
+    paths: ["ml/**"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-ml-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REPOSITORY: haemologix-ml
+
+jobs:
+  verify:
+    name: pytest
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: ml/requirements.txt
+      - run: pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+      - run: python -m pytest tests -q -W ignore
+      # the baked checkpoints must be loadable by the code being deployed
+      - name: checkpoints load
+        env:
+          ML_MODEL_DIR: checkpoints
+        run: |
+          python - <<'EOF'
+          from haemologix.registry import load_active, get_active_version
+          v = get_active_version("checkpoints"); m = load_active("checkpoints")
+          assert m is not None, f"active version {v!r} not loadable"
+          print("active:", m.version, "tasks:", sorted(m.tasks))
+          EOF
+
+  deploy:
+    name: build · push · deploy
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # OIDC — no long-lived AWS keys in GitHub
+    env:
+      HAS_AWS: ${{ secrets.AWS_ML_DEPLOY_ROLE_ARN != '' && secrets.ML_APPRUNNER_SERVICE_ARN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Skip until AWS is configured
+        if: env.HAS_AWS != 'true'
+        run: echo "::notice::AWS_ML_DEPLOY_ROLE_ARN / ML_APPRUNNER_SERVICE_ARN not set — skipping deploy (see ml/DEPLOY.md)"
+
+      - name: Assume the deploy role
+        if: env.HAS_AWS == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ML_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to ECR
+        if: env.HAS_AWS == 'true'
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - if: env.HAS_AWS == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        if: env.HAS_AWS == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ml/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+      - name: Trigger the App Runner deployment
+        if: env.HAS_AWS == 'true'
+        run: |
+          OP=$(aws apprunner start-deployment --service-arn "${{ secrets.ML_APPRUNNER_SERVICE_ARN }}" \
+            --query 'OperationId' --output text)
+          echo "Started operation $OP"
+
+      - name: Wait for the rollout
+        if: env.HAS_AWS == 'true'
+        run: |
+          for i in $(seq 1 60); do
+            STATUS=$(aws apprunner describe-service --service-arn "${{ secrets.ML_APPRUNNER_SERVICE_ARN }}" \
+              --query 'Service.Status' --output text)
+            [ "$STATUS" != "OPERATION_IN_PROGRESS" ] && { echo "Service status: $STATUS"; break; }
+            echo "  ...still rolling out ($i/60)"; sleep 15
+          done
+          RESULT=$(aws apprunner list-operations --service-arn "${{ secrets.ML_APPRUNNER_SERVICE_ARN }}" \
+            --max-results 1 --query 'OperationSummaryList[0].Status' --output text)
+          echo "Deployment result: $RESULT"
+          [ "$RESULT" = "SUCCEEDED" ] || { echo "::error::Deployment $RESULT — App Runner kept the previous revision."; exit 1; }
+
+      - name: Smoke test
+        if: env.HAS_AWS == 'true'
+        run: |
+          URL=$(aws apprunner describe-service --service-arn "${{ secrets.ML_APPRUNNER_SERVICE_ARN }}" \
+            --query 'Service.ServiceUrl' --output text)
+          echo "Checking https://$URL/health"
+          curl --fail --silent --show-error --retry 5 --retry-delay 5 "https://$URL/health"

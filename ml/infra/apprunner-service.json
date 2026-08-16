@@ -1,0 +1,49 @@
+{
+  "ServiceName": "haemologix-ml",
+  "SourceConfiguration": {
+    "AuthenticationConfiguration": {
+      "AccessRoleArn": "arn:aws:iam::ACCOUNT_ID:role/haemologix-apprunner-ecr-access"
+    },
+    "AutoDeploymentsEnabled": false,
+    "ImageRepository": {
+      "ImageIdentifier": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/haemologix-ml:latest",
+      "ImageRepositoryType": "ECR",
+      "ImageConfiguration": {
+        "Port": "8000",
+        "RuntimeEnvironmentVariables": {
+          "API_HOST": "0.0.0.0",
+          "API_PORT": "8000",
+          "API_WORKERS": "1",
+          "API_LOG_LEVEL": "info",
+          "ML_MODEL_DIR": "/app/checkpoints"
+        },
+        "RuntimeEnvironmentSecrets": {
+          "ML_API_SECRET": "arn:aws:ssm:REGION:ACCOUNT_ID:parameter/haemologix/ml/ML_API_SECRET"
+        }
+      }
+    }
+  },
+  "InstanceConfiguration": {
+    "Cpu": "1 vCPU",
+    "Memory": "2 GB",
+    "InstanceRoleArn": "arn:aws:iam::ACCOUNT_ID:role/haemologix-apprunner-instance"
+  },
+  "HealthCheckConfiguration": {
+    "Protocol": "HTTP",
+    "Path": "/health",
+    "Interval": 10,
+    "Timeout": 5,
+    "HealthyThreshold": 1,
+    "UnhealthyThreshold": 5
+  },
+  "NetworkConfiguration": {
+    "IngressConfiguration": {
+      "IsPubliclyAccessible": true
+    }
+  },
+  "AutoScalingConfigurationArn": "arn:aws:apprunner:REGION:ACCOUNT_ID:autoscalingconfiguration/haemologix-min1/1/REPLACE_WITH_REVISION_ID",
+  "Tags": [
+    { "Key": "app", "Value": "haemologix" },
+    { "Key": "component", "Value": "ml" }
+  ]
+}
