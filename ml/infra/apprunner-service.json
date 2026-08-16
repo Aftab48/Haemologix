@@ -24,8 +24,8 @@
     }
   },
   "InstanceConfiguration": {
-    "Cpu": "1 vCPU",
-    "Memory": "2 GB",
+    "Cpu": "0.5 vCPU",
+    "Memory": "1 GB",
     "InstanceRoleArn": "arn:aws:iam::ACCOUNT_ID:role/haemologix-apprunner-instance"
   },
   "HealthCheckConfiguration": {

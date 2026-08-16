@@ -13,7 +13,7 @@ git push main (ml/** changed)
                └─► ECR: haemologix-ml:latest + :<sha>
                      └─► apprunner start-deployment → health-checked on /health → smoke test
 
-App Runner instance (1 vCPU / 2 GB, ap-south-1)
+App Runner instance (0.5 vCPU / 1 GB, ap-south-1)
   ◄─── https://www.haemologix.in (Vercel, ML_API_URL + X-ML-Secret)
 ```
 
@@ -24,10 +24,10 @@ from the image and answers `POST /predict/batch`.
 
 | Item | Estimate |
 | --- | --- |
-| Provisioned memory 2 GB × 730 h × ~$0.009 | ~$13 / month |
+| Provisioned memory 1 GB × 730 h × ~$0.009 | ~$6.6 / month |
 | Active vCPU (billed only while a request is in flight; predictions take ms) | ~$0.5–2 / month |
 | ECR (~1 GB image, lifecycle-pruned) + CloudWatch at `info` | ~$0.6 / month |
-| **Total** | **≈ $14–16 / month (~$180 / year)**; try 0.5 vCPU / 1 GB later (~$100 / year) if RSS stays < 800 MB |
+| **Total** | **≈ $7–9 / month (~$85–100 / year)**. Torch+sklearn RSS is ~600 MB, so 1 GB is comfortable. To halve it later: export the MLP heads to ONNX and serve with `onnxruntime` (no torch) on 0.25 vCPU / 0.5 GB (~$50 / year). |
 
 ## One-time setup (run from your machine with admin AWS CLI; nothing here is automated)
 
