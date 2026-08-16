@@ -31,35 +31,83 @@ export interface TickResult {
   noShows: number;
   transports: { settled: number; unitsDelivered: number };
   staleAlerts: { closed: number; byOutcome: Record<string, number> };
+  /** true when a job stopped early because the time budget ran out (next tick continues) */
+  truncated: boolean;
+  elapsedMs: number;
   errors: string[];
 }
 
-export async function runNoResponseTimeouts(now = new Date()): Promise<{ checked: number; escalated: number }> {
-  const windowMin = getResponseWindowMinutes();
-  const cutoff = new Date(now.getTime() - windowMin * 60_000);
-  const alerts = await db.alert.findMany({
-    where: { status: { in: OPEN_STATUSES }, outcome: null, createdAt: { lte: cutoff } },
-    select: { id: true },
-    take: 200,
-  });
-  let escalated = 0;
-  for (const a of alerts) {
-    const r = await checkFulfillmentProgress(a.id);
-    if (r.escalated) escalated++;
-  }
-  return { checked: alerts.length, escalated };
+/**
+ * Time budget for one tick. Serverless functions (Vercel Hobby: 60 s) must never
+ * run the whole backlog in one go; each job processes small batches and stops
+ * when the deadline is near — the next tick (5 min later) picks up the rest.
+ */
+export interface TickBudget {
+  deadlineAt: number; // epoch ms
+  batch: number; // rows per job per tick
+}
+const DEFAULT_BUDGET_MS = 40_000;
+const DEFAULT_BATCH = 20;
+const PROGRESS_RECHECK_MIN = 15; // don't re-run checkFulfillmentProgress on the same alert more often than this
+
+function timeLeft(b: TickBudget) {
+  return b.deadlineAt - Date.now();
+}
+function budgetOr(b?: TickBudget): TickBudget {
+  return b ?? { deadlineAt: Date.now() + DEFAULT_BUDGET_MS, batch: DEFAULT_BATCH };
 }
 
-export async function markNoShows(now = new Date()): Promise<number> {
+/**
+ * Response-window timeouts → escalation policy. Only alerts that are past the
+ * response window but still inside the resolution window (older ones belong to
+ * closeStaleAlerts) and that were not progress-checked in the last 15 minutes.
+ */
+export async function runNoResponseTimeouts(now = new Date(), budget?: TickBudget): Promise<{ checked: number; escalated: number; truncated: boolean }> {
+  const b = budgetOr(budget);
+  const windowMin = getResponseWindowMinutes();
+  const alertWindowMs = getAlertWindowHours() * 3_600_000;
+  const cutoff = new Date(now.getTime() - windowMin * 60_000);
+  const oldest = new Date(now.getTime() - alertWindowMs);
+  const recheckCutoff = new Date(now.getTime() - PROGRESS_RECHECK_MIN * 60_000);
+  const alerts = await db.alert.findMany({
+    where: { status: { in: OPEN_STATUSES }, outcome: null, createdAt: { lte: cutoff, gt: oldest } },
+    select: { id: true },
+    orderBy: { createdAt: "asc" },
+    take: b.batch,
+  });
+  let checked = 0;
+  let escalated = 0;
+  let truncated = false;
+  for (const a of alerts) {
+    if (timeLeft(b) < 8_000) {
+      truncated = true;
+      break;
+    }
+    const recent = await db.agentDecision.findFirst({
+      where: { requestId: a.id, eventType: "fulfillment_progress", createdAt: { gte: recheckCutoff } },
+      select: { id: true },
+    });
+    if (recent) continue;
+    const r = await checkFulfillmentProgress(a.id);
+    checked++;
+    if (r.escalated) escalated++;
+  }
+  return { checked, escalated, truncated };
+}
+
+export async function markNoShows(now = new Date(), budget?: TickBudget): Promise<number> {
+  const b = budgetOr(budget);
   const grace = getNoShowGraceMinutes();
   const cutoff = new Date(now.getTime() - grace * 60_000);
   const overdue = await db.donorResponseHistory.findMany({
     where: { status: "accepted", confirmed: false, noShow: false, expectedArrival: { lte: cutoff } },
     select: { id: true, donorId: true, requestId: true, expectedArrival: true },
-    take: 500,
+    orderBy: { expectedArrival: "asc" },
+    take: b.batch,
   });
   let n = 0;
   for (const r of overdue) {
+    if (timeLeft(b) < 8_000) break;
     // If the alert is already resolved we still count the donor as a no-show for their history.
     await db.donorResponseHistory.update({ where: { id: r.id }, data: { noShow: true } });
     await recordOutcome({ requestId: r.requestId, task: "donor_show", subjectId: r.donorId, actual: 0, outcomeAt: now });
@@ -78,19 +126,25 @@ export async function markNoShows(now = new Date()): Promise<number> {
       },
     });
     n++;
-    // Shortfall may have changed → let the coordinator re-evaluate
-    await checkFulfillmentProgress(r.requestId);
+    // Shortfall may have changed → let the coordinator re-evaluate (only for alerts still open)
+    const open = await db.alert.findFirst({ where: { id: r.requestId, outcome: null, status: { in: OPEN_STATUSES } }, select: { id: true } });
+    if (open) await checkFulfillmentProgress(r.requestId);
   }
   return n;
 }
 
-export async function settleTransportOutcomes(now = new Date()): Promise<{ settled: number; unitsDelivered: number }> {
+export async function settleTransportOutcomes(now = new Date(), budget?: TickBudget): Promise<{ settled: number; unitsDelivered: number }> {
+  const b = budgetOr(budget);
   const done = await db.transportRequest.findMany({
     where: { status: { in: ["delivered", "cancelled", "failed"] }, deliveredOk: null },
-    take: 200,
+    orderBy: { updatedAt: "asc" },
+    take: b.batch,
   });
   let unitsDelivered = 0;
+  let settled = 0;
   for (const t of done) {
+    if (timeLeft(b) < 8_000) break;
+    settled++;
     const delivered = t.status === "delivered" && !t.coldChainBreached;
     const minutes = t.deliveryTime ? Math.max(1, (t.deliveryTime.getTime() - t.createdAt.getTime()) / 60_000) : null;
     // find the alert this transport served (workflow metadata carries transport_id)
@@ -128,18 +182,27 @@ export async function settleTransportOutcomes(now = new Date()): Promise<{ settl
       await db.inventoryUnit.updateMany({ where: { reservedFor: wf.requestId, reserved: true }, data: { reserved: false, reservedFor: null } });
     }
   }
-  return { settled: done.length, unitsDelivered };
+  return { settled, unitsDelivered };
 }
 
-export async function closeStaleAlerts(now = new Date()): Promise<{ closed: number; byOutcome: Record<string, number> }> {
+export async function closeStaleAlerts(now = new Date(), budget?: TickBudget): Promise<{ closed: number; byOutcome: Record<string, number>; truncated: boolean }> {
+  const b = budgetOr(budget);
   const windowMs = getAlertWindowHours() * 3_600_000;
   const cutoff = new Date(now.getTime() - windowMs);
   const stale = await db.alert.findMany({
     where: { status: { in: OPEN_STATUSES }, outcome: null, createdAt: { lte: cutoff } },
-    take: 200,
+    orderBy: { createdAt: "asc" },
+    take: b.batch,
   });
   const byOutcome: Record<string, number> = {};
+  let closed = 0;
+  let truncated = false;
   for (const a of stale) {
+    if (timeLeft(b) < 8_000) {
+      truncated = true;
+      break;
+    }
+    closed++;
     const wf = await db.workflowState.findUnique({ where: { requestId: a.id } });
     const escalated = wf?.currentStep === "escalated_manual";
     const outcome = escalated ? "ESCALATED" : a.unitsCollected > 0 ? "PARTIAL" : "FAILED";
@@ -174,19 +237,33 @@ export async function closeStaleAlerts(now = new Date()): Promise<{ closed: numb
     });
     byOutcome[outcome] = (byOutcome[outcome] ?? 0) + 1;
   }
-  return { closed: stale.length, byOutcome };
+  return { closed, byOutcome, truncated };
 }
 
-export async function runAgentTick(now = new Date()): Promise<TickResult> {
+/**
+ * One scheduler tick, bounded by `budgetMs` (default 40 s — safely inside a 60 s
+ * serverless limit). Order matters: close expired alerts first so they never
+ * reach the (expensive) progress check; then no-shows and transports (which
+ * change shortfalls); then the response-window escalation check.
+ */
+export async function runAgentTick(now = new Date(), opts: { budgetMs?: number; batch?: number } = {}): Promise<TickResult> {
+  const started = Date.now();
+  const budget: TickBudget = { deadlineAt: started + (opts.budgetMs ?? DEFAULT_BUDGET_MS), batch: opts.batch ?? DEFAULT_BATCH };
   const result: TickResult = {
     ranAt: now.toISOString(),
     timeouts: { checked: 0, escalated: 0 },
     noShows: 0,
     transports: { settled: 0, unitsDelivered: 0 },
     staleAlerts: { closed: 0, byOutcome: {} },
+    truncated: false,
+    elapsedMs: 0,
     errors: [],
   };
   const step = async (name: string, fn: () => Promise<void>) => {
+    if (timeLeft(budget) < 8_000) {
+      result.truncated = true;
+      return;
+    }
     try {
       await fn();
     } catch (e) {
@@ -194,10 +271,19 @@ export async function runAgentTick(now = new Date()): Promise<TickResult> {
       result.errors.push(`${name}: ${String(e)}`);
     }
   };
-  await step("noShows", async () => { result.noShows = await markNoShows(now); });
-  await step("transports", async () => { result.transports = await settleTransportOutcomes(now); });
-  await step("timeouts", async () => { result.timeouts = await runNoResponseTimeouts(now); });
-  await step("staleAlerts", async () => { result.staleAlerts = await closeStaleAlerts(now); });
+  await step("staleAlerts", async () => {
+    const r = await closeStaleAlerts(now, budget);
+    result.staleAlerts = { closed: r.closed, byOutcome: r.byOutcome };
+    result.truncated ||= r.truncated;
+  });
+  await step("noShows", async () => { result.noShows = await markNoShows(now, budget); });
+  await step("transports", async () => { result.transports = await settleTransportOutcomes(now, budget); });
+  await step("timeouts", async () => {
+    const r = await runNoResponseTimeouts(now, budget);
+    result.timeouts = { checked: r.checked, escalated: r.escalated };
+    result.truncated ||= r.truncated;
+  });
+  result.elapsedMs = Date.now() - started;
   console.log("[scheduler] tick", JSON.stringify(result));
   return result;
 }
