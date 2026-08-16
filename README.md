@@ -1,18 +1,21 @@
 # Haemologix 🩸
 
-**Real-time Blood Alert System**
+**India's real-time emergency blood network — [haemologix.in](https://www.haemologix.in)**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-v18+-green.svg)](https://nodejs.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-NeonDB-336791.svg)](https://neon.tech/)
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black.svg)](https://Haemologix.vercel.app/)
+[![Live](https://img.shields.io/badge/Live-haemologix.in-9B2226.svg)](https://www.haemologix.in/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red.svg)](LICENSE)
 
-Haemologix connects verified hospitals to nearby, eligible blood donors — filtered by blood group, urgency, and location.  
-Hospitals raise an alert, donors accept in one tap, and donations are tracked with history, eligibility, and analytics.
+Haemologix is an Indian emergency blood network that connects hospitals and blood banks with nearby eligible blood donors through real-time alerts, so urgent blood, plasma and platelet requirements are met in minutes.
+
+Hospitals raise an alert, matched donors (by blood group, distance and eligibility) are notified instantly and accept in one tap, and every donation is tracked with history, eligibility and analytics. Built and operated by Haemologix Private Limited, Howrah, West Bengal, India — **[www.haemologix.in](https://www.haemologix.in)**.
+
+> Not to be confused with HaemaLogiX (haemalogix.com), an unrelated Australian biotech company.
 
 > **Because minutes matter. Every second counts when it comes to saving lives.** 💉
 
