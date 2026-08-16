@@ -1042,7 +1042,7 @@
     "Trained on simulator data (priors 53c7ec87); calibrate against real outcomes before authority mode."
   ],
   "notes": "First outcome-prediction model trained on sim-v1 (100k scenarios)",
-  "status": "active",
+  "status": "retired",
   "dataDirs": [
     "data\\sim\\v1"
   ],

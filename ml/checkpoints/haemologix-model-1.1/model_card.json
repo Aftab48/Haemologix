@@ -707,7 +707,7 @@
         "n": 20854,
         "mae": 18.481250762939453,
         "p50_abs_err": 16.000003814697266,
-        "p90_abs_err": 31.0,
+        "p90_abs_err": 31,
         "mape": 0.3824622929096222,
         "label_mean": 58.81385040283203,
         "pred_mean": 41.62184524536133
@@ -723,16 +723,16 @@
         "unitBloodType=B-": 0.00013169477871041404,
         "urgency=medium": 0.00011067930996611633,
         "unitsRequested": 0.0001101935903495301,
-        "isWeekend": 9.669058500843282e-05,
-        "unitBloodType=A+": 4.092997302433325e-05,
-        "unitBloodType=A-": 1.7939244505918213e-05,
-        "urgency=high": 1.2628710031242064e-05,
-        "alertBloodType=A+": 6.767693324434849e-06,
-        "coverageRatio": 0.0,
-        "dayOfWeek": 0.0
+        "isWeekend": 0.00009669058500843282,
+        "unitBloodType=A+": 0.00004092997302433325,
+        "unitBloodType=A-": 0.000017939244505918213,
+        "urgency=high": 0.000012628710031242064,
+        "alertBloodType=A+": 0.000006767693324434849,
+        "coverageRatio": 0,
+        "dayOfWeek": 0
       },
       "trained_at": "2026-08-16T19:52:56.878473+00:00",
-      "seconds": 35.0,
+      "seconds": 35,
       "candidates": {
         "gbdt": {
           "n": 20854,
@@ -815,14 +815,14 @@
         "bloodType=A+": 0.0005338763794422716,
         "isWeekend": 0.00029007595675064403,
         "trafficMultiplier": 0.00012585374439734798,
-        "activeAlertsSameType": 0.0,
-        "dailyUsage": 0.0,
-        "dayOfWeek": 0.0,
-        "daysRemaining": 0.0,
-        "hospitalIsBloodBank": 0.0
+        "activeAlertsSameType": 0,
+        "dailyUsage": 0,
+        "dayOfWeek": 0,
+        "daysRemaining": 0,
+        "hospitalIsBloodBank": 0
       },
       "trained_at": "2026-08-16T19:54:59.082419+00:00",
-      "seconds": 122.0,
+      "seconds": 122,
       "candidates": {
         "gbdt": {
           "n": 59687,
@@ -1042,7 +1042,7 @@
     "Trained on simulator data (priors d63df194); calibrate against real outcomes before authority mode."
   ],
   "notes": "priors-v2: acceptance half-calibrated to prod history (4.4% obs); trained on sim-v2",
-  "status": "evaluated",
+  "status": "active",
   "dataDirs": [
     "data\\sim\\v2"
   ],
@@ -1052,5 +1052,8 @@
   "seed": 7,
   "evaluatedAt": "2026-08-16T19:56:53.652443+00:00",
   "allBeatBaseline": true,
-  "tasksNotBeatingBaseline": []
+  "tasksNotBeatingBaseline": [],
+  "approvedBy": "Aftab Alam",
+  "approvedAt": "2026-08-16T21:10:12.562Z",
+  "activatedAt": "2026-08-16T21:10:15.045Z"
 }
