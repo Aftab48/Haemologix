@@ -435,9 +435,21 @@ Expected: 200 { "success": true, "last_donation_date_updated": true }; 401 witho
 With reason "donated_recently" the donor's lastDonationDate moves later (never earlier)
 so the 90/120-day interval keeps them out of matching.
 
+   The mobile app-backend calls this same route server-to-server: header
+   x-app-backend-key = APP_BACKEND_SHARED_SECRET (its UPSTREAM_SHARED_SECRET) plus
+   donor_id in the body. Without a matching key donor_id is ignored and the Clerk
+   session is required as above.
+
 d) Alert reaches a terminal state → remaining commitments are released by the
    system (close route inline; scheduler step releaseStaleCommitments as safety
    net; no donor_show label). Library-level E2E: npx tsx scripts/ml/e2eCommitment.ts
+
+e) Through the mobile app-backend (JWT → app-backend → this app → agents), on the
+   ML DB: web dev server via launch config haemologix-dev-mldb (3100) and
+   ../app-backend on 4000 with DATABASE_URL=<ml> WEB_BACKEND_URL=http://localhost:3100,
+   then: npx tsx scripts/ml/e2eAppBackend.ts
+   (accept → commitment surfaced, only-that-alert list, 409 ALREADY_COMMITTED,
+   toggle free, release → released/Released, donated_recently → cooldown 409).
 
 
 TEST 11: TIMEOUT FALLBACK (NO DONORS RESPOND)
