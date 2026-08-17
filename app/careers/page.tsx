@@ -9,8 +9,11 @@ import {
   MapPin,
 } from "lucide-react";
 import Header from "@/components/Header";
+import { getPublishedJobs, type PublicJob } from "@/lib/careers/queries";
 import { ORG, SITE_URL, absoluteUrl } from "@/lib/seo";
 import styles from "./careers.module.css";
+
+export const dynamic = "force-dynamic";
 
 const pageUrl = absoluteUrl("/careers");
 const title = "Careers at Haemologix";
@@ -87,10 +90,32 @@ const careersJsonLd = {
   inLanguage: "en-IN",
 };
 
-export default function CareersPage() {
+const employmentLabels = {
+  FULL_TIME: "Full time",
+  PART_TIME: "Part time",
+  CONTRACT: "Contract",
+  INTERNSHIP: "Internship",
+} as const;
+
+const workplaceLabels = {
+  ON_SITE: "On site",
+  HYBRID: "Hybrid",
+  REMOTE: "Remote",
+} as const;
+
+export default async function CareersPage() {
   const applicationHref = `mailto:${ORG.email}?subject=${encodeURIComponent(
     "Careers at Haemologix",
   )}`;
+  let jobs: PublicJob[] = [];
+  let openingsAvailable = true;
+
+  try {
+    jobs = await getPublishedJobs();
+  } catch (error) {
+    openingsAvailable = false;
+    console.error("Could not load published careers", error);
+  }
 
   return (
     <div className={styles.page}>
@@ -242,18 +267,32 @@ export default function CareersPage() {
                 <span role="columnheader">LOCATION</span>
                 <span role="columnheader">STATUS</span>
               </div>
-              <div className={styles.emptyRole} role="row">
-                <div role="cell">
-                  <strong>No published roles right now.</strong>
-                  <p>
-                    We hire deliberately. When a position opens, its scope and application details
-                    will appear here first.
-                  </p>
+              {jobs.map((job) => (
+                <Link href={`/careers/${job.slug}`} className={styles.roleRow} role="row" key={job.id}>
+                  <div role="cell">
+                    <strong>{job.title}</strong>
+                    <small>{employmentLabels[job.employmentType]} / {workplaceLabels[job.workplaceType]}</small>
+                  </div>
+                  <span role="cell">{job.team}</span>
+                  <span role="cell">{job.location}</span>
+                  <span role="cell" className={styles.statusOpen}>OPEN <ArrowUpRight aria-hidden="true" /></span>
+                </Link>
+              ))}
+              {jobs.length === 0 ? (
+                <div className={styles.emptyRole} role="row">
+                  <div role="cell">
+                    <strong>{openingsAvailable ? "No published roles right now." : "Openings temporarily unavailable."}</strong>
+                    <p>
+                      {openingsAvailable
+                        ? "We hire deliberately. When a position opens, its scope and application details will appear here first."
+                        : "Please check back shortly or write to us directly about the work you want to do."}
+                    </p>
+                  </div>
+                  <span role="cell">—</span>
+                  <span role="cell">—</span>
+                  <span role="cell" className={styles.statusOpen}>TALENT NETWORK OPEN</span>
                 </div>
-                <span role="cell">—</span>
-                <span role="cell">—</span>
-                <span role="cell" className={styles.statusOpen}>TALENT NETWORK OPEN</span>
-              </div>
+              ) : null}
             </div>
 
             <div className={styles.introCallout}>

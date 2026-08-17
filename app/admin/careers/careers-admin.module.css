@@ -1,0 +1,746 @@
+.page {
+  --paper: #eef2ef;
+  --paper-deep: #dfe8e3;
+  --ink: #202435;
+  --ruby: #9b2226;
+  --ruby-dark: #71171b;
+  --oxygen: #005f73;
+  --mist: #94d2bd;
+  --line: rgba(32, 36, 53, 0.22);
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(32, 36, 53, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(32, 36, 53, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.kicker,
+.loginTopline,
+.statStrip span,
+.editorHeading span,
+.editorForm legend,
+.jobStatus {
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.loginShell {
+  position: relative;
+  z-index: 1;
+  width: min(1080px, calc(100% - 40px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 44px 0;
+}
+
+.loginTopline {
+  display: flex;
+  justify-content: space-between;
+  padding: 11px 0;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.loginCard {
+  width: min(650px, 100%);
+  margin: 11vh auto 0;
+  padding: 48px;
+  border: 1px solid var(--ink);
+  background: #f8faf8;
+  box-shadow: 18px 18px 0 var(--mist);
+}
+
+.loginMarker {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 34px;
+  place-items: center;
+  color: white;
+  background: var(--ruby);
+}
+
+.loginMarker svg {
+  width: 24px;
+}
+
+.kicker {
+  margin: 0 0 13px;
+  color: var(--ruby);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.loginCard h1,
+.managerHeader h1,
+.editorHeading h2 {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.loginCard h1 {
+  max-width: 530px;
+  margin: 0;
+  font-size: clamp(52px, 7vw, 76px);
+  line-height: 0.88;
+  letter-spacing: -0.035em;
+}
+
+.loginCopy {
+  max-width: 540px;
+  margin: 26px 0 30px;
+  color: rgba(32, 36, 53, 0.7);
+  line-height: 1.65;
+}
+
+.loginForm {
+  display: grid;
+  gap: 10px;
+}
+
+.loginForm label,
+.editorForm label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.loginForm input,
+.editorForm input,
+.editorForm textarea,
+.editorForm select,
+.searchBox input {
+  width: 100%;
+  border: 1px solid rgba(32, 36, 53, 0.5);
+  border-radius: 0;
+  outline: none;
+  color: var(--ink);
+  background: white;
+  font: inherit;
+  transition: border 150ms ease, box-shadow 150ms ease;
+}
+
+.loginForm input {
+  min-height: 52px;
+  padding: 12px 14px;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.loginForm input:focus,
+.editorForm input:focus,
+.editorForm textarea:focus,
+.editorForm select:focus,
+.searchBox input:focus {
+  border-color: var(--oxygen);
+  box-shadow: 0 0 0 3px rgba(0, 95, 115, 0.14);
+}
+
+.loginForm button,
+.saveButton,
+.newButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  min-height: 50px;
+  border: 1px solid var(--ink);
+  color: white;
+  background: var(--ink);
+  font-weight: 800;
+}
+
+.loginForm button {
+  margin-top: 8px;
+}
+
+.loginForm button:hover:not(:disabled),
+.saveButton:hover:not(:disabled),
+.newButton:hover {
+  border-color: var(--ruby);
+  background: var(--ruby);
+}
+
+.loginForm button:disabled,
+.saveButton:disabled,
+.deleteButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.loginForm button svg,
+.backLink svg,
+.headerActions svg,
+.newButton svg,
+.iconButton svg,
+.adminBack svg,
+.formActions svg,
+.editorHeading > a svg {
+  width: 17px;
+  height: 17px;
+}
+
+.formError,
+.formSuccess {
+  margin: 4px 0 0;
+  padding: 11px 13px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.formError {
+  color: var(--ruby-dark);
+  background: rgba(155, 34, 38, 0.1);
+}
+
+.formSuccess {
+  color: var(--oxygen);
+  background: rgba(0, 95, 115, 0.11);
+}
+
+.backLink,
+.adminBack {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  color: rgba(32, 36, 53, 0.65);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.backLink:hover,
+.adminBack:hover {
+  color: var(--ruby);
+}
+
+.managerShell {
+  position: relative;
+  z-index: 1;
+  width: min(1580px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 28px 0 56px;
+}
+
+.managerHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 0 24px;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+
+.managerHeader h1 {
+  margin: 0;
+  font-size: clamp(48px, 5vw, 76px);
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+}
+
+.headerActions {
+  display: flex;
+  gap: 9px;
+}
+
+.headerActions a,
+.headerActions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.headerActions a:hover,
+.headerActions button:hover {
+  color: white;
+  background: var(--ink);
+}
+
+.statStrip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--ink);
+}
+
+.statStrip > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px 18px;
+  border-right: 1px solid var(--line);
+}
+
+.statStrip > div:last-child {
+  border-right: 0;
+}
+
+.statStrip span {
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.statStrip strong {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 28px;
+}
+
+.managerGrid {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  min-height: 720px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.jobRail {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 20px 20px 20px 0;
+  border-right: 1px solid var(--ink);
+}
+
+.railTools {
+  display: grid;
+  grid-template-columns: 1fr 48px;
+  gap: 8px;
+}
+
+.newButton {
+  padding: 10px 14px;
+}
+
+.iconButton {
+  display: grid;
+  width: 48px;
+  height: 50px;
+  place-items: center;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  background: transparent;
+}
+
+.iconButton:hover {
+  color: white;
+  background: var(--oxygen);
+}
+
+.searchBox {
+  position: relative;
+  display: block;
+  margin: 12px 0;
+}
+
+.searchBox svg {
+  position: absolute;
+  top: 50%;
+  left: 13px;
+  z-index: 1;
+  width: 16px;
+  color: rgba(32, 36, 53, 0.5);
+  transform: translateY(-50%);
+}
+
+.searchBox input {
+  min-height: 44px;
+  padding: 10px 12px 10px 40px;
+  font-size: 13px;
+}
+
+.jobList {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  max-height: 680px;
+  overflow-y: auto;
+}
+
+.jobCard {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px 10px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.5);
+  text-align: left;
+}
+
+.jobCard:hover,
+.jobCardActive {
+  border-color: var(--ink);
+  background: white;
+}
+
+.jobCardActive {
+  box-shadow: inset 5px 0 0 var(--ruby);
+}
+
+.jobCard strong {
+  grid-column: 1 / -1;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 23px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.jobCard small {
+  grid-column: 1 / -1;
+  color: rgba(32, 36, 53, 0.62);
+  line-height: 1.4;
+}
+
+.jobCard time {
+  grid-row: 1;
+  grid-column: 2;
+  color: rgba(32, 36, 53, 0.48);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+}
+
+.jobStatus {
+  width: fit-content;
+  padding: 4px 6px;
+  color: var(--ink);
+  background: var(--paper-deep);
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.jobStatus[data-status="LIVE"] {
+  color: white;
+  background: var(--oxygen);
+}
+
+.jobStatus[data-status="CLOSED"],
+.jobStatus[data-status="EXPIRED"] {
+  color: white;
+  background: var(--ruby-dark);
+}
+
+.jobStatus[data-status="SCHEDULED"] {
+  background: var(--mist);
+}
+
+.railEmpty {
+  margin: 0;
+  padding: 24px 14px;
+  color: rgba(32, 36, 53, 0.6);
+  border: 1px dashed var(--line);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.adminBack {
+  margin-top: auto;
+  padding-top: 22px;
+}
+
+.editorPane {
+  min-width: 0;
+  padding: 20px 0 20px 28px;
+}
+
+.editorHeading {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.editorIcon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  color: white;
+  background: var(--ruby);
+}
+
+.editorIcon svg {
+  width: 21px;
+}
+
+.editorHeading span {
+  color: rgba(32, 36, 53, 0.55);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.editorHeading h2 {
+  margin: 4px 0 0;
+  font-size: 34px;
+  line-height: 0.95;
+}
+
+.editorHeading > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.editorForm {
+  display: grid;
+  gap: 24px;
+  padding-top: 24px;
+}
+
+.editorForm fieldset {
+  display: grid;
+  min-width: 0;
+  gap: 16px;
+  margin: 0;
+  padding: 0 0 24px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.editorForm legend {
+  margin-bottom: 17px;
+  color: var(--ruby);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.editorForm label > span {
+  color: rgba(32, 36, 53, 0.48);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.editorForm input,
+.editorForm select,
+.editorForm textarea {
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.editorForm textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.summaryInput {
+  min-height: 92px !important;
+}
+
+.descriptionInput {
+  min-height: 280px !important;
+  font-family: "IBM Plex Mono", monospace !important;
+  font-size: 12px !important;
+}
+
+.editorForm label > small {
+  justify-self: end;
+  margin-top: -28px;
+  margin-right: 10px;
+  color: rgba(32, 36, 53, 0.48);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+}
+
+.twoColumns,
+.publishGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.publishGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.fieldNote {
+  margin: 0;
+  color: rgba(32, 36, 53, 0.58);
+  font-size: 11px;
+}
+
+.formActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.saveButton,
+.deleteButton {
+  padding: 11px 17px;
+}
+
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 50px;
+  border: 1px solid var(--ruby);
+  color: var(--ruby);
+  background: transparent;
+  font-weight: 800;
+}
+
+.deleteButton:hover:not(:disabled) {
+  color: white;
+  background: var(--ruby);
+}
+
+.spinning {
+  animation: spin 700ms linear infinite;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1050px) {
+  .managerGrid {
+    grid-template-columns: 290px minmax(0, 1fr);
+  }
+
+  .publishGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .loginShell,
+  .managerShell {
+    width: min(100% - 24px, 1580px);
+  }
+
+  .loginTopline span:last-child {
+    display: none;
+  }
+
+  .loginCard {
+    margin-top: 8vh;
+    padding: 30px 22px;
+    box-shadow: 9px 9px 0 var(--mist);
+  }
+
+  .managerHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .headerActions {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .headerActions a,
+  .headerActions button {
+    flex: 1 0 auto;
+    justify-content: center;
+  }
+
+  .statStrip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .statStrip > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .statStrip > div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .managerGrid {
+    display: block;
+  }
+
+  .jobRail {
+    padding: 18px 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .jobList {
+    display: flex;
+    max-height: none;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+
+  .jobCard {
+    flex: 0 0 260px;
+  }
+
+  .adminBack {
+    display: none;
+  }
+
+  .editorPane {
+    padding: 22px 0;
+  }
+
+  .editorHeading {
+    grid-template-columns: 48px 1fr;
+  }
+
+  .editorHeading > a {
+    grid-column: 1 / -1;
+    width: fit-content;
+  }
+
+  .twoColumns,
+  .publishGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .saveButton,
+  .deleteButton {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinning { animation: none; }
+}

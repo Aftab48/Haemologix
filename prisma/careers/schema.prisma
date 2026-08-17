@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../lib/generated/careers"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("CAREERS_DATABASE_URL")
+}
+
+model JobPosting {
+  id               String         @id @default(cuid())
+  slug             String         @unique @db.VarChar(160)
+  title            String         @db.VarChar(160)
+  team             String         @db.VarChar(100)
+  location         String         @db.VarChar(160)
+  summary          String         @db.VarChar(300)
+  description      String         @db.Text
+  employmentType   EmploymentType
+  workplaceType    WorkplaceType
+  applicationUrl   String?        @db.Text
+  applicationEmail String?        @db.VarChar(254)
+  status           JobStatus      @default(DRAFT)
+  publishedAt      DateTime?
+  closesAt         DateTime?
+  sortOrder        Int            @default(0)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([status, publishedAt])
+  @@index([status, sortOrder])
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
+
+enum WorkplaceType {
+  ON_SITE
+  HYBRID
+  REMOTE
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}

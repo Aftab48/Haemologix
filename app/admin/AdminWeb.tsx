@@ -40,6 +40,7 @@ import {
   Heart,
   Bot,
   Brain,
+  BriefcaseBusiness,
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, UserButton } from "@clerk/nextjs";
@@ -429,6 +430,13 @@ function AdminWebDashboard() {
 
           {/* Nav items */}
           <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+            <Link
+              href="/admin/careers"
+              className="flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-200 text-left text-text-dark/60 hover:bg-white/10 hover:text-text-dark"
+            >
+              <BriefcaseBusiness className="w-4 h-4 shrink-0" />
+              <span className="truncate">Careers publishing</span>
+            </Link>
             {tabOptions.map(({ value, label, Icon }) => (
               <button
                 key={value}
@@ -458,6 +466,13 @@ function AdminWebDashboard() {
 
           {/* Mobile nav */}
           <div className="md:hidden glass-morphism border-b border-white/20 p-3 flex overflow-x-auto gap-1 shrink-0">
+            <Link
+              href="/admin/careers"
+              className="flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all whitespace-nowrap shrink-0 text-text-dark/60 hover:bg-white/10 hover:text-text-dark"
+            >
+              <BriefcaseBusiness className="w-3 h-3" />
+              Careers
+            </Link>
             {tabOptions.map(({ value, label, Icon }) => (
               <button
                 key={value}
