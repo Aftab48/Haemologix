@@ -1,0 +1,83 @@
+{
+  "task": "expansion_yield",
+  "numeric_cols": [
+    "acceptedSoFar",
+    "activeAlertsSameType",
+    "currentRadiusKm",
+    "dayOfWeek",
+    "eligiblePerKm2",
+    "eligibleSoFar",
+    "escalationRung",
+    "hour",
+    "minutesSinceAlert",
+    "nextRadiusKm",
+    "notifiedSoFar",
+    "radiusRatio",
+    "rarity",
+    "ringAreaKm2",
+    "trafficMultiplier",
+    "unitsNeeded"
+  ],
+  "bool_cols": [
+    "isNight",
+    "isWeekend"
+  ],
+  "cat_cols": [
+    "bloodType",
+    "urgency"
+  ],
+  "cat_vocab": {
+    "bloodType": [
+      "A+",
+      "A-",
+      "AB+",
+      "AB-",
+      "B+",
+      "B-",
+      "O+",
+      "O-"
+    ],
+    "urgency": [
+      "critical",
+      "high",
+      "low",
+      "medium"
+    ]
+  },
+  "num_mean": {
+    "acceptedSoFar": 0.5608479789664459,
+    "activeAlertsSameType": 0.413319549208051,
+    "currentRadiusKm": 48.42388737859121,
+    "dayOfWeek": 3.0078110043266837,
+    "eligiblePerKm2": 0.004405289019923166,
+    "eligibleSoFar": 16.06671261375094,
+    "escalationRung": 1.7697668185473063,
+    "hour": 13.410116016387793,
+    "minutesSinceAlert": 100.99687304565353,
+    "nextRadiusKm": 76.77126009878623,
+    "notifiedSoFar": 7.135186532399076,
+    "radiusRatio": 1.8261724291968193,
+    "rarity": 7.792791413000472,
+    "ringAreaKm2": 10637.564000459472,
+    "trafficMultiplier": 0.9866000433944686,
+    "unitsNeeded": 6.404142895432094
+  },
+  "num_std": {
+    "acceptedSoFar": 1.2376157449692757,
+    "activeAlertsSameType": 1.0170971446008175,
+    "currentRadiusKm": 26.60974620615932,
+    "dayOfWeek": 1.9935609344816672,
+    "eligiblePerKm2": 0.010962972839109325,
+    "eligibleSoFar": 29.0105679488296,
+    "escalationRung": 0.7853249332954122,
+    "hour": 6.719729295383622,
+    "minutesSinceAlert": 85.74017583276446,
+    "nextRadiusKm": 23.349701125037164,
+    "notifiedSoFar": 9.424795385563646,
+    "radiusRatio": 0.4438041636551819,
+    "rarity": 2.7704367224893516,
+    "ringAreaKm2": 6013.391962376203,
+    "trafficMultiplier": 0.2440825341198468,
+    "unitsNeeded": 2.5489748378965955
+  }
+}

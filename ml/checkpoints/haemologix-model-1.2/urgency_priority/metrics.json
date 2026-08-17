@@ -1,0 +1,86 @@
+{
+  "task": "urgency_priority",
+  "kind": "multiclass",
+  "backend": "mlp",
+  "rows": {
+    "total": 400000,
+    "train": 279891,
+    "val": 60017,
+    "test": 60092
+  },
+  "features": [
+    "activeAlertsSameType",
+    "currentUnits",
+    "dailyUsage",
+    "dayOfWeek",
+    "daysRemaining",
+    "hour",
+    "minimumRequired",
+    "rarity",
+    "stockRatio",
+    "trafficMultiplier",
+    "hospitalIsBloodBank",
+    "isNight",
+    "isWeekend",
+    "bloodType=A+",
+    "bloodType=A-",
+    "bloodType=AB+",
+    "bloodType=AB-",
+    "bloodType=B+",
+    "bloodType=B-",
+    "bloodType=O+",
+    "bloodType=O-"
+  ],
+  "n_features": 21,
+  "metrics": {
+    "n": 60092,
+    "accuracy": 0.8558044332024229,
+    "macro_f1": 0.5595470217701268,
+    "within_one": 0.9285595420355455,
+    "log_loss": 0.3216427266597748
+  },
+  "candidates": {
+    "gbdt": {
+      "n": 60092,
+      "accuracy": 0.8560706916062039,
+      "macro_f1": 0.5617507714293233,
+      "within_one": 0.9290088530919257,
+      "log_loss": 0.3220771551132202
+    },
+    "mlp": {
+      "n": 60092,
+      "accuracy": 0.8558044332024229,
+      "macro_f1": 0.5595470217701268,
+      "within_one": 0.9285595420355455,
+      "log_loss": 0.3216427266597748
+    }
+  },
+  "baseline_metrics": {
+    "n": 60092,
+    "accuracy": 0.6939193237036544,
+    "macro_f1": 0.20482655637531805,
+    "within_one": 0.8212241230113826,
+    "log_loss": 0.9099389910697937
+  },
+  "primary_metric": "macro_f1",
+  "beats_baseline": true,
+  "feature_importance": {
+    "hospitalIsBloodBank": 0.13962043821811676,
+    "stockRatio": 0.09228195250034332,
+    "daysRemaining": 0.07051772624254227,
+    "currentUnits": 0.06477446109056473,
+    "bloodType=A-": 0.06043368577957153,
+    "bloodType=AB+": 0.053965743631124496,
+    "bloodType=B-": 0.05044395104050636,
+    "bloodType=B+": 0.04576776176691055,
+    "minimumRequired": 0.04517364874482155,
+    "bloodType=A+": 0.04184525087475777,
+    "rarity": 0.04158610478043556,
+    "dailyUsage": 0.039163023233413696,
+    "bloodType=O-": 0.03776481747627258,
+    "bloodType=AB-": 0.03618566319346428,
+    "isNight": 0.03586824983358383
+  },
+  "trained_at": "2026-08-17T10:16:55.150352+00:00",
+  "seconds": 49.7
+}

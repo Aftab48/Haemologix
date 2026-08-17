@@ -1042,7 +1042,7 @@
     "Trained on simulator data (priors d63df194); calibrate against real outcomes before authority mode."
   ],
   "notes": "priors-v2: acceptance half-calibrated to prod history (4.4% obs); trained on sim-v2",
-  "status": "active",
+  "status": "retired",
   "dataDirs": [
     "data\\sim\\v2"
   ],

@@ -1,0 +1,46 @@
+{
+  "task": "eligibility_needs_review",
+  "numeric_cols": [
+    "age",
+    "bmi",
+    "daysSinceLastDonation",
+    "failedCount",
+    "hemoglobin",
+    "minMarginRatio",
+    "weightKg"
+  ],
+  "bool_cols": [
+    "bmiMissing",
+    "hardFailure",
+    "hemoglobinMissing",
+    "neverDonated",
+    "passed"
+  ],
+  "cat_cols": [
+    "gender"
+  ],
+  "cat_vocab": {
+    "gender": [
+      "female",
+      "male"
+    ]
+  },
+  "num_mean": {
+    "age": 39.01875287826158,
+    "bmi": 20.04334938614936,
+    "daysSinceLastDonation": 311.4722705155346,
+    "failedCount": 1.1045670202094124,
+    "hemoglobin": 9.800847860001355,
+    "minMarginRatio": 0.10184571946722262,
+    "weightKg": 64.30106919608593
+  },
+  "num_std": {
+    "age": 12.412628924432317,
+    "bmi": 9.11636780501933,
+    "daysSinceLastDonation": 207.03821330954213,
+    "failedCount": 1.124271575258809,
+    "hemoglobin": 6.500334312867054,
+    "minMarginRatio": 0.08972669483785675,
+    "weightKg": 10.013273595752018
+  }
+}
