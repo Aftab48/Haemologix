@@ -390,6 +390,16 @@ model DonorResponseHistory {
   /// When the hospital confirmed the donor arrived (label for donor_show / donor_eta).
   arrivedAt         DateTime?
   donationCompleted Boolean   @default(false)
+  /// Commitment release. An accepted row with confirmed=false, noShow=false and
+  /// releasedAt=null is an *open commitment*: the donor is on hold for this alert
+  /// (see lib/agents/commitment.ts). Release is distinct from no-show forever:
+  /// noShow = "accepted, did not arrive, did not tell us"; releasedAt = someone said so.
+  releasedAt        DateTime?
+  /// donor | coordinator | system
+  releasedBy        String?
+  /// cant_make_it | unwell | donated_recently | other | alert_closed | alert_expired | backfill
+  releaseReason     String?
+  releaseNote       String?
   donor           Donor     @relation("DonorHistory", fields: [donorId], references: [id], onDelete: Cascade)
 
   @@index([donorId])
@@ -703,6 +713,8 @@ enum ResponseStatus {
   PENDING
   CONFIRMED
   DECLINED
+  /// accepted, then released (donor / coordinator / system) before arriving
+  RELEASED
 }
 
 enum VerificationStatus {

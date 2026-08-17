@@ -42,6 +42,20 @@ export async function GET(
       where: { requestId: alertId },
     });
 
+    // Per-donor commitment state (arrival / no-show / release) lives on
+    // DonorResponseHistory, not on AlertResponse — merge the latest row per donor
+    // so the page can show "Arrived", "Released", "No-show" and offer release.
+    const historyRows = await db.donorResponseHistory.findMany({
+      where: { requestId: alertId, donorId: { in: alert.responses.map((r) => r.donorId) } },
+      orderBy: { notifiedAt: "desc" },
+      select: {
+        donorId: true, status: true, confirmed: true, noShow: true, arrivedAt: true, expectedArrival: true,
+        respondedAt: true, releasedAt: true, releasedBy: true, releaseReason: true, releaseNote: true,
+      },
+    });
+    const historyByDonor = new Map<string, (typeof historyRows)[number]>();
+    for (const h of historyRows) if (!historyByDonor.has(h.donorId)) historyByDonor.set(h.donorId, h);
+
     // Fetch agent decisions
     const agentDecisions = await db.agentDecision.findMany({
       where: { requestId: alertId },
@@ -109,10 +123,29 @@ export async function GET(
         ...event,
         createdAt: event.createdAt.toISOString(),
       })),
-      donorResponses: alert.responses.map((response) => ({
-        ...response,
-        createdAt: response.createdAt.toISOString(),
-      })),
+      donorResponses: alert.responses.map((response) => {
+        const h = historyByDonor.get(response.donorId);
+        const committed = Boolean(h && h.status === "accepted" && !h.confirmed && !h.noShow && !h.releasedAt);
+        return {
+          ...response,
+          createdAt: response.createdAt.toISOString(),
+          commitment: h
+            ? {
+                historyStatus: h.status,
+                confirmed: h.confirmed,
+                noShow: h.noShow,
+                committed,
+                arrivedAt: h.arrivedAt?.toISOString() ?? null,
+                expectedArrival: h.expectedArrival?.toISOString() ?? null,
+                respondedAt: h.respondedAt?.toISOString() ?? null,
+                releasedAt: h.releasedAt?.toISOString() ?? null,
+                releasedBy: h.releasedBy,
+                releaseReason: h.releaseReason,
+                releaseNote: h.releaseNote,
+              }
+            : null,
+        };
+      }),
       inventoryMatch,
       transportRequest: transportRequest
         ? {

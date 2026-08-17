@@ -145,6 +145,7 @@ function makeDonor(rng: Rng, idx: number, spec: ScenarioSpec, startAt: number): 
       accepted,
       arrived,
       noShows: Math.max(0, accepted - arrived),
+      releases: 0, // literal, not a draw — keeps the frozen sim-v2 RNG stream intact
       avgResponseMinutes: totalAlerts > 0 ? Math.round(rng.lognormal(10, 0.6)) : null,
       alertsLast7Days: rng.bernoulli(0.25) ? rng.int(1, 3) : 0,
     },

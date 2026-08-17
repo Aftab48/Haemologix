@@ -13,6 +13,16 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
   Heart,
   Bell,
   MapPin,
@@ -32,7 +42,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { getCurrentUser } from "@/lib/actions/user.actions";
-import { getAllAvailableAlerts } from "@/lib/actions/alerts.actions";
+import { getDonorAlertFeed, type DonorFeedAlert, type DonorFeedCommitment } from "@/lib/actions/alerts.actions";
 import {
   BloodTypeFormat,
   calculateNextEligible,
@@ -49,13 +59,20 @@ type DashboardDonor = DonorData & {
   longitude?: string | null;
 };
 
-type AvailableAlert = Awaited<
-  ReturnType<typeof getAllAvailableAlerts>
->[number] & {
+type AvailableAlert = DonorFeedAlert & {
   distance: string;
+  /** derived from myStatus: this donor has already answered this alert */
   responded: boolean;
   response?: "accept" | "decline";
 };
+
+const RELEASE_REASON_OPTIONS = [
+  { value: "cant_make_it", label: "I can't make it (transport, work, timing)" },
+  { value: "unwell", label: "I'm unwell" },
+  { value: "donated_recently", label: "I already donated recently elsewhere" },
+  { value: "other", label: "Other" },
+] as const;
+type ReleaseReasonValue = (typeof RELEASE_REASON_OPTIONS)[number]["value"];
 
 function DonorWebDashboard() {
   const { user: loggedInUser } = useUser();
@@ -112,21 +129,31 @@ function DonorWebDashboard() {
   }, [loggedInUser, router]);
 
   const [activeAlerts, setActiveAlerts] = useState<AvailableAlert[]>([]);
+  // The alert this donor accepted and is on hold for (null when free)
+  const [commitment, setCommitment] = useState<DonorFeedCommitment | null>(null);
+  const [alertsVersion, setAlertsVersion] = useState(0);
+  const refreshAlerts = () => setAlertsVersion((v) => v + 1);
 
-  // Fetch active alerts
+  // Fetch the donor's alert feed
   useEffect(() => {
     const fetchAlerts = async () => {
       if (!user && !dbUser) return;
+      const donorId = user?.id || dbUser?.user?.id;
+      if (!donorId) return;
 
       setAlertsLoading(true);
       try {
-        const alerts = await getAllAvailableAlerts();
-        const donorId = user?.id || dbUser?.user?.id;
+        const feed = await getDonorAlertFeed(donorId);
+        setCommitment(feed.commitment);
 
-        // Calculate distance and check if donor has responded
-        const alertsWithDistance = alerts.map((alert) => {
+        // Calculate distance; "responded" comes from the donor's own history now
+        const alertsWithDistance = feed.alerts.map((alert) => {
           let distance = "0 km";
-          let responded = false;
+          const responded = alert.myStatus !== "none" && alert.myStatus !== "notified";
+          const response: "accept" | "decline" | undefined =
+            alert.myStatus === "accepted" || alert.myStatus === "arrived" ? "accept"
+            : alert.myStatus === "declined" || alert.myStatus === "released" || alert.myStatus === "no_show" ? "decline"
+            : undefined;
 
           // Calculate distance if both locations are available
           if (
@@ -155,16 +182,11 @@ function DonorWebDashboard() {
             distance = `${calculatedDistance.toFixed(1)} km`;
           }
 
-          // Check if donor has responded (this would need to check AlertResponse table)
-          // For now, we'll check if there's a response in the alert object
-          if (alert.responses && donorId) {
-            responded = alert.responses.some((response) => response.donorId === donorId);
-          }
-
           return {
             ...alert,
             distance,
             responded,
+            response,
           };
         });
 
@@ -182,7 +204,7 @@ function DonorWebDashboard() {
     // Refresh alerts every 30 seconds
     const interval = setInterval(fetchAlerts, 30000);
     return () => clearInterval(interval);
-  }, [user, dbUser]);
+  }, [user, dbUser, alertsVersion]);
   const [donationHistory] = useState([
     {
       id: 1,
@@ -311,9 +333,13 @@ function DonorWebDashboard() {
     eligibilityStatus: "Eligible",
   });
 
-  const [buttonResponse, setButtonResponse] = useState<
-    "accept" | "decline" | null
-  >(null);
+  // "I can't make it" flow for the committed alert
+  const [releaseOpen, setReleaseOpen] = useState(false);
+  const [releaseReason, setReleaseReason] = useState<ReleaseReasonValue>("cant_make_it");
+  const [releaseNote, setReleaseNote] = useState("");
+  const [releaseDonatedOn, setReleaseDonatedOn] = useState("");
+  const [releaseSubmitting, setReleaseSubmitting] = useState(false);
+  const [releaseError, setReleaseError] = useState<string | null>(null);
 
   const handleAlertResponse = async (
     alertId: string,
@@ -351,7 +377,11 @@ function DonorWebDashboard() {
               : alert
           )
         );
-        setButtonResponse(status);
+        // Accepting puts the donor on hold — reload the feed so only this alert shows
+        if (status === "accept") refreshAlerts();
+      } else if (result.error === "already_committed") {
+        alert(result.message || "You've already accepted another request. Release it first if you can't make it.");
+        refreshAlerts();
       } else {
         console.error("Failed to process response:", result.error);
         alert(`Failed to ${status} request: ${result.error}`);
@@ -359,6 +389,49 @@ function DonorWebDashboard() {
     } catch (error) {
       console.error("Error processing response:", error);
       alert(`Error processing response. Please try again.`);
+    }
+  };
+
+  const openRelease = () => {
+    setReleaseReason("cant_make_it");
+    setReleaseNote("");
+    setReleaseDonatedOn("");
+    setReleaseError(null);
+    setReleaseOpen(true);
+  };
+
+  const handleRelease = async () => {
+    if (!commitment) return;
+    if (releaseReason === "other" && !releaseNote.trim()) {
+      setReleaseError("Please tell us briefly why.");
+      return;
+    }
+    setReleaseSubmitting(true);
+    setReleaseError(null);
+    try {
+      const response = await fetch("/api/donor/release", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          request_id: commitment.requestId,
+          reason: releaseReason,
+          note: releaseNote.trim() || undefined,
+          donated_on: releaseReason === "donated_recently" && releaseDonatedOn ? releaseDonatedOn : undefined,
+        }),
+      });
+      const result = await response.json();
+      if (!result.success) {
+        setReleaseError(result.error || "Could not release this request.");
+        return;
+      }
+      setReleaseOpen(false);
+      setCommitment(null);
+      refreshAlerts();
+    } catch (error) {
+      console.error("Error releasing commitment:", error);
+      setReleaseError("Something went wrong. Please try again.");
+    } finally {
+      setReleaseSubmitting(false);
     }
   };
 
@@ -687,6 +760,17 @@ function DonorWebDashboard() {
               </Button>
             </div>
 
+            {commitment && !alertsLoading && (
+              <Alert className="bg-green-500/15 border-green-500/60 text-white">
+                <Heart className="h-4 w-4 text-green-400" />
+                <AlertDescription className="text-green-50">
+                  You&apos;ve accepted <span className="font-semibold">{commitment.hospitalName ?? "a hospital"}</span>&apos;s request
+                  {commitment.bloodType ? ` for ${commitment.bloodType}` : ""}. Other requests are paused for you until you arrive —
+                  if you can&apos;t make it, tell us below so we can find someone else.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {alertsLoading ? (
               <Card className="glass-morphism border border-accent/30 card-hover text-white">
                 <CardContent className="p-12 text-center">
@@ -832,31 +916,140 @@ function DonorWebDashboard() {
                             </p>
                           )}
                         </div>
-                      ) : (
-                        <>
-                          {buttonResponse === "accept" ? (
-                            <Alert className="bg-green-500/20 border-green-500 text-white">
-                              <CheckCircle className="h-4 w-4 text-green-400" />
-                              <AlertDescription className="text-green-100">
-                                ✅ Thank you for accepting! The hospital has
-                                been notified of your availability.
-                              </AlertDescription>
-                            </Alert>
-                          ) : (
-                            <Alert className="bg-red-500/20 border-red-500 text-white">
-                              <XCircle className="h-4 w-4 text-red-400" />
-                              <AlertDescription className="text-red-100">
-                                ❌ You declined this request.
-                              </AlertDescription>
-                            </Alert>
+                      ) : alert.response === "accept" ? (
+                        <div className="flex flex-col gap-3">
+                          <Alert className="bg-green-500/20 border-green-500 text-white">
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                            <AlertDescription className="text-green-100">
+                              {alert.myStatus === "arrived"
+                                ? "✅ Thank you — your arrival was confirmed by the hospital."
+                                : "✅ Thank you for accepting! The hospital is expecting you — please head over now."}
+                            </AlertDescription>
+                          </Alert>
+                          {commitment?.requestId === alert.id && (
+                            <div className="flex flex-wrap items-center gap-3">
+                              <Button
+                                variant="outline"
+                                className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+                                asChild
+                              >
+                                <Link
+                                  href={
+                                    commitment.latitude && commitment.longitude
+                                      ? `https://maps.google.com/?q=${commitment.latitude},${commitment.longitude}`
+                                      : "#"
+                                  }
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <Navigation className="w-4 h-4 mr-2" />
+                                  Get Directions
+                                </Link>
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={openRelease}
+                                className="bg-transparent text-white/80 border-white/30 hover:bg-white/10"
+                              >
+                                <XCircle className="w-4 h-4 mr-2" />
+                                I can&apos;t make it
+                              </Button>
+                              {commitment.expectedArrival && (
+                                <span className="text-sm text-text-dark/70">
+                                  Expected by {new Date(commitment.expectedArrival).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                </span>
+                              )}
+                            </div>
                           )}
-                        </>
+                        </div>
+                      ) : alert.myStatus === "released" ? (
+                        <Alert className="bg-slate-500/20 border-slate-400 text-white">
+                          <XCircle className="h-4 w-4 text-slate-300" />
+                          <AlertDescription className="text-slate-100">
+                            You let the hospital know you couldn&apos;t make this one. Thank you for telling us.
+                          </AlertDescription>
+                        </Alert>
+                      ) : (
+                        <Alert className="bg-red-500/20 border-red-500 text-white">
+                          <XCircle className="h-4 w-4 text-red-400" />
+                          <AlertDescription className="text-red-100">
+                            ❌ You declined this request.
+                          </AlertDescription>
+                        </Alert>
                       )}
                     </CardContent>
                   </Card>
                 ))}
               </div>
             )}
+
+            {/* Release dialog — "I can't make it" */}
+            <Dialog open={releaseOpen} onOpenChange={(open) => { if (!releaseSubmitting) setReleaseOpen(open); }}>
+              <DialogContent className="glass-morphism border border-accent/30 text-white">
+                <DialogHeader>
+                  <DialogTitle className="text-text-dark">Can&apos;t make it?</DialogTitle>
+                  <DialogDescription className="text-text-dark/80">
+                    A hospital is counting on you. If you can&apos;t come, tell us now so we can find someone else
+                    straight away. This can&apos;t be undone — you won&apos;t be re-notified for this request.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-text-dark">Reason</Label>
+                    <div className="space-y-2">
+                      {RELEASE_REASON_OPTIONS.map((opt) => (
+                        <label key={opt.value} className="flex items-center gap-2 text-sm text-text-dark cursor-pointer">
+                          <input
+                            type="radio"
+                            name="release-reason"
+                            value={opt.value}
+                            checked={releaseReason === opt.value}
+                            onChange={() => setReleaseReason(opt.value)}
+                            className="accent-red-500"
+                          />
+                          {opt.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  {releaseReason === "donated_recently" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="release-donated-on" className="text-text-dark">When did you donate?</Label>
+                      <Input
+                        id="release-donated-on"
+                        type="date"
+                        value={releaseDonatedOn}
+                        max={new Date().toISOString().slice(0, 10)}
+                        onChange={(e) => setReleaseDonatedOn(e.target.value)}
+                        className="bg-white/10 border-white/20 text-text-dark"
+                      />
+                      <p className="text-xs text-text-dark/60">We&apos;ll use this to avoid contacting you before you&apos;re eligible again.</p>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="release-note" className="text-text-dark">
+                      {releaseReason === "other" ? "Tell us briefly why" : "Anything the hospital should know? (optional)"}
+                    </Label>
+                    <Textarea
+                      id="release-note"
+                      value={releaseNote}
+                      onChange={(e) => setReleaseNote(e.target.value)}
+                      rows={3}
+                      className="bg-white/10 border-white/20 text-text-dark"
+                    />
+                  </div>
+                  {releaseError && <p className="text-sm text-red-300">{releaseError}</p>}
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setReleaseOpen(false)} disabled={releaseSubmitting} className="bg-white/20 text-white border-white/30 hover:bg-white/30">
+                      I&apos;m still coming
+                    </Button>
+                    <Button onClick={handleRelease} disabled={releaseSubmitting} className="bg-red-600 hover:bg-red-700 text-white">
+                      {releaseSubmitting ? "Sending…" : "I can't make it — find someone else"}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
             </div>
             )}
 

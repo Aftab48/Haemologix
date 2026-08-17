@@ -384,6 +384,7 @@ class Simulation {
       priorAccepted: d.history.accepted,
       priorArrived: d.history.arrived,
       priorNoShows: d.history.noShows,
+      priorReleases: d.history.releases,
       avgResponseMinutes: d.history.avgResponseMinutes,
       alertsLast7Days: d.history.alertsLast7Days,
       unscreened: r.unscreened,

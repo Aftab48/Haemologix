@@ -17,6 +17,7 @@ import { explainNotification } from "@/lib/ml/explain";
 import { alertWindowFeatures, donorNotificationFeatures, donorShowFeatures, type DonorFeatureInput } from "@/lib/ml/features";
 import { getAlertWindowHours } from "@/lib/ml/flags";
 import { chooseNotificationBatch, deterministicNotifyDecision } from "@/lib/ml/policy/donorNotifyPolicy";
+import { COMMITTED_WHERE } from "./commitment";
 
 /**
  * A donor with the detail collected after onboarding joined on. `profile` is null
@@ -45,7 +46,10 @@ export interface RankedDonor {
     totalAlerts: number;
     accepted: number;
     arrived: number;
+    /** accepted and did not arrive (no-show OR released) — see lib/ml/features.ts */
     noShows: number;
+    /** of those, how many told us (donor / coordinator release) */
+    releases: number;
     avgResponseMinutes: number | null;
     alertsLast7Days: number;
   };
@@ -268,6 +272,11 @@ export async function findAndRankDonors(
       },
       // A donor who switched off emergency alerts must not be notified.
       isAvailable: true,
+      // A donor who has accepted another alert is on hold until they arrive,
+      // no-show, or are released — same rule the simulator applies via
+      // committedToAlertId. (Their own alert never re-notifies them: the
+      // per-alert dedup below filters anyone already in its history.)
+      responseHistory: { none: COMMITTED_WHERE },
     },
     include: { profile: true },
   });
@@ -343,7 +352,10 @@ export async function findAndRankDonors(
       (r) => r.status === "accepted"
     ).length;
     const arrived = responseHistory.filter((r) => r.confirmed).length;
-    const noShows = responseHistory.filter((r) => r.noShow).length;
+    // "accepted and did not arrive": silent no-shows plus donors who released
+    // (told us they were not coming). Same meaning as the sim's noShows.
+    const noShows = responseHistory.filter((r) => r.noShow || r.releasedAt).length;
+    const releases = responseHistory.filter((r) => r.releasedAt && r.releasedBy !== "system").length;
     const responded = responseHistory.filter((r) => r.responseTime != null);
     const avgResponseTime =
       responded.length > 0
@@ -386,6 +398,7 @@ export async function findAndRankDonors(
         accepted,
         arrived,
         noShows,
+        releases,
         avgResponseMinutes: responded.length > 0 ? avgResponseTime : null,
         alertsLast7Days,
       },
@@ -442,6 +455,7 @@ export function rankedDonorFeatureInput(
     priorAccepted: d.history.accepted,
     priorArrived: d.history.arrived,
     priorNoShows: d.history.noShows,
+    priorReleases: d.history.releases,
     avgResponseMinutes: d.history.avgResponseMinutes,
     alertsLast7Days: d.history.alertsLast7Days,
     unscreened: d.unscreened,

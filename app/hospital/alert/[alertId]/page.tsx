@@ -94,6 +94,11 @@ interface AgentDecisionPayload {
   facilities_contacted?: number;
   p_expansion_yield?: number | null;
   expansion_yield_actual?: boolean;
+  // donor_released
+  released_by?: string;
+  reason?: string | null;
+  note?: string | null;
+  minutes_since_accept?: number | null;
 }
 
 interface AgentDecision {
@@ -106,12 +111,31 @@ interface AgentDecision {
   decision: string | AgentDecisionPayload;
 }
 
+/** Per-donor commitment state merged from DonorResponseHistory (see /api/alerts/[alertId]/details). */
+interface DonorCommitment {
+  historyStatus: string;
+  confirmed: boolean;
+  noShow: boolean;
+  /** accepted, not yet arrived / no-show / released — the donor is on hold for this alert */
+  committed: boolean;
+  arrivedAt: string | null;
+  expectedArrival: string | null;
+  respondedAt: string | null;
+  releasedAt: string | null;
+  releasedBy: string | null;
+  releaseReason: string | null;
+  releaseNote: string | null;
+}
+
 interface DonorResponse {
   id: string;
   donorId: string;
   status: string;
+  commitment?: DonorCommitment | null;
   donor: {
     id: string;
+    /** the Donor model has a single `name`; firstName/lastName are legacy shape */
+    name?: string;
     firstName: string;
     lastName: string;
     bloodGroup: string;
@@ -154,6 +178,10 @@ export default function AlertDetailsPage() {
   const [otherDetails, setOtherDetails] = useState("");
   const [isClosingAlert, setIsClosingAlert] = useState(false);
   const [selectedDonorIndex, setSelectedDonorIndex] = useState(0);
+  // "Mark as can't come" — coordinator releases a committed donor
+  const [releaseTarget, setReleaseTarget] = useState<DonorResponse | null>(null);
+  const [releaseNote, setReleaseNote] = useState("");
+  const [isReleasing, setIsReleasing] = useState(false);
 
   const fetchAlertDetails = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -321,6 +349,56 @@ export default function AlertDetailsPage() {
       .split("_")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
+  };
+
+  const handleReleaseDonor = async () => {
+    if (!releaseTarget) return;
+    setIsReleasing(true);
+    try {
+      const response = await fetch("/api/agents/coordinator", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "release_donor",
+          request_id: alertId,
+          donor_id: releaseTarget.donorId,
+          reason: "cant_make_it",
+          note: releaseNote.trim() || undefined,
+        }),
+      });
+      const result = await response.json();
+      if (!result.success) {
+        alert(`Could not release donor: ${result.error ?? "unknown error"}`);
+        return;
+      }
+      setReleaseTarget(null);
+      setReleaseNote("");
+      fetchAlertDetails(true);
+    } catch (error) {
+      console.error("Error releasing donor:", error);
+      alert("Failed to release donor. Please try again.");
+    } finally {
+      setIsReleasing(false);
+    }
+  };
+
+  /** Donor rows come with a single `name`; older shapes had firstName/lastName. */
+  const donorName = (d: DonorResponse["donor"]) =>
+    d.name?.trim() || `${d.firstName ?? ""} ${d.lastName ?? ""}`.trim() || "Donor";
+
+  /** Badge for a donor row: commitment state first (arrived / released / no-show), then the response. */
+  const donorRowBadge = (response: DonorResponse): { label: string; className: string } => {
+    const c = response.commitment;
+    if (c?.confirmed) return { label: "Arrived", className: "bg-emerald-600 text-white" };
+    if (c?.releasedAt) {
+      const who = c.releasedBy === "donor" ? "by donor" : c.releasedBy === "coordinator" ? "by coordinator" : "";
+      return { label: `Released${who ? ` ${who}` : ""}`, className: "bg-slate-600 text-white" };
+    }
+    if (c?.noShow) return { label: "No-show", className: "bg-orange-700 text-white" };
+    if (response.status === "CONFIRMED") return { label: "Confirmed", className: "bg-green-600 text-white" };
+    if (response.status === "RELEASED") return { label: "Released", className: "bg-slate-600 text-white" };
+    if (response.status === "DECLINED") return { label: "Declined", className: "bg-red-600 text-white" };
+    return { label: response.status, className: "bg-yellow-600 text-white" };
   };
 
   const handleCloseAlert = async () => {
@@ -572,7 +650,7 @@ export default function AlertDetailsPage() {
                           />
                           <div className="flex-1">
                             <p className="text-white font-medium">
-                              {donor.donor.firstName} {donor.donor.lastName}
+                              {donorName(donor.donor)}
                             </p>
                             <p className="text-gray-400 text-sm">
                               {donor.donor.bloodGroup} • {donor.donor.email}
@@ -1029,38 +1107,91 @@ export default function AlertDetailsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {donorResponses.map((response) => (
-                  <div
-                    key={response.id}
-                    className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium text-text-dark">
-                        {response.donor.firstName} {response.donor.lastName}
-                      </p>
-                      <p className="text-sm text-text-dark/70">
-                        {response.donor.bloodGroup} • {response.donor.phone}
-                      </p>
-                    </div>
-                    <Badge
-                      className={
-                        response.status === "CONFIRMED"
-                          ? "bg-green-600 text-white"
-                          : response.status === "DECLINED"
-                          ? "bg-red-600 text-white"
-                          : "bg-yellow-600 text-white"
-                      }
+                {donorResponses.map((response) => {
+                  const badge = donorRowBadge(response);
+                  const c = response.commitment;
+                  const alertOpen = !alertData?.outcome && alertData?.status !== "FULFILLED" && alertData?.status !== "CLOSED";
+                  const eta = c?.expectedArrival ? new Date(c.expectedArrival) : null;
+                  return (
+                    <div
+                      key={response.id}
+                      className="flex items-center justify-between gap-3 p-3 bg-white/5 rounded-lg"
                     >
-                      {response.status === "CONFIRMED"
-                        ? "Confirmed"
-                        : response.status}
-                    </Badge>
-                  </div>
-                ))}
+                      <div className="min-w-0">
+                        <p className="font-medium text-text-dark">
+                          {donorName(response.donor)}
+                        </p>
+                        <p className="text-sm text-text-dark/70">
+                          {response.donor.bloodGroup} • {response.donor.phone}
+                        </p>
+                        {c?.committed && eta && (
+                          <p className="text-xs text-text-dark/60 mt-0.5">
+                            Expected {eta.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                        )}
+                        {c?.releasedAt && (
+                          <p className="text-xs text-text-dark/60 mt-0.5">
+                            {c.releaseReason ? c.releaseReason.replace(/_/g, " ") : "released"}
+                            {c.releaseNote ? ` — ${c.releaseNote}` : ""}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Badge className={badge.className}>{badge.label}</Badge>
+                        {c?.committed && alertOpen && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2 text-xs border-slate-400/50 text-text-dark hover:bg-white/10"
+                            onClick={() => {
+                              setReleaseNote("");
+                              setReleaseTarget(response);
+                            }}
+                          >
+                            Mark as can&apos;t come
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
         )}
+
+        {/* Release donor (coordinator learned they are not coming) */}
+        <Dialog open={releaseTarget !== null} onOpenChange={(open) => { if (!open && !isReleasing) setReleaseTarget(null); }}>
+          <DialogContent className="glass-morphism border border-accent/30 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-text-dark">Mark donor as can&apos;t come</DialogTitle>
+              <DialogDescription className="text-text-dark/70">
+                {releaseTarget
+                  ? `${donorName(releaseTarget.donor)} will be released from this request. The coordinator will look for other donors right away and this donor becomes available for other alerts. This cannot be undone.`
+                  : ""}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2">
+              <Label htmlFor="release-note" className="text-text-dark">Note (optional)</Label>
+              <Textarea
+                id="release-note"
+                value={releaseNote}
+                onChange={(e) => setReleaseNote(e.target.value)}
+                placeholder="e.g. Called at 10:20 — stuck at work, cannot reach us today"
+                className="bg-white/10 border-white/20 text-text-dark"
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setReleaseTarget(null)} disabled={isReleasing}>
+                Cancel
+              </Button>
+              <Button onClick={handleReleaseDonor} disabled={isReleasing} className="bg-slate-600 hover:bg-slate-700 text-white">
+                {isReleasing ? "Releasing…" : "Release donor"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Donor Locations Map */}
         {(() => {
@@ -1115,7 +1246,7 @@ export default function AlertDetailsPage() {
 
                     <div className="flex-1 text-center">
                       <p className="text-text-dark font-medium">
-                        {currentDonor.donor.firstName} {currentDonor.donor.lastName}
+                        {donorName(currentDonor.donor)}
                       </p>
                       <p className="text-sm text-text-dark/70">
                         {selectedDonorIndex + 1} of {acceptedDonors.length}
@@ -1176,7 +1307,7 @@ export default function AlertDetailsPage() {
                               : "bg-white/5 text-text-dark hover:bg-white/10"
                           }`}
                         >
-                          {donor.donor.firstName} {donor.donor.lastName}
+                          {donorName(donor.donor)}
                         </button>
                       ))}
                     </div>

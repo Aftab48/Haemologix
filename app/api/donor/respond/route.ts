@@ -145,6 +145,17 @@ export async function GET(req: NextRequest) {
     const coordinatorResult = await coordinatorResponse.json();
 
     if (!coordinatorResult.success) {
+      if (coordinatorResult.error === "already_committed") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "already_committed",
+            committed_request_id: coordinatorResult.committed_request_id,
+            message: "You've already accepted another request and a hospital is counting on you. If you can't make that one, release it from your dashboard first.",
+          },
+          { status: 409 }
+        );
+      }
       return NextResponse.json(
         { success: false, error: coordinatorResult.error },
         { status: 400 }
@@ -229,6 +240,17 @@ export async function POST(req: NextRequest) {
     const coordinatorResult = await coordinatorResponse.json();
 
     if (!coordinatorResult.success) {
+      if (coordinatorResult.error === "already_committed") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "already_committed",
+            committed_request_id: coordinatorResult.committed_request_id,
+            message: "You've already accepted another request and a hospital is counting on you. If you can't make that one, release it first.",
+          },
+          { status: 409 }
+        );
+      }
       return NextResponse.json(
         { success: false, error: coordinatorResult.error },
         { status: 400 }

@@ -18,6 +18,8 @@ export const POST_V2_FEATURE_KEYS: readonly string[] = [
   "escalationRung",
   "minutesSinceAlert",
   "previouslyNotified",
+  // donor_* tasks: donor commitment release (production feature; constant 0 in sim)
+  "priorReleases",
 ];
 
 export function hashRows(result: SimRunResult, opts: { omitFeatureKeys?: readonly string[] } = {}): string {

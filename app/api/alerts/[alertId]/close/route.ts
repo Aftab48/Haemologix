@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { getAlertWindowHours } from "@/lib/ml/flags";
 import { recordOutcome } from "@/lib/ml/record";
 import type { AlertOutcome, FulfilledBy } from "@/lib/ml/types";
+import { releaseCommitmentsForClosedAlert } from "@/lib/agents/commitment";
 
 /**
  * API Endpoint to close an alert with fulfillment details.
@@ -120,8 +121,11 @@ export async function POST(
         await recordOutcome({ requestId: alertId, task: "donor_show", subjectId: donorId, actual: 1, outcomeAt: now });
       }
     }
+    // Everyone else who accepted comes off hold now — the alert is over. No
+    // label: they may still have arrived; the hospital just didn't list them.
+    const releasedCount = await releaseCommitmentsForClosedAlert(alertId, "alert_closed");
 
-    console.log(`[CloseAlert] Alert ${alertId} closed: ${outcome} via ${source} (${unitsCollected}/${unitsNeeded} units)`);
+    console.log(`[CloseAlert] Alert ${alertId} closed: ${outcome} via ${source} (${unitsCollected}/${unitsNeeded} units); ${releasedCount} commitment(s) released`);
 
     return NextResponse.json({
       success: true,

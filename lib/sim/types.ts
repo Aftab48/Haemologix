@@ -74,7 +74,10 @@ export interface SimDonor extends GeoPoint {
     totalAlerts: number;
     accepted: number;
     arrived: number;
+    /** accepted and did not arrive (production: noShow OR released) */
     noShows: number;
+    /** production-only for now: releases the donor/coordinator told us about. Always 0 here until release behaviour is modelled. */
+    releases: number;
     avgResponseMinutes: number | null;
     alertsLast7Days: number;
   };

@@ -83,7 +83,14 @@ export interface DonorFeatureInput {
   priorAlerts: number;
   priorAccepted: number;
   priorArrived: number;
+  /**
+   * Accepted and did not arrive — no-shows AND releases. This is what the sim
+   * has always meant by noShows (accepted − arrived) and what the live model
+   * learned; keep it so the feature does not drift when release ships.
+   */
   priorNoShows: number;
+  /** Subset of priorNoShows where the donor (or a coordinator) *told us*. New key — zero in sim exports until release is modelled there. */
+  priorReleases: number;
   avgResponseMinutes: number | null;
   alertsLast7Days: number; // fatigue
   unscreened: boolean;
@@ -129,6 +136,7 @@ export function donorNotificationFeatures(i: DonorFeatureInput): FeatureVector {
     priorAcceptRate: round(priorAcceptRate),
     priorShowRate: round(priorShowRate),
     priorNoShows: i.priorNoShows,
+    priorReleases: i.priorReleases,
     avgResponseMinutes: i.avgResponseMinutes ?? 10,
     alertsLast7Days: i.alertsLast7Days,
     unscreened: i.unscreened,

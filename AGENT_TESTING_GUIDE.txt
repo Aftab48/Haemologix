@@ -387,6 +387,59 @@ Expected Changes:
 - Alert: status = "FULFILLED"
 
 
+TEST 10b: DONOR HOLD + RELEASE ("can't make it")
+================================================================================
+
+Once a donor ACCEPTS an alert they are on hold: not matched/notified for other
+alerts and unable to accept a second one until they arrive, no-show, or are
+released. (Same rule the simulator applies via committedToAlertId.)
+
+a) Double accept is rejected — with a donor committed to ALERT_A, accept ALERT_B:
+
+POST http://localhost:3000/api/donor/respond
+{ "donor_id": "DONOR_ID", "request_id": "ALERT_B", "status": "accepted" }
+
+Expected: HTTP 409
+{ "success": false, "error": "already_committed", "committed_request_id": "ALERT_A", "message": "..." }
+
+b) Coordinator releases the donor (learned by phone they are not coming):
+
+POST http://localhost:3000/api/agents/coordinator
+{
+  "action": "release_donor",
+  "request_id": "ALERT_A",
+  "donor_id": "DONOR_ID",
+  "reason": "cant_make_it",          // cant_make_it | unwell | donated_recently | other (optional)
+  "note": "called at 10:20, stuck at work"   // optional
+}
+
+Expected Response:
+{ "success": true, "released": true, "message": "Commitment released" }
+(second call: "released": false — idempotent)
+
+Expected Changes:
+- DonorResponseHistory: releasedAt set, releasedBy = "coordinator", releaseReason/Note; noShow stays false
+- AlertResponse: status = "RELEASED"
+- AgentDecision: eventType = "donor_released"
+- ModelPrediction donor_show for this donor: actualOutcome = 0
+- Coordinator re-plans (checkFulfillmentProgress) exactly as after a no-show
+- Donor is matchable again for other alerts
+
+c) Donor releases themselves (Clerk session required — donor identity is taken
+   from the session, never from the body):
+
+POST http://localhost:3000/api/donor/release
+{ "request_id": "ALERT_A", "reason": "donated_recently", "donated_on": "2026-08-10" }
+
+Expected: 200 { "success": true, "last_donation_date_updated": true }; 401 without a session.
+With reason "donated_recently" the donor's lastDonationDate moves later (never earlier)
+so the 90/120-day interval keeps them out of matching.
+
+d) Alert reaches a terminal state → remaining commitments are released by the
+   system (close route inline; scheduler step releaseStaleCommitments as safety
+   net; no donor_show label). Library-level E2E: npx tsx scripts/ml/e2eCommitment.ts
+
+
 TEST 11: TIMEOUT FALLBACK (NO DONORS RESPOND)
 ================================================================================
 
@@ -422,7 +475,10 @@ Expected Response:
     "process_donor_response",
     "select_optimal_match",
     "handle_timeout",
-    "confirm_arrival"
+    "confirm_arrival",
+    "check_progress",
+    "escalate",
+    "release_donor"
   ]
 }
 

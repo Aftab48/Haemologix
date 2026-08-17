@@ -12,6 +12,8 @@
  *                              Alert.unitsCollected += delivered units
  *   closeStaleAlerts()       – open alerts past the resolution window → outcome
  *                              PARTIAL/FAILED/ESCALATED, alert_resolves_in_window = 0
+ *   releaseStaleCommitments()– donors still on hold for an alert that is over
+ *                              (closed / fulfilled / past the window / gone) → released by system
  *   advanceEscalations()     – alerts mid-ladder (search_expanding / network_broadcast)
  *                              → escalation.advanceEscalation (next rung once the dwell elapsed)
  *
@@ -24,6 +26,7 @@ import { decisionBasis } from "@/lib/ml/agentBridge";
 import { getAlertWindowHours, getEscalationDwellMinutes, getNoShowGraceMinutes, getResponseWindowMinutes } from "@/lib/ml/flags";
 import { recordOutcome } from "@/lib/ml/record";
 import { checkFulfillmentProgress } from "./coordinatorAgent";
+import { alertIsOver, COMMITTED_WHERE, releaseDonorCommitment } from "./commitment";
 import { advanceEscalation } from "./escalation";
 import { trackDecisionOutcome } from "./outcomeTracking";
 import { ESCALATING_STEPS, readEscalationMeta } from "./workflowSteps";
@@ -37,6 +40,8 @@ export interface TickResult {
   noShows: number;
   transports: { settled: number; unitsDelivered: number };
   staleAlerts: { closed: number; byOutcome: Record<string, number> };
+  /** commitments released because their alert is over (see releaseStaleCommitments) */
+  staleCommitments: { checked: number; released: number };
   /** true when a job stopped early because the time budget ran out (next tick continues) */
   truncated: boolean;
   elapsedMs: number;
@@ -149,8 +154,10 @@ export async function markNoShows(now = new Date(), budget?: TickBudget): Promis
   const b = budgetOr(budget);
   const grace = getNoShowGraceMinutes();
   const cutoff = new Date(now.getTime() - grace * 60_000);
+  // Only *open* commitments: a donor who was released must not later also be
+  // marked no-show — the two stay distinguishable (see commitment.ts).
   const overdue = await db.donorResponseHistory.findMany({
-    where: { status: "accepted", confirmed: false, noShow: false, expectedArrival: { lte: cutoff } },
+    where: { ...COMMITTED_WHERE, expectedArrival: { lte: cutoff } },
     select: { id: true, donorId: true, requestId: true, expectedArrival: true },
     orderBy: { expectedArrival: "asc" },
     take: b.batch,
@@ -182,6 +189,37 @@ export async function markNoShows(now = new Date(), budget?: TickBudget): Promis
     if (open) await checkFulfillmentProgress(r.requestId);
   }
   return n;
+}
+
+/**
+ * Safety net for the donor hold: release commitments whose alert is over —
+ * closed / fulfilled, has an outcome (escalated alerts never auto-close), older
+ * than the resolution window, or gone. The close route and confirmDonorArrival
+ * handle the common cases inline; this catches every other exit path plus rows
+ * written between the schema change and the deploy. Same condition as the
+ * backfill in prisma/sql/0003_donor_release.sql.
+ */
+export async function releaseStaleCommitments(now = new Date(), budget?: TickBudget): Promise<{ checked: number; released: number }> {
+  const b = budgetOr(budget);
+  const open = await db.donorResponseHistory.findMany({
+    where: COMMITTED_WHERE,
+    select: { donorId: true, requestId: true },
+    orderBy: { respondedAt: "asc" },
+    take: b.batch,
+  });
+  if (open.length === 0) return { checked: 0, released: 0 };
+  const alertIds = [...new Set(open.map((r) => r.requestId))];
+  const alerts = await db.alert.findMany({ where: { id: { in: alertIds } }, select: { id: true, status: true, outcome: true, createdAt: true } });
+  const byId = new Map(alerts.map((a) => [a.id, a]));
+  let released = 0;
+  for (const r of open) {
+    if (timeLeft(b) < 8_000) break;
+    const { over, reason } = alertIsOver(byId.get(r.requestId), now, getAlertWindowHours());
+    if (!over || !reason) continue;
+    const res = await releaseDonorCommitment(r.requestId, r.donorId, { by: "system", reason, skipProgressCheck: true });
+    if (res.released) released++;
+  }
+  return { checked: open.length, released };
 }
 
 export async function settleTransportOutcomes(now = new Date(), budget?: TickBudget): Promise<{ settled: number; unitsDelivered: number }> {
@@ -294,9 +332,9 @@ export async function closeStaleAlerts(now = new Date(), budget?: TickBudget): P
 /**
  * One scheduler tick, bounded by `budgetMs` (default 40 s — safely inside a 60 s
  * serverless limit). Order matters: close expired alerts first so they never
- * reach the (expensive) progress check; then no-shows and transports (which
- * change shortfalls); then alerts mid-escalation-ladder; then the
- * response-window escalation check.
+ * reach the (expensive) progress check, and release the holds of donors whose
+ * alert is over; then no-shows and transports (which change shortfalls); then
+ * alerts mid-escalation-ladder; then the response-window escalation check.
  */
 export async function runAgentTick(now = new Date(), opts: { budgetMs?: number; batch?: number } = {}): Promise<TickResult> {
   const started = Date.now();
@@ -308,6 +346,7 @@ export async function runAgentTick(now = new Date(), opts: { budgetMs?: number; 
     noShows: 0,
     transports: { settled: 0, unitsDelivered: 0 },
     staleAlerts: { closed: 0, byOutcome: {} },
+    staleCommitments: { checked: 0, released: 0 },
     truncated: false,
     elapsedMs: 0,
     errors: [],
@@ -329,6 +368,8 @@ export async function runAgentTick(now = new Date(), opts: { budgetMs?: number; 
     result.staleAlerts = { closed: r.closed, byOutcome: r.byOutcome };
     result.truncated ||= r.truncated;
   });
+  // Right after closing stale alerts so their donors come off hold in the same tick.
+  await step("staleCommitments", async () => { result.staleCommitments = await releaseStaleCommitments(now, budget); });
   await step("noShows", async () => { result.noShows = await markNoShows(now, budget); });
   await step("transports", async () => { result.transports = await settleTransportOutcomes(now, budget); });
   await step("escalations", async () => {

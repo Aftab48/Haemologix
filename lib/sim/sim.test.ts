@@ -94,6 +94,12 @@ test("every run emits well-formed rows for known tasks with finite features", ()
       if (typeof v === "number") assert.ok(Number.isFinite(v), `${row.task}.${k}`);
       else assert.ok(typeof v === "string" || typeof v === "boolean", `${row.task}.${k}`);
     }
+    // donor tasks carry the commitment-release feature (train/serve parity with
+    // production; the sim does not model release yet so it is always 0 here)
+    if (row.task === "donor_accept" || row.task === "donor_show" || row.task === "donor_response_time" || row.task === "donor_eta") {
+      assert.equal(row.features.priorReleases, 0, `${row.task}.priorReleases`);
+      assert.ok(typeof row.features.priorNoShows === "number", `${row.task}.priorNoShows`);
+    }
   }
   // window rows: once per alert at the first wave plus one per ladder expansion;
   // urgency rows once per alert plus monitoring samples

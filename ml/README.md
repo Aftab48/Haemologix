@@ -117,6 +117,23 @@ npm run ml:activate -- --version haemologix-model-1.1                          #
 Nothing ever activates automatically; production behaviour changes only through
 `ml:activate` after `ml:approve`.
 
+#### Donor commitment release and the `donor_*` features
+
+Production donors can be *released* from an accepted alert (donor "I can't make
+it", coordinator, or the system when the alert is over — see
+`lib/agents/commitment.ts`). For the model:
+
+- `donor_show` label: a donor/coordinator release records `actual = 0`, same as a
+  no-show (they did not arrive). System releases record nothing.
+- `priorNoShows` keeps its trained meaning **"accepted and did not arrive"** =
+  `noShow OR releasedAt`. That is what the simulator has always meant by
+  `history.noShows` (`accepted − arrived`), so `haemologix-model-1.2` sees no
+  distribution shift.
+- `priorReleases` is a new key (donor/coordinator releases only). Served models
+  ignore unknown keys; it is **constant 0 in every sim export** until release
+  behaviour is modelled in `lib/sim`, so a model trained on sim data alone cannot
+  learn from it yet — treat it as reserved until the next retrain with real rows.
+
 ## Layout
 
 ```

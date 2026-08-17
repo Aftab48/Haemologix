@@ -5,6 +5,7 @@
 
 import { db } from "@/db";
 import type { Alert } from "@prisma/client";
+import { COMMITTED_WHERE } from "./commitment";
 
 export interface ShortfallSnapshot {
   unitsNeeded: number;
@@ -12,7 +13,7 @@ export interface ShortfallSnapshot {
   /** units on transports that are pending / picked up / in transit toward this hospital */
   unitsPendingDelivery: number;
   shortfall: number;
-  /** donors who accepted and are neither arrived nor no-show */
+  /** donors who accepted and are neither arrived, no-show, nor released */
   committedDonorIds: string[];
 }
 
@@ -24,7 +25,7 @@ export async function computeShortfall(alert: Pick<Alert, "id" | "hospitalId" | 
       select: { units: true },
     }),
     db.donorResponseHistory.findMany({
-      where: { requestId: alert.id, status: "accepted", confirmed: false, noShow: false },
+      where: { requestId: alert.id, ...COMMITTED_WHERE },
       select: { donorId: true },
     }),
   ]);

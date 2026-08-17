@@ -6,6 +6,18 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "haemologix-dev-mldb",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        ". .\\scripts\\ml\\Use-MlEnv.ps1; $env:SANDBOX_NOTIFICATIONS='1'; $env:NEXT_PUBLIC_APP_URL='http://localhost:3100'; $env:NEXT_PUBLIC_BASE_URL='http://localhost:3100'; npx next dev -p 3100"
+      ],
+      "port": 3100
     }
   ]
 }

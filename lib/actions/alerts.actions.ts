@@ -3,6 +3,7 @@
 
 import { db } from "@/db";
 import { formatLastActivity } from "../utils";
+import { findActiveCommitment } from "@/lib/agents/commitment";
 
 export async function createAlert(input: CreateAlertInput) {
   // Validate required fields
@@ -198,4 +199,73 @@ export async function getAllAvailableAlerts() {
     console.error("[getAllAvailableAlerts] error:", err);
     throw err;
   }
+}
+
+export type DonorFeedStatus = "none" | "notified" | "accepted" | "declined" | "released" | "arrived" | "no_show";
+
+export type DonorFeedAlert = Awaited<ReturnType<typeof getAllAvailableAlerts>>[number] & {
+  /** this donor's own state on the alert, from DonorResponseHistory (not from AlertResponse presence) */
+  myStatus: DonorFeedStatus;
+};
+
+export interface DonorFeedCommitment {
+  requestId: string;
+  respondedAt: string | null;
+  expectedArrival: string | null;
+  hospitalName: string | null;
+  hospitalAddress: string | null;
+  hospitalPhone: string | null;
+  bloodType: string | null;
+  urgency: string | null;
+  latitude: string | null;
+  longitude: string | null;
+}
+
+/**
+ * The donor dashboard feed. While the donor is on hold for an alert they
+ * accepted, the feed is just that alert (plus the commitment card data); when
+ * they are free it is every active alert, each tagged with the donor's own
+ * status so the UI can show Accept / Declined / Accepted correctly. Deriving
+ * `myStatus` from DonorResponseHistory fixes the old client-side check, which
+ * treated the PENDING AlertResponse written at notify time as "responded".
+ */
+export async function getDonorAlertFeed(donorId: string): Promise<{ alerts: DonorFeedAlert[]; commitment: DonorFeedCommitment | null }> {
+  const [all, commitment, history] = await Promise.all([
+    getAllAvailableAlerts(),
+    findActiveCommitment(donorId),
+    db.donorResponseHistory.findMany({
+      where: { donorId },
+      orderBy: { notifiedAt: "desc" },
+      select: { requestId: true, status: true, confirmed: true, noShow: true, releasedAt: true },
+    }),
+  ]);
+  const latest = new Map<string, (typeof history)[number]>();
+  for (const h of history) if (!latest.has(h.requestId)) latest.set(h.requestId, h);
+  const statusOf = (alertId: string): DonorFeedStatus => {
+    const h = latest.get(alertId);
+    if (!h) return "none";
+    if (h.confirmed) return "arrived";
+    if (h.releasedAt) return "released";
+    if (h.noShow) return "no_show";
+    if (h.status === "accepted") return "accepted";
+    if (h.status === "declined") return "declined";
+    return "notified";
+  };
+  const tagged: DonorFeedAlert[] = all.map((a) => ({ ...a, myStatus: statusOf(a.id) }));
+  if (!commitment) return { alerts: tagged, commitment: null };
+  return {
+    alerts: tagged.filter((a) => a.id === commitment.requestId),
+    commitment: {
+      requestId: commitment.requestId,
+      respondedAt: commitment.respondedAt?.toISOString() ?? null,
+      expectedArrival: commitment.expectedArrival?.toISOString() ?? null,
+      hospitalName: commitment.alert?.hospitalName ?? null,
+      hospitalAddress: commitment.alert?.hospitalAddress ?? null,
+      hospitalPhone: commitment.alert?.hospitalPhone ?? null,
+      bloodType: commitment.alert?.bloodType ?? null,
+      urgency: commitment.alert?.urgency ?? null,
+      latitude: commitment.alert?.latitude ?? null,
+      longitude: commitment.alert?.longitude ?? null,
+    },
+  };
 }

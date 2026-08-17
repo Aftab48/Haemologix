@@ -7,6 +7,7 @@ import {
   checkFulfillmentProgress,
 } from "@/lib/agents/coordinatorAgent";
 import { advanceEscalation, type EscalationTrigger } from "@/lib/agents/escalation";
+import { isReleaseReason, releaseDonorCommitment, RELEASE_REASONS } from "@/lib/agents/commitment";
 
 // The escalation ladder may run several rungs (donor re-search + notifications,
 // network broadcast) in one call; give it room inside the serverless limit.
@@ -55,6 +56,13 @@ export async function POST(req: NextRequest) {
         });
 
         if (!result.success) {
+          // Donor is already on hold for another alert — a conflict, not a bad request.
+          if (result.error === "already_committed") {
+            return NextResponse.json(
+              { success: false, error: result.error, committed_request_id: result.committed_request_id },
+              { status: 409 }
+            );
+          }
           return NextResponse.json(
             { success: false, error: result.error },
             { status: 400 }
@@ -184,6 +192,37 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ...result, success: true });
       }
 
+      case "release_donor": {
+        // A coordinator learned (usually by phone) that an accepted donor is not
+        // coming: end the commitment now instead of waiting for the no-show
+        // timer, so the ladder can move on and the donor is free for other alerts.
+        const { request_id, donor_id, reason, note } = data;
+        if (!request_id || !donor_id) {
+          return NextResponse.json(
+            { success: false, error: "request_id and donor_id are required" },
+            { status: 400 }
+          );
+        }
+        if (reason !== undefined && reason !== null && !isReleaseReason(reason)) {
+          return NextResponse.json(
+            { success: false, error: `reason must be one of ${RELEASE_REASONS.join(", ")}` },
+            { status: 400 }
+          );
+        }
+        const result = await releaseDonorCommitment(request_id, donor_id, {
+          by: "coordinator",
+          reason: reason ?? "cant_make_it",
+          note: typeof note === "string" ? note : null,
+        });
+        if (!result.success) {
+          return NextResponse.json(
+            { success: false, error: result.error },
+            { status: 400 }
+          );
+        }
+        return NextResponse.json({ success: true, released: result.released, message: result.message });
+      }
+
       default:
         return NextResponse.json(
           { success: false, error: `Unknown action: ${action}` },
@@ -213,6 +252,7 @@ export async function GET() {
       "confirm_arrival",
       "check_progress",
       "escalate",
+      "release_donor",
     ],
   });
 }

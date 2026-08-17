@@ -17,6 +17,7 @@ import { trackDecisionOutcome } from "./outcomeTracking";
 import { advanceEscalation } from "./escalation";
 import { computeShortfall } from "./shortfall";
 import { readEscalationMeta } from "./workflowSteps";
+import { findActiveCommitment, releaseCommitmentsForClosedAlert } from "./commitment";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -97,6 +98,8 @@ export async function processDonorResponse(
   success: boolean;
   message?: string;
   error?: string;
+  /** set with error "already_committed": the alert this donor is already on hold for */
+  committed_request_id?: string;
 }> {
   try {
     console.log(
@@ -118,6 +121,18 @@ export async function processDonorResponse(
 
     if (!responseHistory) {
       return { success: false, error: "Response record not found" };
+    }
+
+    // One commitment at a time. A donor notified for two alerts before answering
+    // either can still reach both accept links; the hold in findAndRankDonors
+    // only stops *new* notifications. Leave the row "notified" (no label written)
+    // — the sim treats this the same way (engine.ts: committedToAlertId).
+    if (responseData.status === "accepted") {
+      const held = await findActiveCommitment(responseData.donor_id);
+      if (held && held.requestId !== responseData.request_id) {
+        console.log(`[CoordinatorAgent] Donor ${responseData.donor_id} already committed to ${held.requestId}; rejecting accept for ${responseData.request_id}`);
+        return { success: false, error: "already_committed", committed_request_id: held.requestId };
+      }
     }
 
     await db.donorResponseHistory.update({
@@ -230,11 +245,20 @@ export async function processDonorResponse(
         );
         const eta_minutes = Math.ceil((distance_km / 40) * 60 + 25);
 
+        // The no-show timer (scheduler.markNoShows) keys off expectedArrival, so
+        // every acceptance must carry one. The SMS-link route may already have
+        // written a logistics-derived value — keep that; fill in only when null
+        // (the web/app path never writes it).
+        await db.donorResponseHistory.updateMany({
+          where: { id: responseHistory.id, expectedArrival: null },
+          data: { expectedArrival: new Date(Date.now() + eta_minutes * 60_000) },
+        });
+
         // Model: P(show) and predicted arrival minutes for this acceptance (logged for shadow / escalation)
         try {
           const history = await db.donorResponseHistory.findMany({
             where: { donorId: donor.id },
-            select: { status: true, confirmed: true, noShow: true, responseTime: true, notifiedAt: true },
+            select: { status: true, confirmed: true, noShow: true, releasedAt: true, releasedBy: true, responseTime: true, notifiedAt: true },
           });
           const responded = history.filter((h) => h.responseTime != null);
           const time = nowTimeContext();
@@ -246,7 +270,9 @@ export async function processDonorResponse(
             priorAlerts: history.length,
             priorAccepted: history.filter((h) => h.status === "accepted").length,
             priorArrived: history.filter((h) => h.confirmed).length,
-            priorNoShows: history.filter((h) => h.noShow).length,
+            // same definitions as donorAgent.findAndRankDonors
+            priorNoShows: history.filter((h) => h.noShow || h.releasedAt).length,
+            priorReleases: history.filter((h) => h.releasedAt && h.releasedBy !== "system").length,
             avgResponseMinutes: responded.length ? responded.reduce((s, h) => s + (h.responseTime ?? 600), 0) / responded.length / 60_000 : null,
             alertsLast7Days: history.filter((h) => h.notifiedAt >= new Date(Date.now() - 7 * 86_400_000)).length,
             unscreened: !donor.profile?.hemoglobin,
@@ -765,6 +791,9 @@ export async function confirmDonorArrival(
           performanceMetrics: {},
         });
       }
+      // The need is met: any other donor still on hold for this alert is free
+      // for other alerts now (the scheduler sweep would catch this within a tick).
+      await releaseCommitmentsForClosedAlert(requestId, "alert_closed");
     } else {
       await db.alert.update({ where: { id: requestId }, data: { status: "MATCHED" } });
       await db.workflowState.update({
