@@ -18,6 +18,12 @@ export interface AlertQuality {
   noShowRate: number;
   acceptRate: number;
   escalated: boolean;
+  /** escalation ladder */
+  rungs: number;
+  maxRadiusKm: number;
+  broadcast: boolean;
+  handedOff: boolean;
+  minutesToHandoff: number | null;
   qualityScore: number; // 0..100
 }
 
@@ -39,8 +45,9 @@ export function scoreAlert(a: AlertSummary, windowMinutes: number): AlertQuality
   const shortfall = Math.max(0, a.unitsNeeded - a.unitsCollected);
   const noShowRate = a.accepted > 0 ? a.noShows / a.accepted : 0;
   const acceptRate = a.notified > 0 ? a.accepted / a.notified : 0;
-  // A generous notion of "needed" notifications: 3 per unit still short from donors
-  const reasonable = Math.max(10, a.unitsNeeded * 3);
+  // A generous notion of "needed" notifications: 3 per unit still short from donors,
+  // plus an allowance per escalation-ladder rung (widening the search is deliberate, not waste).
+  const reasonable = Math.max(10, a.unitsNeeded * 3) + 5 * a.rungs;
   const wasted = Math.max(0, a.notified - reasonable);
 
   let score = 0;
@@ -66,6 +73,11 @@ export function scoreAlert(a: AlertSummary, windowMinutes: number): AlertQuality
     noShowRate: Math.round(noShowRate * 1000) / 1000,
     acceptRate: Math.round(acceptRate * 1000) / 1000,
     escalated: a.escalated,
+    rungs: a.rungs,
+    maxRadiusKm: a.maxRadiusKm,
+    broadcast: a.broadcast,
+    handedOff: a.handedOff,
+    minutesToHandoff: a.minutesToHandoff,
     qualityScore: Math.round(Math.min(100, Math.max(0, score)) * 10) / 10,
   };
 }
@@ -103,6 +115,15 @@ export function aggregateQuality(runs: RunQuality[]) {
     meanNotifiedPerAlert: alerts.length ? Math.round((alerts.reduce((s, a) => s + a.donorsNotified, 0) / alerts.length) * 10) / 10 : 0,
     meanNoShowRate: alerts.length ? Math.round((alerts.reduce((s, a) => s + a.noShowRate, 0) / alerts.length) * 1000) / 1000 : 0,
     escalatedRate: alerts.length ? Math.round((alerts.filter((a) => a.escalated).length / alerts.length) * 1000) / 1000 : 0,
+    // escalation ladder
+    handedOffRate: alerts.length ? Math.round((alerts.filter((a) => a.handedOff).length / alerts.length) * 1000) / 1000 : 0,
+    broadcastRate: alerts.length ? Math.round((alerts.filter((a) => a.broadcast).length / alerts.length) * 1000) / 1000 : 0,
+    meanRungs: alerts.length ? Math.round((alerts.reduce((s, a) => s + a.rungs, 0) / alerts.length) * 100) / 100 : 0,
+    meanMaxRadiusKm: alerts.length ? Math.round((alerts.reduce((s, a) => s + a.maxRadiusKm, 0) / alerts.length) * 10) / 10 : 0,
+    meanMinutesToHandoff: (() => {
+      const t = alerts.filter((a) => a.minutesToHandoff !== null).map((a) => a.minutesToHandoff as number);
+      return t.length ? Math.round(t.reduce((s, m) => s + m, 0) / t.length) : null;
+    })(),
     byOutcome,
     violations: runs.reduce((s, r) => s + r.violations, 0),
   };

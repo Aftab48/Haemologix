@@ -259,6 +259,14 @@ export interface AlertWindowFeatureInput {
   activeAlertsSameType: number;
   windowHours: number;
   time: TimeContext;
+  /**
+   * Escalation-ladder state (sim-v3+). The model is consulted at every ladder
+   * rung (donorAgent.processShortageEvent runs per rung), so the row must say
+   * where on the ladder it was taken. Defaults describe the initial local search.
+   */
+  escalationRung?: number; // 0 = local search
+  minutesSinceAlert?: number; // 0 at creation
+  previouslyNotified?: number; // donors already notified for this alert before this search
 }
 
 export function alertWindowFeatures(i: AlertWindowFeatureInput): FeatureVector {
@@ -278,6 +286,52 @@ export function alertWindowFeatures(i: AlertWindowFeatureInput): FeatureVector {
     bloodBanksInRange: i.bloodBanksInRange,
     activeAlertsSameType: i.activeAlertsSameType,
     windowHours: i.windowHours,
+    escalationRung: i.escalationRung ?? 0,
+    minutesSinceAlert: Math.round(i.minutesSinceAlert ?? 0),
+    previouslyNotified: i.previouslyNotified ?? 0,
+    ...timeFeatures(i.time),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Escalation ladder: will widening the donor radius to the next tier find anyone?
+// Everything here is known to the coordinator at decision time (EscalationMeta +
+// donorResponseHistory counts), so production can consult it without new plumbing.
+// ---------------------------------------------------------------------------
+
+export interface ExpansionYieldFeatureInput {
+  bloodType: string;
+  urgency: string;
+  unitsNeeded: number;
+  currentRadiusKm: number;
+  nextRadiusKm: number;
+  /** eligible donors found across all rings searched so far */
+  eligibleSoFar: number;
+  notifiedSoFar: number;
+  acceptedSoFar: number;
+  escalationRung: number; // rung about to be executed (1 = first expansion)
+  minutesSinceAlert: number;
+  activeAlertsSameType: number;
+  time: TimeContext;
+}
+
+export function expansionYieldFeatures(i: ExpansionYieldFeatureInput): FeatureVector {
+  return {
+    bloodType: i.bloodType,
+    rarity: bloodRarity(i.bloodType),
+    urgency: urgencyLower(i.urgency),
+    unitsNeeded: i.unitsNeeded,
+    currentRadiusKm: i.currentRadiusKm,
+    nextRadiusKm: i.nextRadiusKm,
+    radiusRatio: round(i.currentRadiusKm > 0 ? i.nextRadiusKm / i.currentRadiusKm : i.nextRadiusKm),
+    ringAreaKm2: Math.round(Math.PI * (i.nextRadiusKm * i.nextRadiusKm - i.currentRadiusKm * i.currentRadiusKm)),
+    eligibleSoFar: i.eligibleSoFar,
+    notifiedSoFar: i.notifiedSoFar,
+    acceptedSoFar: i.acceptedSoFar,
+    eligiblePerKm2: round(i.currentRadiusKm > 0 ? i.eligibleSoFar / (Math.PI * i.currentRadiusKm * i.currentRadiusKm) : 0, 4),
+    escalationRung: i.escalationRung,
+    minutesSinceAlert: Math.round(i.minutesSinceAlert),
+    activeAlertsSameType: i.activeAlertsSameType,
     ...timeFeatures(i.time),
   };
 }
@@ -341,4 +395,5 @@ export const FEATURE_BUILDERS: Record<PredictionTask, string> = {
   urgency_priority: "urgencyFeatures",
   alert_resolves_in_window: "alertWindowFeatures",
   eligibility_needs_review: "eligibilityReviewFeatures",
+  expansion_yield: "expansionYieldFeatures",
 };

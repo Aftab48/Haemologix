@@ -107,6 +107,30 @@ export function dispatchDecisionMinutes(rng: Rng): number {
   return clamp(rng.lognormal(PRIORS.inventory.dispatchDecisionMedianMin, 0.5), 3, 60);
 }
 
+/**
+ * Network-broadcast rung: does a contacted facility come back with usable stock
+ * the network inventory did not list? P(responds) = sigmoid(logit(base by type)
+ * + logit shift) × P(holds unrecorded stock) × dispatch reliability. When it
+ * does, `units` become searchable after `delayMinutes`.
+ */
+export function facilityRespondsToBroadcast(
+  rng: Rng,
+  facility: SimHospital,
+  spec: ScenarioSpec
+): { responds: boolean; delayMinutes: number; units: number; expiryDays: number } {
+  const p = PRIORS.broadcast;
+  const base = facility.isBloodBank ? p.baseRespondProb.blood_bank : p.baseRespondProb.hospital;
+  const shift = spec.world.broadcastResponseShift ?? 0;
+  const pRespond = sigmoid(Math.log(base / (1 - base)) + shift);
+  const holdsStock = spec.world.unrecordedStockProb ?? p.unrecordedStockProb;
+  const responds = rng.bernoulli(clamp(pRespond * holdsStock * facility.dispatchReliability, 0, 1));
+  // Always draw the remaining variates so a facility's stream is stable regardless of outcome.
+  const delayMinutes = rng.int(p.responseDelayMinMin, p.responseDelayMinMax);
+  const units = rng.int(p.unitsFoundMin, p.unitsFoundMax);
+  const expiryDays = rng.int(p.expiryDaysMin, p.expiryDaysMax);
+  return { responds, delayMinutes, units, expiryDays };
+}
+
 /** Realised transport minutes and whether it fails / breaches cold chain. */
 export function transportOutcome(
   rng: Rng,

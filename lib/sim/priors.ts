@@ -18,8 +18,14 @@ export const PRIORS = {
    * suggested logit shift because the sample is 11 heavily re-notified donors
    * (fatigue-confounded); fatigue penalty raised for the same reason. Re-run
    * `npm run sim:calibrate` once n ≥ 300 and move the rest of the way.
+   *
+   * priors-v3 (2026-08-17): adds the coordinator's escalation ladder (`ladder`,
+   * mirrors production flag defaults) and the network-broadcast response model
+   * (`broadcast`, assumed — no production observations yet). All v2 behaviour
+   * blocks are unchanged, so `runScenario(spec, { ladder: false })` reproduces
+   * sim-v2 rows bit-for-bit.
    */
-  version: "priors-v2",
+  version: "priors-v3",
 
   /** Real-world blood-group prevalence (approx. India). Used to build donor pools. */
   bloodTypePrevalence: {
@@ -144,6 +150,45 @@ export const PRIORS = {
     responseWindowMin: 60,
     /** re-notify next wave when shortfall persists and pool remains */
     maxWaves: 3,
+  },
+
+  // ---------------------------------------------------------------------------
+  // Escalation ladder (mirrors lib/ml/flags.ts defaults / DEFAULT_LADDER_OPTIONS;
+  // the sim imports production's decideNextRung — never a copy of it)
+  // ---------------------------------------------------------------------------
+  ladder: {
+    maxDonorRadiusKm: 100,
+    broadcastRadiusKm: 150,
+    broadcastMaxFacilities: 20,
+    /**
+     * Minimum minutes between rungs once a rung found candidates. Production
+     * ticks every 5 min; the sim re-evaluates at `policy.checkEveryMin` (15),
+     * so the effective dwell here is 15 min.
+     */
+    dwellMinutes: 10,
+    radiusStepKm: 25,
+    radiusFactor: 2,
+  },
+
+  // ---------------------------------------------------------------------------
+  // Network broadcast response — ASSUMED (no production observations yet).
+  // A contacted facility may hold compatible stock the network inventory does
+  // not list; when it responds it registers/dispatches a few units after a delay.
+  // ---------------------------------------------------------------------------
+  broadcast: {
+    /** base P(responds with usable stock) by facility type */
+    baseRespondProb: { blood_bank: 0.35, hospital: 0.15 } as Record<"blood_bank" | "hospital", number>,
+    /** default fraction of facilities that hold unrecorded stock (spec.world.unrecordedStockProb overrides) */
+    unrecordedStockProb: 0.15,
+    /** minutes until a responding facility's stock becomes searchable ~ uniform */
+    responseDelayMinMin: 30,
+    responseDelayMinMax: 90,
+    /** units surfaced by a responding facility ~ uniform int */
+    unitsFoundMin: 1,
+    unitsFoundMax: 3,
+    /** days to expiry of surfaced units ~ uniform */
+    expiryDaysMin: 14,
+    expiryDaysMax: 30,
   },
 } as const;
 

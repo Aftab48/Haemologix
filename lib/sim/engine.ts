@@ -30,11 +30,13 @@ import {
   donorNotificationFeatures,
   donorShowFeatures,
   eligibilityReviewFeatures,
+  expansionYieldFeatures,
   inventoryUnitFeatures,
   urgencyFeatures,
   type DonorFeatureInput,
   type TimeContext,
 } from "@/lib/ml/features";
+import { decideNextRung, type LadderOptions } from "@/lib/ml/policy/escalationLadder";
 import { URGENCY_CLASSES } from "@/lib/ml/types";
 import {
   dispatchDecisionMinutes,
@@ -45,6 +47,7 @@ import {
   donorShowProbability,
   donorTravelMinutes,
   facilityDispatches,
+  facilityRespondsToBroadcast,
   oracleUrgency,
   reviewerFlagProbability,
   transportOutcome,
@@ -76,6 +79,12 @@ export interface RunOptions {
   policy?: SimPolicy;
   /** Skip building training rows (faster when only outcomes matter). */
   emitRows?: boolean;
+  /**
+   * Run the coordinator's escalation ladder (radius expansion → network
+   * broadcast → human hand-off) as production does. `false` reproduces the
+   * pre-ladder sim-v2 behaviour bit-for-bit (see __fixtures__/sim-v2-hashes.json).
+   */
+  ladder?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -121,14 +130,17 @@ class Simulation {
   readonly world: SimWorld;
   readonly policy: SimPolicy;
   readonly emitRows: boolean;
+  /** production's escalation ladder on/off (off ⇒ sim-v2 behaviour) */
+  readonly ladder: boolean;
+  readonly ladderOptions: LadderOptions = { ...PRIORS.ladder };
   readonly queue = new EventQueue();
   readonly events: SimEvent[] = [];
   readonly rows: TrainingRowDraft[] = [];
   readonly violations: string[] = [];
   readonly alerts: SimAlert[] = [];
   readonly transports = new Map<string, SimTransport>();
-  /** alert id → pending alert_resolves_in_window row (label set on resolution) */
-  private windowRows = new Map<string, TrainingRowDraft>();
+  /** alert id → pending alert_resolves_in_window rows (one per search; label set on resolution) */
+  private windowRows = new Map<string, TrainingRowDraft[]>();
   /** donor id → distance cache per alert */
   private hospitalsById = new Map<string, SimHospital>();
   private donorsById = new Map<string, SimDonor>();
@@ -139,6 +151,7 @@ class Simulation {
     this.rng = createRng(spec.seed);
     this.policy = opts.policy ?? deterministicPolicy;
     this.emitRows = opts.emitRows ?? true;
+    this.ladder = opts.ladder ?? true;
     this.world = generateWorld(spec, this.rng.fork("world"));
     this.now = this.world.startAt;
     for (const h of this.world.hospitals) this.hospitalsById.set(h.id, h);
@@ -248,6 +261,7 @@ class Simulation {
       unitsNeeded,
       urgency,
       searchRadiusKm,
+      initialSearchRadiusKm: searchRadiusKm,
       createdAt,
       deadlineAt: createdAt + this.spec.windowHours * 3_600_000,
       unitsCollected: 0,
@@ -268,6 +282,16 @@ class Simulation {
       declinedDonorIds: [],
       transportIds: [],
       rulePriorityScore,
+      ladder: {
+        rung: 0,
+        radiusHistory: [searchRadiusKm],
+        lastAdvancedAt: createdAt,
+        lastWaveNotified: 0,
+        eligibleInRadius: 0,
+        broadcastAt: null,
+        broadcastFacilityIds: [],
+        handedOffAt: null,
+      },
     };
     this.alerts.push(alert);
 
@@ -375,10 +399,18 @@ class Simulation {
     };
   }
 
-  notifyWave(alert: SimAlert) {
-    if (alert.outcome) return;
+  /**
+   * One notification wave. `ladderRung` marks a wave the escalation ladder issues
+   * after widening the radius: production publishes a fresh shortage event per
+   * rung, so these waves are not subject to the legacy `maxWaves` cap (the radius
+   * ceiling bounds them) and they emit a per-rung alert_resolves_in_window row.
+   */
+  notifyWave(alert: SimAlert, opts: { ladderRung?: number } = {}): { notified: number; eligible: number } {
+    if (alert.outcome) return { notified: 0, eligible: 0 };
     const wave = alert.notificationWaves + 1;
-    if (wave > PRIORS.policy.maxWaves) return;
+    const ladderRung = opts.ladderRung ?? 0;
+    if (!ladderRung && wave > PRIORS.policy.maxWaves) return { notified: 0, eligible: 0 };
+    const previouslyNotified = alert.notifiedDonorIds.length;
     const { ranked, eligibleCount } = this.rankDonors(alert);
     const shortfall = this.shortfall(alert);
     const net = this.networkUnitsAvailable(alert);
@@ -395,6 +427,10 @@ class Simulation {
     const t = this.timeCtx();
     const chosen = ranked.filter((r) => decision.notifyIds.includes(r.donor.id));
     if (chosen.length > 0) alert.status = "NOTIFIED";
+    // production: lastRungFoundDonors = notifications on record for the latest search (local wave included)
+    alert.ladder.lastWaveNotified = chosen.length;
+    // eligible = already notified (all were eligible when offered) + eligible-but-unnotified in this ring
+    alert.ladder.eligibleInRadius = previouslyNotified + eligibleCount;
 
     for (const r of chosen) {
       const donor = r.donor;
@@ -444,8 +480,10 @@ class Simulation {
       });
     }
 
-    // alert-level "will it resolve in window" row, once, at first wave
-    if (wave === 1 && !this.windowRows.has(alert.id)) {
+    // alert-level "will it resolve in window" row: once at the first wave and,
+    // with the ladder, once per widened search (production consults this model
+    // at every rung — donorAgent.processShortageEvent runs per rung).
+    if ((wave === 1 && !this.windowRows.has(alert.id)) || ladderRung) {
       const row: TrainingRowDraft = {
         task: "alert_resolves_in_window",
         features: alertWindowFeatures({
@@ -462,18 +500,26 @@ class Simulation {
           activeAlertsSameType: this.activeAlertsSameType(alert.bloodType, alert.id),
           windowHours: this.spec.windowHours,
           time: t,
+          escalationRung: ladderRung,
+          minutesSinceAlert: (this.now - alert.createdAt) / MIN,
+          previouslyNotified,
         }),
         label: 0,
         eventTime: this.now,
-        meta: { alertId: alert.id },
+        // `rung` only on ladder rows so sim-v2 row metadata is byte-identical
+        meta: ladderRung ? { alertId: alert.id, rung: ladderRung } : { alertId: alert.id },
       };
-      this.windowRows.set(alert.id, row);
+      const list = this.windowRows.get(alert.id) ?? [];
+      list.push(row);
+      this.windowRows.set(alert.id, list);
       this.row(row);
     }
 
-    if (decision.triggerInventoryNow && !alert.inventoryTriggered) {
+    // Local search only: the ladder re-checks inventory itself after each rung.
+    if (!ladderRung && decision.triggerInventoryNow && !alert.inventoryTriggered) {
       this.startInventorySearch(alert, decision.reason);
     }
+    return { notified: chosen.length, eligible: eligibleCount };
   }
 
   onDonorResponse(alert: SimAlert, r: RankedSimDonor, fi: DonorFeatureInput, accepted: boolean, responseMinutes: number) {
@@ -537,10 +583,17 @@ class Simulation {
     const expectedArrivals = this.committedCount(alert);
     const minutesElapsed = (this.now - alert.createdAt) / MIN;
     if (shortfall > 0 && this.policy.shouldEscalate({ alert, now: this.now, shortfall, expectedArrivals, minutesElapsed })) {
-      // Same order as production: try more donors AND search inventory in parallel
-      if (alert.notificationWaves < PRIORS.policy.maxWaves) this.notifyWave(alert);
-      if (!alert.inventoryTriggered) this.startInventorySearch(alert, "response window elapsed with shortfall");
-      else if (!alert.transferTriggered) this.startInventorySearch(alert, "retry network sources", true);
+      if (this.ladder) {
+        // Production coordinator (checkFulfillmentProgress): first timeout opens the
+        // inventory path; once inventory has been tried the escalation ladder decides.
+        if (!alert.inventoryTriggered) this.startInventorySearch(alert, "response window elapsed with shortfall");
+        else this.advanceLadder(alert, "response_window");
+      } else {
+        // sim-v2 coordinator: try more donors AND search inventory in parallel
+        if (alert.notificationWaves < PRIORS.policy.maxWaves) this.notifyWave(alert);
+        if (!alert.inventoryTriggered) this.startInventorySearch(alert, "response window elapsed with shortfall");
+        else if (!alert.transferTriggered) this.startInventorySearch(alert, "retry network sources", true);
+      }
     }
     if (!adHoc && !alert.outcome && this.now + PRIORS.policy.checkEveryMin * MIN < alert.deadlineAt) {
       this.queue.push(this.now + PRIORS.policy.checkEveryMin * MIN, () => this.progressCheck(alert));
@@ -573,18 +626,31 @@ class Simulation {
     return out;
   }
 
-  startInventorySearch(alert: SimAlert, reason: string, retry = false, excluded: Set<string> = new Set(), attempt = 1) {
-    if (alert.outcome) return;
+  /**
+   * Inventory search (blood banks + hospital-to-hospital). Returns whether a unit
+   * was reserved. `fromLadder`: the escalation ladder is re-checking inventory
+   * inside a rung and owns what happens next — an empty result must simply
+   * return instead of escalating (which would recurse into the ladder).
+   */
+  startInventorySearch(
+    alert: SimAlert,
+    reason: string,
+    retry = false,
+    excluded: Set<string> = new Set(),
+    attempt = 1,
+    fromLadder = false
+  ): boolean {
+    if (alert.outcome) return false;
     const shortfall = this.shortfall(alert);
-    if (shortfall <= 0) return;
+    if (shortfall <= 0) return false;
     alert.inventoryTriggered = true;
     if (retry) alert.transferTriggered = true;
     const ranked = this.rankInventory(alert, shortfall, excluded);
     this.emit({ t: this.now, type: "inventory.searched", alertId: alert.id, candidates: ranked.length, reason });
     const pick = this.policy.chooseInventorySource(ranked, alert, shortfall, this.now);
     if (!pick) {
-      this.escalate(alert, ranked.length === 0 ? "no compatible inventory in network" : "policy declined all sources");
-      return;
+      if (!fromLadder) this.onLocalSearchExhausted(alert, ranked.length === 0 ? "no compatible inventory in network" : "policy declined all sources");
+      return false;
     }
     if (!getCompatibleDonorTypes(alert.bloodType).includes(pick.unit.bloodType)) {
       this.violations.push(`incompatible unit ${pick.unit.id} (${pick.unit.bloodType}) chosen for ${alert.bloodType}`);
@@ -646,11 +712,12 @@ class Simulation {
         this.row({ task: "inventory_delivery_ok", features, label: 0, eventTime: this.now, subjectId: pick.unit.id, meta: { alertId: alert.id, reason: "not_dispatched" } });
         excluded.add(pick.hospital.id);
         if (attempt < 3) this.startInventorySearch(alert, "previous source failed", true, excluded, attempt + 1);
-        else this.escalate(alert, "all network sources failed to dispatch");
+        else this.onLocalSearchExhausted(alert, "all network sources failed to dispatch");
         return;
       }
       this.planTransport(alert, pick, unitsRequested, features, excluded, attempt);
     });
+    return true;
   }
 
   releaseUnit(unit: SimInventoryUnit, alert: SimAlert, units: number) {
@@ -695,7 +762,7 @@ class Simulation {
         excluded.add(pick.hospital.id);
         if (!alert.outcome) {
           if (attempt < 3) this.startInventorySearch(alert, "transport failed", true, excluded, attempt + 1);
-          else this.escalate(alert, "transport failed and no alternatives");
+          else this.onLocalSearchExhausted(alert, "transport failed and no alternatives");
         }
       });
       return;
@@ -729,11 +796,165 @@ class Simulation {
     });
   }
 
+  // --- escalation ladder (production: lib/agents/escalation.ts) --------------
+
+  /**
+   * The local donor + inventory path is exhausted. sim-v2: hand off immediately.
+   * Ladder: widen the donor radius → network broadcast → human hand-off.
+   */
+  onLocalSearchExhausted(alert: SimAlert, reason: string) {
+    if (this.ladder) this.advanceLadder(alert, reason);
+    else this.escalate(alert, reason);
+  }
+
+  /**
+   * Run the coordinator's escalation ladder for one alert. Mirrors
+   * lib/agents/escalation.ts advanceEscalation: decide with production's
+   * decideNextRung, execute one rung, keep climbing while a rung yields nothing,
+   * stop as soon as there is somebody to wait for. Idempotent per rung.
+   */
+  advanceLadder(alert: SimAlert, trigger: string) {
+    if (alert.outcome || alert.ladder.handedOffAt !== null) return;
+    const L = alert.ladder;
+    for (let i = 0; i < 6; i++) {
+      // 6 = MAX_RUNGS_PER_CALL in production
+      const shortfall = this.shortfall(alert);
+      const decision = decideNextRung({
+        shortfall,
+        currentRadiusKm: alert.searchRadiusKm,
+        lastRungFoundDonors: L.lastWaveNotified > 0,
+        inventoryFound: alert.unitsPendingDelivery > 0,
+        committedDonors: this.committedCount(alert),
+        broadcastDone: L.broadcastAt !== null,
+        humanEscalated: L.handedOffAt !== null,
+        minutesSinceLastAdvance: (this.now - L.lastAdvancedAt) / MIN,
+        options: this.ladderOptions,
+      });
+      const action = decision.action;
+      if (action.type === "wait" || action.type === "none") return;
+
+      // guardrails (the driver re-validates every proposal, as in production)
+      if (action.type === "expand_donor_search" && (action.radiusKm > this.ladderOptions.maxDonorRadiusKm || action.radiusKm <= alert.searchRadiusKm)) {
+        this.violations.push(`ladder proposed radius ${action.radiusKm} km for ${alert.id} (current ${alert.searchRadiusKm}, max ${this.ladderOptions.maxDonorRadiusKm})`);
+        return;
+      }
+      if (action.type === "network_broadcast" && L.broadcastAt !== null) return;
+      if (action.type === "escalate_human" && L.handedOffAt !== null) return;
+
+      const rung = L.rung + 1;
+      if (action.type === "expand_donor_search") {
+        this.emitExpansionYieldRow(alert, rung, action.radiusKm);
+        this.emit({ t: this.now, type: "escalation.step", alertId: alert.id, rung, action: action.type, reason: decision.reason, radiusKm: action.radiusKm });
+        alert.searchRadiusKm = action.radiusKm;
+        L.rung = rung;
+        L.radiusHistory.push(action.radiusKm);
+        L.lastAdvancedAt = this.now;
+        const wave = this.notifyWave(alert, { ladderRung: rung });
+        // label the yield row now that the ring has been searched
+        this.labelExpansionYield(alert, rung, wave.eligible > 0);
+        const reserved = this.startInventorySearch(alert, `ladder rung ${rung} inventory re-check`, alert.inventoryTriggered, new Set(), 1, true);
+        if (wave.notified > 0 || reserved) return; // somebody to wait for
+      } else if (action.type === "network_broadcast") {
+        const contacted = this.broadcastToNetwork(alert, action.radiusKm, action.maxFacilities);
+        L.rung = rung;
+        L.broadcastAt = this.now;
+        L.broadcastFacilityIds = contacted;
+        L.lastAdvancedAt = this.now;
+        this.emit({ t: this.now, type: "escalation.step", alertId: alert.id, rung, action: action.type, reason: decision.reason, radiusKm: action.radiusKm, facilities: contacted.length });
+        // falls through to the human hand-off, exactly as production does
+      } else {
+        L.rung = rung;
+        L.handedOffAt = this.now;
+        L.lastAdvancedAt = this.now;
+        this.emit({ t: this.now, type: "escalation.step", alertId: alert.id, rung, action: action.type, reason: decision.reason });
+        this.escalate(alert, `human hand-off after ${trigger}: ${decision.reason}`);
+        return;
+      }
+    }
+  }
+
+  /**
+   * Network-broadcast rung: nearest facilities (blood banks first) within radius
+   * are asked to check their stock. A responding facility surfaces unrecorded
+   * units after a delay, which triggers an inventory re-check.
+   */
+  broadcastToNetwork(alert: SimAlert, radiusKm: number, maxFacilities: number): string[] {
+    const from = this.hospital(alert.hospitalId);
+    const compatible = getCompatibleDonorTypes(alert.bloodType);
+    const candidates = this.world.hospitals
+      .filter((h) => h.id !== alert.hospitalId)
+      .map((h) => ({ h, d: this.distance(from, h) }))
+      .filter((x) => x.d <= radiusKm)
+      .sort((a, b) => Number(b.h.isBloodBank) - Number(a.h.isBloodBank) || a.d - b.d || a.h.id.localeCompare(b.h.id))
+      .slice(0, Math.max(0, maxFacilities));
+    for (const { h } of candidates) {
+      const brng = this.rng.fork(`bc-${alert.id}-${h.id}`);
+      const r = facilityRespondsToBroadcast(brng, h, this.spec);
+      if (!r.responds) continue;
+      const bt = compatible.includes(alert.bloodType) ? alert.bloodType : compatible[0];
+      this.queue.push(this.now + r.delayMinutes * MIN, () => {
+        if (alert.outcome) return;
+        const unit: SimInventoryUnit = {
+          id: `${h.id}-${bt}-bc-${alert.id}`,
+          hospitalId: h.id,
+          bloodType: bt,
+          units: r.units,
+          expiryAt: this.now + r.expiryDays * 86_400_000,
+          reserved: false,
+          reservedFor: null,
+        };
+        h.inventory.push(unit);
+        this.world.units.set(unit.id, unit);
+        this.emit({ t: this.now, type: "network.broadcast_response", alertId: alert.id, hospitalId: h.id, unitsFound: r.units, delayMinutes: r.delayMinutes });
+        // production: the facility updates its inventory / contacts the hospital → coordinator re-checks
+        this.startInventorySearch(alert, "network broadcast response", true, new Set(), 1, true);
+      });
+    }
+    return candidates.map((c) => c.h.id);
+  }
+
+  /** expansion_yield: decision-time features; label filled once the ring has been ranked. */
+  private pendingYield = new Map<string, TrainingRowDraft>();
+
+  emitExpansionYieldRow(alert: SimAlert, rung: number, nextRadiusKm: number) {
+    if (!this.emitRows) return;
+    const row: TrainingRowDraft = {
+      task: "expansion_yield",
+      features: expansionYieldFeatures({
+        bloodType: alert.bloodType,
+        urgency: alert.urgency,
+        unitsNeeded: alert.unitsNeeded,
+        currentRadiusKm: alert.searchRadiusKm,
+        nextRadiusKm,
+        eligibleSoFar: alert.ladder.eligibleInRadius,
+        notifiedSoFar: alert.notifiedDonorIds.length,
+        acceptedSoFar: alert.acceptedDonorIds.length,
+        escalationRung: rung,
+        minutesSinceAlert: (this.now - alert.createdAt) / MIN,
+        activeAlertsSameType: this.activeAlertsSameType(alert.bloodType, alert.id),
+        time: this.timeCtx(),
+      }),
+      label: 0,
+      eventTime: this.now,
+      meta: { alertId: alert.id, rung },
+    };
+    this.pendingYield.set(`${alert.id}:${rung}`, row);
+    this.row(row);
+  }
+
+  labelExpansionYield(alert: SimAlert, rung: number, found: boolean) {
+    const row = this.pendingYield.get(`${alert.id}:${rung}`);
+    if (row) row.label = found ? 1 : 0;
+    this.pendingYield.delete(`${alert.id}:${rung}`);
+  }
+
   // --- resolution ------------------------------------------------------------
 
+  /** Hand the alert to a human coordinator (terminal ladder rung / sim-v2 escalate) → outcome ESCALATED at deadline. */
   escalate(alert: SimAlert, reason: string) {
     if (alert.outcome || alert.escalated) return;
     alert.escalated = true;
+    if (alert.ladder.handedOffAt === null) alert.ladder.handedOffAt = this.now;
     this.emit({ t: this.now, type: "alert.escalated", alertId: alert.id, reason });
   }
 
@@ -749,8 +970,8 @@ class Simulation {
     alert.status = outcome === "FULFILLED" ? "FULFILLED" : "CLOSED";
     const minutes = (this.now - alert.createdAt) / MIN;
     this.emit({ t: this.now, type: "alert.resolved", alertId: alert.id, outcome, unitsCollected: alert.unitsCollected, minutes });
-    const wr = this.windowRows.get(alert.id);
-    if (wr) wr.label = outcome === "FULFILLED" && this.now <= alert.deadlineAt ? 1 : 0;
+    const label = outcome === "FULFILLED" && this.now <= alert.deadlineAt ? 1 : 0;
+    for (const wr of this.windowRows.get(alert.id) ?? []) wr.label = label;
     // release remaining commitments
     for (const d of this.world.donors) if (d.committedToAlertId === alert.id) d.committedToAlertId = null;
   }
@@ -870,7 +1091,7 @@ class Simulation {
     }
     for (const a of this.alerts) if (!a.outcome) this.onDeadline(a);
     // any row still unlabelled for the window task gets 0
-    for (const wr of this.windowRows.values()) if (wr.label !== 1) wr.label = 0;
+    for (const list of this.windowRows.values()) for (const wr of list) if (wr.label !== 1) wr.label = 0;
 
     const summaries: AlertSummary[] = this.alerts.map((a) => ({
       alertId: a.id,
@@ -892,6 +1113,12 @@ class Simulation {
       inventoryTriggered: a.inventoryTriggered,
       transferTriggered: a.transferTriggered,
       escalated: a.escalated,
+      rungs: a.ladder.rung,
+      initialRadiusKm: a.initialSearchRadiusKm,
+      maxRadiusKm: Math.max(...a.ladder.radiusHistory),
+      broadcast: a.ladder.broadcastAt !== null,
+      handedOff: a.ladder.handedOffAt !== null,
+      minutesToHandoff: a.ladder.handedOffAt !== null ? (a.ladder.handedOffAt - a.createdAt) / MIN : null,
     }));
 
     return {

@@ -8,6 +8,10 @@
  * model could reach with this policy layer. The noisy oracle approximates a
  * realistic model. If even the oracle does not beat deterministic on a scenario
  * family, the *policy* needs work, not the model.
+ *
+ * Escalation-ladder A/B (same seeds, deterministic policy, ladder off vs on):
+ *   npx tsx scripts/sim/compare.ts --ladder-ab --n 500 [--kind H]
+ * → what the ladder buys: Δ resolved rate, hand-off rate and timing, notifications.
  */
 import { runScenario } from "@/lib/sim/engine";
 import { aggregateQuality, scoreRun, type RunQuality } from "@/lib/sim/metrics";
@@ -25,6 +29,44 @@ const n = Number(get("n") ?? 300);
 const kind = (get("kind") as ScenarioKind | undefined) ?? null;
 const noise = Number(get("noise") ?? 0.15);
 const seed = Number(get("seed") ?? 99);
+const ladderAb = argv.includes("--ladder-ab");
+
+if (ladderAb) {
+  const rng = createRng(seed);
+  const off: RunQuality[] = [];
+  const on: RunQuality[] = [];
+  const byKind: Record<string, { off: RunQuality[]; on: RunQuality[] }> = {};
+  for (let i = 0; i < n; i++) {
+    const k = kind ?? pickKind(rng, DEFAULT_MIX);
+    const s = rng.int(1, 2 ** 31 - 1);
+    const spec = SCENARIO_FACTORIES[k](s, `${k}-${i}-${s}`);
+    const rOff = scoreRun(runScenario(spec, { policy: deterministicPolicy, emitRows: false, ladder: false }), spec.windowHours);
+    const rOn = scoreRun(runScenario(spec, { policy: deterministicPolicy, emitRows: false, ladder: true }), spec.windowHours);
+    off.push(rOff);
+    on.push(rOn);
+    const b = (byKind[k] ??= { off: [], on: [] });
+    b.off.push(rOff);
+    b.on.push(rOn);
+  }
+  const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
+  const line = (label: string, q: ReturnType<typeof aggregateQuality>) =>
+    `${label.padEnd(12)} quality=${String(q.meanQuality).padStart(5)}  resolved=${pct(q.resolvedRate).padStart(6)}  handedOff=${pct(q.handedOffRate).padStart(6)}  ` +
+    `t(handoff)=${String(q.meanMinutesToHandoff ?? "-").padStart(4)}min  rungs=${String(q.meanRungs).padStart(4)}  maxR=${String(q.meanMaxRadiusKm).padStart(5)}km  ` +
+    `broadcast=${pct(q.broadcastRate).padStart(6)}  notified/alert=${String(q.meanNotifiedPerAlert).padStart(5)}  outcomes=${JSON.stringify(q.byOutcome)}  violations=${q.violations}`;
+  console.log(`\n=== escalation ladder A/B: ${n} scenarios${kind ? ` (kind ${kind})` : ""}, seed ${seed}, policy ${deterministicPolicy.name} ===`);
+  console.log(line("ladder off", aggregateQuality(off)));
+  console.log(line("ladder on", aggregateQuality(on)));
+  console.log("\nper scenario kind (off → on):  resolved | handedOff | t(handoff) | rungs");
+  for (const k of Object.keys(byKind).sort()) {
+    const a = aggregateQuality(byKind[k].off);
+    const b = aggregateQuality(byKind[k].on);
+    console.log(
+      `  ${k.padEnd(7)} n=${String(byKind[k].off.length).padStart(4)}  ${pct(a.resolvedRate).padStart(6)} → ${pct(b.resolvedRate).padStart(6)} | ` +
+        `${pct(a.handedOffRate).padStart(6)} → ${pct(b.handedOffRate).padStart(6)} | ${String(a.meanMinutesToHandoff ?? "-").padStart(4)} → ${String(b.meanMinutesToHandoff ?? "-").padStart(4)} min | ${a.meanRungs} → ${b.meanRungs}`
+    );
+  }
+  process.exit(0);
+}
 
 const rng = createRng(seed);
 const det: RunQuality[] = [];

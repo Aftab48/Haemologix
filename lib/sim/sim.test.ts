@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import test from "node:test";
 import { getCompatibleDonorTypes } from "@/lib/agents/donorAgent";
 import { PREDICTION_TASKS } from "@/lib/ml/types";
-import { toTrainingRows } from "./dataset";
 import { runScenario } from "./engine";
+import { POST_V2_FEATURE_KEYS, hashEvents, hashRows } from "./hash";
 import { aggregateQuality, scoreRun } from "./metrics";
 import { deterministicPolicy } from "./policy";
 import { createRng } from "./rng";
@@ -17,14 +18,40 @@ import {
   scenarioE,
   scenarioF,
   scenarioG,
+  scenarioH,
+  scenarioI,
+  scenarioJ,
+  scenarioK,
 } from "./scenarios";
-import type { SimRunResult } from "./types";
+import type { ScenarioSpec } from "./types";
 
-function hashRows(result: SimRunResult): string {
-  const h = createHash("sha256");
-  for (const r of toTrainingRows(result)) h.update(JSON.stringify(r));
-  return h.digest("hex");
-}
+test("ladder off reproduces the frozen sim-v2 rows and events bit-for-bit", () => {
+  // Frozen by scripts/sim/freezeFixture.ts on the pre-ladder engine. If this
+  // fails, an engine change disturbed an existing RNG stream or event order.
+  // Rows are compared with the additive post-v2 feature keys stripped (they
+  // carry their defaults when the ladder is off); events are compared strictly.
+  const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, "__fixtures__", "sim-v2-hashes.json"), "utf8")) as {
+    hashes: Record<string, { rows: string; events: string }>;
+  };
+  const specs: Record<string, ScenarioSpec> = {
+    "random-4242": randomScenario(4242),
+    "random-1": randomScenario(1),
+    "random-2": randomScenario(2),
+    "random-99": randomScenario(99),
+    "A-3": scenarioA(3),
+    "B-3": scenarioB(3),
+    "C-3": scenarioC(3),
+    "D-3": scenarioD(3),
+    "E-3": scenarioE(3),
+    "F-3": scenarioF(3),
+    "G-3": scenarioG(3),
+  };
+  for (const [key, expected] of Object.entries(fixture.hashes)) {
+    const r = runScenario(specs[key], { ladder: false });
+    assert.equal(hashRows(r, { omitFeatureKeys: POST_V2_FEATURE_KEYS }), expected.rows, `${key}: training rows changed`);
+    assert.equal(hashEvents(r), expected.events, `${key}: events changed`);
+  }
+});
 
 test("rng is deterministic and well-behaved", () => {
   const a = createRng(123);
@@ -68,10 +95,13 @@ test("every run emits well-formed rows for known tasks with finite features", ()
       else assert.ok(typeof v === "string" || typeof v === "boolean", `${row.task}.${k}`);
     }
   }
-  // window rows exist once per alert; urgency rows once per alert plus monitoring samples
+  // window rows: once per alert at the first wave plus one per ladder expansion;
+  // urgency rows once per alert plus monitoring samples
   const alerts = r.alerts.length;
+  const expansions = r.events.filter((e) => e.type === "escalation.step" && e.action === "expand_donor_search").length;
   assert.ok(r.rows.filter((x) => x.task === "urgency_priority").length >= alerts);
-  assert.equal(r.rows.filter((x) => x.task === "alert_resolves_in_window").length, alerts);
+  assert.equal(r.rows.filter((x) => x.task === "alert_resolves_in_window").length, alerts + expansions);
+  assert.equal(r.rows.filter((x) => x.task === "expansion_yield").length, expansions);
   assert.ok(r.rows.some((x) => x.task === "eligibility_needs_review"));
 });
 
@@ -80,7 +110,9 @@ test("scenario A — insufficient donor pool escalates beyond donors", () => {
   for (let s = 1; s <= 12; s++) {
     const r = runScenario(scenarioA(s));
     const a = r.alerts[0];
-    assert.ok(a.notified < a.unitsNeeded * 2, `pool should be thin (notified ${a.notified} for ${a.unitsNeeded})`);
+    // the LOCAL pool is thin (wave 1); the ladder may later widen and notify more
+    const wave1 = r.events.filter((e) => e.type === "donor.notified" && e.wave === 1).length;
+    assert.ok(wave1 < a.unitsNeeded * 2, `pool should be thin (wave-1 notified ${wave1} for ${a.unitsNeeded})`);
     if (a.inventoryTriggered || a.escalated) sawEscalationPath++;
   }
   assert.ok(sawEscalationPath >= 10, `expected inventory/escalation in almost all A runs, got ${sawEscalationPath}/12`);
@@ -161,6 +193,109 @@ test("scenario G — complete failure ends escalated/failed, never fulfilled", (
     const a = runScenario(scenarioG(s)).alerts[0];
     assert.notEqual(a.outcome, "FULFILLED", `G-${s} should not fulfil`);
     assert.ok(a.escalated || a.outcome === "PARTIAL" || a.outcome === "FAILED");
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Escalation ladder (sim-v3)
+// ---------------------------------------------------------------------------
+
+test("scenario H — empty local ring: the ladder widens and finds donors the local search could not", () => {
+  let expanded = 0;
+  let notifiedAfterExpansion = 0;
+  let yieldPositive = 0;
+  let yieldRows = 0;
+  for (let s = 1; s <= 10; s++) {
+    const r = runScenario(scenarioH(s));
+    const wave1 = r.events.filter((e) => e.type === "donor.notified" && e.wave === 1).length;
+    assert.equal(wave1, 0, `H-${s}: the initial ring must be empty by construction`);
+    const expansions = r.events.filter((e) => e.type === "escalation.step" && e.action === "expand_donor_search");
+    if (expansions.length >= 1) expanded++;
+    if (r.alerts[0].notified > 0) notifiedAfterExpansion++;
+    const y = r.rows.filter((x) => x.task === "expansion_yield");
+    yieldRows += y.length;
+    yieldPositive += y.filter((x) => x.label === 1).length;
+    for (const a of r.alerts) assert.ok(a.maxRadiusKm > a.initialRadiusKm, `H-${s}: radius should have widened`);
+  }
+  assert.ok(expanded >= 8, `ladder should expand in nearly all H runs (${expanded}/10)`);
+  assert.ok(notifiedAfterExpansion >= 8, `donors should be found once widened (${notifiedAfterExpansion}/10)`);
+  assert.ok(yieldRows > 0 && yieldPositive > 0 && yieldPositive < yieldRows, `expansion_yield labels should be mixed (${yieldPositive}/${yieldRows})`);
+});
+
+test("scenario I — dark inventory: the network broadcast surfaces stock and units get delivered", () => {
+  let responded = 0;
+  let delivered = 0;
+  let resolved = 0;
+  for (let s = 1; s <= 10; s++) {
+    const r = runScenario(scenarioI(s));
+    const a = r.alerts[0];
+    assert.ok(a.broadcast, `I-${s}: broadcast rung should run`);
+    if (r.events.some((e) => e.type === "network.broadcast_response")) responded++;
+    if (a.unitsFromInventory > 0) delivered++;
+    if (a.outcome === "FULFILLED") resolved++;
+    // ladder off: nothing can be found → never fulfilled
+    assert.notEqual(runScenario(scenarioI(s), { ladder: false }).alerts[0].outcome, "FULFILLED", `I-${s} without the ladder should not fulfil`);
+  }
+  assert.ok(responded >= 6, `facilities should respond in most I runs (${responded}/10)`);
+  assert.ok(delivered >= 4, `surfaced stock should be delivered in several I runs (${delivered}/10)`);
+  assert.ok(resolved >= 3, `the broadcast rung should resolve some I runs (${resolved}/10)`);
+});
+
+test("scenario J — thin local pool then wide: notify, dwell, then widen (never re-notify)", () => {
+  let dwelled = 0;
+  for (let s = 1; s <= 10; s++) {
+    const r = runScenario(scenarioJ(s));
+    const wave1 = r.events.filter((e) => e.type === "donor.notified" && e.wave === 1).length;
+    const firstExpand = r.events.find((e) => e.type === "escalation.step" && e.action === "expand_donor_search");
+    if (wave1 > 0 && firstExpand) {
+      // ladder waited for the local ring before widening
+      const created = r.events.find((e) => e.type === "alert.created")!;
+      if (firstExpand.t - created.t >= 10 * 60_000) dwelled++;
+    }
+    const notified = r.events.filter((e) => e.type === "donor.notified").map((e) => e.donorId);
+    assert.equal(new Set(notified).size, notified.length, `J-${s}: a donor must never be notified twice`);
+  }
+  assert.ok(dwelled >= 6, `ladder should dwell on the local ring before widening in most J runs (${dwelled}/10)`);
+});
+
+test("scenario K — total failure: full ladder, then an early explicit human hand-off", () => {
+  for (let s = 1; s <= 10; s++) {
+    const r = runScenario(scenarioK(s));
+    const a = r.alerts[0];
+    assert.equal(a.outcome, "ESCALATED", `K-${s} should end handed off`);
+    assert.ok(a.handedOff && a.minutesToHandoff !== null, `K-${s} should record the hand-off`);
+    assert.ok((a.minutesToHandoff ?? Infinity) < 6 * 60 * 0.5, `K-${s}: hand-off should be early, got ${a.minutesToHandoff} min`);
+    assert.ok(a.broadcast, `K-${s}: broadcast rung should have run before hand-off`);
+    assert.equal(a.maxRadiusKm, 100, `K-${s}: donor search should reach the ceiling`);
+    assert.equal(r.events.filter((e) => e.type === "network.broadcast_response").length, 0);
+    assert.equal(r.events.filter((e) => e.type === "donor.notified").length, 0);
+  }
+});
+
+test("ladder invariants hold across random and cascading scenarios", () => {
+  const rng = createRng(31337);
+  const factories = [randomScenario, scenarioH, scenarioI, scenarioJ, scenarioK, scenarioA, scenarioG];
+  for (let i = 0; i < 140; i++) {
+    const f = factories[i % factories.length];
+    const r = runScenario(f(rng.int(1, 1e9)), { emitRows: false });
+    assert.deepEqual(r.violations, []);
+    for (const a of r.alerts) {
+      assert.ok(a.maxRadiusKm <= 100, `radius ${a.maxRadiusKm} > 100`);
+      assert.ok(a.maxRadiusKm >= a.initialRadiusKm);
+    }
+    const byAlert = new Map<string, number[]>();
+    for (const e of r.events) {
+      if (e.type === "escalation.step") (byAlert.get(e.alertId) ?? byAlert.set(e.alertId, []).get(e.alertId)!).push(e.rung);
+    }
+    for (const [id, rungs] of byAlert) {
+      for (let k = 1; k < rungs.length; k++) assert.ok(rungs[k] > rungs[k - 1], `${id}: rungs must strictly increase`);
+    }
+    const bcasts = r.events.filter((e) => e.type === "escalation.step" && e.action === "network_broadcast");
+    const handoffs = r.events.filter((e) => e.type === "escalation.step" && e.action === "escalate_human");
+    assert.ok(new Set(bcasts.map((e) => e.alertId)).size === bcasts.length, "at most one broadcast per alert");
+    assert.ok(new Set(handoffs.map((e) => e.alertId)).size === handoffs.length, "at most one hand-off per alert");
+    const notified = r.events.filter((e) => e.type === "donor.notified").map((e) => `${e.alertId}:${e.donorId}`);
+    assert.equal(new Set(notified).size, notified.length, "no donor notified twice for one alert");
   }
 });
 

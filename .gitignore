@@ -52,6 +52,10 @@ ml/data/*_val.json
 ml/data/*_test.json
 # Generated datasets (GBs) — regenerate with `npm run sim:run` / `npm run ml:harvest`; manifests are kept
 ml/data/**/*.jsonl
+# Smoke/scratch datasets and checkpoints from local training experiments (never ship)
+ml/data/**/*-smoke*/
+ml/checkpoints/*-smoke*/
+ml/checkpoints/smoke-*/
 
 # ML model checkpoints ARE tracked (a few MB per version): the App Runner image bakes
 # ml/checkpoints/ in, so what is in git is exactly what serves. Regenerate with

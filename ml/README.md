@@ -43,9 +43,11 @@ Simulate → Train → Evaluate → Pilot (shadow) → Observe → Validate → 
 ### 1. Simulate (TypeScript, no DB)
 
 ```bash
-npm run sim:run -- --n 100000 --seed 42 --out ml/data/sim/v1 --version sim-v1
+npm run sim:run -- --n 100000 --seed 42 --out ml/data/sim/v3 --version sim-v3
 npm run sim:run -- --n 500 --kind B --quality          # policy quality only
+npm run sim:run -- --n 1000 --no-ladder                 # sim-v2 coordinator (no escalation ladder)
 npx tsx scripts/sim/compare.ts --n 400                  # deterministic vs ML policy (oracle / noisy)
+npx tsx scripts/sim/compare.ts --ladder-ab --n 600      # what the escalation ladder buys (same seeds, on vs off)
 npm run test:sim
 ```
 
@@ -53,13 +55,29 @@ npm run test:sim
 functions; behaviour comes from `lib/sim/priors.ts` (assumptions — recalibrate with
 `npm run sim:calibrate` once real outcomes exist). Scenario families A–G cover the
 plan's edge cases; `random` samples the combinatorial space. Output: one JSONL per
-task + `manifest.json` (seed, mix, priors hash, git sha).
+task + `manifest.json` (seed, mix, priors hash/version, ladder flag, git sha).
+
+**sim-v3 — escalation ladder.** The sim's coordinator now runs production's
+escalation ladder (`lib/ml/policy/escalationLadder.ts` `decideNextRung`, the same
+function `lib/agents/escalation.ts` uses): after an empty local search it widens the
+donor radius in tiers (→ 100 km, inventory re-checked each rung), broadcasts to nearby
+facilities (a responding facility surfaces unrecorded stock — `PRIORS.broadcast`,
+assumed), then hands off to a human. New cascading-failure families **H** (empty local
+ring), **I** (dark inventory → broadcast), **J** (thin then wide → dwell, widen),
+**K** (total failure → early hand-off); default mix 60% random / 28% A–G / 12% H–K.
+New rows: `alert_resolves_in_window` is emitted once per search (rung) with
+`escalationRung`, `minutesSinceAlert`, `previouslyNotified`, and a 10th task
+**`expansion_yield`** (P(next radius tier finds ≥ 1 new eligible donor)) is emitted at
+every expansion decision. `runScenario(spec, { ladder: false })` reproduces sim-v2
+bit-for-bit — guarded by `lib/sim/__fixtures__/sim-v2-hashes.json`
+(`scripts/sim/freezeFixture.ts`). Old checkpoints ignore the new feature columns until
+retrained.
 
 ### 2. Train / evaluate (Python)
 
 ```bash
 cd ml && ./setup.sh   # or setup.bat  → .venv
-python -m haemologix.train --version haemologix-model-1.0 --data data/sim/v1 --max-rows 400000
+python -m haemologix.train --version haemologix-model-1.2 --data data/sim/v3 --max-rows 400000
 ```
 
 Per task: rules baseline (what agents assume today) vs GBDT vs PyTorch MLP on a
@@ -111,7 +129,7 @@ ml/
   legacy/             the retired imitation model (not imported)
   serve.py, Dockerfile, requirements.txt, .env (from env.ml.example)
 lib/ml/               types, flags, features, modelClient, agentBridge, policy/*, explain, record
-lib/sim/              rng, types, priors, world, behaviour, engine, scenarios, metrics, dataset, policy, mlPolicy
+lib/sim/              rng, types, priors, world, behaviour, engine, scenarios, metrics, dataset, policy, mlPolicy, hash, __fixtures__ (sim-v2 reproduction)
 scripts/sim/          run.ts, compare.ts, calibrate.ts
 scripts/ml/           loadEnv, seedBaseline, harvestTrainingData, registerModel, approveModel, activateModel
 ```

@@ -50,6 +50,11 @@ TASKS: dict[str, TaskSpec] = {
     "eligibility_needs_review": TaskSpec(
         "eligibility_needs_review", "binary", "auroc", description="P(reviewer would flag this eligibility result)",
     ),
+    # sim-v3: escalation ladder — asked before widening the donor search radius
+    "expansion_yield": TaskSpec(
+        "expansion_yield", "binary", "auroc",
+        description="P(widening the donor radius to the next tier finds >=1 new eligible donor)",
+    ),
 }
 
 TASK_NAMES = list(TASKS.keys())

@@ -160,6 +160,11 @@ export async function advanceEscalation(
       }
 
       const snap = await computeShortfall(alert);
+      // Model hook (not consulted yet): once haemologix-model-1.2 has an
+      // `expansion_yield` head (P(next ring finds ≥1 donor); features =
+      // expansionYieldFeatures in lib/ml/features.ts, all derivable from `meta`
+      // + donorResponseHistory counts), consult it here in shadow first, then let
+      // a low P(yield) skip straight to the broadcast rung under authority.
       const inventoryFound =
         (await db.inventoryUnit.count({ where: { reservedFor: requestId, reserved: true } })) > 0 ||
         (isRecord(workflow?.metadata) && typeof workflow!.metadata.transport_id === "string");

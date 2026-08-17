@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Simulator (sim-v3): the sim's coordinator now runs production's escalation ladder (imports
+  `decideNextRung`; radius expansion → network broadcast → human hand-off) with a broadcast-response
+  behaviour model (`PRIORS.broadcast`, assumed). New cascading-failure scenario families H (empty local
+  ring), I (dark inventory), J (thin then wide), K (total failure → early hand-off); default mix now
+  60/28/12. `alert_resolves_in_window` rows are emitted per rung with `escalationRung`,
+  `minutesSinceAlert`, `previouslyNotified`; new 10th prediction task `expansion_yield` (registered in
+  `lib/ml/types.ts` and `ml/haemologix/tasks.py`, feature builder `expansionYieldFeatures`).
+  `runScenario(spec, { ladder: false })` / `sim:run --no-ladder` reproduce sim-v2 bit-for-bit, guarded by
+  `lib/sim/__fixtures__/sim-v2-hashes.json`. `scripts/sim/compare.ts --ladder-ab` reports what the ladder
+  buys on identical seeds. Quality scoring no longer counts deliberate widening as wasted notifications;
+  aggregates gain `handedOffRate`, `broadcastRate`, `meanRungs`, `meanMaxRadiusKm`, `meanMinutesToHandoff`.
 - Escalation ladder: when the local donor and inventory search is empty the coordinator now widens the donor
   radius in tiers (up to `ML_MAX_DONOR_RADIUS_KM`, default 100), re-checks network inventory each rung, asks nearby
   facilities to check their stock (`ML_NETWORK_BROADCAST_RADIUS_KM` / `ML_NETWORK_BROADCAST_MAX_FACILITIES`), and

@@ -94,13 +94,36 @@ export interface SimDonor extends GeoPoint {
 // Alerts & runtime state
 // ---------------------------------------------------------------------------
 
+/**
+ * Escalation-ladder bookkeeping per alert — mirrors `EscalationMeta` in
+ * lib/agents/workflowSteps.ts (production stores it in WorkflowState.metadata).
+ */
+export interface SimLadderState {
+  /** rungs executed so far (0 = local search only) */
+  rung: number;
+  /** every donor radius searched, in order, starting with the initial one */
+  radiusHistory: number[];
+  /** epoch ms of the last rung (initialised to alert.createdAt) */
+  lastAdvancedAt: number;
+  /** donors notified by the most recent wave (drives "wait" vs "climb") */
+  lastWaveNotified: number;
+  /** eligible donors inside the current radius (notified + not yet notified), as of the last wave */
+  eligibleInRadius: number;
+  broadcastAt: number | null;
+  broadcastFacilityIds: string[];
+  handedOffAt: number | null;
+}
+
 export interface SimAlert {
   id: string;
   hospitalId: string;
   bloodType: string;
   unitsNeeded: number;
   urgency: Urgency;
+  /** CURRENT donor search radius — widened by the escalation ladder */
   searchRadiusKm: number;
+  /** radius the alert started with (hospitalAgent.calculateSearchRadius) */
+  initialSearchRadiusKm: number;
   createdAt: number; // epoch ms
   deadlineAt: number; // createdAt + windowHours
   /** Progress */
@@ -111,10 +134,12 @@ export interface SimAlert {
   status: "PENDING" | "NOTIFIED" | "MATCHED" | "FULFILLED" | "CLOSED";
   outcome: "FULFILLED" | "PARTIAL" | "ESCALATED" | "FAILED" | null;
   resolvedAt: number | null;
+  /** handed off to a human coordinator (ladder terminal rung, or legacy escalate()) → outcome ESCALATED */
   escalated: boolean;
   inventoryTriggered: boolean;
   transferTriggered: boolean;
   notificationWaves: number;
+  ladder: SimLadderState;
   /** ids */
   notifiedDonorIds: string[];
   acceptedDonorIds: string[];
@@ -162,6 +187,8 @@ export type SimEvent =
   | { t: number; type: "transport.delivered"; alertId: string; transportId: string; units: number; actualMinutes: number; coldChainBreached: boolean }
   | { t: number; type: "transport.failed"; alertId: string; transportId: string; reason: string }
   | { t: number; type: "transfer.requested"; alertId: string; hospitalId: string; accepted: boolean }
+  | { t: number; type: "escalation.step"; alertId: string; rung: number; action: string; reason: string; radiusKm?: number; facilities?: number }
+  | { t: number; type: "network.broadcast_response"; alertId: string; hospitalId: string; unitsFound: number; delayMinutes: number }
   | { t: number; type: "alert.escalated"; alertId: string; reason: string }
   | { t: number; type: "alert.resolved"; alertId: string; outcome: "FULFILLED" | "PARTIAL" | "ESCALATED" | "FAILED"; unitsCollected: number; minutes: number };
 
@@ -214,6 +241,16 @@ export interface ScenarioSpec {
     guaranteeTransferSource?: boolean;
     /** Force realised daily usage multiplier (urgency label ground truth) */
     usageMultiplier?: number;
+    /**
+     * Place every donor at least this far (km) from the centre — an annulus
+     * [min, spreadKm] — so the initial radius is empty and only the ladder's
+     * expansion reaches them (scenarios H/J).
+     */
+    donorMinDistanceKm?: number;
+    /** P(a facility holds compatible stock the network inventory does not list) — broadcast rung (I/K) */
+    unrecordedStockProb?: number;
+    /** logit shift on a facility's probability of responding to a broadcast */
+    broadcastResponseShift?: number;
   };
   alerts: ScenarioAlertSpec[];
 }
@@ -298,7 +335,15 @@ export interface AlertSummary {
   waves: number;
   inventoryTriggered: boolean;
   transferTriggered: boolean;
+  /** handed off to a human (ladder terminal rung / legacy escalate) */
   escalated: boolean;
+  /** escalation ladder */
+  rungs: number;
+  initialRadiusKm: number;
+  maxRadiusKm: number;
+  broadcast: boolean;
+  handedOff: boolean;
+  minutesToHandoff: number | null;
 }
 
 export interface SimRunResult {

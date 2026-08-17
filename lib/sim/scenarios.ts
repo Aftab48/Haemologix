@@ -6,6 +6,12 @@
  *  C – donors arrive but supply still short G – complete failure of initial response
  *  D – blood-bank intervention fails        random – combinatorial sampler
  *
+ *  Cascading-failure families (sim-v3, exercise the escalation ladder):
+ *  H – empty local ring: donors exist only beyond the initial radius
+ *  I – dark inventory: network lists no stock, facilities hold unrecorded units (broadcast rung)
+ *  J – thin then wide: few local donors, more in a wide annulus (dwell → widen)
+ *  K – total failure → early human hand-off
+ *
  * Every factory returns a ScenarioSpec; the engine does the rest.
  */
 
@@ -13,7 +19,7 @@ import { PRIORS } from "./priors";
 import { createRng, type Rng } from "./rng";
 import type { ScenarioSpec, Urgency } from "./types";
 
-export const SCENARIO_KINDS = ["random", "A", "B", "C", "D", "E", "F", "G"] as const;
+export const SCENARIO_KINDS = ["random", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"] as const;
 export type ScenarioKind = (typeof SCENARIO_KINDS)[number];
 
 /** Spread scenario start times across hours/days so time features have support. */
@@ -247,6 +253,115 @@ export function scenarioG(seed: number, id = `G-${seed}`): ScenarioSpec {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Cascading-failure families (sim-v3) — the escalation ladder's test bed
+// ---------------------------------------------------------------------------
+
+/** Initial donor radius the hospital agent will pick for an urgency (mirrors calculateSearchRadius). */
+const INITIAL_RADIUS: Record<Urgency, number> = { critical: 20, high: 35, medium: 50, low: 75 };
+
+/** H — Compatible donors exist, but only beyond the initial radius: the ladder must widen to find them. */
+export function scenarioH(seed: number, id = `H-${seed}`): ScenarioSpec {
+  const rng = createRng(seed);
+  const urgency = rng.pick<Urgency>(["critical", "high"]);
+  const r0 = INITIAL_RADIUS[urgency];
+  const bloodType = rng.pick(["O+", "A+", "B+", "A-", "O-"]);
+  return {
+    id,
+    kind: "H",
+    seed,
+    startAt: randomStart(rng),
+    windowHours: 6,
+    world: {
+      hospitals: rng.int(3, 5),
+      bloodBanks: rng.int(0, 1),
+      donors: rng.int(120, 260),
+      spreadKm: rng.float(Math.max(60, r0 * 2.2), 110),
+      // every donor sits in the annulus [1.5·r0, spread] — the local ring is empty by construction
+      donorMinDistanceKm: r0 * 1.5,
+      inventoryLevel: rng.float(0.05, 0.15),
+      unrecordedStockProb: 0.05,
+    },
+    alerts: [{ hospitalIndex: 0, bloodType, unitsNeeded: rng.int(2, 5), urgency }],
+  };
+}
+
+/** I — The network lists no compatible stock, but facilities hold units it doesn't know about: the broadcast rung surfaces them. */
+export function scenarioI(seed: number, id = `I-${seed}`): ScenarioSpec {
+  const rng = createRng(seed);
+  const bloodType = rng.pick(["A-", "B-", "O-", "AB-"]);
+  return {
+    id,
+    kind: "I",
+    seed,
+    startAt: randomStart(rng),
+    windowHours: 6,
+    world: {
+      hospitals: rng.int(4, 7),
+      bloodBanks: rng.int(1, 3),
+      donors: rng.int(30, 80),
+      spreadKm: rng.float(20, 45),
+      // almost no compatible donors anywhere
+      donorBloodTypeWeights: { "AB+": 6, "A+": 5, "B+": 5, "O+": 2, [bloodType]: 0.1 },
+      inventoryLevel: 0,
+      unrecordedStockProb: rng.float(0.6, 0.85),
+      broadcastResponseShift: rng.float(1.2, 1.8),
+      transferWillingness: rng.float(0.8, 1),
+    },
+    alerts: [{ hospitalIndex: 0, bloodType, unitsNeeded: rng.int(2, 4), urgency: rng.pick<Urgency>(["high", "critical"]) }],
+  };
+}
+
+/** J — A thin local pool (like A) with more compatible donors far out: notify the few, dwell, then widen. */
+export function scenarioJ(seed: number, id = `J-${seed}`): ScenarioSpec {
+  const rng = createRng(seed);
+  const urgency = rng.pick<Urgency>(["critical", "high"]);
+  const bloodType = rng.pick(["A-", "B-", "O-", "A+", "B+"]);
+  return {
+    id,
+    kind: "J",
+    seed,
+    startAt: randomStart(rng),
+    windowHours: 6,
+    world: {
+      hospitals: rng.int(3, 6),
+      bloodBanks: rng.int(0, 2),
+      donors: rng.int(160, 320),
+      // wide world: only ~5–15% of donors fall inside the initial 20/35 km ring
+      spreadKm: rng.float(60, 95),
+      donorBloodTypeWeights: { "AB+": 4, "A+": 4, "B+": 4, "O+": 3, [bloodType]: 1.2 },
+      inventoryLevel: rng.float(0.05, 0.3),
+      unrecordedStockProb: 0.1,
+    },
+    alerts: [{ hospitalIndex: 0, bloodType, unitsNeeded: rng.int(4, 8), urgency }],
+  };
+}
+
+/** K — Nothing anywhere: no compatible donors, no inventory, no broadcast response → early human hand-off. */
+export function scenarioK(seed: number, id = `K-${seed}`): ScenarioSpec {
+  const rng = createRng(seed);
+  return {
+    id,
+    kind: "K",
+    seed,
+    startAt: randomStart(rng),
+    windowHours: 6,
+    world: {
+      hospitals: rng.int(3, 6),
+      bloodBanks: rng.int(1, 2),
+      donors: rng.int(40, 120),
+      spreadKm: rng.float(20, 60),
+      // AB− needs O−/A−/B−/AB− donors; force everyone to AB+ (incompatible)
+      forceDonorBloodType: "AB+",
+      inventoryLevel: 0,
+      unrecordedStockProb: 0,
+      bloodBankReliability: 0,
+      transferWillingness: 0,
+    },
+    alerts: [{ hospitalIndex: 0, bloodType: "AB-", unitsNeeded: rng.int(2, 6), urgency: rng.pick<Urgency>(["high", "critical"]) }],
+  };
+}
+
 export const SCENARIO_FACTORIES: Record<ScenarioKind, (seed: number, id?: string) => ScenarioSpec> = {
   random: randomScenario,
   A: scenarioA,
@@ -256,11 +371,19 @@ export const SCENARIO_FACTORIES: Record<ScenarioKind, (seed: number, id?: string
   E: scenarioE,
   F: scenarioF,
   G: scenarioG,
+  H: scenarioH,
+  I: scenarioI,
+  J: scenarioJ,
+  K: scenarioK,
 };
 
-/** Default mix used by `sim:run` when none is given (80% random, 20% edge cases). */
+/**
+ * Default mix used by `sim:run` when none is given:
+ * 60% random, 28% classic edge cases A–G (4% each), 12% cascading-failure H–K (3% each).
+ * (sim-v2 was 72% random + 4% × A–G.)
+ */
 export const DEFAULT_MIX: Record<ScenarioKind, number> = {
-  random: 0.72,
+  random: 0.6,
   A: 0.04,
   B: 0.04,
   C: 0.04,
@@ -268,6 +391,10 @@ export const DEFAULT_MIX: Record<ScenarioKind, number> = {
   E: 0.04,
   F: 0.04,
   G: 0.04,
+  H: 0.03,
+  I: 0.03,
+  J: 0.03,
+  K: 0.03,
 };
 
 export function pickKind(rng: Rng, mix: Partial<Record<ScenarioKind, number>> = DEFAULT_MIX): ScenarioKind {

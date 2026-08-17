@@ -22,6 +22,7 @@ export const PREDICTION_TASKS = [
   "urgency_priority", // 4-class urgency (LOW/MEDIUM/HIGH/CRITICAL)
   "alert_resolves_in_window", // P(alert fully resolved before its deadline)
   "eligibility_needs_review", // P(a deterministic eligibility result is borderline / worth a human look)
+  "expansion_yield", // P(widening the donor radius to the next tier finds ≥1 new eligible donor) — escalation ladder
 ] as const;
 
 export type PredictionTask = (typeof PREDICTION_TASKS)[number];
@@ -32,6 +33,7 @@ export const BINARY_TASKS: readonly PredictionTask[] = [
   "inventory_delivery_ok",
   "alert_resolves_in_window",
   "eligibility_needs_review",
+  "expansion_yield",
 ];
 
 export const REGRESSION_TASKS: readonly PredictionTask[] = [
@@ -173,6 +175,9 @@ export interface DatasetManifest {
   seed?: number;
   scenarioMix?: Record<string, number>;
   priorsHash?: string;
+  priorsVersion?: string;
+  /** whether the coordinator's escalation ladder was simulated (sim-v3+) */
+  ladder?: boolean;
   gitSha?: string;
   notes?: string;
 }

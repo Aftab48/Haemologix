@@ -538,7 +538,7 @@ export async function processShortageEvent(eventId: string): Promise<{
       ];
     });
     // Alert-level: will this resolve inside the window? (used by the coordinator's escalation policy)
-    const [networkUnits, hospitalRow] = await Promise.all([
+    const [networkUnits, hospitalRow, alertRow] = await Promise.all([
       db.inventoryUnit.findMany({
         where: {
           bloodType: { in: getCompatibleDonorTypes(bloodType) },
@@ -551,6 +551,7 @@ export async function processShortageEvent(eventId: string): Promise<{
         take: 200,
       }),
       db.hospitalRegistration.findUnique({ where: { id: payload.hospital_id }, select: { latitude: true, longitude: true } }),
+      db.alert.findUnique({ where: { id: requestId }, select: { createdAt: true } }),
     ]);
     let nearestInventoryKm: number | null = null;
     let bloodBanksInRange = 0;
@@ -576,6 +577,10 @@ export async function processShortageEvent(eventId: string): Promise<{
       activeAlertsSameType: await db.alert.count({ where: { bloodType, id: { not: requestId }, status: { in: ["PENDING", "NOTIFIED", "MATCHED"] } } }),
       windowHours: getAlertWindowHours(),
       time,
+      // escalation-ladder state (sim-v3 features): where on the ladder this search sits
+      escalationRung: escalation?.rung ?? 0,
+      minutesSinceAlert: alertRow ? (Date.now() - alertRow.createdAt.getTime()) / 60_000 : 0,
+      previouslyNotified: alreadyNotified.size,
     });
     consultItems.push({ task: "alert_resolves_in_window" as const, ref: "window", subjectId: requestId, features: windowFeatures });
 

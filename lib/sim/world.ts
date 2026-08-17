@@ -13,9 +13,11 @@ import type { ScenarioSpec, SimDonor, SimHospital, SimInventoryUnit } from "./ty
 const CENTRE = { latitude: 22.5726, longitude: 88.3639 };
 const KM_PER_DEG_LAT = 111.32;
 
-export function offsetPoint(rng: Rng, spreadKm: number, centre = CENTRE) {
-  // uniform in a disc of radius spreadKm
-  const r = spreadKm * Math.sqrt(rng.next());
+export function offsetPoint(rng: Rng, spreadKm: number, centre = CENTRE, minKm = 0) {
+  // uniform (by area) in the annulus [minKm, spreadKm]; minKm = 0 → full disc.
+  // Same two rng draws regardless of minKm, so existing streams are unchanged.
+  const lo = Math.min(Math.max(0, minKm), spreadKm);
+  const r = Math.sqrt(lo * lo + (spreadKm * spreadKm - lo * lo) * rng.next());
   const theta = rng.next() * 2 * Math.PI;
   const dLat = (r * Math.cos(theta)) / KM_PER_DEG_LAT;
   const dLng =
@@ -108,7 +110,7 @@ function makeDonor(rng: Rng, idx: number, spec: ScenarioSpec, startAt: number): 
 
   return {
     id: `d${idx}`,
-    ...offsetPoint(rng, w.spreadKm),
+    ...offsetPoint(rng, w.spreadKm, undefined, w.donorMinDistanceKm ?? 0),
     bloodGroup,
     status: rng.bernoulli(0.93) ? "APPROVED" : "PENDING",
     dateOfBirth: dob.toISOString(),
