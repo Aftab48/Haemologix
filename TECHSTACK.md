@@ -38,7 +38,7 @@
   - Agents & eventing: `lib/agents/*`, `lib/agents/eventBus.ts`
 
 ### Authentication & Middleware
-- Provider: Clerk (`@clerk/nextjs`, `@clerk/clerk-sdk-node`)
+- Provider: Clerk (`@clerk/nextjs`)
 - Middleware: `middleware.ts` with `clerkMiddleware` and route matching
 
 ### Database & ORM
@@ -106,7 +106,7 @@
 - @radix-ui/*, lucide-react, shadcn/ui components
 - react-hook-form, zod
 - @prisma/client, prisma
-- @clerk/nextjs, @clerk/clerk-sdk-node
+- @clerk/nextjs
 - @aws-sdk/client-s3, @aws-sdk/s3-request-presigner
 - nodemailer, twilio
 - tesseract.js, sharp, pdf-lib, pdf-parse, pdf2pic

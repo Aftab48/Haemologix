@@ -11,6 +11,8 @@ const eslintConfig = defineConfig([
     ".next/**",
     "node_modules/**",
     "public/**",
+    // Prisma clients generated at postinstall — not ours to lint.
+    "lib/generated/**",
   ]),
   
   {
