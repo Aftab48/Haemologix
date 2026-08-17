@@ -100,3 +100,7 @@ ml/DEPLOY_RUNBOOK.local.md
 
 # Vercel CLI project link
 .vercel
+
+.agents/
+.claude/
+.codex/

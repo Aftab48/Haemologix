@@ -28,6 +28,7 @@ const routes: Array<{
   { path: "/pilot", changeFrequency: "monthly", priority: 0.6 },
   { path: "/pricing", changeFrequency: "monthly", priority: 0.6 },
   { path: "/team", changeFrequency: "monthly", priority: 0.5 },
+  { path: "/careers", changeFrequency: "monthly", priority: 0.5 },
   { path: "/privacy-policy", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms-and-conditions", changeFrequency: "yearly", priority: 0.3 },
 ];
