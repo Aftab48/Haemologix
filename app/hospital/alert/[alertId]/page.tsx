@@ -92,6 +92,8 @@ interface AgentDecisionPayload {
   next_action?: string;
   radius_km?: number;
   facilities_contacted?: number;
+  p_expansion_yield?: number | null;
+  expansion_yield_actual?: boolean;
 }
 
 interface AgentDecision {
@@ -946,6 +948,14 @@ export default function AlertDetailsPage() {
                           {isEscalationStep && decisionPayload.next_action && decisionPayload.next_action !== reasoningText && (
                             <p className="text-xs text-amber-200/90 mb-2">
                               → {decisionPayload.next_action}
+                            </p>
+                          )}
+                          {isEscalationStep && typeof decisionPayload.p_expansion_yield === "number" && (
+                            <p className="text-xs text-text-dark/60 mb-2">
+                              Model (shadow, not acted on): P(next ring finds donors) = {Math.round(decisionPayload.p_expansion_yield * 100)}%
+                              {typeof decisionPayload.expansion_yield_actual === "boolean" && (
+                                <> · actual: {decisionPayload.expansion_yield_actual ? "found" : "none"}</>
+                              )}
                             </p>
                           )}
 

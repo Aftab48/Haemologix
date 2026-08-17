@@ -35,11 +35,14 @@ import { sendEscalationHandoffSMS, sendNetworkStockCheckSMS } from "../actions/s
 import {
   getEscalationDwellMinutes,
   getMaxDonorRadiusKm,
+  getMlMode,
   getNetworkBroadcastMaxFacilities,
   getNetworkBroadcastRadiusKm,
 } from "@/lib/ml/flags";
 import { decideNextRung, type LadderAction, type LadderOptions } from "@/lib/ml/policy/escalationLadder";
-import { decisionBasis } from "@/lib/ml/agentBridge";
+import { consultModel, decisionBasis, nowTimeContext } from "@/lib/ml/agentBridge";
+import { expansionYieldFeatures } from "@/lib/ml/features";
+import { recordOutcome } from "@/lib/ml/record";
 
 const DEFAULT_BUDGET_MS = 25_000;
 const MIN_TIME_FOR_RUNG_MS = 8_000;
@@ -160,11 +163,6 @@ export async function advanceEscalation(
       }
 
       const snap = await computeShortfall(alert);
-      // Model hook (not consulted yet): once haemologix-model-1.2 has an
-      // `expansion_yield` head (P(next ring finds ≥1 donor); features =
-      // expansionYieldFeatures in lib/ml/features.ts, all derivable from `meta`
-      // + donorResponseHistory counts), consult it here in shadow first, then let
-      // a low P(yield) skip straight to the broadcast rung under authority.
       const inventoryFound =
         (await db.inventoryUnit.count({ where: { reservedFor: requestId, reserved: true } })) > 0 ||
         (isRecord(workflow?.metadata) && typeof workflow!.metadata.transport_id === "string");
@@ -220,12 +218,22 @@ export async function advanceEscalation(
       if (action.type === "expand_donor_search") {
         const rung = meta.rung + 1;
         const prevRadius = meta.donor_radius_km;
+        // SHADOW consult of the expansion_yield head: P(next ring finds ≥1 new
+        // eligible donor). Observed only — the rung runs regardless; the prediction
+        // is logged on this escalation_step and its outcome back-filled below so
+        // /api/ml/report can score the head on real geography before it may ever
+        // be allowed to skip a rung.
+        const yieldShadow = await consultExpansionYield(alert, meta, snap, rung, action.radiusKm);
         await db.alert.update({ where: { id: requestId }, data: { searchRadius: String(action.radiusKm) } });
         const payload: ShortageRequestEvent = { ...basePayload, search_radius_km: action.radiusKm, escalation: { rung, previous_radius_km: prevRadius } };
         const eventId = await publishEvent("shortage.request.v1", payload, AgentType.COORDINATOR);
         const donors = await processShortageEvent(eventId);
         const inv = await processInventorySearch(requestId, { fromLadder: true });
         lastRungFoundDonors = donors.donorsNotified > 0;
+        // ground truth for the shadow prediction: did the new ring contain anyone?
+        if (yieldShadow.consulted) {
+          await recordOutcome({ requestId, task: "expansion_yield", subjectId: yieldShadow.subjectId, actual: donors.donorsFound > 0 ? 1 : 0, outcomeAt: new Date() });
+        }
         meta = {
           ...meta,
           rung,
@@ -233,7 +241,19 @@ export async function advanceEscalation(
           radius_history: [...meta.radius_history, action.radiusKm],
           last_advanced_at: now.toISOString(),
         };
-        stepDetails = { previous_radius_km: prevRadius, radius_km: action.radiusKm, donors_found: donors.donorsFound, donors_notified: donors.donorsNotified, inventory_units_found: inv.unitsFound, inventory_reserved: inv.reserved, event_id: eventId };
+        stepDetails = {
+          previous_radius_km: prevRadius,
+          radius_km: action.radiusKm,
+          donors_found: donors.donorsFound,
+          donors_notified: donors.donorsNotified,
+          inventory_units_found: inv.unitsFound,
+          inventory_reserved: inv.reserved,
+          event_id: eventId,
+          // shadow prediction vs what happened (decision_method stays deterministic)
+          p_expansion_yield: yieldShadow.p,
+          expansion_yield_actual: donors.donorsFound > 0,
+          expansion_yield_shadow: yieldShadow.meta,
+        };
         nextStep = "search_expanding";
         if (donors.donorsNotified > 0 || inv.reserved) stopAfter = true; // someone to wait for now
       } else if (action.type === "network_broadcast") {
@@ -351,6 +371,60 @@ async function updateStep(id: string, meta: EscalationMeta, results: Record<stri
 }
 
 type AlertWithHospital = Prisma.AlertGetPayload<{ include: { hospital: true } }>;
+
+/**
+ * Shadow consult of the `expansion_yield` head before a radius expansion.
+ * Never influences the ladder: whatever the model says, the rung runs. Returns
+ * the probability (or null) plus provenance to log on the escalation_step; the
+ * caller back-fills the outcome with recordOutcome once the ring is searched.
+ * Silent no-op when the coordinator's ML mode is off or the service is down.
+ */
+async function consultExpansionYield(
+  alert: AlertWithHospital,
+  meta: EscalationMeta,
+  snap: Awaited<ReturnType<typeof computeShortfall>>,
+  rung: number,
+  nextRadiusKm: number
+): Promise<{ consulted: boolean; p: number | null; subjectId: string; meta: Record<string, unknown> | null }> {
+  const subjectId = `${alert.id}:rung${rung}`;
+  if (getMlMode("COORDINATOR") === "off") return { consulted: false, p: null, subjectId, meta: null };
+  try {
+    const [notified, lastDonorDecision, activeAlertsSameType] = await Promise.all([
+      db.donorResponseHistory.count({ where: { requestId: alert.id } }),
+      db.agentDecision.findFirst({
+        where: { requestId: alert.id, agentType: AgentType.DONOR, eventType: { in: ["donor_matching", "no_donors_found"] } },
+        orderBy: { createdAt: "desc" },
+        select: { decision: true },
+      }),
+      db.alert.count({ where: { bloodType: alert.bloodType, id: { not: alert.id }, status: { in: ["PENDING", "NOTIFIED", "MATCHED"] } } }),
+    ]);
+    // eligible-but-not-yet-notified donors in the current radius, from the last donor search
+    const d = isRecord(lastDonorDecision?.decision) ? (lastDonorDecision!.decision as Record<string, unknown>) : {};
+    const unnotifiedEligible = Number(d.total_eligible ?? d.donors_found ?? 0) || 0;
+    const features = expansionYieldFeatures({
+      bloodType: alert.bloodType,
+      urgency: String(alert.urgency).toLowerCase(),
+      unitsNeeded: snap.unitsNeeded,
+      currentRadiusKm: meta.donor_radius_km,
+      nextRadiusKm,
+      eligibleSoFar: notified + unnotifiedEligible,
+      notifiedSoFar: notified,
+      acceptedSoFar: snap.committedDonorIds.length,
+      escalationRung: rung,
+      minutesSinceAlert: (Date.now() - alert.createdAt.getTime()) / 60_000,
+      activeAlertsSameType,
+      time: nowTimeContext(),
+    });
+    const ml = await consultModel({ agent: "COORDINATOR", requestId: alert.id, items: [{ task: "expansion_yield", ref: "yield", subjectId, features }] });
+    const p = ml.ok ? ml.scalar("yield") : null;
+    console.log(`[Escalation] expansion_yield shadow: rung ${rung} ${meta.donor_radius_km}→${nextRadiusKm} km → P=${p === null ? "n/a" : p.toFixed(3)} (mode ${ml.mode}${ml.fallbackReason ? `, ${ml.fallbackReason}` : ""})`);
+    // policy_applied is always false here: this head is shadow-only by design
+    return { consulted: ml.ok, p, subjectId, meta: { ...ml.meta(false), shadow_only: true } };
+  } catch (error) {
+    console.warn("[Escalation] expansion_yield shadow consult failed (ignored):", error);
+    return { consulted: false, p: null, subjectId, meta: null };
+  }
+}
 
 function emailData(alert: AlertWithHospital, meta: EscalationMeta): EscalationEmailData {
   return {
