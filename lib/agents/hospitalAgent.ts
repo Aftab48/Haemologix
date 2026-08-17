@@ -6,7 +6,7 @@
 import { db } from "@/db";
 import { AgentType, UrgencyLevel } from "@prisma/client";
 import { publishEvent, ShortageRequestEvent } from "./eventBus";
-import { consultModel, nowTimeContext } from "@/lib/ml/agentBridge";
+import { consultModel, decisionBasis, nowTimeContext } from "@/lib/ml/agentBridge";
 import { explainUrgency } from "@/lib/ml/explain";
 import { urgencyFeatures } from "@/lib/ml/features";
 import { assessUrgency } from "@/lib/ml/policy/urgencyPolicy";
@@ -288,6 +288,7 @@ export async function processAlert(alertId: string): Promise<{
         ? "Donor notification with early inventory fallback"
         : "Standard donor notification process";
     console.log(`[HospitalAgent] Urgency: ${urgency} (rule ${ruleUrgency}, model ${policy.modelUrgency ?? "n/a"}, mode ${ml.mode})`);
+    const urgencyBasis = decisionBasis(ml, policy.modelConfidence ?? null);
 
     const searchRadius =
       parseInt(alert.searchRadius) || calculateSearchRadius(urgency);
@@ -341,11 +342,14 @@ export async function processAlert(alertId: string): Promise<{
             `Hospital ${alert.hospital.hospitalName} requires ${eventPayload.units_needed} units of ${alert.bloodType}. Urgency: ${urgency}. Search radius: ${searchRadius}km.`,
           rule_urgency: ruleUrgency,
           model_urgency: policy.modelUrgency ?? null,
-          model_confidence: policy.modelConfidence ?? null,
+          model_urgency_confidence: policy.modelConfidence ?? null,
           recommended_action: recommendedAction,
           ...ml.meta(),
+          // A rule fallback is not "100% confident" — it is a rule. Model
+          // confidence is reported only when the model's urgency was acted on.
+          ...urgencyBasis,
         },
-        confidence: ml.ok ? Math.max(0.5, policy.modelConfidence ?? 0.5) : 1.0,
+        confidence: urgencyBasis.model_confidence,
       },
     });
 

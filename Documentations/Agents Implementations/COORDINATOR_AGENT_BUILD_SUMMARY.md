@@ -14,19 +14,35 @@
 **Key Functions:**
 - `processDonorResponse()`: Processes accept/decline responses
 - `selectOptimalMatch()`: Selects best donor from multiple acceptances
-- `handleNoResponseTimeout()`: Triggers Inventory Agent fallback (TODO: implement Inventory Agent)
+- `handleNoResponseTimeout()` / `checkFulfillmentProgress()`: Response-window escalation — inventory search first,
+  then hands the alert to the escalation ladder
 - `confirmDonorArrival()`: Marks fulfillment complete
 
-**Lines of Code:** ~400 lines
+**Escalation ladder (`lib/agents/escalation.ts`, policy in `lib/ml/policy/escalationLadder.ts`)** — what happens
+when the local search is empty. Deterministic, idempotent, one rung at a time, time-budgeted:
+
+| Rung | Action | Guardrail |
+|------|--------|-----------|
+| R1…n | widen donor radius → `max(r×2, r+25)`; re-publish `shortage.request.v1` with `escalation{rung, previous_radius_km}`; Donor Agent notifies only new donors; inventory re-checked | `ML_MAX_DONOR_RADIUS_KM` (100) |
+| Rb | network broadcast: email + SMS nearby facilities (blood banks first) to check/update stock | `ML_NETWORK_BROADCAST_RADIUS_KM` (150), `ML_NETWORK_BROADCAST_MAX_FACILITIES` (20) |
+| Rh | human hand-off: email + SMS requesting hospital contacts + `CONTACT_ADMIN_EMAIL`; `alert.outcome = ESCALATED`; workflow `escalated_manual` | terminal — alert stays open for a person |
+
+State: `WorkflowState.metadata.escalation` (`rung`, `donor_radius_km`, `radius_history`, `broadcast_at`,
+`escalated_at`, `last_advanced_at`, `next_action`, `exhausted`) and `currentStep` ∈ `search_expanding` /
+`network_broadcast` / `escalated_manual` (see `lib/agents/workflowSteps.ts`). Every rung is an `AgentDecision`
+`escalation_step`. Entry points: Inventory Agent empty result → `POST /api/agents/coordinator {action:"escalate"}`;
+`checkFulfillmentProgress` on timeout; scheduler job `advanceEscalations` (dwell `ML_ESCALATION_DWELL_MIN`, 10 min).
 
 ---
 
 ### 2. Coordinator Agent API Endpoint (`app/api/agents/coordinator/route.ts`)
-- **Multi-action endpoint**: Supports 4 actions via POST body
+- **Multi-action endpoint**: Supports these actions via POST body
   - `process_donor_response`: Process donor accept/decline
   - `select_optimal_match`: Manually trigger optimal match selection
   - `handle_timeout`: Handle no-response timeout
   - `confirm_arrival`: Confirm donor arrival and mark as fulfilled
+  - `check_progress`: Re-evaluate shortfall / escalation policy
+  - `escalate`: Advance the escalation ladder (`request_id`, optional `trigger`)
 - **GET endpoint**: Returns agent status and available actions
 
 **API Pattern:**

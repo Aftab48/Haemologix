@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Brain, Cpu, Eye, ShieldCheck, Zap } from "lucide-react";
+import DecisionBasisBadge from "@/components/DecisionBasisBadge";
 
 interface ModelReasoningCardProps {
   reasoning: string;
@@ -61,12 +62,16 @@ export default function ModelReasoningCard({
       </Badge>
     ) : null;
 
-  const getConfidenceColor = (conf?: number) => {
-    if (!conf) return "text-gray-400";
-    if (conf >= 0.9) return "text-green-400";
-    if (conf >= 0.7) return "text-yellow-400";
-    return "text-orange-400";
-  };
+  // Provenance chip: a % only when the model's decision was acted on.
+  const d = decision && typeof decision === "object" && !Array.isArray(decision) ? (decision as Record<string, unknown>) : {};
+  const basisBadge = (
+    <DecisionBasisBadge
+      decisionMethod={typeof d.decision_method === "string" ? d.decision_method : null}
+      modelConfidence={typeof d.model_confidence === "number" ? d.model_confidence : null}
+      fallbackReason={fallbackReason ?? null}
+      confidence={typeof confidence === "number" ? confidence : null}
+    />
+  );
 
   const formatTimestamp = (ts: string) => {
     const date = new Date(ts);
@@ -95,11 +100,7 @@ export default function ModelReasoningCard({
               </Badge>
               {modelBadge}
               {modeBadge}
-              {confidence !== undefined && (
-                <Badge variant="outline" className={`text-xs ${getConfidenceColor(confidence)} border-current/30`}>
-                  {(confidence * 100).toFixed(0)}% confidence
-                </Badge>
-              )}
+              {basisBadge}
             </div>
             <p className="text-xs text-text-dark/60">{formatTimestamp(timestamp)}</p>
             {requestId && <p className="text-xs text-text-dark/60 mt-1">Request: {requestId.substring(0, 8)}...</p>}

@@ -6,6 +6,13 @@ import {
   confirmDonorArrival,
   checkFulfillmentProgress,
 } from "@/lib/agents/coordinatorAgent";
+import { advanceEscalation, type EscalationTrigger } from "@/lib/agents/escalation";
+
+// The escalation ladder may run several rungs (donor re-search + notifications,
+// network broadcast) in one call; give it room inside the serverless limit.
+export const maxDuration = 60;
+
+const ESCALATION_TRIGGERS: readonly EscalationTrigger[] = ["no_local_match", "response_window", "scheduler", "manual"];
 
 /**
  * Coordinator Agent API Endpoint
@@ -156,6 +163,27 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ...result, success: true });
       }
 
+      case "escalate": {
+        // Local search exhausted (or a caller asking the ladder to advance):
+        // widen donor search → network broadcast → human hand-off.
+        const { request_id, trigger } = data;
+        if (!request_id) {
+          return NextResponse.json(
+            { success: false, error: "request_id is required" },
+            { status: 400 }
+          );
+        }
+        const t: EscalationTrigger = ESCALATION_TRIGGERS.includes(trigger) ? trigger : "manual";
+        const result = await advanceEscalation(request_id, { trigger: t });
+        if (!result.success) {
+          return NextResponse.json(
+            { success: false, error: result.error },
+            { status: 400 }
+          );
+        }
+        return NextResponse.json({ ...result, success: true });
+      }
+
       default:
         return NextResponse.json(
           { success: false, error: `Unknown action: ${action}` },
@@ -184,6 +212,7 @@ export async function GET() {
       "handle_timeout",
       "confirm_arrival",
       "check_progress",
+      "escalate",
     ],
   });
 }

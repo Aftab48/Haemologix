@@ -226,6 +226,89 @@ export async function sendUrgentBloodRequestEmail(
   }
 }
 
+/** Facts the escalation ladder shares with facilities and humans. */
+export interface EscalationEmailData {
+  hospitalName: string;
+  bloodType: string;
+  unitsNeeded: number;
+  urgency: string;
+  radiusSearchedKm: number;
+  facilitiesContacted: number;
+  alertUrl: string;
+  requestingContact?: string;
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
+}
+
+/**
+ * Network-broadcast rung: ask a nearby facility to check and update its stock.
+ * Sent to hospitals/blood banks, not donors.
+ */
+export async function sendNetworkStockCheckEmail(to: string, data: EscalationEmailData) {
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#111">
+      <h2 style="color:#b91c1c">Haemologix network request: ${escapeHtml(data.bloodType)} blood</h2>
+      <p><strong>${escapeHtml(data.hospitalName)}</strong> needs <strong>${data.unitsNeeded} unit(s) of ${escapeHtml(data.bloodType)}</strong>
+         (urgency: ${escapeHtml(data.urgency)}). No eligible donors were found within ${data.radiusSearchedKm} km and no
+         available units are recorded in the network inventory.</p>
+      <p>If your facility holds compatible stock that is not reflected in Haemologix, please update your inventory
+         or contact the requesting hospital directly${data.requestingContact ? ` (${escapeHtml(data.requestingContact)})` : ""}.</p>
+      <p><a href="${data.alertUrl}">View the alert</a></p>
+      <p style="color:#555;font-size:12px">This is an automated coordination request. Clinical compatibility and transfusion decisions remain with the treating clinicians.</p>
+    </div>`;
+  try {
+    const info = await transporter.sendMail({
+      from: `"Haemologix Alerts" <${process.env.SMTP_USER}>`,
+      to,
+      subject: `🩸 Network stock check: ${data.unitsNeeded}× ${data.bloodType} needed by ${data.hospitalName}`,
+      html,
+    });
+    console.log("[Email] Network stock-check sent:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    console.error("[Email] Network stock-check error:", getMailError(err));
+    throw new Error("Failed to send network stock-check email");
+  }
+}
+
+/**
+ * Human-escalation rung: tell the requesting hospital (and the platform admin)
+ * that automated search is exhausted and a human coordinator must take over.
+ */
+export async function sendEscalationHandoffEmail(to: string, data: EscalationEmailData) {
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#111">
+      <h2 style="color:#b91c1c">Human coordination required — ${escapeHtml(data.bloodType)} alert</h2>
+      <p>Haemologix has exhausted its automated search for <strong>${data.unitsNeeded} unit(s) of ${escapeHtml(data.bloodType)}</strong>
+         for <strong>${escapeHtml(data.hospitalName)}</strong> (urgency: ${escapeHtml(data.urgency)}).</p>
+      <ul>
+        <li>Donor search expanded to ${data.radiusSearchedKm} km — no eligible donors accepted.</li>
+        <li>Network inventory re-checked at every step — no available units.</li>
+        <li>${data.facilitiesContacted} nearby facilit${data.facilitiesContacted === 1 ? "y was" : "ies were"} asked to check their stock.</li>
+      </ul>
+      <p><strong>This alert now needs a human coordinator.</strong> Please contact regional blood centres or neighbouring hospitals
+         directly, and close or update the alert in Haemologix once resolved.</p>
+      <p><a href="${data.alertUrl}">Open the alert</a></p>
+      <p style="color:#555;font-size:12px">Haemologix coordinates supply pathways; it does not determine that no clinical option exists.
+         Clinical decisions remain with the treating clinicians.</p>
+    </div>`;
+  try {
+    const info = await transporter.sendMail({
+      from: `"Haemologix Alerts" <${process.env.SMTP_USER}>`,
+      to,
+      subject: `⚠️ Human coordination required: ${data.unitsNeeded}× ${data.bloodType} for ${data.hospitalName}`,
+      html,
+    });
+    console.log("[Email] Escalation hand-off sent:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    console.error("[Email] Escalation hand-off error:", getMailError(err));
+    throw new Error("Failed to send escalation hand-off email");
+  }
+}
+
 export async function sendAccountSuspensionEmail(
   to: string,
   name: string,

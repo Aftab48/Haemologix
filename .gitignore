@@ -89,3 +89,10 @@ ml/models/*.tflite
 # clerk configuration (can include secrets)
 /.clerk/
 *.tsbuildinfo
+
+# Local deploy runbook with real secret values — never commit
+ml/DEPLOY_RUNBOOK.local.md
+*.local.md
+
+# Vercel CLI project link
+.vercel

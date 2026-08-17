@@ -70,3 +70,21 @@ export async function sendUrgentBloodRequestSMS(to: string, bloodType: string) {
   const body = `🚨 Urgent need for ${bloodType} blood. Please respond if you're available.`;
   return await sendSMS(to, body);
 }
+
+// Escalation ladder — network broadcast to a facility (hospital / blood bank)
+export async function sendNetworkStockCheckSMS(
+  to: string,
+  data: { hospitalName: string; bloodType: string; unitsNeeded: number }
+) {
+  const body = `Haemologix: ${data.hospitalName} needs ${data.unitsNeeded}x ${data.bloodType}. No donors/inventory found nearby. If you hold stock, please update Haemologix or contact them directly.`;
+  return await sendSMS(to, body);
+}
+
+// Escalation ladder — hand-off to a human coordinator
+export async function sendEscalationHandoffSMS(
+  to: string,
+  data: { hospitalName: string; bloodType: string; unitsNeeded: number; radiusSearchedKm: number }
+) {
+  const body = `Haemologix: automated search exhausted for ${data.unitsNeeded}x ${data.bloodType} (${data.hospitalName}, ${data.radiusSearchedKm} km searched, network notified). Human coordination required — please follow up.`;
+  return await sendSMS(to, body);
+}

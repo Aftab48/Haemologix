@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   AlertTriangle,
   Users,
@@ -47,12 +46,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ModelReasoningCard from "@/components/ModelReasoningCard";
+import DecisionBasisBadge from "@/components/DecisionBasisBadge";
 import DonorLocationMap from "@/components/DonorLocationMap";
+import { WORKFLOW_STAGES, readEscalationMeta, stepLabel } from "@/lib/agents/workflowSteps";
 
 interface AlertDetails {
   autoDetected?: boolean;
   description: string;
   status: string;
+  outcome?: string | null;
   urgency: string;
   bloodType: string;
   unitsNeeded: string;
@@ -68,6 +70,7 @@ interface AlertDetails {
 interface WorkflowState {
   currentStep: string;
   status: string;
+  metadata?: unknown;
 }
 
 interface AgentDecisionPayload {
@@ -77,11 +80,18 @@ interface AgentDecisionPayload {
   policy_applied?: boolean;
   fallback_reason?: string | null;
   confidence?: number;
+  decision_method?: string | null;
+  model_confidence?: number | null;
   response_time?: number | string;
   distance_km?: number;
   eta_minutes?: number;
   selected_donor?: string;
   match_score?: number;
+  // escalation_step
+  action?: string;
+  next_action?: string;
+  radius_km?: number;
+  facilities_contacted?: number;
 }
 
 interface AgentDecision {
@@ -206,8 +216,26 @@ export default function AlertDetailsPage() {
         return "bg-purple-600 text-white";
       case "FULFILLED":
         return "bg-green-600 text-white";
+      case "CLOSED":
+        return "bg-slate-700 text-white";
       default:
         return "bg-yellow-600 text-white";
+    }
+  };
+
+  // Terminal outcome → what a coordinator should read from it. Never "no option exists".
+  const outcomeBadge = (outcome: string | null | undefined): { label: string; className: string } | null => {
+    switch (outcome) {
+      case "ESCALATED":
+        return { label: "Handed off — human follow-up", className: "bg-amber-600 text-white" };
+      case "PARTIAL":
+        return { label: "Partially fulfilled — follow-up required", className: "bg-amber-700 text-white" };
+      case "FAILED":
+        return { label: "Unfulfilled — human follow-up required", className: "bg-red-700 text-white" };
+      case "CANCELLED":
+        return { label: "Cancelled", className: "bg-slate-600 text-white" };
+      default:
+        return null;
     }
   };
 
@@ -224,20 +252,16 @@ export default function AlertDetailsPage() {
     }
   };
 
-  const getWorkflowProgress = (status: string) => {
-    switch (status) {
-      case "pending":
-        return 20;
-      case "matching":
-        return 40;
-      case "fulfillment_in_progress":
-        return 70;
-      case "fulfilled":
-        return 100;
-      default:
-        return 0;
-    }
+  // Which stage of the ladder the workflow is in (index into WORKFLOW_STAGES), or -1.
+  const currentStageIndex = (step: string | undefined) => {
+    if (!step) return -1;
+    return WORKFLOW_STAGES.findIndex((s) => (s.steps as readonly string[]).includes(step));
   };
+
+  const escalationMeta = readEscalationMeta(workflowState?.metadata);
+  const latestEscalationStep = [...agentDecisions].reverse().find((d) => d.eventType === "escalation_step");
+  const latestEscalationPayload =
+    latestEscalationStep && typeof latestEscalationStep.decision === "object" ? latestEscalationStep.decision : null;
 
   const getAgentIcon = (agentType: string) => {
     switch (agentType) {
@@ -675,15 +699,19 @@ export default function AlertDetailsPage() {
               </div>
               <div className="flex gap-2 items-start">
                 <div className="flex flex-col gap-2">
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap justify-end">
                     <Badge className={getStatusColor(alertData.status)}>
                       {alertData.status}
                     </Badge>
                     <Badge className={getUrgencyColor(alertData.urgency)}>
                       {alertData.urgency}
                     </Badge>
+                    {(() => {
+                      const b = outcomeBadge(alertData.outcome);
+                      return b ? <Badge className={b.className}>{b.label}</Badge> : null;
+                    })()}
                   </div>
-                  {alertData.status !== "FULFILLED" && (
+                  {alertData.status !== "FULFILLED" && alertData.status !== "CLOSED" && (
                     <Button
                       onClick={() => setShowCloseAlertModal(true)}
                       className="bg-green-600 hover:bg-green-700 text-white text-sm"
@@ -727,34 +755,86 @@ export default function AlertDetailsPage() {
           </CardContent>
         </Card>
 
-        {/* Workflow Progress */}
-        {workflowState && (
-          <Card className="glass-morphism border border-accent/30 text-white mb-6">
-            <CardHeader>
-              <CardTitle className="text-text-dark">
-                Workflow Progress
-              </CardTitle>
-              <CardDescription className="text-text-dark/80">
-                Current Step:{" "}
-                <span className="font-semibold">
-                  {workflowState.currentStep}
-                </span>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Progress
-                value={getWorkflowProgress(workflowState.status)}
-                className="h-3 mb-4"
-              />
-              <div className="flex justify-between text-sm text-text-dark/70">
-                <span>Pending</span>
-                <span>Matching</span>
-                <span>In Progress</span>
-                <span>Fulfilled</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Workflow Progress — coordination ladder */}
+        {workflowState && (() => {
+          const stageIdx = currentStageIndex(workflowState.currentStep);
+          const isEscalating = workflowState.currentStep === "search_expanding" || workflowState.currentStep === "network_broadcast";
+          const isHandedOff = workflowState.currentStep === "escalated_manual";
+          const isDone = alertData.status === "FULFILLED" || alertData.status === "CLOSED";
+          const nextAction =
+            escalationMeta?.next_action ||
+            (latestEscalationPayload && latestEscalationPayload.next_action) ||
+            null;
+          return (
+            <Card className="glass-morphism border border-accent/30 text-white mb-6">
+              <CardHeader>
+                <CardTitle className="text-text-dark flex items-center gap-2 flex-wrap">
+                  Coordination Progress
+                  {isEscalating && (
+                    <Badge className="bg-amber-600 text-white">Escalation in progress</Badge>
+                  )}
+                  {isHandedOff && (
+                    <Badge className="bg-amber-700 text-white">Handed off to human coordinator</Badge>
+                  )}
+                </CardTitle>
+                <CardDescription className="text-text-dark/80">
+                  Current step:{" "}
+                  <span className="font-semibold">{stepLabel(workflowState.currentStep)}</span>
+                  {escalationMeta && (
+                    <>
+                      {" "}· donor search radius {escalationMeta.donor_radius_km} km
+                      {escalationMeta.radius_history.length > 1 && (
+                        <> (searched: {escalationMeta.radius_history.join(" → ")} km)</>
+                      )}
+                      {escalationMeta.broadcast_facility_ids && (
+                        <> · {escalationMeta.broadcast_facility_ids.length} facilities contacted</>
+                      )}
+                    </>
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ol className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 mb-4">
+                  {WORKFLOW_STAGES.map((stage, i) => {
+                    const reached = stageIdx >= i;
+                    const current = stageIdx === i;
+                    const escalationStage = stage.key === "expanding" || stage.key === "broadcast" || stage.key === "handoff";
+                    const tone = current
+                      ? escalationStage
+                        ? "border-amber-500 bg-amber-500/20 text-amber-200"
+                        : "border-blue-500 bg-blue-500/20 text-blue-100"
+                      : reached
+                        ? "border-white/30 bg-white/10 text-text-dark/80"
+                        : "border-white/10 bg-transparent text-text-dark/40";
+                    return (
+                      <li key={stage.key} className={`rounded-md border px-2 py-2 text-xs sm:text-sm ${tone}`}>
+                        <div className="font-semibold leading-tight">{stage.label}</div>
+                        {current && stage.key === "expanding" && escalationMeta && (
+                          <div className="text-[11px] opacity-80">{escalationMeta.donor_radius_km} km</div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ol>
+                {!isDone && (
+                  <div className={`rounded-md border px-3 py-2 text-sm ${isHandedOff ? "border-amber-600/60 bg-amber-600/10" : "border-white/20 bg-white/5"} text-text-dark/90`}>
+                    <span className="font-semibold">Next action: </span>
+                    {nextAction
+                      ? nextAction
+                      : isHandedOff
+                        ? "A human coordinator has been notified and now owns this alert. Update or close it here once resolved."
+                        : "Local donor and inventory search in progress. If nothing is found, the coordinator widens the search, alerts nearby facilities, and finally hands off to a person — the alert is not abandoned."}
+                  </div>
+                )}
+                {isDone && alertData.outcome && (
+                  <p className="text-sm text-text-dark/80">
+                    Outcome: <span className="font-semibold">{outcomeBadge(alertData.outcome)?.label ?? alertData.outcome}</span>
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Agent Actions Timeline */}
         <Card className="glass-morphism border border-accent/30 text-white mb-6">
@@ -826,14 +906,15 @@ export default function AlertDetailsPage() {
                     );
                   }
 
-                  // Otherwise, use the standard display
+                  // Otherwise, use the standard display (escalation rungs in amber)
+                  const isEscalationStep = decision.eventType === "escalation_step";
                   return (
                     <div
                       key={decision.id}
-                      className="border-l-4 border-yellow-600 pl-4 py-3 bg-white/5 rounded-r-lg"
+                      className={`border-l-4 ${isEscalationStep ? "border-amber-500 bg-amber-500/10" : "border-yellow-600 bg-white/5"} pl-4 py-3 rounded-r-lg`}
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-yellow-600/20 rounded-lg flex items-center justify-center flex-shrink-0 text-yellow-600">
+                        <div className={`w-10 h-10 ${isEscalationStep ? "bg-amber-500/20 text-amber-400" : "bg-yellow-600/20 text-yellow-600"} rounded-lg flex items-center justify-center flex-shrink-0`}>
                           {getAgentIcon(decision.agentType)}
                         </div>
                         <div className="flex-1">
@@ -849,20 +930,22 @@ export default function AlertDetailsPage() {
                             >
                               {formatEventType(decision.eventType)}
                             </Badge>
-                            {decision.confidence && (
-                              <Badge
-                                variant="outline"
-                                className="text-xs bg-green-600/20 text-green-300 border-green-600"
-                              >
-                                {(decision.confidence * 100).toFixed(0)}%
-                                confidence
-                              </Badge>
-                            )}
+                            <DecisionBasisBadge
+                              decisionMethod={decisionPayload.decision_method ?? null}
+                              modelConfidence={typeof decisionPayload.model_confidence === "number" ? decisionPayload.model_confidence : null}
+                              fallbackReason={decisionPayload.fallback_reason ?? null}
+                              confidence={typeof decision.confidence === "number" ? decision.confidence : null}
+                            />
                           </div>
 
                           {reasoningText && (
                             <p className="text-sm text-text-dark/90 mb-3 leading-relaxed">
                               {reasoningText}
+                            </p>
+                          )}
+                          {isEscalationStep && decisionPayload.next_action && decisionPayload.next_action !== reasoningText && (
+                            <p className="text-xs text-amber-200/90 mb-2">
+                              → {decisionPayload.next_action}
                             </p>
                           )}
 

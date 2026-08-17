@@ -4,7 +4,7 @@ import type { HospitalRegistration } from "@prisma/client";
 import { parseShortageRequestEvent, publishEvent } from "./eventBus";
 import { calculateDistance } from "./donorAgent";
 import { calculateBaseTime, calculateETA, getTrafficMultiplier, selectTransportMethod, validateColdChain } from "./logisticsAgent";
-import { consultModel, nowTimeContext } from "@/lib/ml/agentBridge";
+import { consultModel, decisionBasis, nowTimeContext } from "@/lib/ml/agentBridge";
 import { explainInventory } from "@/lib/ml/explain";
 import { inventoryUnitFeatures } from "@/lib/ml/features";
 import { getAlertWindowHours } from "@/lib/ml/flags";
@@ -287,7 +287,16 @@ export async function findAndRankInventoryUnits(
 /**
  * Process inventory search (triggered when no donors respond)
  */
-export async function processInventorySearch(requestId: string): Promise<{
+export async function processInventorySearch(
+  requestId: string,
+  opts: {
+    /**
+     * true when the escalation ladder is calling: it owns what happens after an
+     * empty result, so we must not bounce back to the coordinator over HTTP.
+     */
+    fromLadder?: boolean;
+  } = {}
+): Promise<{
   success: boolean;
   unitsFound: number;
   reserved: boolean;
@@ -298,7 +307,8 @@ export async function processInventorySearch(requestId: string): Promise<{
       `[InventoryAgent] Processing inventory search for request: ${requestId}`
     );
 
-    // 1. Get the shortage event details
+    // 1. Get the shortage event details (the ladder re-publishes the event with a
+    //    wider radius, so take the most recent one for this request)
     const shortageEvent = await db.agentEvent.findFirst({
       where: {
         payload: {
@@ -307,6 +317,7 @@ export async function processInventorySearch(requestId: string): Promise<{
         },
         type: "shortage.request.v1",
       },
+      orderBy: { createdAt: "desc" },
     });
 
     if (!shortageEvent) {
@@ -350,11 +361,33 @@ export async function processInventorySearch(requestId: string): Promise<{
             blood_type: bloodType,
             units_needed: unitsNeeded,
             units_found: 0,
-            reasoning: `No available inventory found for ${bloodType} across hospitals and blood banks. All units are either reserved, expired, or insufficient.`,
+            escalation_rung: payload.escalation?.rung ?? 0,
+            reasoning: opts.fromLadder
+              ? `Re-checked network inventory for ${bloodType} (escalation rung ${payload.escalation?.rung ?? 0}): still no available units. Returning to coordinator.`
+              : `No available inventory found for ${bloodType} across hospitals and blood banks (all units reserved, expiring, or absent). Handing to the Coordinator Agent to decide the next step (wait for notified donors, widen the search, or escalate).`,
+            ...decisionBasis(),
           },
-          confidence: 1.0,
+          confidence: null,
         },
       });
+
+      // Local search exhausted (no donors → no inventory): hand the alert to the
+      // coordinator's escalation ladder. Awaited: a fire-and-forget fetch dies
+      // when the Vercel function freezes. Skipped when the ladder itself called
+      // us — it decides the next rung from our return value.
+      if (!opts.fromLadder) {
+        try {
+          const baseUrl =
+            process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+          await fetch(`${baseUrl}/api/agents/coordinator`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "escalate", request_id: requestId, trigger: "no_local_match" }),
+          });
+        } catch (error) {
+          console.error("[InventoryAgent] Error triggering Coordinator escalation:", error);
+        }
+      }
 
       return { success: true, unitsFound: 0, reserved: false };
     }
@@ -445,7 +478,9 @@ export async function processInventorySearch(requestId: string): Promise<{
     });
     const selectionReasoning = explainInventory(decision, { mode: ml.mode, modelVersion: ml.modelVersion, fallbackReason: ml.fallbackReason });
     const transportStrategy = `${transportDecision.method} — ${transportDecision.reason}`;
-    const confidence = policyDecision.pOk ?? topUnit.scores.final / 100;
+    // Model-informed only when the policy acted (authority): P(delivery ok) of the chosen unit.
+    const sourceBasis = decisionBasis(ml, policyDecision.pOk ?? null);
+    const confidence = sourceBasis.model_confidence;
     console.log(`[InventoryAgent] Selected ${topUnit.hospital_name} (${decision.source}, mode ${ml.mode}); transport ${transportDecision.method}`);
 
     // Check if top unit has enough
@@ -562,6 +597,8 @@ export async function processInventorySearch(requestId: string): Promise<{
             predicted_minutes: ml.scalar(`time:${u.unit_id}`),
           })),
           ...ml.meta(),
+          rule_score: topUnit.scores.final / 100,
+          ...sourceBasis,
         },
         confidence,
       },

@@ -9,6 +9,10 @@
  * donors are not going to cover the shortfall, or the alert-level model says
  * the alert is unlikely to resolve inside its window. Always escalate at the
  * deterministic deadline as a floor.
+ *
+ * This policy answers *whether* to escalate now. *What* the next rung is
+ * (wider donor radius, network broadcast, human hand-off) is decided by the
+ * escalation ladder in ./escalationLadder.ts.
  */
 
 export interface EscalationInput {
@@ -41,8 +45,13 @@ export const DEFAULT_ESCALATION_OPTIONS: EscalationOptions = {
 
 export interface EscalationDecision {
   escalate: boolean;
-  /** what to open next */
-  action: "none" | "inventory_search" | "transfer_or_manual";
+  /**
+   * what to open next:
+   *  - inventory_search   – first timeout: look at network inventory
+   *  - escalation_ladder  – inventory already tried: hand to the ladder
+   *                         (radius expansion → network broadcast → human), see escalationLadder.ts
+   */
+  action: "none" | "inventory_search" | "escalation_ladder";
   source: "model" | "deterministic";
   reason: string;
   expectedArrivals: number;
@@ -51,7 +60,7 @@ export interface EscalationDecision {
 export function decideEscalation(input: EscalationInput): EscalationDecision {
   const o = { ...DEFAULT_ESCALATION_OPTIONS, ...(input.options ?? {}) };
   const expected = input.expectedArrivals ?? input.committedDonors * o.defaultShowProb;
-  const next: EscalationDecision["action"] = input.inventoryTriggered ? "transfer_or_manual" : "inventory_search";
+  const next: EscalationDecision["action"] = input.inventoryTriggered ? "escalation_ladder" : "inventory_search";
   if (input.shortfall <= 0) return { escalate: false, action: "none", source: "deterministic", reason: "no shortfall", expectedArrivals: round(expected) };
 
   // deterministic floor

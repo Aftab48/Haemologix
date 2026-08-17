@@ -12,22 +12,28 @@
  *                              Alert.unitsCollected += delivered units
  *   closeStaleAlerts()       – open alerts past the resolution window → outcome
  *                              PARTIAL/FAILED/ESCALATED, alert_resolves_in_window = 0
+ *   advanceEscalations()     – alerts mid-ladder (search_expanding / network_broadcast)
+ *                              → escalation.advanceEscalation (next rung once the dwell elapsed)
  *
  * Together these produce the real-world labels the learning loop trains on.
  */
 
 import { db } from "@/db";
 import { AgentType, type Prisma } from "@prisma/client";
-import { getAlertWindowHours, getNoShowGraceMinutes, getResponseWindowMinutes } from "@/lib/ml/flags";
+import { decisionBasis } from "@/lib/ml/agentBridge";
+import { getAlertWindowHours, getEscalationDwellMinutes, getNoShowGraceMinutes, getResponseWindowMinutes } from "@/lib/ml/flags";
 import { recordOutcome } from "@/lib/ml/record";
 import { checkFulfillmentProgress } from "./coordinatorAgent";
+import { advanceEscalation } from "./escalation";
 import { trackDecisionOutcome } from "./outcomeTracking";
+import { ESCALATING_STEPS, readEscalationMeta } from "./workflowSteps";
 
 const OPEN_STATUSES = ["PENDING", "NOTIFIED", "MATCHED"];
 
 export interface TickResult {
   ranAt: string;
   timeouts: { checked: number; escalated: number };
+  escalations: { checked: number; advanced: number };
   noShows: number;
   transports: { settled: number; unitsDelivered: number };
   staleAlerts: { closed: number; byOutcome: Record<string, number> };
@@ -95,6 +101,50 @@ export async function runNoResponseTimeouts(now = new Date(), budget?: TickBudge
   return { checked, escalated, truncated };
 }
 
+/**
+ * Open alerts the escalation ladder is involved with — in an escalating step
+ * (search_expanding / network_broadcast) or carrying ladder metadata because
+ * a rung found candidates and is dwelling — whose last rung is older than the
+ * dwell period → next rung. The ladder itself is idempotent, so re-checking an
+ * alert is always safe.
+ */
+export async function advanceEscalations(now = new Date(), budget?: TickBudget): Promise<{ checked: number; advanced: number; truncated: boolean }> {
+  const b = budgetOr(budget);
+  const dwellMs = getEscalationDwellMinutes() * 60_000;
+  // Scope to open alerts first (bounded), so finished ladders never clog the batch.
+  const openAlerts = await db.alert.findMany({
+    where: { status: { in: OPEN_STATUSES }, outcome: null },
+    select: { id: true },
+    orderBy: { createdAt: "asc" },
+    take: 500,
+  });
+  if (openAlerts.length === 0) return { checked: 0, advanced: 0, truncated: false };
+  const workflows = await db.workflowState.findMany({
+    where: {
+      requestId: { in: openAlerts.map((a) => a.id) },
+      OR: [{ currentStep: { in: [...ESCALATING_STEPS] } }, { metadata: { path: ["escalation", "rung"], gte: 0 } }],
+    },
+    select: { requestId: true, metadata: true },
+    orderBy: { updatedAt: "asc" },
+    take: b.batch,
+  });
+  let checked = 0;
+  let advanced = 0;
+  let truncated = false;
+  for (const wf of workflows) {
+    if (timeLeft(b) < 8_000) {
+      truncated = true;
+      break;
+    }
+    const meta = readEscalationMeta(wf.metadata);
+    if (meta && now.getTime() - new Date(meta.last_advanced_at).getTime() < dwellMs) continue;
+    checked++;
+    const r = await advanceEscalation(wf.requestId, { trigger: "scheduler", budgetMs: Math.max(8_000, timeLeft(b) - 8_000) });
+    if (r.rungsRun > 0) advanced++;
+  }
+  return { checked, advanced, truncated };
+}
+
 export async function markNoShows(now = new Date(), budget?: TickBudget): Promise<number> {
   const b = budgetOr(budget);
   const grace = getNoShowGraceMinutes();
@@ -121,8 +171,9 @@ export async function markNoShows(now = new Date(), budget?: TickBudget): Promis
           expected_arrival: r.expectedArrival?.toISOString() ?? null,
           grace_minutes: grace,
           reasoning: `Donor accepted but did not arrive within ${grace} min of expected arrival — marked no-show.`,
+          ...decisionBasis(),
         },
-        confidence: 1.0,
+        confidence: null,
       },
     });
     n++;
@@ -231,8 +282,8 @@ export async function closeStaleAlerts(now = new Date(), budget?: TickBudget): P
         agentType: AgentType.COORDINATOR,
         eventType: "alert_window_expired",
         requestId: a.id,
-        decision: { outcome, units_collected: a.unitsCollected, units_needed: parseInt(a.unitsNeeded) || 1, reasoning: `Resolution window (${getAlertWindowHours()}h) expired — ${outcome}.` },
-        confidence: 1.0,
+        decision: { outcome, units_collected: a.unitsCollected, units_needed: parseInt(a.unitsNeeded) || 1, reasoning: `Resolution window (${getAlertWindowHours()}h) expired — ${outcome}.`, ...decisionBasis() },
+        confidence: null,
       },
     });
     byOutcome[outcome] = (byOutcome[outcome] ?? 0) + 1;
@@ -244,7 +295,8 @@ export async function closeStaleAlerts(now = new Date(), budget?: TickBudget): P
  * One scheduler tick, bounded by `budgetMs` (default 40 s — safely inside a 60 s
  * serverless limit). Order matters: close expired alerts first so they never
  * reach the (expensive) progress check; then no-shows and transports (which
- * change shortfalls); then the response-window escalation check.
+ * change shortfalls); then alerts mid-escalation-ladder; then the
+ * response-window escalation check.
  */
 export async function runAgentTick(now = new Date(), opts: { budgetMs?: number; batch?: number } = {}): Promise<TickResult> {
   const started = Date.now();
@@ -252,6 +304,7 @@ export async function runAgentTick(now = new Date(), opts: { budgetMs?: number; 
   const result: TickResult = {
     ranAt: now.toISOString(),
     timeouts: { checked: 0, escalated: 0 },
+    escalations: { checked: 0, advanced: 0 },
     noShows: 0,
     transports: { settled: 0, unitsDelivered: 0 },
     staleAlerts: { closed: 0, byOutcome: {} },
@@ -278,6 +331,11 @@ export async function runAgentTick(now = new Date(), opts: { budgetMs?: number; 
   });
   await step("noShows", async () => { result.noShows = await markNoShows(now, budget); });
   await step("transports", async () => { result.transports = await settleTransportOutcomes(now, budget); });
+  await step("escalations", async () => {
+    const r = await advanceEscalations(now, budget);
+    result.escalations = { checked: r.checked, advanced: r.advanced };
+    result.truncated ||= r.truncated;
+  });
   await step("timeouts", async () => {
     const r = await runNoResponseTimeouts(now, budget);
     result.timeouts = { checked: r.checked, escalated: r.escalated };

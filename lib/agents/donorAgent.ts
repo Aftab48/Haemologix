@@ -12,7 +12,7 @@ import { sendDonorBloodRequestEmail } from "../actions/mails.actions";
 import { sendUrgentBloodRequestSMS } from "../actions/sms.actions";
 import { calculateDonorEta } from "@/lib/distanceEta";
 import { buildResponseToken } from "@/lib/donorResponseToken";
-import { consultModel, nowTimeContext, type ConsultItem } from "@/lib/ml/agentBridge";
+import { consultModel, decisionBasis, nowTimeContext, type ConsultItem } from "@/lib/ml/agentBridge";
 import { explainNotification } from "@/lib/ml/explain";
 import { alertWindowFeatures, donorNotificationFeatures, donorShowFeatures, type DonorFeatureInput } from "@/lib/ml/features";
 import { getAlertWindowHours } from "@/lib/ml/flags";
@@ -463,6 +463,8 @@ export function rankedDonorFeatureInput(
 export async function processShortageEvent(eventId: string): Promise<{
   success: boolean;
   donorsNotified: number;
+  /** eligible donors in this search ring who had not already been notified for this alert */
+  donorsFound: number;
   error?: string;
 }> {
   try {
@@ -474,7 +476,7 @@ export async function processShortageEvent(eventId: string): Promise<{
     });
 
     if (!event) {
-      return { success: false, donorsNotified: 0, error: "Event not found" };
+      return { success: false, donorsNotified: 0, donorsFound: 0, error: "Event not found" };
     }
 
     const payload = parseShortageRequestEvent(event.payload);
@@ -490,15 +492,28 @@ export async function processShortageEvent(eventId: string): Promise<{
     const hospitalLng = payload.location.lng;
     const requestId = payload.id;
     const unitsNeeded = payload.units_needed;
+    // Re-published by the escalation ladder with a wider radius? Then the
+    // coordinator owns sequencing: we only notify the new ring and return.
+    const escalation = payload.escalation ?? null;
 
-    // Find and rank donors
-    const rankedDonors = await findAndRankDonors(
+    // Find and rank donors …
+    const rankedInRadius = await findAndRankDonors(
       bloodType,
       urgency,
       searchRadius,
       hospitalLat,
       hospitalLng
     );
+    // … and never notify the same donor twice for one alert (a wider ring
+    // contains every donor of the previous ring). Derived from our own history,
+    // not from the event payload.
+    const alreadyNotified = new Set(
+      (await db.donorResponseHistory.findMany({ where: { requestId }, select: { donorId: true } })).map((r) => r.donorId)
+    );
+    const rankedDonors = alreadyNotified.size > 0 ? rankedInRadius.filter((d) => !alreadyNotified.has(d.id)) : rankedInRadius;
+    if (alreadyNotified.size > 0) {
+      console.log(`[DonorAgent] ${rankedInRadius.length} eligible within ${searchRadius} km, ${rankedDonors.length} not yet notified for this alert`);
+    }
 
     // ------------------------------------------------------------------
     // Notification strategy: model predictions (P(accept), P(show)) + policy.
@@ -600,51 +615,49 @@ export async function processShortageEvent(eventId: string): Promise<{
             blood_type: bloodType,
             search_radius_km: searchRadius,
             donors_found: 0,
-            reasoning: `No eligible donors found for ${bloodType} within ${searchRadius}km radius. Triggering Inventory Agent.`,
+            already_notified: alreadyNotified.size,
+            escalation_rung: escalation?.rung ?? 0,
+            reasoning: escalation
+              ? `No additional eligible donors for ${bloodType} between ${escalation.previous_radius_km} km and ${searchRadius} km (escalation rung ${escalation.rung}). Returning to coordinator.`
+              : `No eligible donors found for ${bloodType} within ${searchRadius}km radius. Triggering Inventory Agent.`,
+            ...decisionBasis(),
           },
-          confidence: 1.0,
+          confidence: null,
         },
       });
 
-      // Trigger Inventory Agent immediately
-      console.log(
-        "[DonorAgent] Triggering Inventory Agent due to no eligible donors"
-      );
-      try {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-        // Awaited: a fire-and-forget fetch dies when the Vercel function freezes
-        await fetch(`${baseUrl}/api/agents/inventory`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ request_id: requestId }),
-        });
-      } catch (error) {
-        console.error("[DonorAgent] Error triggering Inventory Agent:", error);
+      // Local search: trigger the Inventory Agent immediately. Ladder re-search:
+      // the coordinator re-checks inventory itself, so return.
+      if (!escalation) {
+        console.log(
+          "[DonorAgent] Triggering Inventory Agent due to no eligible donors"
+        );
+        try {
+          const baseUrl =
+            process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+          // Awaited: a fire-and-forget fetch dies when the Vercel function freezes
+          await fetch(`${baseUrl}/api/agents/inventory`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ request_id: requestId }),
+          });
+        } catch (error) {
+          console.error("[DonorAgent] Error triggering Inventory Agent:", error);
+        }
       }
 
-      return { success: true, donorsNotified: 0 };
+      return { success: true, donorsNotified: 0, donorsFound: 0 };
     }
 
-    // If insufficient donors but > 0, trigger inventory AND still notify available donors
-    if (shouldTriggerInventory) {
+    // If insufficient donors but > 0, still notify available donors AND trigger
+    // inventory — after the notifications are recorded (see below), so that if
+    // inventory is empty and the coordinator's ladder runs, it sees these donors
+    // and waits for them instead of widening the search immediately.
+    const triggerInventoryAfterNotify = shouldTriggerInventory && !escalation;
+    if (triggerInventoryAfterNotify) {
       console.log(
-        `[DonorAgent] ${insufficientReason}. Triggering Inventory Agent in parallel.`
+        `[DonorAgent] ${insufficientReason}. Inventory Agent will be triggered after notifications.`
       );
-
-      // Trigger Inventory Agent before donor notifications. Awaited: a
-      // fire-and-forget fetch dies when the Vercel function freezes.
-      try {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-        await fetch(`${baseUrl}/api/agents/inventory`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ request_id: requestId }),
-        });
-      } catch (error) {
-        console.error("[DonorAgent] Error triggering Inventory Agent:", error);
-      }
     }
 
     // Who to notify: the decision's ordered id list (policy re-ranks by expected
@@ -663,7 +676,7 @@ export async function processShortageEvent(eventId: string): Promise<{
 
     if (!hospital) {
       console.error("[DonorAgent] Hospital not found:", payload.hospital_id);
-      return { success: false, donorsNotified: 0, error: "Hospital not found" };
+      return { success: false, donorsNotified: 0, donorsFound: rankedDonors.length, error: "Hospital not found" };
     }
 
     // Phase 1: Create AlertResponse for all found donors first so they show on the alerts page immediately
@@ -760,6 +773,30 @@ export async function processShortageEvent(eventId: string): Promise<{
       }
     }
 
+    // Insufficient pool: open the inventory path now that the notifications are
+    // on record. Awaited: a fire-and-forget fetch dies when the Vercel function freezes.
+    if (triggerInventoryAfterNotify) {
+      try {
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        await fetch(`${baseUrl}/api/agents/inventory`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ request_id: requestId }),
+        });
+      } catch (error) {
+        console.error("[DonorAgent] Error triggering Inventory Agent:", error);
+      }
+    }
+
+    // Provenance: model-informed only when the policy had authority; its
+    // confidence is the mean P(accept) over the donors it chose to notify.
+    const meanAccept =
+      predictions && topDonors.length > 0
+        ? topDonors.reduce((s, d) => s + (predictions.accept.get(d.id) ?? 0), 0) / topDonors.length
+        : null;
+    const notifyBasis = decisionBasis(ml, meanAccept);
+
     // Log agent decision
     await db.agentDecision.create({
       data: {
@@ -769,6 +806,8 @@ export async function processShortageEvent(eventId: string): Promise<{
         requestId,
         decision: {
           total_eligible: rankedDonors.length,
+          search_radius_km: searchRadius,
+          escalation_rung: escalation?.rung ?? 0,
           selected_count: topDonors.length,
           notified_count: notifiedCount,
           top_score: topDonors[0]?.scores.final || 0,
@@ -804,20 +843,25 @@ export async function processShortageEvent(eventId: string): Promise<{
             p_show: ml.scalar(`show:${d.id}`),
           })),
           ...ml.meta(),
+          ...notifyBasis,
         },
-        confidence: 0.95,
+        confidence: notifyBasis.model_confidence,
       },
     });
 
-    // Update workflow state
+    // Update workflow state (preserve escalation bookkeeping written by the coordinator)
+    const prevWorkflow = await db.workflowState.findUnique({ where: { requestId }, select: { metadata: true } });
+    const prevMeta = prevWorkflow && typeof prevWorkflow.metadata === "object" && prevWorkflow.metadata !== null && !Array.isArray(prevWorkflow.metadata) ? (prevWorkflow.metadata as Record<string, unknown>) : {};
     await db.workflowState.update({
       where: { requestId },
       data: {
         status: "donors_notified",
         currentStep: "donors_notified",
         metadata: {
+          ...prevMeta,
           donors_found: rankedDonors.length,
-          donors_notified: notifiedCount,
+          donors_notified: (typeof prevMeta.donors_notified === "number" ? prevMeta.donors_notified : 0) + notifiedCount,
+          search_radius_km: searchRadius,
           timestamp: new Date().toISOString(),
         },
       },
@@ -825,9 +869,9 @@ export async function processShortageEvent(eventId: string): Promise<{
 
     console.log(`[DonorAgent] Successfully notified ${notifiedCount} donors`);
 
-    return { success: true, donorsNotified: notifiedCount };
+    return { success: true, donorsNotified: notifiedCount, donorsFound: rankedDonors.length };
   } catch (error) {
     console.error("[DonorAgent] Error processing shortage event:", error);
-    return { success: false, donorsNotified: 0, error: String(error) };
+    return { success: false, donorsNotified: 0, donorsFound: 0, error: String(error) };
   }
 }

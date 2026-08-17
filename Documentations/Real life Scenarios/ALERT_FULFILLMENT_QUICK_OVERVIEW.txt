@@ -113,6 +113,31 @@ ALTERNATE PATH (If No Donors)
 Result: Still fulfilled, different method ✓
 
 ================================================================================
-End | Generated: Oct 29, 2025 | Haemologix
+
+ESCALATION LADDER (If No Local Donors AND No Network Inventory)
+----------------------------------------------------------------
+The alert is never left at "nothing found". The Coordinator climbs a
+deterministic ladder and logs every rung on the alert timeline as
+"escalation_step" with the next action being taken:
+
+  R0  Local search       donor radius from the alert (e.g. 20 km); inventory network-wide
+      └─ 0 donors, 0 units → Inventory Agent hands the alert to the Coordinator
+  R1+ Expand donors      radius → max(×2, +25 km) up to ML_MAX_DONOR_RADIUS_KM (100)
+      ├─ new shortage.request.v1 event with escalation{rung, previous_radius_km}
+      ├─ Donor Agent notifies only donors not yet contacted for this alert
+      └─ inventory re-checked each rung; climbs again immediately if still empty
+  Rb  Network broadcast  email + SMS to facilities within ML_NETWORK_BROADCAST_RADIUS_KM
+      (blood banks first, max ML_NETWORK_BROADCAST_MAX_FACILITIES): "please check/update stock"
+  Rh  Human hand-off     email + SMS to the requesting hospital's contacts + CONTACT_ADMIN_EMAIL
+      └─ alert.outcome = ESCALATED, workflow step escalated_manual — alert stays open for a person
+
+  Once a rung finds candidates (donors notified / units reserved) the ladder waits
+  (ML_ESCALATION_DWELL_MIN, default 10 min) and the response-window logic decides
+  when to climb again. The 5-minute scheduler tick continues any ladder that ran
+  out of time budget. Terminal outcomes: FULFILLED · ESCALATED (handed off) ·
+  PARTIAL / FAILED (unfulfilled — human follow-up required).
+
+================================================================================
+End | Generated: Oct 29, 2025 | Updated: Aug 17, 2026 | Haemologix
 ================================================================================
 

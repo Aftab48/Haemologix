@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { AgentType } from "@prisma/client";
 import { publishEvent } from "./eventBus";
 import { calculateDistance } from "./donorAgent";
-import { consultModel, nowTimeContext } from "@/lib/ml/agentBridge";
+import { consultModel, decisionBasis, nowTimeContext } from "@/lib/ml/agentBridge";
 import { explainTransport } from "@/lib/ml/explain";
 import { donorShowFeatures, inventoryUnitFeatures } from "@/lib/ml/features";
 import { getAlertWindowHours } from "@/lib/ml/flags";
@@ -277,8 +277,9 @@ export async function planTransport(transportRequestId: string): Promise<{
             reason: coldChainValidation.reason,
             recommendation:
               "Escalate to manual coordination or find closer source",
+            ...decisionBasis(),
           },
-          confidence: 1.0,
+          confidence: null,
         },
       });
 
@@ -389,8 +390,11 @@ export async function planTransport(transportRequestId: string): Promise<{
           predicted_delivery_minutes: predictedMinutes,
           decision_source: transportDecision.source,
           ...ml.meta(),
+          // ETA regressions carry no probability; report method only.
+          decision_method: transportDecision.source === "model" ? "model" : decisionBasis(ml).decision_method,
+          model_confidence: null,
         },
-        confidence: 0.9,
+        confidence: null,
       },
     });
 
@@ -627,8 +631,10 @@ export async function calculateDonorETA(
             predictedEta !== null ? `; model predicts ${Math.round(predictedEta)}min, rule ${ruleEta}min` : ""
           }).`,
           ...ml.meta(),
+          decision_method: ml.hasAuthority && predictedEta !== null ? "model" : decisionBasis(ml).decision_method,
+          model_confidence: null,
         },
-        confidence: 0.85,
+        confidence: null,
       },
     });
 

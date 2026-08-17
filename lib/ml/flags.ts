@@ -88,3 +88,31 @@ export function getAlertWindowHours(env: Env = process.env): number {
   const v = Number(env.ML_ALERT_WINDOW_HOURS);
   return Number.isFinite(v) && v > 0 ? v : 6;
 }
+
+// ---------------------------------------------------------------------------
+// Escalation ladder guardrails (deterministic; the ladder may propose, these clamp)
+// ---------------------------------------------------------------------------
+
+/** Hard ceiling for donor search radius (km) the ladder may expand to. */
+export function getMaxDonorRadiusKm(env: Env = process.env): number {
+  const v = Number(env.ML_MAX_DONOR_RADIUS_KM);
+  return Number.isFinite(v) && v > 0 ? v : 100;
+}
+
+/** Radius (km) within which facilities are contacted during the network-broadcast rung. */
+export function getNetworkBroadcastRadiusKm(env: Env = process.env): number {
+  const v = Number(env.ML_NETWORK_BROADCAST_RADIUS_KM);
+  return Number.isFinite(v) && v > 0 ? v : 150;
+}
+
+/** Maximum number of facilities contacted in one network broadcast. */
+export function getNetworkBroadcastMaxFacilities(env: Env = process.env): number {
+  const v = Number(env.ML_NETWORK_BROADCAST_MAX_FACILITIES);
+  return Number.isFinite(v) && v > 0 ? Math.floor(v) : 20;
+}
+
+/** Minimum minutes between ladder rungs once a rung has produced candidates to wait on. */
+export function getEscalationDwellMinutes(env: Env = process.env): number {
+  const v = Number(env.ML_ESCALATION_DWELL_MIN);
+  return Number.isFinite(v) && v > 0 ? v : 10;
+}

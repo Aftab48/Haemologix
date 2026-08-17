@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import EmptyState from "@/components/ui/EmptyState";
+import DecisionBasisBadge from "@/components/DecisionBasisBadge";
 
 import {
   Select,
@@ -137,20 +138,16 @@ export default function AIAgentLogs() {
     );
   };
 
-  const getConfidenceBadge = (confidence?: number) => {
-    if (!confidence) return null;
-    const percent = Math.round(confidence * 100);
-    const color =
-      percent >= 90
-        ? "bg-green-500/20 text-green-800 border-green-500/30"
-        : percent >= 70
-        ? "bg-yellow-500/20 text-yellow-800 border-yellow-500/30"
-        : "bg-red-500/20 text-red-800 border-red-500/30";
-
+  // Decision provenance: method chip; a % only when the model's decision was acted on.
+  const getBasisBadge = (log: AgentLog) => {
+    const d = log.decision && typeof log.decision === "object" && !Array.isArray(log.decision) ? (log.decision as Record<string, unknown>) : {};
     return (
-      <Badge variant="outline" className={`text-xs ${color}`}>
-        {percent}% confidence
-      </Badge>
+      <DecisionBasisBadge
+        decisionMethod={typeof d.decision_method === "string" ? d.decision_method : null}
+        modelConfidence={typeof d.model_confidence === "number" ? d.model_confidence : null}
+        fallbackReason={typeof d.fallback_reason === "string" ? d.fallback_reason : null}
+        confidence={typeof log.confidence === "number" ? log.confidence : null}
+      />
     );
   };
 
@@ -224,7 +221,7 @@ export default function AIAgentLogs() {
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <span className="font-semibold">{log.agentType}</span>
                     <Badge variant="outline">{log.eventType}</Badge>
-                    {getConfidenceBadge(log.confidence)}
+                    {getBasisBadge(log)}
                   </div>
 
                   <div className="bg-black/30 rounded p-3 mb-2">

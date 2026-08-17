@@ -8,7 +8,7 @@ import { db } from "@/db";
 import { AgentType, Prisma } from "@prisma/client";
 import type { DonorWithProfile } from "./donorAgent";
 import { publishEvent } from "./eventBus";
-import { consultModel } from "@/lib/ml/agentBridge";
+import { consultModel, decisionBasis } from "@/lib/ml/agentBridge";
 import { explainEligibility } from "@/lib/ml/explain";
 import { eligibilityReviewFeatures } from "@/lib/ml/features";
 import { decideEligibility } from "@/lib/ml/policy/eligibilityPolicy";
@@ -223,8 +223,9 @@ export async function processDonorVerification(
             mismatches: documentVerificationResults.mismatches,
             reasoning:
               "Document verification failed. Donor can retry up to 3 times.",
+            ...decisionBasis(),
           },
-          confidence: 1.0,
+          confidence: null,
         },
       });
 
@@ -290,6 +291,8 @@ export async function processDonorVerification(
     const finalDecision = policy.finalDecision;
     const eligibilityReasoning = explainEligibility(policy, { mode: ml.mode, modelVersion: ml.modelVersion, fallbackReason: ml.fallbackReason });
     const confidence = policy.confidence;
+    // Model-informed only when the review model's flag was acted on (policy.source === "model").
+    const eligibilityBasis = policy.source === "model" ? decisionBasis(ml, pNeedsReview) : decisionBasis(ml.ok ? null : ml);
     const edgeCases: string[] = shadowPolicy.needsReview
       ? [`Model estimates ${Math.round((pNeedsReview ?? 0) * 100)}% chance a reviewer would flag this result (min margin ratio ${reviewFeatures.minMarginRatio})`]
       : [];
@@ -347,9 +350,11 @@ export async function processDonorVerification(
           p_needs_review: pNeedsReview,
           policy_suggestion: { final_decision: shadowPolicy.finalDecision, needs_review: shadowPolicy.needsReview },
           decision_source: policy.source,
+          rule_certainty: confidence,
           ...ml.meta(),
+          ...eligibilityBasis,
         },
-        confidence: confidence,
+        confidence: eligibilityBasis.model_confidence,
       },
     });
 

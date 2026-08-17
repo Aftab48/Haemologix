@@ -114,6 +114,40 @@ export async function consultModel(input: ConsultInput): Promise<ConsultResult> 
   return new ConsultResult(mode, outcome.response.modelVersion, byRef, ids, null, outcome.latencyMs);
 }
 
+// ---------------------------------------------------------------------------
+// Decision basis — honest provenance for every AgentDecision row.
+//
+// "confidence" used to be a single number that mixed model probability with
+// hard-coded 1.0 on rule paths (so a *fallback* looked like the most confident
+// decision in the system). Now every decision carries:
+//   decision_method   – model | deterministic | deterministic_fallback
+//   model_confidence  – the model's own confidence, or null when no model acted
+// and the AgentDecision.confidence column holds model_confidence only.
+// ---------------------------------------------------------------------------
+
+export type DecisionMethod = "model" | "deterministic" | "deterministic_fallback";
+
+export interface DecisionBasis {
+  decision_method: DecisionMethod;
+  /** model confidence/probability behind the decision, null for rule-based decisions */
+  model_confidence: number | null;
+}
+
+/**
+ * @param ml   the consult result for this decision, or null/undefined for a rule-only path
+ * @param modelConfidence  the confidence to report when the model's decision was acted on
+ */
+export function decisionBasis(ml?: ConsultResult | null, modelConfidence?: number | null): DecisionBasis {
+  if (!ml || ml.mode === "off") return { decision_method: "deterministic", model_confidence: null };
+  if (!ml.ok) return { decision_method: "deterministic_fallback", model_confidence: null };
+  if (ml.hasAuthority) {
+    const c = typeof modelConfidence === "number" && Number.isFinite(modelConfidence) ? Math.min(1, Math.max(0, modelConfidence)) : null;
+    return { decision_method: "model", model_confidence: c };
+  }
+  // model consulted (shadow/advise) but the deterministic rule was acted on
+  return { decision_method: "deterministic", model_confidence: null };
+}
+
 /** Convenience for agents: hour/dow of "now" in the server's local time (what the rules use). */
 export function nowTimeContext(now = new Date()) {
   return { hour: now.getHours(), dayOfWeek: now.getDay() };

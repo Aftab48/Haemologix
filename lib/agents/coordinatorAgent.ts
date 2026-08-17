@@ -7,13 +7,16 @@ import {
 } from "../actions/mails.actions";
 import { calculateDistance } from "./donorAgent";
 import { calculateDonorEta } from "@/lib/distanceEta";
-import { consultModel, nowTimeContext } from "@/lib/ml/agentBridge";
+import { consultModel, decisionBasis, nowTimeContext } from "@/lib/ml/agentBridge";
 import { explainEscalation } from "@/lib/ml/explain";
 import { donorShowFeatures } from "@/lib/ml/features";
 import { getAlertWindowHours, getMlMode } from "@/lib/ml/flags";
 import { decideEscalation } from "@/lib/ml/policy/escalationPolicy";
 import { recordOutcome } from "@/lib/ml/record";
 import { trackDecisionOutcome } from "./outcomeTracking";
+import { advanceEscalation } from "./escalation";
+import { computeShortfall } from "./shortfall";
+import { readEscalationMeta } from "./workflowSteps";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -195,8 +198,9 @@ export async function processDonorResponse(
           } the request. Response time: ${Math.floor(
             responseData.response_time / 1000
           )}s`,
+          ...decisionBasis(),
         },
-        confidence: 1.0,
+        confidence: null,
       },
     });
 
@@ -344,17 +348,9 @@ export async function checkFulfillmentProgress(requestId: string): Promise<{
       return { success: true, escalated: false, shortfall: 0, expectedArrivals: 0, message: "Alert already resolved" };
     }
     const workflowState = await db.workflowState.findUnique({ where: { requestId } });
-    const unitsNeeded = parseInt(alert.unitsNeeded) || 1;
 
-    const [pendingTransports, committed, showRows, windowRow] = await Promise.all([
-      db.transportRequest.findMany({
-        where: { toHospitalId: alert.hospitalId, bloodType: alert.bloodType, status: { in: ["pending", "picked_up", "in_transit"] }, createdAt: { gte: alert.createdAt } },
-        select: { units: true },
-      }),
-      db.donorResponseHistory.findMany({
-        where: { requestId, status: "accepted", confirmed: false, noShow: false },
-        select: { donorId: true },
-      }),
+    const [snap, showRows, windowRow] = await Promise.all([
+      computeShortfall(alert),
       db.modelPrediction.findMany({
         where: { requestId, taskType: "donor_show", actualOutcome: { equals: Prisma.DbNull } },
         orderBy: { createdAt: "desc" },
@@ -363,8 +359,8 @@ export async function checkFulfillmentProgress(requestId: string): Promise<{
       db.modelPrediction.findFirst({ where: { requestId, taskType: "alert_resolves_in_window" }, orderBy: { createdAt: "desc" }, select: { prediction: true } }),
     ]);
 
-    const pending = pendingTransports.reduce((s, t) => s + t.units, 0);
-    const shortfall = Math.max(0, unitsNeeded - alert.unitsCollected - pending);
+    const { unitsNeeded, unitsPendingDelivery: pending, shortfall } = snap;
+    const committed = snap.committedDonorIds.map((donorId) => ({ donorId }));
     const latestShow = new Map<string, number>();
     for (const r of showRows) {
       const v = (r.prediction as { value?: unknown } | null)?.value;
@@ -376,9 +372,12 @@ export async function checkFulfillmentProgress(requestId: string): Promise<{
     const pResolvesInWindow = typeof pResolveRaw === "number" ? pResolveRaw : null;
     const minutesElapsed = (Date.now() - alert.createdAt.getTime()) / 60_000;
     const minutesLeft = Math.max(0, getAlertWindowHours() * 60 - minutesElapsed);
+    // Inventory has been tried when the timeout fallback fired, a transport exists,
+    // or the escalation ladder is live (it re-checks inventory on every rung).
     const inventoryTriggered =
-      isRecord(workflowState?.metadata) &&
-      (workflowState!.metadata.fallback_triggered === true || typeof workflowState!.metadata.transport_id === "string" || workflowState!.status === "fulfillment_in_progress");
+      (isRecord(workflowState?.metadata) &&
+        (workflowState!.metadata.fallback_triggered === true || typeof workflowState!.metadata.transport_id === "string" || workflowState!.status === "fulfillment_in_progress")) ||
+      readEscalationMeta(workflowState?.metadata) !== null;
 
     const mode = getMlMode("COORDINATOR");
     const decision = decideEscalation({
@@ -414,8 +413,11 @@ export async function checkFulfillmentProgress(requestId: string): Promise<{
           reasoning: explainEscalation(decision, { mode, modelVersion: null }),
           ml_mode: mode,
           policy_applied: mode === "authority",
+          // Model-informed only when the policy acted on a prediction; the 60-min floor is a rule.
+          decision_method: decision.source === "model" ? "model" : "deterministic",
+          model_confidence: decision.source === "model" && pResolvesInWindow !== null ? 1 - Math.abs(pResolvesInWindow - 0.5) : null,
         },
-        confidence: pResolvesInWindow !== null ? 1 - Math.abs(pResolvesInWindow - 0.5) : 0.8,
+        confidence: decision.source === "model" && pResolvesInWindow !== null ? 1 - Math.abs(pResolvesInWindow - 0.5) : null,
       },
     });
 
@@ -423,7 +425,8 @@ export async function checkFulfillmentProgress(requestId: string): Promise<{
       return { success: true, escalated: false, shortfall, expectedArrivals: decision.expectedArrivals, message: decision.reason };
     }
 
-    // Escalate: inventory search first; afterwards mark escalated for manual coordination
+    // Escalate: inventory search first; afterwards hand to the escalation ladder
+    // (wider donor radius → network broadcast → human coordinator).
     if (decision.action === "inventory_search") {
       await db.workflowState.update({
         where: { requestId },
@@ -435,14 +438,11 @@ export async function checkFulfillmentProgress(requestId: string): Promise<{
       });
       await triggerInventoryAgent(requestId);
     } else {
-      await db.alert.update({ where: { id: requestId }, data: { outcome: "ESCALATED" } });
-      await db.workflowState.update({
-        where: { requestId },
-        data: {
-          currentStep: "escalated_manual",
-          metadata: { ...((workflowState?.metadata as object) ?? {}), escalated_at: new Date().toISOString(), escalation_reason: decision.reason },
-        },
-      });
+      const ladder = await advanceEscalation(requestId, { trigger: "response_window" });
+      if (!ladder.success) {
+        console.error("[CoordinatorAgent] Escalation ladder failed:", ladder.error);
+      }
+      return { success: true, escalated: ladder.rungsRun > 0, shortfall, expectedArrivals: decision.expectedArrivals, message: ladder.message ?? decision.reason };
     }
     return { success: true, escalated: true, shortfall, expectedArrivals: decision.expectedArrivals, message: decision.reason };
   } catch (error) {
@@ -614,8 +614,10 @@ export async function selectOptimalMatch(requestId: string): Promise<{
           fallback_plan: "inventory_search_if_no_show",
           ml_mode: "off",
           policy_applied: false,
+          rule_score: confidence,
+          ...decisionBasis(),
         },
-        confidence,
+        confidence: null,
       },
     });
 
@@ -787,8 +789,9 @@ export async function confirmDonorArrival(
           reasoning: fulfilled
             ? `Donor confirmed arrival. ${alert.unitsCollected}/${unitsNeeded} units collected — request fulfilled.`
             : `Donor confirmed arrival. ${alert.unitsCollected}/${unitsNeeded} units collected — still open.`,
+          ...decisionBasis(),
         },
-        confidence: 1.0,
+        confidence: null,
       },
     });
 

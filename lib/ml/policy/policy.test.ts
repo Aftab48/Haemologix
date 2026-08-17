@@ -97,7 +97,7 @@ test("escalation: deterministic floor at 60 min; model escalates earlier on low 
   assert.equal(floor.action, "inventory_search");
   const early = decideEscalation({ shortfall: 2, committedDonors: 1, expectedArrivals: 0.6, minutesElapsed: 20, minutesLeft: 300, pResolvesInWindow: 0.2, inventoryTriggered: true });
   assert.equal(early.escalate, true);
-  assert.equal(early.action, "transfer_or_manual");
+  assert.equal(early.action, "escalation_ladder");
   assert.equal(early.source, "model");
   const none = decideEscalation({ shortfall: 0, committedDonors: 0, expectedArrivals: null, minutesElapsed: 100, minutesLeft: 10, pResolvesInWindow: 0.01, inventoryTriggered: false });
   assert.equal(none.escalate, false);

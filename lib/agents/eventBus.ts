@@ -37,6 +37,15 @@ export interface ShortageRequestEvent {
     reason?: string;
     estimated_procedure_time?: string;
   };
+  /**
+   * Present when this event was re-published by the escalation ladder with a
+   * wider radius. The Donor Agent then only notifies donors in the new ring and
+   * leaves sequencing (inventory re-check, next rung) to the coordinator.
+   */
+  escalation?: {
+    rung: number;
+    previous_radius_km: number;
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -141,6 +150,12 @@ export function parseShortageRequestEvent(
   }
 
   const metadata = isRecord(value.metadata) ? value.metadata : {};
+  let escalation: ShortageRequestEvent["escalation"];
+  if (isRecord(value.escalation)) {
+    const rung = toFiniteNumber(value.escalation.rung);
+    const prev = toFiniteNumber(value.escalation.previous_radius_km);
+    if (rung !== null && prev !== null) escalation = { rung, previous_radius_km: prev };
+  }
   return {
     type: "shortage.request.v1",
     id: value.id,
@@ -161,6 +176,7 @@ export function parseShortageRequestEvent(
         "estimated_procedure_time"
       ),
     },
+    ...(escalation ? { escalation } : {}),
   };
 }
 

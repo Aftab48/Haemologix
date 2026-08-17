@@ -5,6 +5,32 @@ All notable changes to Haemologix will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Escalation ladder: when the local donor and inventory search is empty the coordinator now widens the donor
+  radius in tiers (up to `ML_MAX_DONOR_RADIUS_KM`, default 100), re-checks network inventory each rung, asks nearby
+  facilities to check their stock (`ML_NETWORK_BROADCAST_RADIUS_KM` / `ML_NETWORK_BROADCAST_MAX_FACILITIES`), and
+  finally hands the alert to a human coordinator (email + SMS to the requesting hospital's contacts and
+  `CONTACT_ADMIN_EMAIL`, `outcome = ESCALATED`). Every rung is logged as a coordinator `escalation_step` decision
+  and shown on the alert page with the next action being taken. (`lib/agents/escalation.ts`,
+  `lib/ml/policy/escalationLadder.ts`, coordinator API `action: "escalate"`, scheduler job `advanceEscalations`.)
+- Typed workflow step vocabulary and stage labels (`lib/agents/workflowSteps.ts`); alert page stepper now shows the
+  full coordination ladder (Detected → Local search → Expanding search → Network broadcast → Fulfilment / Human
+  escalation → Closed) plus a "Next action" panel and terminal-outcome badges.
+- Honest decision provenance: every `AgentDecision` carries `decision_method`
+  (`model` | `deterministic` | `deterministic_fallback`) and `model_confidence`; the `confidence` column now holds
+  model confidence only (null on rule paths). UI shows "Deterministic rule" / "Rule fallback — model unavailable" /
+  "Model · NN%" instead of "100% confidence" for rule fallbacks. (`decisionBasis()` in `lib/ml/agentBridge.ts`,
+  `components/DecisionBasisBadge.tsx`.)
+
+### Changed
+- `escalationPolicy.decideEscalation` action `transfer_or_manual` renamed `escalation_ladder`; the response-window
+  timeout now delegates to the ladder instead of silently marking the alert `escalated_manual`.
+- `shortage.request.v1` events may carry `escalation: { rung, previous_radius_km }`; the Donor Agent then only
+  notifies donors not yet contacted for that alert and leaves sequencing to the coordinator.
+- Inventory Agent: empty result now escalates to the coordinator instead of ending the workflow.
+
 ## [0.5.2] - 2025-12-13
 
 ### Added
