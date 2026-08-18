@@ -1,7 +1,15 @@
 /**
- * Event Bus for Agent Communication
- * Uses database as primary event store
- * Can integrate Redis pub/sub later for real-time updates
+ * Agent event log.
+ *
+ * Agents call each other directly (coordinator → donor / inventory / logistics
+ * …); `publishEvent` does not drive that control flow. It writes a durable,
+ * queryable audit record of what each agent decided to the AgentEvent table,
+ * which the alert-details view and the ML harvest read back.
+ *
+ * There is deliberately no message broker here: Postgres is the source of
+ * truth and the dashboards poll it. If push delivery is ever wanted (SSE to the
+ * hospital dashboard, an external service subscribing), add it as a fan-out
+ * *after* the row is written — never instead of it.
  */
 
 import { db } from "@/db";
@@ -201,7 +209,7 @@ export interface DonorResponseEvent {
 }
 
 /**
- * Publish an event to the event bus
+ * Record an agent event. Returns the AgentEvent row id.
  */
 export async function publishEvent<Payload extends object>(
   type: AgentEventType,
@@ -219,52 +227,10 @@ export async function publishEvent<Payload extends object>(
     });
 
     console.log(`[EventBus] Published ${type} by ${agentType}:`, event.id);
-
-    // TODO: If Redis is configured, also publish to Redis channel
-    // await publishToRedis(`events:${agentType}`, payload);
-
     return event.id;
   } catch (error) {
     console.error(`[EventBus] Error publishing event:`, error);
     throw error;
-  }
-}
-
-/**
- * Get unprocessed events of a specific type
- */
-export async function getUnprocessedEvents(
-  type: AgentEventType
-): Promise<AgentEvent[]> {
-  try {
-    const events = await db.agentEvent.findMany({
-      where: {
-        type,
-        processed: false,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
-
-    return events;
-  } catch (error) {
-    console.error(`[EventBus] Error fetching events:`, error);
-    return [];
-  }
-}
-
-/**
- * Mark an event as processed
- */
-export async function markEventProcessed(eventId: string): Promise<void> {
-  try {
-    await db.agentEvent.update({
-      where: { id: eventId },
-      data: { processed: true },
-    });
-  } catch (error) {
-    console.error(`[EventBus] Error marking event processed:`, error);
   }
 }
 

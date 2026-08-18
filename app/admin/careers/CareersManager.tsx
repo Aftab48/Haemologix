@@ -52,7 +52,7 @@ const emptyJob: JobForm = {
   employmentType: "FULL_TIME",
   workplaceType: "ON_SITE",
   applicationUrl: "",
-  applicationEmail: "founders@haemologix.in",
+  applicationEmail: "hiring@haemologix.in",
   status: "DRAFT",
   publishedAt: null,
   closesAt: null,
@@ -332,7 +332,7 @@ export default function CareersManager() {
               <legend>03 / APPLICATION ROUTE</legend>
               <div className={styles.twoColumns}>
                 <label>Application URL <span>Optional</span><input type="url" value={form.applicationUrl ?? ""} onChange={(event) => update("applicationUrl", event.target.value)} placeholder="https://…" /></label>
-                <label>Application email <span>Optional</span><input type="email" value={form.applicationEmail ?? ""} onChange={(event) => update("applicationEmail", event.target.value)} placeholder="careers@haemologix.in" /></label>
+                <label>Application email <span>Optional</span><input type="email" value={form.applicationEmail ?? ""} onChange={(event) => update("applicationEmail", event.target.value)} placeholder="hiring@haemologix.in" /></label>
               </div>
               <p className={styles.fieldNote}>Published roles need at least one application route. The URL takes priority when both are present.</p>
             </fieldset>

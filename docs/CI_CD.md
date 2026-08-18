@@ -26,8 +26,12 @@ To enable the CI build workflow, you **must** add the following **Repository Sec
 | `CI_CLERK_SECRET_KEY` | ✅ **Required** | Clerk Secret Key (test key is fine for CI) | [Clerk Dashboard](https://dashboard.clerk.com/last-active?path=api-keys) - Use a **test** key (starts with `sk_test_`) |
 | `CI_DATABASE_URL` | ⚠️ Optional | PostgreSQL connection string (dummy is fine for build) | Format: `postgresql://user:pass@host:port/db?sslmode=disable` |
 | `CI_GOOGLE_MAPS_API_KEY` | ⚠️ Optional | Google Maps API Key | [Google Cloud Console](https://console.cloud.google.com/) or use placeholder |
+| `DRIFT_CHECK_DATABASE_URL` | ⚠️ Optional | Connection string of the **live** main database for the *Schema Drift Check* job (`prisma migrate diff` — read-only introspection). Use a read-only role. The job is skipped with a warning when unset. | Create a read-only Postgres role on the production DB (`GRANT SELECT ON ALL TABLES IN SCHEMA public …`) |
+| `CAREERS_DRIFT_CHECK_DATABASE_URL` | ⚠️ Optional | Same for the careers database (`prisma/careers/schema.prisma`) | — |
 
 **Important Notes**:
+- The `validate` job also runs the unit tests (`npm run test:all`); they need no database or env vars
+- **Schema drift**: migrations are hand-written SQL in `prisma/sql/` applied with `psql`, so the drift job is the only thing that checks the live database still matches `prisma/schema.prisma`. When it fails it prints the SQL that would reconcile the two — either apply the missing migration or fix the schema file
 - **Clerk keys are REQUIRED** - Clerk validates key format during build, so you must use real test keys from your Clerk dashboard
 - Test keys are safe for CI - they won't affect production and are designed for development/testing
 - If secrets are not set, the build will fail with a clear error message

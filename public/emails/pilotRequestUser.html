@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Your Haemologix Pilot Request</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #7f1d1d, #7f1d1d 50%, #ca8a04 100%);
+        color: white;
+        text-align: center;
+        padding: 25px 15px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .content {
+        padding: 25px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .content h2 {
+        color: #7f1d1d;
+        margin-top: 0;
+      }
+      .info-box {
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #9B2226;
+      }
+      .info-box p {
+        margin: 6px 0;
+      }
+      .steps {
+        margin: 20px 0;
+        padding-left: 20px;
+      }
+      .steps li {
+        margin-bottom: 8px;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888888;
+        padding: 15px;
+        background-color: #f9fafb;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>Thank you for your interest in the Haemologix pilot</h1>
+      </div>
+      <div class="content">
+        <h2>Dear {{contactPerson}},</h2>
+        <p>
+          We have received the pilot program request for <strong>{{hospitalName}}</strong>.
+          Our team will review it and reach out to you at this address or on {{phone}} shortly.
+        </p>
+
+        <div class="info-box">
+          <p><strong>Hospital / Blood Bank:</strong> {{hospitalName}}</p>
+          <p><strong>Location:</strong> {{location}}</p>
+          <p><strong>In-house blood bank:</strong> {{hasBloodBank}}</p>
+          <p><strong>Reference:</strong> {{requestId}}</p>
+        </div>
+
+        <p><strong>What happens next</strong></p>
+        <ol class="steps">
+          <li>A member of the Haemologix team reviews your request.</li>
+          <li>We schedule a short call to understand your blood-supply workflow.</li>
+          <li>We set up your hospital / blood bank account and walk your staff through the platform.</li>
+        </ol>
+
+        <p>
+          If any of the details above are wrong, just reply to this email and we will correct them.
+        </p>
+      </div>
+      <div class="footer">
+        © <span id="year"></span> Haemologix Pvt. Ltd. — Connecting Life, One Drop at a Time
+      <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+      </div>
+    </div>
+  </body>
+</html>

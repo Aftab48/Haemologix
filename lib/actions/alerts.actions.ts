@@ -4,6 +4,7 @@
 import { db } from "@/db";
 import { formatLastActivity } from "../utils";
 import { findActiveCommitment } from "@/lib/agents/commitment";
+import { calculateDonorEta, haversineDistanceKm } from "@/lib/distanceEta";
 
 export async function createAlert(input: CreateAlertInput) {
   // Validate required fields
@@ -127,9 +128,44 @@ export async function getAlerts(hospitalId: string) {
   }
 }
 
+/** Parse a lat/lng stored as a string column; null when missing or not a finite number. */
+function parseCoord(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const n = parseFloat(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** "3.4 km" for the UI (parseFloat-able for the distance filter), or "—" when unknown. */
+function formatDistanceKm(km: number | null): string {
+  return km === null ? "—" : `${km.toFixed(1)} km`;
+}
+
+/**
+ * ETA text for a donor row. Prefers the donor's own expected arrival (set when
+ * they accept in the app); otherwise estimates from the distance with the same
+ * model the logistics agent uses. "—" when neither is available.
+ */
+function formatEta(expectedArrival: Date | null | undefined, distanceKm: number | null, now: Date): string {
+  if (expectedArrival) {
+    const minutes = Math.round((expectedArrival.getTime() - now.getTime()) / 60000);
+    if (minutes <= 0) return "due now";
+    return `${minutes} minutes`;
+  }
+  if (distanceKm === null) return "—";
+  return `~${calculateDonorEta(distanceKm, now.getHours()).recommendedEtaMinutes} minutes`;
+}
+
 // server-side
 export async function getAlertResponseStats(alertId: string) {
-  const [responses, confirmed, donorResponses] = await Promise.all([
+  const [alert, responses, confirmed, donorResponses] = await Promise.all([
+    db.alert.findUnique({
+      where: { id: alertId },
+      select: {
+        latitude: true,
+        longitude: true,
+        hospital: { select: { latitude: true, longitude: true } },
+      },
+    }),
     db.alertResponse.count({ where: { alertId } }),
     db.alertResponse.count({ where: { alertId, status: "CONFIRMED" } }),
     db.alertResponse.findMany({
@@ -138,20 +174,50 @@ export async function getAlertResponseStats(alertId: string) {
     }),
   ]);
 
-  const formattedDonors = donorResponses.map((r) => ({
-    id: r.donor.id,
-    donorName: r.donor.name,
-    lastDonation: r.donor.lastDonationDate
-      ? r.donor.lastDonationDate.toDateString()
-      : "Never",
-    bloodType: r.donor.bloodGroup,
-    distance: "0", // TODO: calculate or fetch
-    eta: "—", // TODO: calculate ETA if applicable
-    status: (r.status === "CONFIRMED" ? "Confirmed" : "Pending") as
-      | "Confirmed"
-      | "Pending",
-    phone: r.donor.phone,
-  }));
+  // The alert carries its own coordinates; fall back to the hospital's.
+  const originLat = parseCoord(alert?.latitude) ?? parseCoord(alert?.hospital?.latitude);
+  const originLng = parseCoord(alert?.longitude) ?? parseCoord(alert?.hospital?.longitude);
+
+  // Per-donor commitment rows hold the distance computed at match time and the
+  // expected arrival the donor gave when accepting.
+  const donorIds = donorResponses.map((r) => r.donorId);
+  const history =
+    donorIds.length > 0
+      ? await db.donorResponseHistory.findMany({
+          where: { requestId: alertId, donorId: { in: donorIds } },
+          select: { donorId: true, distance: true, expectedArrival: true, createdAt: true },
+          orderBy: { createdAt: "desc" },
+        })
+      : [];
+  const historyByDonor = new Map<string, (typeof history)[number]>();
+  for (const h of history) if (!historyByDonor.has(h.donorId)) historyByDonor.set(h.donorId, h);
+
+  const now = new Date();
+  const formattedDonors = donorResponses.map((r) => {
+    const h = historyByDonor.get(r.donorId);
+    const donorLat = parseCoord(r.donor.latitude);
+    const donorLng = parseCoord(r.donor.longitude);
+    const distanceKm =
+      h?.distance ??
+      (originLat !== null && originLng !== null && donorLat !== null && donorLng !== null
+        ? haversineDistanceKm(donorLat, donorLng, originLat, originLng)
+        : null);
+
+    return {
+      id: r.donor.id,
+      donorName: r.donor.name,
+      lastDonation: r.donor.lastDonationDate
+        ? r.donor.lastDonationDate.toDateString()
+        : "Never",
+      bloodType: r.donor.bloodGroup,
+      distance: formatDistanceKm(distanceKm),
+      eta: formatEta(h?.expectedArrival, distanceKm, now),
+      status: (r.status === "CONFIRMED" ? "Confirmed" : "Pending") as
+        | "Confirmed"
+        | "Pending",
+      phone: r.donor.phone,
+    };
+  });
 
   return {
     responses,

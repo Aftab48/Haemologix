@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
+import {
+  sendPilotRequestAdminNotification,
+  sendPilotRequestUserConfirmation,
+} from "@/lib/actions/mails.actions";
 
 /**
  * Pilot Request API Endpoint
@@ -73,9 +77,28 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // TODO: In production, you would:
-    // 1. Send notification email to admin
-    // 2. Send confirmation email to requester
+    // Notify the team and confirm to the requester. The request is already
+    // persisted, so a mail failure is logged but does not fail the submission —
+    // the admin dashboard still lists it.
+    const emailData = {
+      requestId: pilotRequest.id,
+      hospitalName,
+      contactPerson,
+      email,
+      phone,
+      location,
+      hasBloodBank,
+    };
+    const [adminMail, userMail] = await Promise.allSettled([
+      sendPilotRequestAdminNotification(emailData),
+      sendPilotRequestUserConfirmation(emailData),
+    ]);
+    if (adminMail.status === "rejected") {
+      console.error("[Pilot Request API] Admin notification failed:", adminMail.reason);
+    }
+    if (userMail.status === "rejected") {
+      console.error("[Pilot Request API] Requester confirmation failed:", userMail.reason);
+    }
 
     return NextResponse.json({
       success: true,

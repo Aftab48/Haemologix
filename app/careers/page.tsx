@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import { getPublishedJobs, type PublicJob } from "@/lib/careers/queries";
-import { ORG, SITE_URL, absoluteUrl } from "@/lib/seo";
+import { SITE_URL, absoluteUrl } from "@/lib/seo";
 import styles from "./careers.module.css";
 
 export const dynamic = "force-dynamic";
@@ -104,7 +104,7 @@ const workplaceLabels = {
 } as const;
 
 export default async function CareersPage() {
-  const applicationHref = `mailto:${ORG.email}?subject=${encodeURIComponent(
+  const applicationHref = `mailto:hiring@haemologix.in?subject=${encodeURIComponent(
     "Careers at Haemologix",
   )}`;
   let jobs: PublicJob[] = [];

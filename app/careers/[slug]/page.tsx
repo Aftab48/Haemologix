@@ -42,7 +42,7 @@ export default async function JobPage({ params }: PageProps) {
   const job = await getPublishedJobBySlug(slug);
   if (!job) notFound();
 
-  const applicationHref = job.applicationUrl || `mailto:${job.applicationEmail || ORG.email}?subject=${encodeURIComponent(`Application: ${job.title}`)}`;
+  const applicationHref = job.applicationUrl || `mailto:${job.applicationEmail || "hiring@haemologix.in"}?subject=${encodeURIComponent(`Application: ${job.title}`)}`;
   const publishedLabel = job.publishedAt
     ? new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "long", year: "numeric" }).format(job.publishedAt)
     : "Open now";

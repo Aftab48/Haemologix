@@ -773,3 +773,84 @@ export async function sendDeletionRequestUserConfirmation(data: {
     );
   }
 }
+
+export interface PilotRequestEmailData {
+  requestId: string;
+  hospitalName: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  location: string;
+  hasBloodBank: boolean;
+}
+
+function pilotRequestTemplateData(data: PilotRequestEmailData): Record<string, string> {
+  return {
+    requestId: escapeHtml(data.requestId),
+    hospitalName: escapeHtml(data.hospitalName),
+    contactPerson: escapeHtml(data.contactPerson),
+    email: escapeHtml(data.email),
+    phone: escapeHtml(data.phone),
+    location: escapeHtml(data.location),
+    hasBloodBank: data.hasBloodBank ? "Yes" : "No",
+  };
+}
+
+/**
+ * Notify the admin/founders inbox that a hospital or blood bank asked to join
+ * the pilot program (CONTACT_ADMIN_EMAIL, same inbox as the contact form).
+ */
+export async function sendPilotRequestAdminNotification(data: PilotRequestEmailData) {
+  let html = await loadEmailTemplate("pilotRequestAdmin.html");
+  html = applyTemplate(html, pilotRequestTemplateData(data));
+
+  const adminEmail = process.env.CONTACT_ADMIN_EMAIL || "founders@haemologix.in";
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Haemologix" <${process.env.SMTP_USER}>`,
+      to: adminEmail,
+      replyTo: data.email,
+      subject: `New pilot request: ${data.hospitalName} (${data.location})`,
+      html,
+    });
+
+    console.log(`[Email] Pilot request admin notification sent to ${adminEmail}:`, info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    const error = getMailError(err);
+    console.error("❌ Pilot request admin notification email error:", {
+      message: error.message,
+      code: error.code,
+    });
+    throw new Error(`Failed to send pilot request admin notification: ${error.message}`);
+  }
+}
+
+/**
+ * Confirm to the requester that we received their pilot program request.
+ */
+export async function sendPilotRequestUserConfirmation(data: PilotRequestEmailData) {
+  let html = await loadEmailTemplate("pilotRequestUser.html");
+  html = applyTemplate(html, pilotRequestTemplateData(data));
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"Haemologix" <${process.env.SMTP_USER}>`,
+      to: data.email,
+      subject: "We received your Haemologix pilot request",
+      html,
+    });
+
+    console.log(`[Email] Pilot request confirmation sent to ${data.email}:`, info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    const error = getMailError(err);
+    console.error("❌ Pilot request user confirmation email error:", {
+      message: error.message,
+      code: error.code,
+      to: data.email,
+    });
+    throw new Error(`Failed to send pilot request confirmation: ${error.message}`);
+  }
+}

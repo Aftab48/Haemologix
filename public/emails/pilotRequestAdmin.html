@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>New Pilot Program Request</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        background: linear-gradient(135deg, #7f1d1d, #7f1d1d 50%, #ca8a04 100%);
+        color: white;
+        text-align: center;
+        padding: 25px 15px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 26px;
+      }
+      .content {
+        padding: 25px;
+        color: #333333;
+        line-height: 1.6;
+      }
+      .content h2 {
+        color: #7f1d1d;
+        margin-top: 0;
+      }
+      .info-box {
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      .info-box p {
+        margin: 6px 0;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #888888;
+        padding: 15px;
+        background-color: #f9fafb;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <h1>🏥 New Pilot Program Request</h1>
+      </div>
+      <div class="content">
+        <h2>Request Details</h2>
+        <div class="info-box">
+          <p><strong>Hospital / Blood Bank:</strong> {{hospitalName}}</p>
+          <p><strong>Contact Person:</strong> {{contactPerson}}</p>
+          <p><strong>Email:</strong> <a href="mailto:{{email}}">{{email}}</a></p>
+          <p><strong>Phone:</strong> <a href="tel:{{phone}}">{{phone}}</a></p>
+          <p><strong>Location:</strong> {{location}}</p>
+          <p><strong>Has in-house blood bank:</strong> {{hasBloodBank}}</p>
+          <p><strong>Request ID:</strong> {{requestId}}</p>
+        </div>
+        <p style="color: #666; font-size: 12px; margin-top: 20px;">
+          This request was submitted through the Haemologix pilot program form. Reply to the requester
+          directly or follow up from the admin dashboard.
+        </p>
+      </div>
+      <div class="footer">
+        © <span id="year"></span> Haemologix Pvt. Ltd. — Connecting Life, One Drop at a Time
+      <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+      </div>
+    </div>
+  </body>
+</html>

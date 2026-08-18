@@ -1,4 +1,4 @@
-name: CI - Lint, Type Check & Build
+name: CI - Lint, Type Check, Test & Build
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20" # matches the Dockerfile base image
           cache: "npm"
 
       - name: Install dependencies
@@ -29,6 +29,64 @@ jobs:
 
       - name: Type Check
         run: npx tsc --noEmit
+
+      # Node's built-in runner via tsx; the suites are pure (no DB / env needed).
+      - name: Unit Tests
+        run: npm run test:all
+
+  # Schema migrations are hand-written SQL in prisma/sql/ and applied by hand
+  # (psql), so nothing else guarantees the live database still matches
+  # prisma/schema.prisma. This job introspects a database (read-only) and fails
+  # if the schema on disk and the schema in the DB have drifted apart.
+  #
+  # Repository secrets:
+  #   DRIFT_CHECK_DATABASE_URL          the main database (use a read-only role)
+  #   CAREERS_DRIFT_CHECK_DATABASE_URL  optional; the careers database
+  # Skipped with a warning when the secret is missing (fork PRs cannot see
+  # secrets, so it also skips there).
+  schema-drift:
+    name: Schema Drift Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Diff live database against prisma/schema.prisma
+        env:
+          DRIFT_CHECK_DATABASE_URL: ${{ secrets.DRIFT_CHECK_DATABASE_URL }}
+        run: |
+          if [ -z "$DRIFT_CHECK_DATABASE_URL" ]; then
+            echo "::warning::DRIFT_CHECK_DATABASE_URL secret not set - skipping schema drift check"
+            exit 0
+          fi
+          # --exit-code: 0 = in sync, 2 = drift; --script prints the SQL that would reconcile it.
+          npx prisma migrate diff \
+            --from-url "$DRIFT_CHECK_DATABASE_URL" \
+            --to-schema-datamodel prisma/schema.prisma \
+            --script --exit-code
+
+      - name: Diff careers database against prisma/careers/schema.prisma
+        env:
+          CAREERS_DRIFT_CHECK_DATABASE_URL: ${{ secrets.CAREERS_DRIFT_CHECK_DATABASE_URL }}
+        run: |
+          if [ -z "$CAREERS_DRIFT_CHECK_DATABASE_URL" ]; then
+            echo "::notice::CAREERS_DRIFT_CHECK_DATABASE_URL secret not set - skipping careers drift check"
+            exit 0
+          fi
+          npx prisma migrate diff \
+            --from-url "$CAREERS_DRIFT_CHECK_DATABASE_URL" \
+            --to-schema-datamodel prisma/careers/schema.prisma \
+            --script --exit-code
 
   build:
     name: Build Application
@@ -42,7 +100,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
           cache: "npm"
 
       - name: Restore Next.js Build Cache
