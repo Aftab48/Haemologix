@@ -24,6 +24,17 @@ function generateRequestId() {
   return `req_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 }
 
+// Clerk production hardening: only accept requests whose Origin is one of our
+// own hosts (CSRF protection, required by Clerk before "Deploy certificates").
+// Localhost is allowed outside production so `next dev` keeps working.
+const authorizedParties = [
+  "https://www.haemologix.in",
+  "https://haemologix.in",
+  ...(process.env.NODE_ENV !== "production"
+    ? ["http://localhost:3000", "http://localhost:3100", "http://localhost:3005"]
+    : []),
+];
+
 export default clerkMiddleware(async (auth, request) => {
   // Generate a request ID for every incoming request
   const requestId = generateRequestId();
@@ -39,7 +50,7 @@ export default clerkMiddleware(async (auth, request) => {
   response.headers.set("X-Request-ID", requestId);
 
   return response;
-});
+}, { authorizedParties });
 
 export const config = {
   matcher: ["/((?!.*\\..*|_next).*)", "/"],
