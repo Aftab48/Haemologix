@@ -1,513 +1,341 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Link from "next/link";
-import GradientBackground from "@/components/GradientBackground";
+import { ArrowUpRight, Check, IndianRupee } from "lucide-react";
 import Header from "@/components/Header";
-import { ArrowUp } from "lucide-react";
-import { CheckCircle2, ArrowRight, Rocket, Heart, Building2, Crown } from "lucide-react";
-import ScrollReveal from "@/components/ScrollReveal";
+import EditorialFooter from "@/components/EditorialFooter";
+import editorial from "@/styles/editorial.module.css";
+import styles from "./pricing.module.css";
+
+// Metadata lives in ./layout.tsx.
+
+type Tier = {
+  code: string;
+  name: string;
+  price: string;
+  priceNote?: string;
+  idealFor: string;
+  featured?: boolean;
+  groups: { heading: string; items: string[] }[];
+  note?: { heading: string; lines: string[] };
+  action: { label: string; href: string };
+};
+
+const tiers: Tier[] = [
+  {
+    code: "TIER 00",
+    name: "Pilot",
+    price: "Free",
+    priceNote: "2 weeks",
+    idealFor: "Hospitals running a 7–14 day evaluation.",
+    groups: [
+      {
+        heading: "Includes",
+        items: [
+          "Temporary dashboard (2 weeks)",
+          "AI verification (30 donors)",
+          "Sample requests (up to 2)",
+          "SMS and email alerts (limited)",
+          "Auto-generated reports",
+          "Optional onboarding session",
+        ],
+      },
+    ],
+    action: { label: "Start a pilot", href: "/pilot" },
+  },
+  {
+    code: "TIER 01",
+    name: "Free",
+    price: "Free",
+    idealFor: "Rural hospitals, small NGOs and blood camps.",
+    groups: [
+      {
+        heading: "Includes",
+        items: [
+          "30 donor verifications / month",
+          "1 active blood request / month",
+          "30 notifications / month",
+          "Regional donor access",
+          "Basic analytics",
+          "Community support",
+        ],
+      },
+    ],
+    action: { label: "Get started", href: "/contact" },
+  },
+  {
+    code: "TIER 02",
+    name: "Premium",
+    price: "₹8,999",
+    priceNote: "per month",
+    idealFor: "Mid-level hospitals and district blood centres.",
+    featured: true,
+    groups: [
+      {
+        heading: "Fair use limits",
+        items: [
+          "1,200 AI verifications / month",
+          "1,000 SMS / month",
+          "500 emails / month",
+          "2 hours support / month",
+        ],
+      },
+      {
+        heading: "Also included",
+        items: [
+          "Real-time matching and smart routing",
+          "Advanced analytics and forecasting",
+          "API integration",
+          "Role-based access control",
+          "Hospital co-branding",
+        ],
+      },
+    ],
+    note: {
+      heading: "Overage",
+      lines: ["₹0.25 / verification · ₹0.50 / SMS · ₹0.05 / email · ₹1,500 / hr support"],
+    },
+    action: { label: "Get started", href: "/contact" },
+  },
+  {
+    code: "TIER 03",
+    name: "Enterprise",
+    price: "Custom",
+    idealFor: "State health departments, hospital chains and CSR projects.",
+    groups: [
+      {
+        heading: "Includes",
+        items: [
+          "White-labelled dashboard",
+          "Multi-location and multi-language",
+          "Centralised AI screening engine",
+          "Custom analytics and visualisations",
+          "Dedicated onboarding and training",
+          "SLA-backed uptime and security",
+          "National health / CSR integrations",
+          "Custom API and SMS gateways",
+        ],
+      },
+    ],
+    note: {
+      heading: "Pricing",
+      lines: [
+        "₹50,000–75,000 / month base plus usage overages",
+        "Annual contract ₹6–9 lakh · implementation ₹1–2 lakh",
+      ],
+    },
+    action: { label: "Contact sales", href: "/contact" },
+  },
+];
+
+const comparison = [
+  { feature: "AI donor verification", pilot: "30 (trial)", free: "30 / month", premium: "1,200 / month", enterprise: "Unlimited" },
+  { feature: "Blood requests", pilot: "2 (trial)", free: "1 / month", premium: "Unlimited", enterprise: "Unlimited" },
+  { feature: "SMS alerts", pilot: "Limited", free: "30 / month", premium: "1,000 / month", enterprise: "Unlimited" },
+  { feature: "Email alerts", pilot: "Limited", free: "30 / month", premium: "500 / month", enterprise: "Unlimited" },
+  { feature: "Advanced analytics", pilot: "Basic", free: "Basic", premium: "Included", enterprise: "Custom" },
+  { feature: "API integration", pilot: "—", free: "—", premium: "Included", enterprise: "Custom" },
+  { feature: "Support", pilot: "Optional", free: "Community", premium: "2 hrs / month", enterprise: "Dedicated" },
+  { feature: "White-labelling", pilot: "—", free: "—", premium: "—", enterprise: "Included" },
+];
+
+const alwaysFree = [
+  "Donor registration, for every donor, forever.",
+  "Emergency alerts to matched donors nearby.",
+  "Responding to a request and confirming attendance.",
+  "A 7–14 day pilot for any hospital or blood bank.",
+];
 
 export default function PricingPage() {
   return (
-    <GradientBackground>
-      {/* Header */}
-      <Header activePage="pricing" />
+    <div className={editorial.page}>
+      <Header activePage="pricing" variant="editorial" />
 
-      {/* Hero Section */}
-      <section className="py-20 px-4 bg-white/5 backdrop-blur-[2px]">
-        <div className="container mx-auto max-w-6xl">
-          <ScrollReveal>
-            <div className="text-center mb-16">
-              <h1 className="text-5xl md:text-6xl font-bold mb-6 text-text-dark">
-                Pricing Plans
-              </h1>
-              <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
-                Choose the plan that fits your hospital's needs. From free trials to enterprise solutions, we have options for every scale.
-              </p>
+      <main>
+        {/* ---------- hero ---------- */}
+        <section className={editorial.hero}>
+          <div className={editorial.frame}>
+            <div className={editorial.metaBar}>
+              <span>PRICING / HAEMOLOGIX</span>
+              <span>INR · GST EXTRA</span>
+              <span>HLX—PRICE—01</span>
             </div>
-          </ScrollReveal>
-        </div>
-      </section>
 
-      {/* Pricing Tiers */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16 items-stretch">
-            {/* Pilot Program */}
-            <ScrollReveal delay={0.1} className="h-full">
-              <Card className="glass-morphism relative grid grid-rows-[auto_1fr_auto] h-full min-h-[28rem]">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Rocket className="w-8 h-8 text-blue-600" />
-                  </div>
-                  <CardTitle>Pilot Program</CardTitle>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-text-dark">Free</span>
-                    <span className="text-muted-foreground ml-2">(2 weeks)</span>
-                  </div>
-                  <CardDescription className="mt-2">Testing & Validation</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1 space-y-4 px-6">
-                  <div>
-                    <p className="text-sm font-semibold text-text-dark mb-2">Ideal For:</p>
-                    <p className="text-sm text-text-dark/80">Hospitals in 7-14 day evaluation</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-text-dark mb-2">Includes:</p>
-                    <ul className="space-y-2 text-sm text-text-dark/80">
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Temporary dashboard (2 weeks)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>AI verification (30 donors)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Sample requests (up to 2)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>SMS & email alerts (limited)</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Auto-generated reports</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Optional onboarding session</span>
-                      </li>
-                    </ul>
-                  </div>
-                </CardContent>
-                <div className="px-6 pb-6">
-                  <Link href="/pilot" className="block">
-                    <Button className="w-full h-12 gradient-oxygen hover:opacity-90 text-white font-outfit font-semibold rounded-xl transition-all whitespace-nowrap">
-                      Get Started
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-            </ScrollReveal>
-
-            {/* Free Tier */}
-            <ScrollReveal delay={0.2} className="h-full">
-              <Card className="glass-morphism relative grid grid-rows-[auto_1fr_auto] h-full min-h-[28rem]">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Heart className="w-8 h-8 text-green-600" />
-                  </div>
-                  <CardTitle>Free Tier</CardTitle>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-text-dark">Free</span>
-                  </div>
-                  <CardDescription className="mt-2">Entry Hospitals & NGOs</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1 space-y-4 px-6">
-                  <div>
-                    <p className="text-sm font-semibold text-text-dark mb-2">Ideal For:</p>
-                    <p className="text-sm text-text-dark/80">Rural hospitals, small NGOs, blood camps</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-text-dark mb-2">Includes:</p>
-                    <ul className="space-y-2 text-sm text-text-dark/80">
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>30 donor verifications/month</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>1 active blood request/month</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>30 notifications/month</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Regional donor access</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Basic analytics</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Community support</span>
-                      </li>
-                    </ul>
-                  </div>
-                </CardContent>
-                <div className="px-6 pb-6">
-                  <Link href="/contact" className="block">
-                    <Button className="w-full h-12 gradient-mist hover:opacity-90 text-text-dark font-outfit font-semibold rounded-xl transition-all whitespace-nowrap">
-                      Get Started
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-            </ScrollReveal>
-
-            {/* Premium Tier */}
-            <ScrollReveal delay={0.3} className="h-full">
-              <Card className="glass-morphism border-2 border-primary relative grid grid-rows-[auto_1fr_auto] h-full min-h-[28rem]">
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-primary text-white px-4 py-1 rounded-full text-sm font-semibold">
-                    Most Popular
+            <div className={styles.heroGrid}>
+              <div>
+                <p className={editorial.eyebrow}>PLANS FOR HOSPITALS AND BLOOD BANKS</p>
+                <h1 className={editorial.display}>
+                  Pay for scale,
+                  <span className={editorial.slab}>
+                    not access
+                    <IndianRupee aria-hidden="true" />
                   </span>
-                </div>
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Building2 className="w-8 h-8 text-primary" />
-                  </div>
-                  <CardTitle>Premium</CardTitle>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-text-dark">₹8,999</span>
-                    <span className="text-muted-foreground ml-2">/month</span>
-                  </div>
-                  <CardDescription className="mt-2">Growing Hospitals & Blood Banks</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1 space-y-4 px-6">
-                  <div>
-                    <p className="text-sm font-semibold text-text-dark mb-2">Ideal For:</p>
-                    <p className="text-sm text-text-dark/80">Mid-level hospitals, district blood centers</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-text-dark mb-2">Fair Use Limits:</p>
-                    <ul className="space-y-2 text-sm text-text-dark/80 mb-4">
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>1,200 AI verifications/month</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>1,000 SMS/month</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>500 emails/month</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>2 hours support/month</span>
-                      </li>
-                    </ul>
-                    <p className="text-sm font-semibold text-text-dark mb-2">Additional Features:</p>
-                    <ul className="space-y-2 text-sm text-text-dark/80">
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Real-time matching & smart routing</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Advanced analytics & forecasting</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>API integration</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Role-based access control</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Hospital co-branding</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="bg-primary/10 rounded-lg p-3 mb-2">
-                    <p className="text-xs font-semibold text-text-dark mb-1">Overage Pricing:</p>
-                    <p className="text-xs text-text-dark/80">₹0.25/verification, ₹0.50/SMS, ₹0.05/email, ₹1,500/hr support</p>
-                  </div>
-                </CardContent>
-                <div className="px-6 pb-6">
-                  <Link href="/contact" className="block">
-                    <Button className="w-full h-12 gradient-ruby hover:opacity-90 text-white font-outfit font-semibold rounded-xl transition-all shadow-lg whitespace-nowrap">
-                      Get Started
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
+                  to donors.
+                </h1>
+                <p className={editorial.lede}>
+                  Four tiers, from a free two-week pilot to a white-labelled network deployment.
+                  What you pay for is volume and integration — never a donor&apos;s ability to
+                  answer an alert.
+                </p>
+                <div className={editorial.actions}>
+                  <Link href="/pilot" className={editorial.primaryAction}>
+                    Start a free pilot
+                    <ArrowUpRight aria-hidden="true" />
+                  </Link>
+                  <Link href="/contact" className={editorial.textAction}>
+                    Ask about a plan
+                    <ArrowUpRight aria-hidden="true" />
                   </Link>
                 </div>
-              </Card>
-            </ScrollReveal>
-
-            {/* Enterprise Tier */}
-            <ScrollReveal delay={0.4} className="h-full">
-              <Card className="glass-morphism relative grid grid-rows-[auto_1fr_auto] h-full min-h-[28rem]">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Crown className="w-8 h-8 text-yellow-600" />
-                  </div>
-                  <CardTitle>Enterprise</CardTitle>
-                  <div className="mt-4">
-                    <span className="text-4xl font-bold text-text-dark">Custom</span>
-                  </div>
-                  <CardDescription className="mt-2">Hospital Networks & Public Health</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1 space-y-4 px-6">
-                  <div>
-                    <p className="text-sm font-semibold text-text-dark mb-2">Ideal For:</p>
-                    <p className="text-sm text-text-dark/80">State health departments, hospital chains, CSR projects</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-text-dark mb-2">Includes:</p>
-                    <ul className="space-y-2 text-sm text-text-dark/80">
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>White-labeled dashboard</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Multi-location & multi-language</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Centralized AI screening engine</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Custom analytics & visualizations</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Dedicated onboarding & training</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>SLA-backed uptime & security</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>National health/CSR integrations</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                        <span>Custom API & SMS gateways</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="bg-yellow-500/10 rounded-lg p-3 mb-2">
-                    <p className="text-xs font-semibold text-text-dark mb-1">Pricing:</p>
-                    <p className="text-xs text-text-dark/80">₹50,000-75,000/month base + usage overages</p>
-                    <p className="text-xs text-text-dark/80 mt-1">Annual contract: ₹6-9 lakh/year</p>
-                    <p className="text-xs text-text-dark/80 mt-1">+ Implementation fee: ₹1-2 lakh</p>
-                  </div>
-                </CardContent>
-                <div className="px-6 pb-6">
-                  <Link href="/contact" className="block">
-                    <Button className="w-full h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:opacity-90 text-white font-outfit font-semibold rounded-xl transition-all whitespace-nowrap">
-                      Contact Sales
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-            </ScrollReveal>
-          </div>
-
-          {/* Comparison Table Section */}
-          <div className="mt-16">
-            <ScrollReveal>
-              <h2 className="text-3xl font-bold text-center mb-8 text-text-dark">Feature Comparison</h2>
-              <div className="glass-morphism rounded-2xl p-6 m-3 overflow-x-auto">
-                <table className="w-full text-left border-separate">
-                  <thead>
-                    <tr className="border-b border-mist-green/40">
-                      <th className="px-6 pb-4 text-text-dark font-semibold">Feature</th>
-                      <th className="px-6 pb-4 text-center text-text-dark font-semibold">Pilot</th>
-                      <th className="px-6 pb-4 text-center text-text-dark font-semibold">Free</th>
-                      <th className="px-6 pb-4 text-center text-primary font-semibold">Premium</th>
-                      <th className="px-6 pb-4 text-center text-text-dark font-semibold">Enterprise</th>
-                    </tr>
-                  </thead>
-                  <tbody className="space-y-6 ">
-                    <tr className="border-b border-mist-green/20">
-                      <td className="py-3 px-6 text-text-dark/80">AI Donor Verification</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">30 (trial)</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">30/month</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">1,200/month</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Unlimited</td>
-                    </tr>
-                    <tr className="border-b border-mist-green/20">
-                      <td className="py-3 px-6 text-text-dark/80">Blood Requests</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">2 (trial)</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">1/month</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Unlimited</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Unlimited</td>
-                    </tr>
-                    <tr className="border-b border-mist-green/20">
-                      <td className="py-3 px-6 text-text-dark/80">SMS Alerts</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Limited</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">30/month</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">1,000/month</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Unlimited</td>
-                    </tr>
-                    <tr className="border-b border-mist-green/20">
-                      <td className="py-3 px-6 text-text-dark/80">Email Alerts</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Limited</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">30/month</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">500/month</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Unlimited</td>
-                    </tr>
-                    <tr className="border-b border-mist-green/20">
-                      <td className="py-3 px-6 text-text-dark/80">Advanced Analytics</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Basic</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Basic</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">✓</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Custom</td>
-                    </tr>
-                    <tr className="border-b border-mist-green/20">
-                      <td className="py-3 px-6 text-text-dark/80">API Integration</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">-</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">-</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">✓</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Custom</td>
-                    </tr>
-                    <tr className="border-b border-mist-green/20">
-                      <td className="py-3 px-6 text-text-dark/80">Support</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Optional</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Community</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">2 hrs/month</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">Dedicated</td>
-                    </tr>
-                    <tr>
-                      <td className="py-3 px-6 text-text-dark/80">White-labeling</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">-</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">-</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">-</td>
-                      <td className="py-3 px-6 text-center text-text-dark/80">✓</td>
-                    </tr>
-                  </tbody>
-                </table>
               </div>
-            </ScrollReveal>
-          </div>
 
-          {/* CTA Section */}
-          <div className="mt-16 text-center">
-            <ScrollReveal>
-              <Card className="glass-morphism border-2 border-primary max-w-3xl mx-auto">
-                <CardContent>
-                  <h2 className="text-3xl font-bold mb-4 text-text-dark p-4">
-                    Not sure which plan is right for you?
-                  </h2>
-                  <p className="text-lg text-text-dark/80 mb-8">
-                    Our team is here to help you choose the perfect plan for your hospital's needs.
-                  </p>
-                  <Link href="/contact">
-                    <Button className="gradient-ruby hover:opacity-90 text-white font-outfit font-semibold py-6 px-8 rounded-xl text-lg shadow-lg hover:shadow-primary/50 transition-all duration-300">
-                      Contact Our Team
-                      <ArrowRight className="ml-2 w-5 h-5" />
-                    </Button>
+              <aside className={editorial.panel} aria-label="What is always free">
+                <div className={editorial.panelHeader}>
+                  <span>ALWAYS FREE</span>
+                  <span>NO TIER REQUIRED</span>
+                </div>
+                <div className={editorial.panelBody}>
+                  <ul className={styles.freeList}>
+                    {alwaysFree.map((item) => (
+                      <li key={item}>
+                        <Check aria-hidden="true" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className={editorial.panelFooter}>
+                  <span>THE RULE</span>
+                  <strong>Money never stands between a request and a donor.</strong>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- tiers ---------- */}
+        <section className={`${editorial.sectionTight} ${editorial.bandDeep}`}>
+          <div className={editorial.frame}>
+            <header className={editorial.sectionHeading}>
+              <p>FOUR TIERS / PICK BY VOLUME</p>
+              <h2 className={editorial.h2}>What each plan carries.</h2>
+            </header>
+
+            <div className={styles.tiers}>
+              {tiers.map((tier) => (
+                <article
+                  className={`${styles.tier} ${tier.featured ? styles.tierFeatured : ""}`}
+                  key={tier.code}
+                >
+                  <div
+                    className={`${styles.tierBar} ${tier.featured ? styles.tierBarFeatured : ""}`}
+                  >
+                    <span>{tier.code}</span>
+                    {tier.featured ? <span>MOST CHOSEN</span> : null}
+                  </div>
+
+                  <header className={styles.tierHead}>
+                    <h3>{tier.name}</h3>
+                    <div className={styles.price}>
+                      <strong>{tier.price}</strong>
+                      {tier.priceNote ? <span>{tier.priceNote}</span> : null}
+                    </div>
+                    <p className={styles.tierFor}>{tier.idealFor}</p>
+                  </header>
+
+                  <div className={styles.tierBody}>
+                    {tier.groups.map((group) => (
+                      <div className={styles.tierGroup} key={group.heading}>
+                        <p>{group.heading}</p>
+                        <ul>
+                          {group.items.map((item) => (
+                            <li key={item}>
+                              <Check aria-hidden="true" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+
+                    {tier.note ? (
+                      <div className={styles.tierNote}>
+                        <strong>{tier.note.heading}</strong>
+                        {tier.note.lines.map((line) => (
+                          <div key={line}>{line}</div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <Link
+                    href={tier.action.href}
+                    className={`${styles.tierAction} ${
+                      tier.featured ? styles.tierActionFeatured : ""
+                    }`}
+                  >
+                    {tier.action.label}
+                    <ArrowUpRight aria-hidden="true" />
                   </Link>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
+                </article>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Footer */}
-      <footer className="text-text-dark py-12 my-0 px-4 mx-0 bg-text-dark/95 backdrop-blur-md">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Heart className="w-6 h-6 text-slate-300" />
-                <span className="text-xl font-bold text-slate-300">
-                  Haemologix
-                </span>
-              </div>
-              <p className="text-gray-400">
-                Connecting lives through technology and compassion.
+        {/* ---------- comparison ---------- */}
+        <section className={`${editorial.section} ${editorial.bandInk}`}>
+          <div className={editorial.frame}>
+            <p className={editorial.darkEyebrow}>SIDE BY SIDE / SAME NUMBERS AS ABOVE</p>
+            <h2 className={editorial.h2}>Feature comparison.</h2>
+
+            <div className={styles.compareScroll}>
+              <table className={styles.compare}>
+                <thead>
+                  <tr>
+                    <th scope="col">Feature</th>
+                    <th scope="col">Pilot</th>
+                    <th scope="col">Free</th>
+                    <th scope="col" className={styles.featured}>
+                      Premium
+                    </th>
+                    <th scope="col">Enterprise</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparison.map((row) => (
+                    <tr key={row.feature}>
+                      <th scope="row">{row.feature}</th>
+                      <td>{row.pilot}</td>
+                      <td>{row.free}</td>
+                      <td className={styles.featured}>{row.premium}</td>
+                      <td>{row.enterprise}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- closing ---------- */}
+        <section className={`${editorial.closing} ${editorial.bandRuby}`}>
+          <div className={editorial.frame}>
+            <div className={editorial.closingBlock}>
+              <span className={editorial.label}>HAEMOLOGIX / PRICING</span>
+              <h2>Not sure which tier fits?</h2>
+              <p>
+                Tell us how many requests you raise in a month and we will point at the right
+                plan — including when the free one is enough.
               </p>
-            </div>
-            <div>
-              <h4 className="font-outfit font-semibold mb-4 text-background">Platform</h4>
-              <ul className="space-y-2 text-background/80 font-dm-sans">
-                <li>
-                  <Link href="/donor" className="hover:text-white">
-                    Donor Dashboard
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/hospital" className="hover:text-white">
-                    Hospital Portal
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/admin" className="hover:text-white">
-                    Admin Panel
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-outfit font-semibold mb-4 text-background">Support</h4>
-              <ul className="space-y-2 text-background/80 font-dm-sans">
-                <li>
-                  <Link href="/faq" className="hover:text-white">
-                    Help Center
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-white">
-                    Contact Us
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Emergency
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-outfit font-semibold mb-4 text-background">Legal</h4>
-              <ul className="space-y-2 text-background/80 font-dm-sans">
-                <li>
-                  <Link href="/privacy-policy" className="hover:text-white">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms-and-conditions" className="hover:text-white">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/privacy-policy" className="hover:text-white">
-                    DPDPA Compliance
-                  </Link>
-                </li>
-              </ul>
+              <Link href="/contact" className={editorial.lightAction}>
+                Talk to the team
+                <ArrowUpRight aria-hidden="true" />
+              </Link>
             </div>
           </div>
-          <div className="border-t border-background/30 mt-8 pt-8 text-center text-background/70 font-dm-sans">
-            <p>
-              &copy; {new Date().getFullYear()} Haemologix Pvt. Ltd. All rights reserved. Built for saving
-              lives.
-            </p>
-          </div>
-          {/* Back to Top */}
-          <div className="flex justify-center mt-6">
-            <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex items-center gap-1 text-sm text-background/60 hover:text-white transition"
-            >
-              <ArrowUp className="w-4 h-4" />
-                  Back to Top
-            </button>
-          </div>
-        </div>
-      </footer>
-    </GradientBackground>
+        </section>
+      </main>
+
+      <EditorialFooter />
+    </div>
   );
 }

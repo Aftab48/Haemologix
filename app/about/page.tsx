@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Building2, Droplets, HeartHandshake, MapPin, ShieldAlert, Zap } from "lucide-react";
-import GradientBackground from "@/components/GradientBackground";
+import {
+  ArrowUpRight,
+  Building2,
+  Droplet,
+  Droplets,
+  Plus,
+  Users,
+} from "lucide-react";
 import Header from "@/components/Header";
+import EditorialFooter from "@/components/EditorialFooter";
 import { ORG, SITE_URL, absoluteUrl } from "@/lib/seo";
+import editorial from "@/styles/editorial.module.css";
+import styles from "./about.module.css";
 
 // Plain-language, fully server-rendered explanation of what Haemologix is —
 // written for search engines and AI assistants as much as for people. Keep the
@@ -51,6 +58,33 @@ const faqs = [
   },
 ];
 
+const audiences = [
+  {
+    code: "HOSPITALS",
+    icon: Building2,
+    title: "For hospitals",
+    copy: "Raise emergency blood requests, set urgency and radius, and track donor responses live.",
+    href: "/hospital/register",
+    action: "Register a hospital",
+  },
+  {
+    code: "BLOOD BANKS",
+    icon: Droplets,
+    title: "For blood banks",
+    copy: "Manage inventory, broadcast shortages and mobilise donors before stock runs out.",
+    href: "/bloodbank/register",
+    action: "Register a blood bank",
+  },
+  {
+    code: "DONORS",
+    icon: Users,
+    title: "For donors",
+    copy: "Get alerted only when your blood group is needed near you, and respond in seconds.",
+    href: "/donor/onboard",
+    action: "Register as a donor",
+  },
+];
+
 const aboutJsonLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -78,187 +112,264 @@ const aboutJsonLd = {
 
 export default function AboutPage() {
   return (
-    <GradientBackground>
-      <Header activePage="about" />
+    <div className={editorial.page}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }}
       />
-      <div className="container mx-auto max-w-4xl py-20 px-4">
-        <header className="text-center mb-12">
-          <Droplets className="w-16 h-16 text-red-600 mx-auto mb-4" />
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-primary">
-            About Haemologix
-          </h1>
-          <p className="text-xl text-text-dark/80 max-w-3xl mx-auto">
-            {ORG.description}
-          </p>
-        </header>
+      <Header activePage="about" variant="editorial" />
 
-        <Card className="mb-8">
-          <CardContent className="p-8 space-y-4 text-text-dark/90 leading-relaxed">
-            <h2 className="text-3xl font-bold flex items-center gap-3">
-              <HeartHandshake className="w-8 h-8 text-red-600" />
-              What Haemologix does
-            </h2>
-            <p>
-              Haemologix (Haemologix Private Limited) is a real-time emergency blood
-              network for India. When a hospital or blood bank runs short of a blood
-              group, plasma or platelets, it raises an alert on Haemologix. The
-              platform matches that request against registered, eligible donors by
-              blood group, distance and availability, and notifies them instantly by
-              SMS, email and in-app notification. Donors confirm in a tap, and the
-              hospital sees who is coming and when.
-            </p>
-            <p>
-              The goal is simple: cut the time between &ldquo;we need blood&rdquo; and
-              &ldquo;a matched donor is on the way&rdquo; from hours of phone calls
-              and social-media appeals to minutes.
-            </p>
-          </CardContent>
-        </Card>
+      <main>
+        {/* ---------- hero ---------- */}
+        <section className={editorial.hero}>
+          <div className={editorial.frame}>
+            <div className={editorial.metaBar}>
+              <span>ABOUT / HAEMOLOGIX</span>
+              <span>HOWRAH · INDIA</span>
+              <span>HLX—ABOUT—01</span>
+            </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <Building2 className="w-8 h-8 text-red-600 mb-3" />
-              <h3 className="text-xl font-semibold mb-2">For hospitals</h3>
-              <p className="text-text-dark/80 text-sm">
-                Raise emergency blood requests, set urgency and radius, and track
-                donor responses live.{" "}
-                <Link href="/hospital/register" className="text-primary underline">
-                  Register a hospital
-                </Link>
-                .
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <Zap className="w-8 h-8 text-red-600 mb-3" />
-              <h3 className="text-xl font-semibold mb-2">For blood banks</h3>
-              <p className="text-text-dark/80 text-sm">
-                Manage inventory, broadcast shortages and mobilise donors before
-                stock runs out.{" "}
-                <Link href="/bloodbank/register" className="text-primary underline">
-                  Register a blood bank
-                </Link>
-                .
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <Droplets className="w-8 h-8 text-red-600 mb-3" />
-              <h3 className="text-xl font-semibold mb-2">For donors</h3>
-              <p className="text-text-dark/80 text-sm">
-                Get alerted only when your blood group is needed near you, and
-                respond in seconds.{" "}
-                <Link href="/donor/onboard" className="text-primary underline">
-                  Register as a donor
-                </Link>
-                .
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+            <div className={styles.heroGrid}>
+              <div>
+                <p className={editorial.eyebrow}>THE COMPANY, THE PRODUCT, THE ADDRESS</p>
+                <h1 className={editorial.display}>
+                  About
+                  <span className={editorial.slab}>
+                    Haemologix
+                    <Droplet aria-hidden="true" />
+                  </span>
+                  in plain words.
+                </h1>
+                <p className={editorial.lede}>{ORG.description}</p>
+                <div className={editorial.actions}>
+                  <Link href="/donor/onboard" className={editorial.primaryAction}>
+                    Register as a donor
+                    <ArrowUpRight aria-hidden="true" />
+                  </Link>
+                  <Link href="/contact" className={editorial.textAction}>
+                    Talk to the team
+                    <ArrowUpRight aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
 
-        <Card className="mb-8">
-          <CardContent className="p-8 space-y-3 text-text-dark/90">
-            <h2 className="text-3xl font-bold flex items-center gap-3">
-              <MapPin className="w-8 h-8 text-red-600" />
-              Where we are
-            </h2>
-            <p>
-              Haemologix Private Limited is incorporated in India (CIN {ORG.cin}) with
-              its registered office in {ORG.address.locality}, {ORG.address.region}.
-              We work with hospitals, blood banks and donors across India.
-            </p>
-            <p>
-              Contact:{" "}
-              <a href={`mailto:${ORG.email}`} className="text-primary underline">
-                {ORG.email}
-              </a>{" "}
-              ·{" "}
-              <Link href="/contact" className="text-primary underline">
-                Contact page
-              </Link>{" "}
-              ·{" "}
-              <Link href="/team" className="text-primary underline">
-                Meet the team
-              </Link>
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="mb-8 border-amber-300 bg-amber-50/60">
-          <CardContent className="p-8 space-y-3 text-text-dark/90">
-            <h2 className="text-2xl font-bold flex items-center gap-3">
-              <ShieldAlert className="w-7 h-7 text-amber-700" />
-              Not to be confused with HaemaLogiX
-            </h2>
-            <p>{ORG.disambiguatingDescription}</p>
-            <p className="text-sm text-text-dark/70">
-              If you were looking for information about multiple myeloma
-              immunotherapies or clinical trials, that is HaemaLogiX Ltd, Sydney,
-              Australia — not us. If you need blood, want to donate blood, or run a
-              hospital or blood bank in India, you are in the right place.
-            </p>
-          </CardContent>
-        </Card>
-
-        <section className="mb-12">
-          <h2 className="text-3xl font-bold mb-2">Frequently asked questions</h2>
-          <p className="text-text-dark/70 mb-6">
-            Questions about eligibility, alerts, pricing and privacy are answered
-            on the{" "}
-            <Link href="/faq" className="text-primary underline">
-              full FAQ page
-            </Link>
-            .
-          </p>
-          <div className="space-y-4">
-            {faqs.map(({ q, a }) => (
-              <details
-                key={q}
-                className="group rounded-lg border border-slate-300/40 bg-white/60 p-4"
-              >
-                <summary className="cursor-pointer font-semibold text-lg">
-                  {q}
-                </summary>
-                <p className="mt-2 text-text-dark/80">{a}</p>
-              </details>
-            ))}
+              <aside className={editorial.panel} aria-label="Company record">
+                <div className={editorial.panelHeader}>
+                  <span>ON THE RECORD</span>
+                  <span>REGISTERED ENTITY</span>
+                </div>
+                <div className={editorial.panelBody}>
+                  <dl className={styles.record}>
+                    <div>
+                      <dt>Legal name</dt>
+                      <dd>{ORG.legalName}</dd>
+                    </div>
+                    <div>
+                      <dt>CIN</dt>
+                      <dd>{ORG.cin}</dd>
+                    </div>
+                    <div>
+                      <dt>Registered office</dt>
+                      <dd>
+                        {ORG.address.locality}, {ORG.address.region} {ORG.address.postalCode}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Incorporated</dt>
+                      <dd>{ORG.foundingDate}</dd>
+                    </div>
+                    <div>
+                      <dt>Operating area</dt>
+                      <dd>India</dd>
+                    </div>
+                    <div>
+                      <dt>Contact</dt>
+                      <dd>
+                        <a href={`mailto:${ORG.email}`}>{ORG.email}</a>
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+                <div className={editorial.panelFooter}>
+                  <span>ALSO SEE</span>
+                  <strong>
+                    <Link href="/team">The team</Link> · <Link href="/impact">Impact</Link>
+                  </strong>
+                </div>
+              </aside>
+            </div>
           </div>
         </section>
 
-        <Card className="bg-red-50/50 border-red-200">
-          <CardContent className="p-8 text-center">
-            <h2 className="text-3xl font-bold mb-4">Join the network</h2>
-            <p className="text-lg text-text-dark/80 mb-6">
-              Every registered donor shortens the time it takes to find blood in an
-              emergency.
+        {/* ---------- what it does ---------- */}
+        <section className={`${editorial.section} ${editorial.bandTeal}`}>
+          <div className={editorial.frame}>
+            <header className={editorial.sectionHeading}>
+              <p>WHAT HAEMOLOGIX DOES</p>
+              <h2 className={editorial.h2}>One request, matched and answered.</h2>
+            </header>
+
+            <div className={styles.explain}>
+              <div>
+                <p>
+                  Haemologix ({ORG.legalName}) is a real-time emergency blood network for India.
+                  When a hospital or blood bank runs short of a blood group, plasma or platelets,
+                  it raises an alert on Haemologix. The platform matches that request against
+                  registered, eligible donors by blood group, distance and availability, and
+                  notifies them instantly by SMS, email and in-app notification.
+                </p>
+                <p>
+                  Donors confirm in a tap, and the hospital sees who is coming and when. Nothing
+                  in the chain waits on someone remembering to make the next phone call.
+                </p>
+              </div>
+              <div className={styles.pull}>
+                <strong>
+                  The goal is simple: cut the time between &ldquo;we need blood&rdquo; and
+                  &ldquo;a matched donor is on the way&rdquo; from hours to minutes.
+                </strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- who it is for ---------- */}
+        <section className={`${editorial.sectionTight} ${editorial.bandDeep}`}>
+          <div className={editorial.frame}>
+            <header className={editorial.sectionHeading}>
+              <p>WHO IT IS FOR</p>
+              <h2 className={editorial.h2}>Three sides of the same minute.</h2>
+            </header>
+
+            <ul className={`${editorial.cardGrid} ${editorial.cols3}`}>
+              {audiences.map((audience) => (
+                <li key={audience.code} className={styles.audience}>
+                  <span className={editorial.code}>{audience.code}</span>
+                  <div>
+                    <h3 className={editorial.h3}>{audience.title}</h3>
+                    <p>{audience.copy}</p>
+                    <Link href={audience.href}>
+                      {audience.action}
+                      <ArrowUpRight aria-hidden="true" />
+                    </Link>
+                  </div>
+                  <audience.icon aria-hidden="true" className={editorial.cardIcon} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* ---------- disambiguation ---------- */}
+        <section className={`${editorial.section} ${editorial.bandInk}`}>
+          <div className={editorial.frame}>
+            <p className={editorial.darkEyebrow}>DISAMBIGUATION / TWO DIFFERENT COMPANIES</p>
+            <h2 className={editorial.h2}>Not to be confused with HaemaLogiX.</h2>
+
+            <div className={styles.split}>
+              <div className={styles.splitSide}>
+                <span className={`${styles.splitTag} ${styles.splitTagUs}`}>YOU ARE HERE</span>
+                <h3>Haemologix</h3>
+                <dl>
+                  <div>
+                    <dt>Domain</dt>
+                    <dd>haemologix.in</dd>
+                  </div>
+                  <div>
+                    <dt>Based in</dt>
+                    <dd>Howrah, West Bengal, India</dd>
+                  </div>
+                  <div>
+                    <dt>Field</dt>
+                    <dd>Emergency blood-donation coordination</dd>
+                  </div>
+                  <div>
+                    <dt>Serves</dt>
+                    <dd>Hospitals, blood banks and donors</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div className={styles.splitSide}>
+                <span className={`${styles.splitTag} ${styles.splitTagThem}`}>UNRELATED</span>
+                <h3>HaemaLogiX</h3>
+                <dl>
+                  <div>
+                    <dt>Domain</dt>
+                    <dd>haemalogix.com</dd>
+                  </div>
+                  <div>
+                    <dt>Based in</dt>
+                    <dd>Sydney, Australia</dd>
+                  </div>
+                  <div>
+                    <dt>Field</dt>
+                    <dd>Clinical-stage biotech, blood-cancer immunotherapies</dd>
+                  </div>
+                  <div>
+                    <dt>Serves</dt>
+                    <dd>Clinical trials and research</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+
+            <p className={styles.splitNote}>
+              If you were looking for multiple myeloma immunotherapies or clinical trials, that is
+              HaemaLogiX Ltd, Sydney. If you need blood, want to donate blood, or run a hospital
+              or blood bank in India, you are in the right place.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/donor/onboard">
-                <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white">
-                  Register as a Donor
-                </Button>
-              </Link>
-              <Link href="/hospital/register">
-                <Button size="lg" variant="outline">
-                  Register a Hospital
-                </Button>
-              </Link>
-              <Link href="/emergency-blood">
-                <Button size="lg" variant="outline">
-                  Emergency Blood
-                </Button>
+          </div>
+        </section>
+
+        {/* ---------- faq ---------- */}
+        <section className={editorial.section}>
+          <div className={editorial.frame}>
+            <div className={styles.faqGrid}>
+              <div className={styles.faqIntro}>
+                <p className={editorial.eyebrow}>IDENTITY QUESTIONS</p>
+                <h2 className={editorial.h2}>Asked often.</h2>
+                <p>
+                  Eligibility, alerts, pricing and privacy are answered on the{" "}
+                  <Link href="/faq">full FAQ page</Link>.
+                </p>
+              </div>
+
+              <div className={editorial.accordion}>
+                {faqs.map(({ q, a }) => (
+                  <details className={editorial.accordionItem} key={q}>
+                    <summary>
+                      {q}
+                      <Plus aria-hidden="true" />
+                    </summary>
+                    <p>{a}</p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- closing ---------- */}
+        <section className={`${editorial.closing} ${editorial.bandRuby}`}>
+          <div className={editorial.frame}>
+            <div className={editorial.closingBlock}>
+              <span className={editorial.label}>HAEMOLOGIX / JOIN</span>
+              <h2>Every donor shortens the search.</h2>
+              <p>
+                One more registered donor is one more phone that lights up when a group runs
+                short nearby.
+              </p>
+              <Link href="/donor/onboard" className={editorial.lightAction}>
+                Register as a donor
+                <ArrowUpRight aria-hidden="true" />
               </Link>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </GradientBackground>
+          </div>
+        </section>
+      </main>
+
+      <EditorialFooter />
+    </div>
   );
 }

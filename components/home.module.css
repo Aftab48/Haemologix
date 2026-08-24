@@ -1,0 +1,387 @@
+/* Home-specific structure. Shared primitives live in styles/editorial.module.css. */
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(390px, 0.68fr);
+  gap: 72px;
+  align-items: center;
+  padding-top: 64px;
+}
+
+.heroActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.heroActions a,
+.heroActions button {
+  width: 100%;
+}
+
+.heroFootnote {
+  margin: 26px 0 0;
+  color: rgba(32, 36, 53, 0.55);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/*
+ * The clock: the home page's argument in one object. Each stop carries the
+ * elapsed time at which it happens, because the elapsed time is the product.
+ */
+.clockRow {
+  display: grid;
+  grid-template-columns: 62px 34px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.clockTime {
+  color: var(--ruby, #9b2226);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.clockDot {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #202435;
+  color: #202435;
+  background: #edf2ef;
+}
+
+.clockDot svg {
+  width: 16px;
+  height: 16px;
+}
+
+.clockDotRuby {
+  color: white;
+  border-color: #9b2226;
+  background: #9b2226;
+}
+
+.clockDotTeal {
+  color: white;
+  border-color: #005f73;
+  background: #005f73;
+}
+
+.clockRow strong,
+.clockRow small {
+  display: block;
+}
+
+.clockRow strong {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.clockRow small {
+  margin-top: 2px;
+  color: rgba(32, 36, 53, 0.62);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.clockLink {
+  position: relative;
+  min-height: 42px;
+  margin-left: 77px;
+  border-left: 2px dotted rgba(32, 36, 53, 0.36);
+}
+
+.clockLink span {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  color: rgba(32, 36, 53, 0.5);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: translateY(-50%);
+}
+
+/* ---------- numbers ---------- */
+
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 40px;
+  border: 1px solid #202435;
+  background: #202435;
+}
+
+.numbers > div {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 30px 26px 34px;
+  background: #f7faf8;
+}
+
+.numbers span {
+  color: rgba(32, 36, 53, 0.55);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.numbers strong {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(52px, 5.4vw, 82px);
+  font-weight: 800;
+  line-height: 0.86;
+  letter-spacing: -0.04em;
+}
+
+.numbers small {
+  color: rgba(32, 36, 53, 0.62);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---------- sequence ---------- */
+
+.sequence {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  margin: 46px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.sequence li {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  padding: 34px 24px 40px;
+  background: #202435;
+}
+
+.sequence li > span {
+  color: #94d2bd;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+.sequence h3 {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.sequence p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ---------- contact sheet marquee ---------- */
+
+.sheet {
+  position: relative;
+  width: 100%;
+  margin-top: 48px;
+  overflow: hidden;
+  transform: rotate(-1deg) scale(1.03);
+}
+
+.sheetRow {
+  display: flex;
+  width: max-content;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.sheetRow:last-child {
+  margin-bottom: 0;
+}
+
+.scrollLeft {
+  animation: sheet-left 62s linear infinite;
+}
+
+.scrollRight {
+  animation: sheet-right 62s linear infinite;
+}
+
+.sheet:hover .scrollLeft,
+.sheet:hover .scrollRight {
+  animation-play-state: paused;
+}
+
+@keyframes sheet-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes sheet-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.tile {
+  position: relative;
+  width: 288px;
+  height: 178px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid #202435;
+  background: #202435;
+}
+
+.tile img {
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.08);
+  transition: filter 400ms ease, transform 500ms ease;
+}
+
+.tile:hover img {
+  filter: grayscale(0) contrast(1);
+  transform: scale(1.04);
+}
+
+.tileCaption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 30px 14px 12px;
+  background: linear-gradient(to top, rgba(20, 23, 34, 0.94), transparent);
+}
+
+.tileCaption span {
+  display: block;
+  margin-bottom: 3px;
+  color: #94d2bd;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tileCaption strong {
+  color: white;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.sheetFade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 120px;
+  pointer-events: none;
+}
+
+.sheetFadeLeft {
+  left: 0;
+  background: linear-gradient(to right, #edf2ef, transparent);
+}
+
+.sheetFadeRight {
+  right: 0;
+  background: linear-gradient(to left, #edf2ef, transparent);
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 1100px) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 58px;
+  }
+
+  .numbers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sequence {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .heroGrid {
+    padding-top: 40px;
+  }
+
+  .heroActions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .numbers {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sequence {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sheet {
+    margin-top: 36px;
+  }
+
+  .tile {
+    width: 232px;
+    height: 148px;
+  }
+
+  .sheetFade {
+    width: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollLeft,
+  .scrollRight {
+    animation: none;
+  }
+
+  .sheet {
+    overflow-x: auto;
+  }
+
+  .tile img {
+    transition: none;
+  }
+}

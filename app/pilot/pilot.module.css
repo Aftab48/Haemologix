@@ -1,0 +1,365 @@
+/* Pilot-specific structure. Shared primitives: styles/editorial.module.css */
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.52fr);
+  gap: 72px;
+  align-items: center;
+  padding-top: 64px;
+}
+
+/* The scan card: a QR code is a physical object, so it gets a physical frame. */
+.scanCard {
+  display: grid;
+  gap: 0;
+  border: 1px solid #202435;
+  background: white;
+  box-shadow: 18px 18px 0 #94d2bd;
+}
+
+.scanHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 16px;
+  color: white;
+  background: #202435;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.scanBody {
+  display: grid;
+  place-items: center;
+  padding: 30px;
+}
+
+.scanBody img {
+  width: 100%;
+  max-width: 268px;
+  height: auto;
+}
+
+.scanFoot {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 15px 18px;
+  border-top: 1px solid #202435;
+  background: #dfe8e3;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.scanFoot strong {
+  font-family: "DM Sans", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-align: right;
+  text-transform: none;
+}
+
+/* ---------- what the pilot is ---------- */
+
+.termsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.termsGrid > div {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 28px 24px 32px;
+  background: #005f73;
+}
+
+.termsGrid dt {
+  color: #94d2bd;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.termsGrid dd {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.termsGrid p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ---------- inclusions ---------- */
+
+.inclusions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 44px 0 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid #202435;
+  background: #202435;
+}
+
+.inclusions li {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 22px 24px;
+  background: #f7faf8;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.inclusions li svg {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  color: #9b2226;
+}
+
+/* ---------- form ---------- */
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 0.45fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.formIntro p {
+  margin: 22px 0 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.formIntro ul {
+  display: grid;
+  gap: 11px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.formIntro li {
+  display: grid;
+  grid-template-columns: 15px 1fr;
+  gap: 11px;
+  align-items: start;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.formIntro li svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 3px;
+  color: #94d2bd;
+}
+
+.form {
+  display: grid;
+  gap: 24px;
+  padding: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  /* The card is white but sits on the ink band, which sets color: white on the
+     section. Without this reset every label inherits white on white. */
+  color: #202435;
+  background: white;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.choice {
+  display: flex;
+  gap: 12px;
+}
+
+.choiceOption {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border: 1px solid #202435;
+  cursor: pointer;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.choiceOption:hover {
+  background: #dfe8e3;
+}
+
+.choiceOption input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.choiceOptionOn,
+.choiceOptionOn:hover {
+  color: white;
+  background: #202435;
+}
+
+.choiceOption:focus-within {
+  outline: 3px solid #9b2226;
+  outline-offset: 3px;
+}
+
+/* ---------- faq ---------- */
+
+.faqGrid {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.faqIntro p {
+  margin: 20px 0 0;
+  color: rgba(32, 36, 53, 0.65);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+/* ---------- closing scan ---------- */
+
+.closingScan {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 56px;
+  align-items: center;
+}
+
+.closingScan h2 {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(46px, 4.8vw, 74px);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.closingScan > div > p {
+  max-width: 560px;
+  margin: 22px 0 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.closingActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 34px;
+}
+
+.closingQr {
+  width: 210px;
+  padding: 14px;
+  border: 1px solid white;
+  background: white;
+}
+
+.closingQr img {
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 1100px) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 56px;
+  }
+
+  .termsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .formGrid,
+  .faqGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+}
+
+@media (max-width: 760px) {
+  .heroGrid {
+    padding-top: 40px;
+  }
+
+  .scanCard {
+    width: calc(100% - 12px);
+    box-shadow: 12px 12px 0 #94d2bd;
+  }
+
+  .termsGrid,
+  .inclusions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form {
+    padding: 24px 20px;
+  }
+
+  .formRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .closingScan {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 34px;
+  }
+
+  .closingQr {
+    width: 168px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .choiceOption {
+    transition: none;
+  }
+}

@@ -1,0 +1,715 @@
+/* Impact-specific structure. Shared primitives: styles/editorial.module.css */
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(350px, 0.6fr);
+  gap: 72px;
+  align-items: center;
+  padding-top: 64px;
+}
+
+.headline {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  border-top: 1px solid rgba(32, 36, 53, 0.22);
+}
+
+.headline > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(32, 36, 53, 0.14);
+}
+
+.headline > div:last-child {
+  border-bottom: 0;
+}
+
+.headline dt {
+  color: rgba(32, 36, 53, 0.6);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.headline dd {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* ---------- contents rail ---------- */
+
+.rail {
+  position: sticky;
+  top: 80px;
+  z-index: 20;
+  border-top: 1px solid #202435;
+  border-bottom: 1px solid #202435;
+  background: #edf2ef;
+}
+
+.railInner {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.railInner::-webkit-scrollbar {
+  display: none;
+}
+
+.railInner a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 22px;
+  border-right: 1px solid rgba(32, 36, 53, 0.18);
+  color: rgba(32, 36, 53, 0.72);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.railInner a:first-child {
+  border-left: 1px solid rgba(32, 36, 53, 0.18);
+}
+
+.railInner a:hover {
+  color: white;
+  background: #9b2226;
+}
+
+.railInner a b {
+  color: #9b2226;
+  font-weight: 700;
+}
+
+.railInner a:hover b {
+  color: #94d2bd;
+}
+
+/* ---------- big numbers ---------- */
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 44px;
+  border: 1px solid #202435;
+  background: #202435;
+}
+
+.figures > div {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 30px 24px 34px;
+  background: #f7faf8;
+}
+
+.figures span {
+  color: rgba(32, 36, 53, 0.55);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.figures strong {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(48px, 5vw, 76px);
+  font-weight: 800;
+  line-height: 0.86;
+  letter-spacing: -0.04em;
+}
+
+.figures small {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  color: white;
+  background: #005f73;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- paired reading panels ---------- */
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 44px;
+  border: 1px solid #202435;
+  background: #202435;
+}
+
+.pair > section {
+  padding: 30px 28px 34px;
+  background: #f7faf8;
+}
+
+.pair h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 22px;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.pair h3 svg {
+  width: 20px;
+  height: 20px;
+  color: #9b2226;
+}
+
+.pair dl {
+  display: grid;
+  margin: 0;
+  border-top: 1px solid rgba(32, 36, 53, 0.2);
+}
+
+.pair dl > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(32, 36, 53, 0.14);
+}
+
+.pair dl > div:last-child {
+  border-bottom: 0;
+}
+
+.pair dt {
+  color: rgba(32, 36, 53, 0.68);
+  font-size: 14px;
+}
+
+.pair dd {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pair dd i {
+  color: rgba(32, 36, 53, 0.5);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- before / after ---------- */
+
+.delta {
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.deltaRow {
+  display: grid;
+  grid-template-columns: 0.9fr 0.8fr 44px 0.8fr 0.55fr;
+  gap: 26px;
+  align-items: center;
+  padding: 28px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.deltaRow h3 {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.deltaCell span {
+  display: block;
+  margin-bottom: 5px;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.deltaCell strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.deltaBefore strong {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: line-through;
+  text-decoration-color: rgba(155, 34, 38, 0.9);
+  text-decoration-thickness: 2px;
+}
+
+.deltaAfter strong {
+  color: #94d2bd;
+}
+
+.deltaArrow {
+  width: 22px;
+  height: 22px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.deltaGain {
+  width: fit-content;
+  padding: 7px 9px;
+  color: #005f73;
+  background: #94d2bd;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* ---------- quotes ---------- */
+
+.quotes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.quotes figure {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  margin: 0;
+  padding: 30px 26px 32px;
+  background: #005f73;
+}
+
+.quotes blockquote {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.12;
+  text-transform: uppercase;
+}
+
+.quotes figcaption {
+  color: #94d2bd;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------- goals with meters ---------- */
+
+.goals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.goal {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  padding: 30px 28px 34px;
+  background: #202435;
+}
+
+.goalTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.goal h3 {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.goal p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.meter {
+  display: grid;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.meterLabels {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.meterTrack {
+  height: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.meterFill {
+  height: 100%;
+  background: #94d2bd;
+}
+
+/* ---------- phase timeline ---------- */
+
+.phases {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin: 46px 0 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.phases li {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  padding: 28px 24px 32px;
+  background: #202435;
+}
+
+.phaseTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.phaseDot {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.phaseDotDone {
+  background: #94d2bd;
+}
+
+.phaseDotLive {
+  background: #9b2226;
+}
+
+.phases h3 {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.phases ul {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.phases ul li {
+  display: grid;
+  grid-template-columns: 13px 1fr;
+  gap: 9px;
+  align-items: start;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  line-height: 1.5;
+  background: transparent;
+}
+
+.phases ul li svg {
+  width: 13px;
+  height: 13px;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.phases ul li.done svg {
+  color: #94d2bd;
+}
+
+/* ---------- partners ---------- */
+
+.partner h3 {
+  margin: 0 0 14px;
+}
+
+.partnerTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.partnerTags span {
+  padding: 5px 8px;
+  border: 1px solid rgba(32, 36, 53, 0.28);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.partner p {
+  margin: 0;
+}
+
+/* ---------- challenges ---------- */
+
+.challenge {
+  display: grid;
+  grid-template-columns: 0.85fr 1fr 1fr;
+  gap: 34px;
+  align-items: start;
+  padding: 34px 0;
+  border-bottom: 1px solid rgba(32, 36, 53, 0.2);
+}
+
+.challenge:first-child {
+  border-top: 1px solid #202435;
+}
+
+.challengeHead h3 {
+  margin: 0 0 12px;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.02;
+  text-transform: uppercase;
+}
+
+.priority {
+  width: fit-content;
+  padding: 6px 8px;
+  color: white;
+  background: rgba(32, 36, 53, 0.75);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.priorityCritical {
+  background: #9b2226;
+}
+
+.priorityHigh {
+  background: #005f73;
+}
+
+.challenge p {
+  margin: 0;
+  color: rgba(32, 36, 53, 0.7);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.solution {
+  padding: 18px 20px;
+  border-left: 6px solid #005f73;
+  background: rgba(0, 95, 115, 0.08);
+}
+
+.solution span {
+  display: block;
+  margin-bottom: 8px;
+  color: #005f73;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---------- outlook ---------- */
+
+.outlook {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.outlook > div {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+  padding: 32px 30px 36px;
+  background: #202435;
+}
+
+.outlook h3 {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.outlook ul {
+  display: grid;
+  gap: 13px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.outlook li {
+  display: grid;
+  grid-template-columns: 15px 1fr;
+  gap: 11px;
+  align-items: start;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.outlook li svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 3px;
+  color: #94d2bd;
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 1100px) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 56px;
+  }
+
+  .figures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .phases {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quotes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .deltaRow {
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .deltaRow h3 {
+    grid-column: 1 / -1;
+  }
+
+  .deltaArrow {
+    display: none;
+  }
+
+  .challenge {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 760px) {
+  .heroGrid {
+    padding-top: 40px;
+  }
+
+  .rail {
+    top: 72px;
+  }
+
+  .figures,
+  .pair,
+  .goals,
+  .phases,
+  .outlook {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .deltaRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .railInner a {
+    transition: none;
+  }
+}

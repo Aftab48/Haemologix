@@ -1,31 +1,70 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Heart, 
-  Phone, 
-  MapPin, 
-  Clock, 
-  Mail, 
-  Send, 
-  MessageCircle,
-  Layers,
-  Headphones,
-  ShieldCheck,
-  ArrowUp 
-} from "lucide-react";
-
 import Link from "next/link";
-import Image from "next/image";
-import GradientBackground from "@/components/GradientBackground";
+import {
+  ArrowUpRight,
+  Check,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Send,
+} from "lucide-react";
 import Header from "@/components/Header";
-import ScrollReveal from "@/components/ScrollReveal";
+import EditorialFooter from "@/components/EditorialFooter";
+import editorial from "@/styles/editorial.module.css";
+import styles from "./contact.module.css";
+
+// Metadata lives in ./layout.tsx.
+
+const channels = [
+  {
+    code: "EMAIL",
+    icon: Mail,
+    title: "Email",
+    copy: "Best for partnership enquiries, pilots and anything with detail attached.",
+    links: [{ href: "mailto:founders@haemologix.in", label: "founders@haemologix.in" }],
+    note: "Replies within one working day",
+  },
+  {
+    code: "PHONE",
+    icon: Phone,
+    title: "Phone",
+    copy: "For urgent blood requests and anything a hospital needs resolved now.",
+    links: [
+      { href: "tel:+919903776046", label: "+91 99037 76046" },
+      { href: "tel:+919874712191", label: "+91 98747 12191" },
+    ],
+    note: "Emergency line staffed 24/7",
+  },
+  {
+    code: "WHATSAPP",
+    icon: MessageCircle,
+    title: "WhatsApp",
+    copy: "Quick questions, screenshots and follow-ups on an existing request.",
+    links: [{ href: "https://wa.me/919903776046", label: "Chat on WhatsApp" }],
+    note: "+91 99037 76046",
+  },
+];
+
+const hours = [
+  {
+    label: "Emergency",
+    value: "24 / 7",
+    copy: "Blood requests are answered at any hour, every day of the year.",
+  },
+  {
+    label: "Office",
+    value: "Mon–Fri",
+    copy: "09:00 to 18:00 IST for partnerships, billing and onboarding.",
+  },
+  {
+    label: "Weekend",
+    value: "Sat–Sun",
+    copy: "10:00 to 16:00 IST for non-urgent questions and support.",
+  },
+];
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -59,7 +98,8 @@ export default function ContactPage() {
       if (data.success) {
         setSubmitStatus({
           type: "success",
-          message: data.message || "Thank you for contacting us! We'll get back to you soon.",
+          message:
+            data.message || "Thank you for contacting us! We'll get back to you soon.",
         });
         // Reset form
         setFormData({
@@ -78,7 +118,8 @@ export default function ContactPage() {
       console.error("Error submitting contact form:", error);
       setSubmitStatus({
         type: "error",
-        message: "Failed to send message. Please try again later or contact us directly.",
+        message:
+          "Failed to send message. Please try again later or contact us directly.",
       });
     } finally {
       setIsSubmitting(false);
@@ -86,424 +127,307 @@ export default function ContactPage() {
   };
 
   return (
-    <GradientBackground>
-      {/* Header */}
-      <Header activePage="contact" />
+    <div className={editorial.page}>
+      <Header activePage="contact" variant="editorial" />
 
-      {/* Contact Section */}
-      <section className="py-20 px-4 bg-white/5 backdrop-blur-[2px]">
-        <div className="container mx-auto max-w-6xl">
-          <ScrollReveal>
-            <div className="text-center mb-16">
-              <h1 className="text-5xl md:text-6xl font-bold mb-6 text-text-dark">
-                Contact Us
-              </h1>
-              <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
-                Get in touch with our team for emergency support, partnerships, or
-                general inquiries about Haemologix.
-              </p>
+      <main>
+        {/* ---------- hero ---------- */}
+        <section className={editorial.hero}>
+          <div className={editorial.frame}>
+            <div className={editorial.metaBar}>
+              <span>CONTACT / HAEMOLOGIX</span>
+              <span>KOLKATA · INDIA</span>
+              <span>HLX—CONTACT—01</span>
             </div>
-          </ScrollReveal>
 
-          {/* Main Contact Form Section */}
-          <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
-            {/* Left Side - Image */}
-            <ScrollReveal direction="left">
-              <div className="relative">
-                <div className="w-full h-96 lg:h-[500px] rounded-full overflow-hidden shadow-2xl border-8 border-slate-300/20">
-                  <Image
-                    src="https://media.istockphoto.com/id/1212823663/photo/female-doctor-is-checking-blood-bags-in-llaboratory-at-hospital.jpg?s=612x612&w=0&k=20&c=5mp2sorTIgbIfQerDa8lXMJuypOS8FAwhIsGBqlFSeo="
-                    alt="Blood donation medical professional"
-                    fill
-                    unoptimized
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="w-full h-full object-cover"
+            <div className={styles.heroGrid}>
+              <div>
+                <p className={editorial.eyebrow}>EMERGENCY SUPPORT · PARTNERSHIPS · GENERAL</p>
+                <h1 className={editorial.display}>
+                  Reach a
+                  <span className={editorial.slab}>
+                    person
+                    <MessageCircle aria-hidden="true" />
+                  </span>
+                  not a queue.
+                </h1>
+                <p className={editorial.lede}>
+                  If blood is needed now, call the emergency line. For everything else — pilots,
+                  partnerships, billing, or a question about how the platform works — pick
+                  whichever channel suits you.
+                </p>
+                <div className={editorial.actions}>
+                  <a href="tel:+919903776046" className={editorial.primaryAction}>
+                    Call the emergency line
+                    <Phone aria-hidden="true" />
+                  </a>
+                  <Link href="#message" className={editorial.textAction}>
+                    Send a message instead
+                    <ArrowUpRight aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+
+              <aside className={editorial.panel} aria-label="Ways to reach Haemologix">
+                <div className={editorial.panelHeader}>
+                  <span>SWITCHBOARD</span>
+                  <span>ALL LINES</span>
+                </div>
+                <div className={editorial.panelBody}>
+                  <dl className={styles.switchboard}>
+                    <div>
+                      <dt>Emergency</dt>
+                      <dd>
+                        <a href="tel:+919903776046">+91 99037 76046</a>
+                      </dd>
+                      <span className={styles.liveTag}>24/7</span>
+                    </div>
+                    <div>
+                      <dt>Secondary</dt>
+                      <dd>
+                        <a href="tel:+919874712191">+91 98747 12191</a>
+                      </dd>
+                      <span />
+                    </div>
+                    <div>
+                      <dt>WhatsApp</dt>
+                      <dd>
+                        <a
+                          href="https://wa.me/919903776046"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Chat now
+                        </a>
+                      </dd>
+                      <span />
+                    </div>
+                    <div>
+                      <dt>Email</dt>
+                      <dd>
+                        <a href="mailto:founders@haemologix.in">founders@haemologix.in</a>
+                      </dd>
+                      <span />
+                    </div>
+                    <div>
+                      <dt>Based</dt>
+                      <dd>Kolkata, India</dd>
+                      <span />
+                    </div>
+                  </dl>
+                </div>
+                <div className={editorial.panelFooter}>
+                  <span>IF IT IS URGENT</span>
+                  <strong>Call. Do not wait on a form.</strong>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- message form ---------- */}
+        <section id="message" className={`${editorial.section} ${editorial.bandInk}`}>
+          <div className={editorial.frame}>
+            <div className={styles.formGrid}>
+              <div className={styles.formIntro}>
+                <p className={editorial.darkEyebrow}>SEND A MESSAGE</p>
+                <h2 className={editorial.h2}>Write to us.</h2>
+                <p>
+                  Three fields. Tell us who you are and what you need, and the right person
+                  answers — not an autoresponder.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Response time</dt>
+                    <dd>One working day</dd>
+                  </div>
+                  <div>
+                    <dt>Goes to</dt>
+                    <dd>The founders</dd>
+                  </div>
+                  <div>
+                    <dt>Not for</dt>
+                    <dd>Live emergencies — call instead</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <form className={styles.form} onSubmit={handleSubmit}>
+                <div className={styles.formRow}>
+                  <div className={editorial.field}>
+                    <label className={editorial.fieldLabel} htmlFor="name">
+                      Name
+                    </label>
+                    <input
+                      id="name"
+                      className={editorial.input}
+                      type="text"
+                      placeholder="Your name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div className={editorial.field}>
+                    <label className={editorial.fieldLabel} htmlFor="email">
+                      Email
+                    </label>
+                    <input
+                      id="email"
+                      className={editorial.input}
+                      type="email"
+                      placeholder="you@example.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className={editorial.field}>
+                  <label className={editorial.fieldLabel} htmlFor="message">
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    className={editorial.textarea}
+                    placeholder="Tell us how we can help."
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    required
                   />
                 </div>
-                {/* Floating elements */}
-                <div className="absolute -top-4 -right-4 w-20 h-20 bg-yellow-600/80 rounded-full flex items-center justify-center animate-pulse">
-                  <Heart className="w-8 h-8 text-white" />
-                </div>
-                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-slate-300/80 rounded-full flex items-center justify-center animate-bounce">
-                  <Phone className="w-6 h-6 text-red-900" />
-                </div>
-              </div>
-            </ScrollReveal>
 
-            {/* Right Side - Contact Form */}
-            <ScrollReveal direction="right" delay={0.2}>
-              <div className="glass-morphism rounded-3xl p-8 shadow-2xl">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="text-gray-800 font-semibold">
-                      Name
-                    </Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="Enter your Name"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      className="border-gray-300 focus:border-red-500 focus:ring-red-500 rounded-xl h-12"
-                      required
-                    />
-                  </div>
+                <label
+                  className={`${styles.consent} ${
+                    formData.acceptTerms ? styles.consentOn : ""
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.acceptTerms}
+                    onChange={(e) =>
+                      setFormData({ ...formData, acceptTerms: e.target.checked })
+                    }
+                  />
+                  <span className={styles.consentBox} aria-hidden="true">
+                    <Check />
+                  </span>
+                  <span>
+                    I accept the{" "}
+                    <Link href="/terms-and-conditions">Terms of Service</Link>.
+                  </span>
+                </label>
 
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="email"
-                      className="text-gray-800 font-semibold"
-                    >
-                      Email
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter a valid email address"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      className="border-gray-300 focus:border-red-500 focus:ring-red-500 rounded-xl h-12"
-                      required
-                    />
-                  </div>
+                {submitStatus.type ? (
+                  <p
+                    className={`${editorial.formNote} ${
+                      submitStatus.type === "error" ? editorial.formNoteError : ""
+                    }`}
+                    role="status"
+                  >
+                    {submitStatus.message}
+                  </p>
+                ) : null}
 
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="message"
-                      className="text-gray-800 font-semibold"
-                    >
-                      Message
-                    </Label>
-                    <Textarea
-                      id="message"
-                      placeholder="Tell us how we can help you..."
-                      value={formData.message}
-                      onChange={(e) =>
-                        setFormData({ ...formData, message: e.target.value })
-                      }
-                      className="border-gray-300 focus:border-red-500 focus:ring-red-500 rounded-xl min-h-[120px] resize-none"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="terms"
-                      checked={formData.acceptTerms}
-                      onCheckedChange={(checked) =>
-                        setFormData({
-                          ...formData,
-                          acceptTerms: checked as boolean,
-                        })
-                      }
-                      className="border-gray-400 data-[state=checked]:bg-red-600 data-[state=checked]:border-red-600"
-                    />
-                    <Label htmlFor="terms" className="text-sm text-gray-600">
-                      I accept the{" "}
-                      <Link href="/terms-and-conditions" className="text-red-600 hover:underline">
-                        Terms of Service
-                      </Link>
-                    </Label>
-                  </div>
-
-                  {submitStatus.type && (
-                    <div
-                      className={`p-4 rounded-xl ${
-                        submitStatus.type === "success"
-                          ? "bg-green-50 border border-green-200 text-green-800"
-                          : "bg-red-50 border border-red-200 text-red-800"
-                      }`}
-                    >
-                      <p className="font-medium">{submitStatus.message}</p>
-                    </div>
+                <button
+                  type="submit"
+                  className={editorial.submit}
+                  disabled={!formData.acceptTerms || isSubmitting}
+                >
+                  {isSubmitting ? (
+                    "Sending…"
+                  ) : (
+                    <>
+                      Send message
+                      <Send aria-hidden="true" />
+                    </>
                   )}
-
-                  <Button
-                    type="submit"
-                    disabled={!formData.acceptTerms || isSubmitting}
-                    className="w-full gradient-ruby hover:opacity-90 text-white font-outfit font-semibold py-3 rounded-xl h-12 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-primary/50"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        SENDING...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4 mr-2" />
-                        SUBMIT
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </div>
-            </ScrollReveal>
+                </button>
+              </form>
+            </div>
           </div>
+        </section>
 
-          {/* Contact Information Cards */}
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Call Us Card */}
-            <ScrollReveal delay={0.1}>
-              <Card className="gradient-ruby border-0 text-white shadow-xl hover:shadow-2xl transition-all duration-300 card-hover h-full">
-                <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Phone className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-4">CALL US</h3>
-                  <div className="space-y-3">
-                    <a
-                      href="tel:+919903776046"
-                      className="block text-white/90 hover:text-white transition-colors font-medium"
-                    >
-                      +91 9903776046
-                    </a>
-                    <a
-                      href="tel:+919874712191"
-                      className="block text-white/90 hover:text-white transition-colors font-medium"
-                    >
-                      +91 9874712191
-                    </a>
-                  </div>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
+        {/* ---------- channels ---------- */}
+        <section className={`${editorial.sectionTight} ${editorial.bandDeep}`}>
+          <div className={editorial.frame}>
+            <header className={editorial.sectionHeading}>
+              <p>OTHER WAYS THROUGH</p>
+              <h2 className={editorial.h2}>Pick the line that fits.</h2>
+            </header>
 
-            {/* Location Card */}
-            <ScrollReveal delay={0.2}>
-              <Card className="gradient-mist border-0 text-text-dark shadow-xl hover:shadow-2xl transition-all duration-300 card-hover h-full">
-                <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <MapPin className="w-8 h-8 text-white" />
+            <ul className={`${editorial.cardGrid} ${editorial.cols3}`}>
+              {channels.map((channel) => (
+                <li key={channel.code} className={styles.channel}>
+                  <span className={editorial.code}>{channel.code}</span>
+                  <div>
+                    <h3 className={editorial.h3}>{channel.title}</h3>
+                    <p>{channel.copy}</p>
+                    <div className={styles.channelLinks}>
+                      {channel.links.map((link) => (
+                        <a
+                          key={link.href}
+                          href={link.href}
+                          {...(link.href.startsWith("http")
+                            ? { target: "_blank", rel: "noopener noreferrer" }
+                            : {})}
+                        >
+                          {link.label}
+                          <ArrowUpRight aria-hidden="true" />
+                        </a>
+                      ))}
+                      <span>{channel.note}</span>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold mb-4">LOCATION</h3>
-                  <div className="space-y-1">
-                    <p className="text-white/90">Remote, Kolkata, India</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
-
-            {/* Hours Card */}
-            <ScrollReveal delay={0.3}>
-              <Card className="bg-gradient-to-br from-slate-600 to-slate-700 border-0 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 h-full">
-                <CardContent className="p-8 text-center">
-                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Clock className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-4">HOURS</h3>
-                  <div className="space-y-1">
-                    <p className="text-white/90">Emergency: 24/7</p>
-                    <p className="text-white/90">Office: Mon-Fri 9am-6pm</p>
-                    <p className="text-white/90">Weekend: 10am-4pm</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
+                  <channel.icon aria-hidden="true" className={editorial.cardIcon} />
+                </li>
+              ))}
+            </ul>
           </div>
+        </section>
 
-          {/* Additional Contact Methods */}
-          <div className="mt-16 text-center">
-            <ScrollReveal>
-              <h2 className="text-3xl font-bold text-text-dark mb-8">
-                Other Ways to Reach Us
-              </h2>
-              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                {/* Email Support Card */}
-                <Card className="glass-morphism border border-slate-300/20 hover:bg-white/20 transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-6 text-center">
-                    <Mail className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-text-dark mb-2">
-                      Email Support
-                    </h3>
-                    <p className="text-text-dark/80 mb-4 text-sm">
-                      Get detailed responses to your inquiries
-                    </p>
-                    <div className="space-y-3">
-                      <a
-                        href="mailto:founders@haemologix.in"
-                        className="block text-text-dark hover:text-primary transition-colors font-medium"
-                      >
-                        founders@haemologix.in
-                      </a>
-                    </div>
-                  </CardContent>
-                </Card>
+        {/* ---------- hours ---------- */}
+        <section className={`${editorial.sectionTight} ${editorial.bandTeal}`}>
+          <div className={editorial.frame}>
+            <header className={editorial.sectionHeading}>
+              <p>WHEN WE ANSWER</p>
+              <h2 className={editorial.h2}>Hours, plainly.</h2>
+            </header>
 
-                {/* Phone Support Card */}
-                <Card className="glass-morphism border border-slate-300/20 hover:bg-white/20 transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-6 text-center">
-                    <Phone className="w-12 h-12 text-red-600 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-text-dark mb-2">
-                      Call Us
-                    </h3>
-                    <p className="text-text-dark/80 mb-4 text-sm">
-                      24/7 emergency blood request support
-                    </p>
-                    <div className="space-y-3">
-                      <a
-                        href="tel:+919903776046"
-                        className="block text-text-dark hover:text-primary transition-colors font-medium"
-                      >
-                        +91 9903776046
-                      </a>
-                      <a
-                        href="tel:+919874712191"
-                        className="block text-text-dark/80 hover:text-primary transition-colors text-sm"
-                      >
-                        +91 9874712191
-                      </a>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* WhatsApp Support Card */}
-                <Card className="glass-morphism border border-slate-300/20 hover:bg-white/20 transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-6 text-center">
-                    <MessageCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-text-dark mb-2">
-                      WhatsApp
-                    </h3>
-                    <p className="text-text-dark/80 mb-4 text-sm">
-                      Quick support via WhatsApp
-                    </p>
-                    <div className="space-y-3">
-                      <a
-                        href="https://wa.me/919903776046"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block text-text-dark hover:text-green-600 transition-colors font-medium"
-                      >
-                        Chat on WhatsApp
-                      </a>
-                      <p className="text-text-dark/60 text-xs">
-                        +91 9903776046
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </ScrollReveal>
+            <dl className={styles.hours}>
+              {hours.map((entry) => (
+                <div key={entry.label}>
+                  <dt>{entry.label}</dt>
+                  <dd>{entry.value}</dd>
+                  <p>{entry.copy}</p>
+                </div>
+              ))}
+            </dl>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Footer */}
-      <footer className="text-text-dark py-12 my-0 px-4 mx-0 bg-text-dark/95 backdrop-blur-md">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Heart className="w-6 h-6 text-slate-300" />
-                <span className="text-xl font-bold text-slate-300">
-                  Haemologix
-                </span>
-              </div>
-              <p className="text-gray-400">
-                Connecting lives through technology and compassion.
+        {/* ---------- closing ---------- */}
+        <section className={`${editorial.closing} ${editorial.bandRuby}`}>
+          <div className={editorial.frame}>
+            <div className={editorial.closingBlock}>
+              <span className={editorial.label}>HAEMOLOGIX / VISIT</span>
+              <h2>Registered in Howrah, working across India.</h2>
+              <p>
+                Haemologix Private Limited, Howrah, West Bengal. Partner hospitals and blood
+                banks are onboarded remotely, wherever they are.
               </p>
-            </div>
-            <div>
-              <h4 className="flex items-center gap-2 font-outfit font-semibold mb-4 text-background">
-                <Layers className="w-4 h-4" />
-                Platform
-              </h4>
-
-              <ul className="space-y-2 text-background/80 font-dm-sans">
-                <li>
-                  <Link
-                    href="/donor"
-                    className="transition-colors duration-200 hover:text-white hover:underline underline-offset-4"
-                  >
-
-                    Donor Dashboard
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/hospital" className="hover:text-white">
-                    Hospital Portal
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/admin" className="hover:text-white">
-                    Admin Panel
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="flex items-center gap-2 font-outfit font-semibold mb-4 text-background">
-                <Headphones className="w-4 h-4" />
-                Support
-              </h4>
-
-              <ul className="space-y-2 text-background/80 font-dm-sans">
-                <li>
-                  <Link href="/faq" className="hover:text-white">
-                    Help Center
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-white">
-                    Contact Us
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Emergency
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="flex items-center gap-2 font-outfit font-semibold mb-4 text-background">
-                <ShieldCheck className="w-4 h-4" />
-                Legal
-              </h4>
-
-              <ul className="space-y-3 leading-relaxed text-background/80 font-dm-sans">
-                <li>
-                  <Link href="/privacy-policy" className="hover:text-white">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms-and-conditions" className="hover:text-white">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/privacy-policy" className="hover:text-white">
-                    DPDPA Compliance
-                  </Link>
-                </li>
-              </ul>
+              <Link href="/pilot" className={editorial.lightAction}>
+                Start a pilot
+                <MapPin aria-hidden="true" />
+              </Link>
             </div>
           </div>
-          <div className="border-t border-background/30 mt-8 pt-8 text-center text-background/70 font-dm-sans">
-            <p>
-              &copy; {new Date().getFullYear()} Haemologix Pvt. Ltd. All rights reserved. Built for saving
-              lives.
-            </p>
-          </div>
-          {/* Back to Top */}
-          <div className="flex justify-center mt-6">
-            <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex items-center gap-1 text-sm text-background/60 hover:text-white transition"
-            >
-              <ArrowUp className="w-4 h-4" />
-              Back to Top
-            </button>
-          </div>
+        </section>
+      </main>
 
-
-
-        </div>
-      </footer>
-    </GradientBackground>
+      <EditorialFooter />
+    </div>
   );
 }

@@ -1,0 +1,311 @@
+/* Pricing-specific structure. Shared primitives: styles/editorial.module.css */
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(350px, 0.58fr);
+  gap: 72px;
+  align-items: center;
+  padding-top: 64px;
+}
+
+.freeList {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(32, 36, 53, 0.22);
+}
+
+.freeList li {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 13px;
+  align-items: start;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(32, 36, 53, 0.14);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.freeList li:last-child {
+  border-bottom: 0;
+}
+
+.freeList svg {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: #005f73;
+}
+
+/* ---------- tiers ---------- */
+
+.tiers {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 46px;
+  border: 1px solid #202435;
+  background: #202435;
+}
+
+.tier {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  background: #f7faf8;
+}
+
+.tierFeatured {
+  background: white;
+}
+
+.tierBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 22px;
+  color: rgba(32, 36, 53, 0.6);
+  background: #dfe8e3;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.tierBarFeatured {
+  color: white;
+  background: #9b2226;
+}
+
+.tierHead {
+  padding: 28px 22px 26px;
+  border-bottom: 1px solid rgba(32, 36, 53, 0.18);
+}
+
+.tierHead h3 {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.price strong {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(42px, 3.6vw, 58px);
+  font-weight: 800;
+  line-height: 0.85;
+  letter-spacing: -0.035em;
+}
+
+.price span {
+  color: rgba(32, 36, 53, 0.55);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.tierFor {
+  margin: 18px 0 0;
+  color: rgba(32, 36, 53, 0.68);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.tierBody {
+  display: grid;
+  gap: 22px;
+  align-content: start;
+  flex: 1;
+  padding: 24px 22px 28px;
+}
+
+.tierGroup > p {
+  margin: 0 0 12px;
+  color: rgba(32, 36, 53, 0.5);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.tierGroup ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tierGroup li {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 10px;
+  align-items: start;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.tierGroup li svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
+  color: #9b2226;
+}
+
+.tierNote {
+  padding: 14px 15px;
+  border-left: 5px solid #005f73;
+  background: rgba(0, 95, 115, 0.08);
+  color: rgba(32, 36, 53, 0.75);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.tierNote strong {
+  display: block;
+  margin-bottom: 5px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tierAction {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: auto;
+  padding: 16px 22px;
+  border-top: 1px solid #202435;
+  color: white;
+  background: #202435;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  transition: background 150ms ease;
+}
+
+.tierAction:hover {
+  background: #9b2226;
+}
+
+.tierActionFeatured {
+  background: #9b2226;
+}
+
+.tierActionFeatured:hover {
+  background: #202435;
+}
+
+.tierAction svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+/* ---------- comparison ---------- */
+
+.compareScroll {
+  margin-top: 46px;
+  overflow-x: auto;
+}
+
+.compare {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.compare th,
+.compare td {
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.compare thead th {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.62);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.compare thead th.featured {
+  color: #94d2bd;
+}
+
+.compare tbody th {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 21px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.compare td {
+  color: rgba(255, 255, 255, 0.78);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+}
+
+.compare td.featured {
+  color: white;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.compare tbody tr:last-child th,
+.compare tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+@media (max-width: 1200px) {
+  .tiers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 56px;
+  }
+}
+
+@media (max-width: 760px) {
+  .heroGrid {
+    padding-top: 40px;
+  }
+
+  .tiers {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tierAction {
+    transition: none;
+  }
+}
