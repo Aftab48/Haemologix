@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { companyNav, primaryNav, type NavKey } from "@/components/nav-links";
 import {
   SignedIn,
   SignedOut,
@@ -14,7 +15,7 @@ import {
 } from "@clerk/nextjs";
 
 interface HeaderProps {
-  activePage?: "about" | "team" | "careers" | "pricing" | "impact" | "contact" | "pilot";
+  activePage?: NavKey;
   variant?: "default" | "editorial";
 }
 
@@ -22,15 +23,7 @@ const Header = ({ activePage, variant = "default" }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const editorial = variant === "editorial";
 
-  const navLinks = [
-    { href: "/about", label: "About", key: "about" },
-    { href: "/team", label: "Team", key: "team" },
-    { href: "/careers", label: "Careers", key: "careers" },
-    { href: "/pricing", label: "Pricing", key: "pricing" },
-    { href: "/impact", label: "Impact", key: "impact" },
-    { href: "/contact", label: "Contact", key: "contact" },
-    { href: "/pilot", label: "Pilot", key: "pilot" },
-  ];
+  const navLinks = primaryNav;
 
   return (
     <header className={editorial
@@ -153,6 +146,24 @@ const Header = ({ activePage, variant = "default" }: HeaderProps) => {
             ))}
 
             {/* Divider */}
+            <div className="border-t border-mist-green/40 my-2"></div>
+
+            {/* Secondary links — footer-level pages, kept reachable on mobile */}
+            <div className="flex flex-wrap gap-x-4 gap-y-2 px-1">
+              {companyNav.map((link) => (
+                <Link
+                  key={link.key}
+                  href={link.href}
+                  className={`font-dm-sans text-sm transition-colors hover:text-primary ${
+                    activePage === link.key ? "text-primary" : "text-text-dark/70"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+
             <div className="border-t border-mist-green/40 my-2"></div>
 
             {/* Auth Buttons in Mobile Menu */}

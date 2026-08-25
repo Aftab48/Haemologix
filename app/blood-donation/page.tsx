@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Shield } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
+import Header from "@/components/Header";
+import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
   title: "Blood Donation | How to Donate Blood | Haemologix",
@@ -31,8 +33,9 @@ export const metadata: Metadata = {
 
 export default function BloodDonationPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20 py-20 px-4">
-      <div className="container mx-auto max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20">
+      <Header activePage="donors" />
+      <div className="container mx-auto max-w-4xl py-20 px-4">
         <ScrollReveal>
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-primary">
@@ -135,6 +138,7 @@ export default function BloodDonationPage() {
           </div>
         </ScrollReveal>
       </div>
+      <SiteFooter />
     </div>
   );
 }

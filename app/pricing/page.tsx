@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import Link from "next/link";
 import GradientBackground from "@/components/GradientBackground";
 import Header from "@/components/Header";
-import { ArrowUp } from "lucide-react";
 import { CheckCircle2, ArrowRight, Rocket, Heart, Building2, Crown } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
+import SiteFooter from "@/components/SiteFooter";
 
 export default function PricingPage() {
   return (
@@ -415,99 +415,7 @@ export default function PricingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="text-text-dark py-12 my-0 px-4 mx-0 bg-text-dark/95 backdrop-blur-md">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Heart className="w-6 h-6 text-slate-300" />
-                <span className="text-xl font-bold text-slate-300">
-                  Haemologix
-                </span>
-              </div>
-              <p className="text-gray-400">
-                Connecting lives through technology and compassion.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-outfit font-semibold mb-4 text-background">Platform</h4>
-              <ul className="space-y-2 text-background/80 font-dm-sans">
-                <li>
-                  <Link href="/donor" className="hover:text-white">
-                    Donor Dashboard
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/hospital" className="hover:text-white">
-                    Hospital Portal
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/admin" className="hover:text-white">
-                    Admin Panel
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-outfit font-semibold mb-4 text-background">Support</h4>
-              <ul className="space-y-2 text-background/80 font-dm-sans">
-                <li>
-                  <Link href="/faq" className="hover:text-white">
-                    Help Center
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-white">
-                    Contact Us
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-white">
-                    Emergency
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-outfit font-semibold mb-4 text-background">Legal</h4>
-              <ul className="space-y-2 text-background/80 font-dm-sans">
-                <li>
-                  <Link href="/privacy-policy" className="hover:text-white">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms-and-conditions" className="hover:text-white">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/privacy-policy" className="hover:text-white">
-                    DPDPA Compliance
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-background/30 mt-8 pt-8 text-center text-background/70 font-dm-sans">
-            <p>
-              &copy; {new Date().getFullYear()} Haemologix Pvt. Ltd. All rights reserved. Built for saving
-              lives.
-            </p>
-          </div>
-          {/* Back to Top */}
-          <div className="flex justify-center mt-6">
-            <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex items-center gap-1 text-sm text-background/60 hover:text-white transition"
-            >
-              <ArrowUp className="w-4 h-4" />
-                  Back to Top
-            </button>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </GradientBackground>
   );
 }
