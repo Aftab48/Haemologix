@@ -241,12 +241,89 @@
   background: #9B2226;
 }
 
-/* Glass morphism effect */
+/* Product canvas used by authentication, onboarding and nested product pages. */
+.product-surface {
+  isolation: isolate;
+  overflow-x: hidden;
+  color: #edf2ef;
+  background:
+    radial-gradient(circle at 82% 14%, rgba(148, 210, 189, 0.22), transparent 28%),
+    radial-gradient(circle at 14% 86%, rgba(155, 34, 38, 0.28), transparent 31%),
+    linear-gradient(135deg, #141722 0%, #202435 48%, #005f73 118%);
+}
+
+.product-surface-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.34;
+  background-image:
+    linear-gradient(rgba(148, 210, 189, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 210, 189, 0.09) 1px, transparent 1px),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.18' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 32px 32px, 32px 32px, 180px 180px;
+  pointer-events: none;
+}
+
+.product-surface-signal {
+  position: fixed;
+  top: 0;
+  right: clamp(18px, 5vw, 78px);
+  z-index: 0;
+  width: 1px;
+  height: 38vh;
+  background: linear-gradient(to bottom, #94d2bd, rgba(148, 210, 189, 0));
+  box-shadow: 0 0 24px rgba(148, 210, 189, 0.45);
+  pointer-events: none;
+}
+
+.product-surface-signal::after {
+  position: absolute;
+  top: 38vh;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #e9d8a6;
+  background: #9b2226;
+  content: "";
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.product-surface-orbit {
+  position: fixed;
+  right: -180px;
+  bottom: -240px;
+  z-index: 0;
+  width: 520px;
+  height: 520px;
+  border: 1px solid rgba(148, 210, 189, 0.25);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 52px rgba(148, 210, 189, 0.035),
+    0 0 0 104px rgba(233, 216, 166, 0.025);
+  pointer-events: none;
+}
+
+/* Light clinical panel on the deep product canvas. */
 .glass-morphism {
-  background: rgba(233, 216, 166, 0.25);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #202435;
+  background:
+    linear-gradient(135deg, rgba(148, 210, 189, 0.24), transparent 46%),
+    rgba(247, 250, 248, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(233, 216, 166, 0.55);
+  border-radius: 2px !important;
+  box-shadow: 10px 10px 0 rgba(148, 210, 189, 0.2);
+}
+
+.glass-morphism.text-white {
+  color: white;
+  background:
+    linear-gradient(135deg, rgba(0, 95, 115, 0.52), transparent 58%),
+    rgba(20, 23, 34, 0.9);
+  border-color: rgba(148, 210, 189, 0.36);
+  box-shadow: 10px 10px 0 rgba(155, 34, 38, 0.22);
 }
 
 /* Card hover effects */
@@ -295,6 +372,254 @@ textarea:focus-visible {
 
 .gradient-mist {
   background: linear-gradient(135deg, #94D2BD 0%, #7ab8a3 100%);
+}
+
+/* Replace legacy accent utilities inside product surfaces with the brand set. */
+.product-surface :is(.text-blue-300, .text-blue-400, .text-blue-500, .text-blue-600),
+.dashboard-surface :is(.text-blue-300, .text-blue-400, .text-blue-500, .text-blue-600) {
+  color: #005f73 !important;
+}
+
+.product-surface :is(.text-purple-300, .text-purple-400, .text-purple-500, .text-purple-600),
+.dashboard-surface :is(.text-purple-300, .text-purple-400, .text-purple-500, .text-purple-600) {
+  color: #9b2226 !important;
+}
+
+.product-surface :is(.text-yellow-300, .text-yellow-400, .text-yellow-500, .text-yellow-600),
+.dashboard-surface :is(.text-yellow-300, .text-yellow-400, .text-yellow-500, .text-yellow-600),
+.product-surface :is(.text-orange-300, .text-orange-400, .text-orange-500, .text-orange-600),
+.dashboard-surface :is(.text-orange-300, .text-orange-400, .text-orange-500, .text-orange-600) {
+  color: #9b2226 !important;
+}
+
+.product-surface :is(.bg-blue-600, .bg-purple-600),
+.dashboard-surface :is(.bg-blue-600, .bg-purple-600) {
+  background-color: #005f73 !important;
+}
+
+.product-surface :is(.bg-yellow-600, .bg-orange-600),
+.dashboard-surface :is(.bg-yellow-600, .bg-orange-600) {
+  color: #202435 !important;
+  background-color: #e9d8a6 !important;
+}
+
+.product-surface :is(.bg-green-600, .bg-emerald-600),
+.dashboard-surface :is(.bg-green-600, .bg-emerald-600) {
+  background-color: #005f73 !important;
+}
+
+/* Legacy data views use semantic Tailwind color names; translate every visible
+   tint back into Haemologix ruby, oxygen, mist and bone. */
+.product-surface :is(.text-blue-700, .text-blue-800, .text-blue-900),
+.dashboard-surface :is(.text-blue-700, .text-blue-800, .text-blue-900) {
+  color: #005f73 !important;
+}
+
+.product-surface :is(.text-purple-700, .text-purple-800, .text-purple-900),
+.dashboard-surface :is(.text-purple-700, .text-purple-800, .text-purple-900) {
+  color: #9b2226 !important;
+}
+
+.product-surface :is(.bg-blue-50, .bg-blue-50\/50, .bg-green-50, .bg-green-50\/50),
+.dashboard-surface :is(.bg-blue-50, .bg-blue-50\/50, .bg-green-50, .bg-green-50\/50) {
+  background-color: rgba(148, 210, 189, 0.24) !important;
+}
+
+.product-surface :is(.bg-purple-50, .bg-purple-50\/50, .bg-orange-50, .bg-orange-50\/50),
+.dashboard-surface :is(.bg-purple-50, .bg-purple-50\/50, .bg-orange-50, .bg-orange-50\/50) {
+  background-color: rgba(233, 216, 166, 0.34) !important;
+}
+
+.product-surface :is(.bg-blue-500\/5, .bg-blue-500\/10, .bg-blue-500\/20, .bg-blue-600\/20, .bg-green-600\/20),
+.dashboard-surface :is(.bg-blue-500\/5, .bg-blue-500\/10, .bg-blue-500\/20, .bg-blue-600\/20, .bg-green-600\/20) {
+  background-color: rgba(148, 210, 189, 0.24) !important;
+}
+
+.product-surface :is(.bg-purple-500\/10, .bg-purple-600\/20, .bg-orange-500\/10, .bg-orange-600\/20),
+.dashboard-surface :is(.bg-purple-500\/10, .bg-purple-600\/20, .bg-orange-500\/10, .bg-orange-600\/20) {
+  background-color: rgba(233, 216, 166, 0.34) !important;
+}
+
+.product-surface :is(.border-blue-200, .border-blue-300, .border-blue-500\/20, .border-blue-500\/30, .border-purple-200, .border-purple-500\/30, .border-orange-200),
+.dashboard-surface :is(.border-blue-200, .border-blue-300, .border-blue-500\/20, .border-blue-500\/30, .border-purple-200, .border-purple-500\/30, .border-orange-200) {
+  border-color: rgba(0, 95, 115, 0.34) !important;
+}
+
+/* Registration flows: keep the form box, give it an editorial step-led frame. */
+.product-form-page {
+  padding: clamp(18px, 3vw, 42px) !important;
+}
+
+.product-form-page > .relative {
+  width: 100%;
+}
+
+.product-form-page .registration-shell {
+  width: min(1120px, 100%);
+  margin-inline: auto;
+}
+
+.product-form-page .registration-hero {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.4fr) minmax(0, 1fr);
+  gap: 26px;
+  align-items: end;
+  margin-bottom: 0 !important;
+  padding: 28px 30px;
+  border: 1px solid rgba(148, 210, 189, 0.5);
+  border-bottom: 0;
+  color: #edf2ef;
+  background: rgba(20, 23, 34, 0.76);
+  text-align: left;
+}
+
+.product-form-page .registration-hero::before {
+  align-self: start;
+  color: #94d2bd;
+  content: "VERIFICATION FLOW";
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.donor-registration .registration-hero::before {
+  content: "DONOR / PROFILE 01";
+}
+
+.hospital-registration .registration-hero::before {
+  content: "HOSPITAL / VERIFY 06";
+}
+
+.bloodbank-registration .registration-hero::before {
+  content: "BLOOD BANK / VERIFY 06";
+}
+
+.product-form-page .registration-hero h1,
+.product-form-page .registration-hero h2,
+.product-form-page .registration-title {
+  grid-column: 2;
+  margin: 0;
+  color: #edf2ef !important;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(42px, 6vw, 72px) !important;
+  line-height: 0.9;
+  letter-spacing: -0.025em;
+  text-align: left !important;
+  text-transform: uppercase;
+}
+
+.product-form-page .registration-hero p,
+.product-form-page .registration-hero [role="progressbar"] {
+  grid-column: 2;
+}
+
+.product-form-page .registration-hero p {
+  margin: 7px 0 0;
+  color: rgba(237, 242, 239, 0.72) !important;
+}
+
+.product-form-page .registration-hero [role="progressbar"] {
+  height: 6px;
+  margin-top: 17px;
+  border-radius: 0;
+  background: rgba(237, 242, 239, 0.14);
+}
+
+.product-form-page .registration-card {
+  overflow: hidden;
+  border: 1px solid #202435 !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(135deg, rgba(148, 210, 189, 0.2), transparent 44%),
+    #f7faf8 !important;
+  box-shadow: 14px 14px 0 #e9d8a6 !important;
+  animation: registration-card-in 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.product-form-page .registration-card > div:first-child {
+  border-bottom: 1px solid rgba(32, 36, 53, 0.2);
+}
+
+.product-form-page .registration-card h2,
+.product-form-page .registration-card h3 {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  text-transform: uppercase;
+}
+
+.product-form-page .registration-card :is(.rounded-lg, .rounded-md) {
+  border-radius: 2px !important;
+}
+
+@keyframes registration-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.role-picker-heading {
+  width: min(1024px, 100%);
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(237, 242, 239, 0.54);
+  text-align: left;
+}
+
+.role-picker-heading p {
+  margin: 0 0 10px;
+  color: #94d2bd;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.role-picker-heading h1 {
+  margin: 0;
+  color: #edf2ef;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(52px, 8vw, 88px);
+  line-height: 0.86;
+  text-transform: uppercase;
+}
+
+.role-picker-grid {
+  counter-reset: role-card;
+}
+
+.role-picker-card {
+  position: relative;
+  justify-content: flex-end;
+  overflow: hidden;
+  counter-increment: role-card;
+  text-align: left;
+}
+
+.role-picker-card::before {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  color: #9b2226;
+  content: "0" counter(role-card);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.role-picker-card:hover {
+  background: linear-gradient(145deg, rgba(233, 216, 166, 0.68), #f7faf8 60%);
+  transform: translateY(-5px);
+}
+
+.admin-gate .dash-card,
+.admin-feedback-page .dash-card {
+  animation: dash-card-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Print styles */
@@ -613,25 +938,27 @@ textarea:focus-visible {
 .dashboard-surface {
   position: relative;
   min-height: 100vh;
-  background-color: hsl(var(--background));
+  overflow-x: hidden;
+  background-color: #edf2ef;
   background-image:
-    radial-gradient(at 12% 8%, hsl(var(--accent) / 0.35) 0px, transparent 42%),
-    radial-gradient(at 88% 6%, hsl(var(--secondary) / 0.12) 0px, transparent 40%),
-    radial-gradient(at 78% 92%, hsl(var(--primary) / 0.08) 0px, transparent 45%),
-    radial-gradient(at 25% 88%, hsl(var(--accent) / 0.22) 0px, transparent 45%);
+    linear-gradient(rgba(32, 36, 53, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(32, 36, 53, 0.035) 1px, transparent 1px),
+    radial-gradient(at 88% 6%, rgba(148, 210, 189, 0.4) 0px, transparent 34%),
+    radial-gradient(at 18% 94%, rgba(233, 216, 166, 0.44) 0px, transparent 35%);
+  background-size: 32px 32px, 32px 32px, auto, auto;
   background-attachment: fixed;
 }
 
 /* Solid card: hairline border, soft shadow */
 .dash-card {
-  background: hsl(0 0% 100% / 0.82);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid hsl(var(--text-dark) / 0.08);
-  border-radius: var(--radius);
-  box-shadow:
-    0 1px 2px hsl(var(--text-dark) / 0.04),
-    0 8px 24px -12px hsl(var(--text-dark) / 0.12);
+  position: relative;
+  border: 1px solid rgba(32, 36, 53, 0.2);
+  border-radius: 2px;
+  background:
+    linear-gradient(145deg, rgba(148, 210, 189, 0.16), transparent 48%),
+    rgba(248, 250, 248, 0.94);
+  box-shadow: 7px 7px 0 rgba(233, 216, 166, 0.58);
+  animation: dash-card-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .dash-card-interactive {
@@ -640,25 +967,34 @@ textarea:focus-visible {
   will-change: transform;
 }
 .dash-card-interactive:hover {
-  transform: translateY(-3px);
-  border-color: hsl(var(--primary) / 0.22);
-  box-shadow:
-    0 2px 4px hsl(var(--text-dark) / 0.05),
-    0 18px 40px -16px hsl(var(--text-dark) / 0.22);
+  transform: translate(-2px, -3px);
+  border-color: rgba(155, 34, 38, 0.42);
+  box-shadow: 10px 10px 0 rgba(148, 210, 189, 0.58);
+}
+
+.dashboard-surface > .relative > img[alt=""] {
+  display: none;
+}
+
+@keyframes dash-card-enter {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Sidebar + topbar shells */
 .dash-sidebar {
-  background: hsl(0 0% 100% / 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-right: 1px solid hsl(var(--text-dark) / 0.08);
+  background:
+    linear-gradient(180deg, rgba(148, 210, 189, 0.3), transparent 38%),
+    #f7faf8;
+  border-right: 1px solid #202435;
+  box-shadow: inset -5px 0 0 rgba(233, 216, 166, 0.72);
 }
 .dash-topbar {
-  background: hsl(var(--background) / 0.7);
+  background: rgba(237, 242, 239, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid hsl(var(--text-dark) / 0.08);
+  border-bottom: 1px solid #202435;
+  box-shadow: inset 0 -4px 0 rgba(148, 210, 189, 0.42);
 }
 
 /* Nav items with ruby active state */
@@ -667,7 +1003,7 @@ textarea:focus-visible {
   align-items: center;
   gap: 0.75rem;
   padding: 0.625rem 0.875rem;
-  border-radius: calc(var(--radius) - 2px);
+  border-radius: 2px;
   color: hsl(var(--text-dark) / 0.72);
   font-weight: 500;
   transition: background 0.2s ease, color 0.2s ease;
@@ -677,12 +1013,13 @@ textarea:focus-visible {
   color: hsl(var(--text-dark));
 }
 .dash-nav-item[data-active="true"] {
-  background: hsl(var(--primary) / 0.1);
-  color: hsl(var(--primary));
+  background: #9b2226;
+  color: white;
   font-weight: 600;
+  box-shadow: 4px 4px 0 rgba(233, 216, 166, 0.72);
 }
 .dash-nav-item[data-active="true"] svg {
-  color: hsl(var(--primary));
+  color: #e9d8a6;
 }
 
 /* Icon chip tints (brand palette; semantic status colors handled separately) */
@@ -757,6 +1094,34 @@ textarea:focus-visible {
   }
   .dash-skeleton::after {
     animation: none;
+  }
+  .dash-card,
+  .product-form-page .registration-card {
+    animation: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .product-form-page {
+    padding: 12px !important;
+  }
+
+  .product-form-page .registration-hero {
+    grid-template-columns: 1fr;
+    padding: 22px 20px;
+  }
+
+  .product-form-page .registration-hero h1,
+  .product-form-page .registration-hero h2,
+  .product-form-page .registration-title,
+  .product-form-page .registration-hero p,
+  .product-form-page .registration-hero [role="progressbar"] {
+    grid-column: 1;
+  }
+
+  .product-form-page .registration-card,
+  .dash-card {
+    box-shadow: 5px 5px 0 rgba(233, 216, 166, 0.66) !important;
   }
 }
 

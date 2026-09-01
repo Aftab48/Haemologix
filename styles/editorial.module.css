@@ -1,0 +1,994 @@
+/*
+ * Shared editorial design system.
+ *
+ * The /careers page established the visual language for Haemologix's public
+ * pages: a pale clinical paper ground on a 32px grid, hard hairline borders
+ * with zero radius, condensed uppercase display type over a mono utility face,
+ * and full-bleed colour bands that change the ground under the reader as the
+ * argument moves. This module holds the shared primitives so home, about,
+ * team, impact, pilot, pricing and contact all speak the same language.
+ * Page-specific structure lives in each page's own .module.css alongside it.
+ */
+
+.page {
+  --paper: #edf2ef;
+  --paper-deep: #dfe8e3;
+  --ink: #202435;
+  --ink-deep: #141722;
+  --ruby: #9b2226;
+  --ruby-dark: #71171b;
+  --oxygen: #005f73;
+  --mist: #94d2bd;
+  --sand: #e9d8a6;
+  --line: rgba(32, 36, 53, 0.2);
+  --line-soft: rgba(32, 36, 53, 0.1);
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(rgba(32, 36, 53, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(32, 36, 53, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.frame {
+  width: min(1400px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.frameNarrow {
+  width: min(1000px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+/* ---------- utility type ---------- */
+
+.eyebrow,
+.darkEyebrow,
+.code,
+.metaBar,
+.label {
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  margin: 0 0 22px;
+  color: var(--ruby);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.darkEyebrow {
+  margin: 0 0 26px;
+  color: var(--mist);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.code {
+  width: fit-content;
+  padding: 5px 8px;
+  color: var(--oxygen);
+  background: var(--mist);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.codeRuby {
+  color: white;
+  background: var(--ruby);
+}
+
+.codeInk {
+  color: white;
+  background: var(--ink);
+}
+
+/* ---------- masthead strip ---------- */
+
+.metaBar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.metaBar span:last-child {
+  text-align: right;
+}
+
+/* ---------- display type ---------- */
+
+.display,
+.h2,
+.h3 {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.display {
+  max-width: 900px;
+  margin: 0;
+  font-size: clamp(66px, 7.6vw, 124px);
+  line-height: 0.83;
+  letter-spacing: -0.05em;
+}
+
+.h2 {
+  margin: 0;
+  font-size: clamp(46px, 5vw, 76px);
+  line-height: 0.93;
+  letter-spacing: -0.028em;
+}
+
+.h3 {
+  margin: 0;
+  font-size: clamp(26px, 2.4vw, 34px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+/*
+ * The slab: the one loud gesture in the system. A word from the headline is
+ * lifted onto a rotated ruby block with the icon that names it. Used once per
+ * page, in the h1, and nowhere else.
+ */
+.slab {
+  position: relative;
+  display: block;
+  width: fit-content;
+  margin: 12px 0 12px -14px;
+  padding: 2px 74px 10px 14px;
+  color: var(--paper);
+  background: var(--ruby);
+  transform: rotate(-1.2deg);
+}
+
+.slab svg {
+  position: absolute;
+  top: 50%;
+  right: 21px;
+  width: 39px;
+  height: 39px;
+  transform: translateY(-45%);
+  stroke-width: 1.5;
+}
+
+.slabTeal {
+  background: var(--oxygen);
+}
+
+.lede {
+  max-width: 680px;
+  margin: 36px 0 0;
+  font-size: clamp(18px, 1.6vw, 23px);
+  line-height: 1.55;
+}
+
+.ledeTight {
+  max-width: 620px;
+  margin: 26px 0 0;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+/* ---------- actions ---------- */
+
+.primaryAction,
+.lightAction,
+.ghostAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 52px;
+  padding: 13px 20px;
+  border: 1px solid var(--ink);
+  color: var(--paper);
+  background: var(--ink);
+  font-weight: 700;
+  text-align: center;
+  transition: color 160ms ease, background 160ms ease, transform 160ms ease,
+    border-color 160ms ease;
+}
+
+.primaryAction:hover {
+  color: white;
+  background: var(--ruby);
+  border-color: var(--ruby);
+  transform: translateY(-2px);
+}
+
+/* On dark and coloured bands: white block, ink text. */
+.lightAction {
+  color: var(--ink);
+  border-color: white;
+  background: white;
+}
+
+.lightAction:hover {
+  color: white;
+  border-color: var(--ruby);
+  background: var(--ruby);
+  transform: translateY(-2px);
+}
+
+.ghostAction {
+  color: var(--ink);
+  background: transparent;
+}
+
+.ghostAction:hover {
+  color: white;
+  background: var(--ink);
+  transform: translateY(-2px);
+}
+
+.textAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 0 8px;
+  border-bottom: 1px solid currentColor;
+  font-weight: 700;
+  transition: color 160ms ease;
+}
+
+.textAction:hover {
+  color: var(--ruby);
+}
+
+.primaryAction svg,
+.lightAction svg,
+.ghostAction svg,
+.textAction svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-top: 38px;
+}
+
+/* ---------- panel (bordered aside with offset shadow) ---------- */
+
+.panel {
+  position: relative;
+  border: 1px solid var(--ink);
+  background: #f7faf8;
+  box-shadow: 18px 18px 0 var(--mist);
+}
+
+.panelRuby {
+  box-shadow: 18px 18px 0 var(--ruby);
+}
+
+/* Perforated edge — reads as a tear-off strip on a hospital form. */
+.panel::before {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: -15px;
+  width: 7px;
+  content: "";
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--ruby) 0,
+    var(--ruby) 22px,
+    transparent 22px,
+    transparent 30px
+  );
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 16px;
+  color: white;
+  background: var(--ink);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.panelBody {
+  padding: 30px 28px;
+}
+
+.panelFooter {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  padding: 17px 20px;
+  border-top: 1px solid var(--ink);
+  color: var(--ink);
+  background: var(--paper-deep);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.panelFooter strong {
+  font-family: "DM Sans", sans-serif;
+  letter-spacing: 0;
+  text-align: right;
+  text-transform: none;
+}
+
+/* ---------- bands ---------- */
+
+.section {
+  padding: 104px 0;
+}
+
+.sectionTight {
+  padding: 76px 0;
+}
+
+.hero {
+  padding: 42px 0 92px;
+}
+
+.bandDeep {
+  border-top: 1px solid var(--line);
+  background: var(--paper-deep);
+}
+
+.bandTeal {
+  color: white;
+  background: var(--oxygen);
+}
+
+.bandInk {
+  color: white;
+  background: var(--ink);
+}
+
+.bandRuby {
+  color: white;
+  background: var(--ruby);
+}
+
+.bandRubyDark {
+  color: white;
+  background: var(--ruby-dark);
+}
+
+/* ---------- section headings ---------- */
+
+.sectionHeading {
+  display: grid;
+  grid-template-columns: 0.55fr 1fr;
+  gap: 52px;
+  align-items: end;
+  padding-bottom: 36px;
+  border-bottom: 1px solid currentColor;
+}
+
+.sectionHeading > p {
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sectionNote {
+  max-width: 640px;
+  margin: 28px 0 0;
+  font-size: 17px;
+  line-height: 1.7;
+  opacity: 0.72;
+}
+
+/* ---------- ledger rows ---------- */
+
+.rowList {
+  border-bottom: 1px solid currentColor;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 0.3fr 0.75fr 1fr 0.65fr;
+  gap: 34px;
+  align-items: start;
+  padding: 36px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row h3 {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.row p,
+.row small {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.row p {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.row small {
+  color: var(--mist);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ---------- numbered list (ink band) ---------- */
+
+.numList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.numList li {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: 22px;
+  align-items: center;
+  min-height: 104px;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.numList span {
+  color: var(--mist);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+}
+
+.numList strong {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(24px, 2.1vw, 32px);
+  font-weight: 600;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+/* ---------- bordered card grid ---------- */
+
+/*
+ * A 1px grid gap over an ink background draws every internal rule for us, so
+ * the cells stay correct however many there are and however the grid wraps.
+ */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  gap: 1px;
+  margin: 44px 0 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+}
+
+.cardGrid > li,
+.cardGrid > div {
+  position: relative;
+  display: flex;
+  min-height: 300px;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 24px;
+  background: #f7faf8;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.cardGrid > li:hover,
+.cardGrid > div:hover {
+  z-index: 1;
+  background: linear-gradient(145deg, rgba(148, 210, 189, 0.3), #f7faf8 58%);
+  transform: translateY(-5px);
+}
+
+.cols2 {
+  --cols: 2;
+}
+
+.cols3 {
+  --cols: 3;
+}
+
+.cols5 {
+  --cols: 5;
+}
+
+.cardGrid h3 {
+  margin: 0 0 14px;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cardGrid p {
+  margin: 0;
+  color: rgba(32, 36, 53, 0.65);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.cardIcon {
+  width: 22px;
+  height: 22px;
+  padding: 4px;
+  color: white;
+  background: var(--oxygen);
+}
+
+/* ---------- callout ---------- */
+
+.callout {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 60px;
+  align-items: end;
+  margin-top: 44px;
+  padding: 42px;
+  border-left: 10px solid var(--ruby);
+  color: white;
+  background: var(--ruby-dark);
+}
+
+.callout h3 {
+  margin: 18px 0 8px;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 39px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.callout p {
+  max-width: 720px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.65;
+}
+
+/* ---------- closing band ---------- */
+
+.closing {
+  padding: 88px 0;
+}
+
+.closingBlock {
+  display: grid;
+  grid-template-columns: 0.4fr 1fr 0.7fr auto;
+  gap: 42px;
+  align-items: center;
+}
+
+.closingBlock h2 {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(46px, 4.6vw, 70px);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.closingBlock p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.6;
+}
+
+/* ---------- accordion ---------- */
+
+.accordion {
+  border-top: 1px solid var(--ink);
+}
+
+.accordionItem {
+  border-bottom: 1px solid var(--line);
+}
+
+.accordionItem summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 0;
+  cursor: pointer;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(23px, 2vw, 29px);
+  font-weight: 700;
+  line-height: 1.05;
+  text-transform: uppercase;
+  list-style: none;
+  transition: color 150ms ease;
+}
+
+.accordionItem summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordionItem summary:hover {
+  color: var(--ruby);
+}
+
+.accordionItem summary svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: transform 200ms ease;
+}
+
+.accordionItem[open] summary {
+  color: var(--ruby);
+}
+
+.accordionItem[open] summary svg {
+  transform: rotate(45deg);
+}
+
+.accordionItem > p {
+  max-width: 780px;
+  margin: 0 0 28px;
+  color: rgba(32, 36, 53, 0.72);
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+/* Quiet page-level movement: content arrives with the reader, while the boxed
+ * editorial geometry and hierarchy remain unchanged. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .sectionHeading,
+    .panel,
+    .cardGrid > li,
+    .cardGrid > div,
+    .accordionItem,
+    .closingBlock {
+      animation: editorial-arrive 1ms both;
+      animation-timeline: view();
+      animation-range: entry 4% cover 27%;
+    }
+
+    .cardGrid > :nth-child(even) {
+      animation-range: entry 9% cover 31%;
+    }
+  }
+}
+
+@keyframes editorial-arrive {
+  from {
+    opacity: 0.28;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- form controls ---------- */
+
+.field {
+  display: grid;
+  gap: 9px;
+}
+
+.fieldLabel {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 16px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  color: var(--ink);
+  background: white;
+  font-family: "DM Sans", sans-serif;
+  font-size: 16px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.textarea {
+  min-height: 148px;
+  resize: vertical;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: rgba(32, 36, 53, 0.4);
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--ruby);
+  box-shadow: 5px 5px 0 var(--mist);
+}
+
+.submit {
+  display: flex;
+  width: 100%;
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 1px solid var(--ruby);
+  color: white;
+  background: var(--ruby);
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.submit:hover:not(:disabled) {
+  color: white;
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.submit:disabled {
+  cursor: not-allowed;
+  border-color: var(--line);
+  color: rgba(32, 36, 53, 0.45);
+  background: var(--paper-deep);
+}
+
+.submit svg {
+  width: 18px;
+  height: 18px;
+}
+
+.formNote {
+  padding: 16px 18px;
+  border-left: 6px solid var(--oxygen);
+  background: rgba(0, 95, 115, 0.08);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.formNoteError {
+  border-left-color: var(--ruby);
+  background: rgba(155, 34, 38, 0.08);
+}
+
+/* ---------- focus ---------- */
+
+.page a:focus-visible,
+.page button:focus-visible,
+.page summary:focus-visible,
+.page input:focus-visible,
+.page textarea:focus-visible {
+  outline: 3px solid var(--ruby);
+  outline-offset: 4px;
+}
+
+.bandInk a:focus-visible,
+.bandTeal a:focus-visible,
+.bandRuby a:focus-visible,
+.bandRubyDark a:focus-visible,
+.bandInk button:focus-visible,
+.bandRuby button:focus-visible {
+  outline-color: var(--mist);
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 1100px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .row {
+    grid-template-columns: 0.3fr 0.8fr 1.2fr;
+  }
+
+  .row small {
+    grid-column: 2 / -1;
+  }
+
+  .closingBlock {
+    grid-template-columns: 0.4fr 1fr 0.8fr;
+  }
+
+  .closingBlock > a {
+    grid-column: 2;
+    width: fit-content;
+  }
+}
+
+@media (max-width: 760px) {
+  .frame,
+  .frameNarrow {
+    width: calc(100% - 32px);
+  }
+
+  .hero {
+    padding: 24px 0 68px;
+  }
+
+  .section {
+    padding: 72px 0;
+  }
+
+  .sectionTight {
+    padding: 56px 0;
+  }
+
+  .metaBar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .metaBar span:nth-child(2) {
+    display: none;
+  }
+
+  .display {
+    font-size: clamp(54px, 16vw, 82px);
+  }
+
+  .slab {
+    margin-left: -7px;
+    padding-right: 58px;
+  }
+
+  .slab svg {
+    right: 15px;
+    width: 31px;
+    height: 31px;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .textAction {
+    width: fit-content;
+  }
+
+  .panel {
+    width: calc(100% - 12px);
+    box-shadow: 12px 12px 0 var(--mist);
+  }
+
+  .panelRuby {
+    box-shadow: 12px 12px 0 var(--ruby);
+  }
+
+  .panel::before {
+    left: -9px;
+    width: 4px;
+  }
+
+  .panelHeader span:last-child {
+    display: none;
+  }
+
+  .panelBody {
+    padding: 26px 20px;
+  }
+
+  .panelFooter {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .panelFooter strong {
+    text-align: left;
+  }
+
+  .sectionHeading {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 28px 0;
+  }
+
+  .row small {
+    grid-column: auto;
+  }
+
+  .cardGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cardGrid > li,
+  .cardGrid > div {
+    min-height: 0;
+  }
+
+  .callout {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 30px 24px;
+  }
+
+  .closing {
+    padding: 64px 0;
+  }
+
+  .closingBlock {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+
+  .closingBlock > a {
+    grid-column: auto;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryAction,
+  .lightAction,
+  .ghostAction,
+  .textAction,
+  .accordionItem summary svg {
+    transition: none;
+  }
+
+  .primaryAction:hover,
+  .lightAction:hover,
+  .ghostAction:hover {
+    transform: none;
+  }
+
+  .cardGrid > li,
+  .cardGrid > div {
+    animation: none;
+    transition: none;
+  }
+}

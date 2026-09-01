@@ -7,14 +7,31 @@ export default async function UserDetailPage(props: {
 }) {
   const { userType, id } = await props.params;
 
-  const userData = await fetchUserDataById(
-    id,
-    userType as "donor" | "hospital"
-  );
+  let userData = null;
+  try {
+    userData = await fetchUserDataById(
+      id,
+      userType as "donor" | "hospital"
+    );
+  } catch (error) {
+    console.error("User profile data is unavailable:", error);
+  }
 
   if (!userData) {
     return (
-      <div className="p-6 text-red-800 text-center text-lg">User not found</div>
+      <GradientBackground className="flex min-h-screen items-center justify-center p-6">
+        <section className="glass-morphism w-full max-w-xl p-8 text-left">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
+            Admin / profile lookup
+          </p>
+          <h1 className="mt-3 text-4xl font-bold uppercase text-text-dark">
+            User record unavailable
+          </h1>
+          <p className="mt-3 text-text-dark/70">
+            This profile could not be found, or the data service is temporarily offline.
+          </p>
+        </section>
+      </GradientBackground>
     );
   }
 

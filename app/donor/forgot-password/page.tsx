@@ -122,7 +122,7 @@ export default function DonorForgotPasswordPage() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-red-700 to-yellow-600 hover:from-red-800 hover:to-yellow-700 text-white"
+                    className="w-full bg-primary text-white hover:bg-primary/90"
                     size="lg"
                   >
                     {isSubmitting ? (

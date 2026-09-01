@@ -79,7 +79,7 @@ export default function ResetPasswordForm({
         </p>
         <Link href="/auth/sign-in">
           <Button
-            className="w-full bg-gradient-to-r from-red-700 to-yellow-600 hover:from-red-800 hover:to-yellow-700 text-white"
+            className="w-full bg-primary text-white hover:bg-primary/90"
             size="lg"
           >
             Go to Sign In
@@ -139,7 +139,7 @@ export default function ResetPasswordForm({
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-gradient-to-r from-red-700 to-yellow-600 hover:from-red-800 hover:to-yellow-700 text-white"
+          className="w-full bg-primary text-white hover:bg-primary/90"
           size="lg"
         >
           {isSubmitting ? (

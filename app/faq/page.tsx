@@ -8,14 +8,15 @@ import Header from "@/components/Header";
 import ScrollReveal from "@/components/ScrollReveal";
 import { ArrowUp, ChevronDown, Heart } from "lucide-react";
 import { faqCategories } from "@/constants/faq";
+import styles from "@/styles/public-pages.module.css";
 
 export default function FaqPage() {
   const [openIndex, setOpenIndex] = useState<string | null>(null);
 
   return (
-    <GradientBackground>
+    <GradientBackground className={styles.supportPage}>
       {/* Header */}
-      <Header />
+      <Header variant="editorial" />
 
       {/* Hero Section */}
       <section className="py-20 px-4 bg-white/5 backdrop-blur-[2px]">

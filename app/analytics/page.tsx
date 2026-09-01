@@ -69,7 +69,7 @@ interface AnalyticsStats {
   byEventType: Record<string, number>;
 }
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
+const COLORS = ["#9B2226", "#005F73", "#94D2BD", "#E9D8A6", "#202435"];
 
 export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<AnalyticsEvent[]>([]);
@@ -365,7 +365,7 @@ export default function AnalyticsPage() {
                         <Line
                           type="monotone"
                           dataKey="count"
-                          stroke="#8884d8"
+                          stroke="#005F73"
                           strokeWidth={2}
                           name="Events"
                         />
@@ -392,7 +392,7 @@ export default function AnalyticsPage() {
                           labelLine={false}
                           label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                           outerRadius={80}
-                          fill="#8884d8"
+                          fill="#9B2226"
                           dataKey="value"
                         >
                           {prepareEventTypeChartData().map((entry, index) => (
@@ -435,7 +435,7 @@ export default function AnalyticsPage() {
                           }}
                         />
                         <Legend />
-                        <Bar dataKey="value" fill="#8884d8" name="Events" />
+                        <Bar dataKey="value" fill="#005F73" name="Events" />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -464,7 +464,7 @@ export default function AnalyticsPage() {
                           }}
                         />
                         <Legend />
-                        <Bar dataKey="value" fill="#8884d8" name="Count" />
+                        <Bar dataKey="value" fill="#9B2226" name="Count" />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>

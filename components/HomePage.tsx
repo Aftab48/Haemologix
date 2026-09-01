@@ -1,73 +1,123 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowUp } from "lucide-react";
-import { Heart, Shield, Activity, Droplets } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import {
+  Activity,
+  ArrowDown,
+  ArrowRight,
+  ArrowUpRight,
+  Bell,
+  CheckCircle2,
+  CircleAlert,
+  Droplet,
+  HeartPulse,
+  Hospital,
+  MapPin,
+  Navigation,
+  Radio,
+  ShieldCheck,
+  Smartphone,
+  Timer,
+  Users,
+} from "lucide-react";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import PasskeyModal from "@/components/PasskeyModal";
+import Header from "@/components/Header";
+import EditorialFooter from "@/components/EditorialFooter";
 import { stats, features, steps, CarouselData } from "@/constants";
 import { getCurrentUser } from "@/lib/actions/user.actions";
-import Image from "next/image";
-import { gsap } from "@/lib/gsap-utils";
-import Header from "@/components/Header";
+import editorial from "@/styles/editorial.module.css";
+import styles from "./home.module.css";
+
+const statNotes: Record<string, string> = {
+  "Lives Saved": "Matched requests",
+  "Active Donors": "Ready to respond",
+  "Partner Hospitals": "Connected live",
+  "Cities Covered": "Across India",
+};
+
+const featureMeta = [
+  { code: "ALERT", detail: "SMS · email · in-app" },
+  { code: "MATCH", detail: "Blood group · distance · donation gap" },
+  { code: "ROLES", detail: "Donor · hospital · blood bank · admin" },
+  { code: "TRUST", detail: "OTP · encryption · access control" },
+];
+
+const journeyIcons = [Hospital, Bell, Smartphone, Navigation, HeartPulse];
+
+const signalNodes = [
+  { label: "Request", time: "T+0:00", Icon: Hospital },
+  { label: "Match", time: "T+0:08", Icon: MapPin },
+  { label: "Alert", time: "T+0:30", Icon: Radio },
+  { label: "Confirmed", time: "T+12:00", Icon: CheckCircle2 },
+];
+
+const midPoint = Math.ceil(CarouselData.length / 2);
+const firstRowData = CarouselData.slice(0, midPoint);
+const secondRowData = CarouselData.slice(midPoint);
+
+const reveal = {
+  hidden: { opacity: 0, y: 36 },
+  visible: { opacity: 1, y: 0 },
+};
 
 const HomePage = () => {
-  const [activeFeature, setActiveFeature] = useState(0);
-  const heroRef = useRef<HTMLElement | null>(null);
-  const statsRef = useRef<HTMLDivElement | null>(null);
-  const featuresRef = useRef<HTMLElement | null>(null);
-  const stepsRef = useRef<HTMLElement | null>(null);
-
-  // Read ?admin=true after mount instead of via useSearchParams(): the hook
-  // forces the whole page to bail out of server rendering, which left crawlers
-  // with an empty "Loading..." shell. The passkey modal is client-only anyway.
   const [isAdmin, setIsAdmin] = useState(false);
+  const [activeSignal, setActiveSignal] = useState(0);
+  const shouldReduceMotion = useReducedMotion();
+  const router = useRouter();
+  const { user, isSignedIn } = useUser();
+  const [role, setRole] = useState<CurrentUserResponse["role"]>(null);
+  const [dbUser, setDbUser] = useState<CurrentUserResponse | null>(null);
+  const [journeyPhase, setJourneyPhase] = useState<"idle" | "playing" | "complete">("idle");
+  const [journeyCycle, setJourneyCycle] = useState(0);
+  const journeySectionRef = useRef<HTMLElement | null>(null);
+  const journeyArmedRef = useRef(true);
+  const lastScrollYRef = useRef(0);
+  const journeyTimerRef = useRef<number | null>(null);
+
+  const { scrollYProgress: pageProgress } = useScroll();
+  const heroLift = useSpring(
+    useTransform(pageProgress, [0, 0.22], [0, 150]),
+    { stiffness: 90, damping: 24 }
+  );
+  const heroTurn = useSpring(
+    useTransform(pageProgress, [0, 0.22], [0, 18]),
+    { stiffness: 70, damping: 22 }
+  );
+
   useEffect(() => {
     setIsAdmin(
       new URLSearchParams(window.location.search).get("admin") === "true"
     );
   }, []);
 
-  const router = useRouter();
-
-  const handleClick = (path: string) => {
-    if (path.includes("admin")) {
-      router.push(path);
-      return;
-    }
-    // Register forms are reachable without login
-    const isRegisterRoute = /^\/(donor|hospital|bloodbank)\/register/.test(path);
-    if (isRegisterRoute || isSignedIn) {
-      router.push(path);
-    } else {
-      router.push("/auth/sign-up");
-    }
-  };
-
-  const { user, isSignedIn } = useUser();
-  const [role, setRole] = useState<CurrentUserResponse["role"]>(null);
-  const [dbUser, setDbUser] = useState<CurrentUserResponse | null>(null);
-  // Prefer DB registration id (alerts/inventory FK) over Clerk id in dashboard URLs
-  const userId =
-    dbUser?.user && "id" in dbUser.user && dbUser.user.id
-      ? dbUser.user.id
-      : user?.id;
+  useEffect(() => {
+    if (shouldReduceMotion) return;
+    const timer = window.setInterval(() => {
+      setActiveSignal((current) => (current + 1) % signalNodes.length);
+    }, 1800);
+    return () => window.clearInterval(timer);
+  }, [shouldReduceMotion]);
 
   useEffect(() => {
     const fetchUser = async () => {
       if (!isSignedIn) return;
-
       const email = user?.primaryEmailAddress?.emailAddress;
       if (!email) return;
 
       try {
-        const res = await getCurrentUser(email);
-        setDbUser(res);
+        setDbUser(await getCurrentUser(email));
       } catch (err) {
         console.error("[Dashboard] error calling getCurrentUser:", err);
       }
@@ -77,612 +127,474 @@ const HomePage = () => {
   }, [isSignedIn, user]);
 
   useEffect(() => {
-    if (dbUser) {
-      setRole(dbUser.role);
-    }
+    if (dbUser) setRole(dbUser.role);
   }, [dbUser]);
 
-  // GSAP animations
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      if (heroRef.current) {
-        gsap.from(heroRef.current, {
-          opacity: 0,
-          y: 50,
-          duration: 1,
-          ease: 'power3.out',
-        });
-      }
+    const section = journeySectionRef.current;
+    if (!section) return;
 
-      if (statsRef.current) {
-        const statCards = statsRef.current.querySelectorAll('.stat-card');
-        gsap.set(statCards, { opacity: 1, scale: 1 });
-        gsap.from(statCards, {
-          scale: 0.8,
-          opacity: 0,
-          duration: 0.6,
-          stagger: 0.1,
-          ease: 'back.out(1.7)',
-          scrollTrigger: {
-            trigger: statsRef.current,
-            start: 'top 80%',
-            once: true,
-          },
-        });
-      }
-    });
+    if (shouldReduceMotion) {
+      setJourneyPhase("complete");
+      return;
+    }
 
-    return () => {
-      ctx.revert();
+    let frame = 0;
+    lastScrollYRef.current = window.scrollY;
+
+    const clearJourneyTimer = () => {
+      if (journeyTimerRef.current !== null) {
+        window.clearTimeout(journeyTimerRef.current);
+        journeyTimerRef.current = null;
+      }
     };
-  }, []);
+
+    const updateJourney = () => {
+      frame = 0;
+      const currentScrollY = window.scrollY;
+      const direction = currentScrollY - lastScrollYRef.current;
+      const rect = section.getBoundingClientRect();
+
+      // Leaving the section above re-arms it, but upward scrolling never replays it.
+      if (direction < 0 && rect.top >= window.innerHeight * 0.88) {
+        journeyArmedRef.current = true;
+      }
+
+      if (
+        direction > 0 &&
+        journeyArmedRef.current &&
+        rect.top <= window.innerHeight * 0.72 &&
+        rect.bottom > window.innerHeight * 0.25
+      ) {
+        journeyArmedRef.current = false;
+        clearJourneyTimer();
+        setJourneyCycle((cycle) => cycle + 1);
+        setJourneyPhase("playing");
+        journeyTimerRef.current = window.setTimeout(() => {
+          setJourneyPhase("complete");
+          journeyTimerRef.current = null;
+        }, 15000);
+      }
+
+      // Once the section is passed, lock the resolved route instead of looping off-screen.
+      if (rect.bottom <= 0) {
+        clearJourneyTimer();
+        setJourneyPhase("complete");
+      }
+
+      lastScrollYRef.current = currentScrollY;
+    };
+
+    const handleScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateJourney);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+      clearJourneyTimer();
+    };
+  }, [shouldReduceMotion]);
+
+  const userId =
+    dbUser?.user && "id" in dbUser.user && dbUser.user.id
+      ? dbUser.user.id
+      : user?.id;
+
+  const handleClick = (path: string) => {
+    if (path.includes("admin")) {
+      router.push(path);
+      return;
+    }
+    const isRegisterRoute = /^\/(donor|hospital|bloodbank)\/register/.test(path);
+    router.push(isRegisterRoute || isSignedIn ? path : "/auth/sign-up");
+  };
 
   let dashboardMessage = "";
   let dashboardPath = "/";
   if (role === "DONOR") {
     dashboardPath = `/donor/${userId}`;
-    dashboardMessage = "Donor Dashboard";
+    dashboardMessage = "Open donor dashboard";
   }
   if (role === "HOSPITAL") {
     dashboardPath = `/hospital/${userId}`;
-    dashboardMessage = "Hospital Dashboard";
+    dashboardMessage = "Open hospital dashboard";
   }
-
-  /* --- Data Splitting for Double Marquee --- */
-  // Split data into two halves for visual variety
-  const midPoint = Math.ceil(CarouselData.length / 2);
-  const firstRowData = CarouselData.slice(0, midPoint);
-  const secondRowData = CarouselData.slice(midPoint);
+  const signedInWithRole = Boolean(isSignedIn && role);
 
   return (
-    <div className="min-h-screen relative" style={{
-      background: `
-        radial-gradient(at 15% 20%, #9B2226 0px, transparent 50%),
-        radial-gradient(at 85% 10%, #94D2BD 0px, transparent 45%),
-        radial-gradient(at 60% 80%, #E9D8A6 0px, transparent 50%),
-        radial-gradient(at 30% 60%, #9B2226 0px, transparent 40%),
-        radial-gradient(at 75% 45%, #94D2BD 0px, transparent 35%),
-        radial-gradient(at 10% 85%, #E9D8A6 0px, transparent 45%),
-        radial-gradient(at 90% 75%, #9B2226 0px, transparent 38%),
-        radial-gradient(at 45% 25%, #94D2BD 0px, transparent 42%),
-        linear-gradient(135deg, #E9D8A6 0%, #94D2BD 50%, #9B2226 100%)
-      `
-    }}>
-      {/* Noise Overlay */}
-      <div 
-        className="fixed inset-0 opacity-60 mix-blend-overlay pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '180px 180px'
-        }}
-      />
-      {/* Organization schema lives in app/layout.tsx (every page) */}
-
-      {/* Header */}
-      <Header />
-
+    <div className={`${editorial.page} ${styles.page}`}>
+      <Header variant="editorial" />
       {isAdmin && <PasskeyModal />}
 
-      {/* Hero Section */}
-      <section ref={heroRef} className="py-20 px-4 bg-transparent relative overflow-hidden z-10">
-        <div className="absolute inset-0 bg-white/5 backdrop-blur-[2px]"></div>
-        <div className="absolute inset-0 oxygen-flow opacity-10"></div>
-        <div className="container mx-auto text-center relative z-10">
-          <Badge className="mb-4 animate-pulse-red bg-primary/20 text-primary border-primary hover:bg-primary/30 transition-colors">
-            🚨 Emergency Blood Donation Platform
-          </Badge>
-        
-          <h1 className="text-5xl md:text-6xl font-outfit font-bold mb-6 leading-tight text-primary animate-fade-in">
-            Save Lives with
-            <span className="block text-secondary mt-2">Real-Time Blood Alerts</span>
-          </h1>
-          <p className="text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-text-dark font-dm-sans animate-slide-in-up">
-            Haemologix is India&apos;s real-time emergency blood network. We
-            connect hospitals and blood banks in critical need with nearby
-            eligible donors, using geolocation matching and instant alerts to
-            mobilize donors when every second counts.
-          </p>
+      <main>
+        <section className={styles.hero}>
+          <div className={styles.heroGlow} aria-hidden="true" />
+          <div className={editorial.frame}>
+            <div className={`${editorial.metaBar} ${styles.metaBar}`}>
+              <span>HAEMOLOGIX / EMERGENCY BLOOD NETWORK</span>
+              <span>HOWRAH · INDIA</span>
+              <span>THE REQUEST STARTS HERE</span>
+            </div>
 
-          <div className="mb-12">
-            {/* Buttons Logic */}
-            {(!isSignedIn || !role) && (
-              <div className="flex flex-wrap justify-center gap-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-center">
-                  <Button
-                    size="lg"
-                    onClick={() => handleClick("/donor/onboard")}
-                    className="gradient-ruby hover:opacity-90 text-lg px-8 py-3 w-64 text-white shadow-lg hover:shadow-primary/50 transition-all duration-300"
-                  >
-                    <Heart className="w-5 h-5 mr-2" />
-                    Become a Donor
-                  </Button>
-
-                  <Button
-                    size="lg"
-                    onClick={() => handleClick("/hospital/register")}
-                    className="bg-transparent hover:bg-secondary/10 text-lg px-8 py-3 w-64 text-secondary border-secondary border-2 transition-all duration-300"
-                  >
-                    <Activity className="w-5 h-5 mr-2" />
-                    Hospital Registration
-                  </Button>
-
-                  <Button
-                    size="lg"
-                    onClick={() => handleClick("/bloodbank/register")}
-                    className="bg-transparent hover:bg-accent/20 text-lg px-8 py-3 w-64 text-text-dark border-accent border-2 transition-all duration-300"
-                  >
-                    <Droplets className="w-8 h-8 mr-2" />
-                    Blood Bank Registration
-                  </Button>
-
-                  <Button
-                    size="lg"
-                    onClick={() => handleClick("/?admin=true")}
-                    className="gradient-oxygen hover:opacity-90 text-lg px-8 py-3 w-64 text-white shadow-lg hover:shadow-secondary/50 transition-all duration-300"
-                  >
-                    <Shield className="w-5 h-5 mr-2" />
-                    Admin Dashboard
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {isSignedIn && role && (
-              <div className=" gap-4 flex flex-col md:flex-row justify-center">
-                <Button
-                  size="lg"
-                  onClick={() => handleClick(dashboardPath)}
-                  className="gradient-ruby hover:opacity-90 text-lg px-8 py-3 text-white shadow-lg hover:shadow-primary/50 transition-all duration-300"
-                >
-                  <Activity className="w-5 h-5 mr-2" />
-                  {dashboardMessage}
-                </Button>
-                <Button
-                  size="lg"
-                  onClick={() => handleClick("/?admin=true")}
-                  className="gradient-oxygen hover:opacity-90 text-lg px-8 py-3 text-white shadow-lg hover:shadow-secondary/50 transition-all duration-300"
-                >
-                  <Shield className="w-5 h-5 mr-2" />
-                  Admin Dashboard
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Stats */}
-          <div ref={statsRef} className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto relative z-20">
-            {stats.map((stat, index) => (
-              <Card
-                key={index}
-                className="stat-card border-2 border-accent/40 shadow-xl glass-morphism card-hover bg-white/30 backdrop-blur-md hover:bg-white/40 hover:shadow-primary/50"
+            <div className={styles.heroGrid}>
+              <motion.div
+                className={styles.heroCopy}
+                initial={shouldReduceMotion ? false : "hidden"}
+                animate="visible"
+                variants={reveal}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               >
-                <CardContent className="p-6 text-center">
-                  <stat.icon className="w-8 h-8 mx-auto mb-2 text-primary drop-shadow-lg" />
-                  <div className="text-2xl font-outfit font-bold text-secondary drop-shadow-md">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm font-dm-sans text-text-dark font-semibold">{stat.label}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+                <p className={editorial.eyebrow}>BETWEEN NEED AND RELIEF</p>
+                <h1 className={styles.heroTitle}>
+                  Emergency blood
+                  <span>moves in minutes.</span>
+                  Not phone calls.
+                </h1>
+                <p className={styles.heroLede}>
+                  One request travels through Haemologix—matched by blood group,
+                  distance and donation gap—until the right nearby donor says yes.
+                </p>
 
-      {/* Features Section */}
-      <section
-        id="features"
-        ref={featuresRef}
-        className="py-20 px-4 bg-white/5 backdrop-blur-[2px] relative z-10"
-      >
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-outfit font-bold mb-4 text-primary border-0">
-              Powerful Features
-            </h2>
-            <p className="text-xl max-w-2xl mx-auto text-text-dark font-dm-sans">
-              Advanced technology meets humanitarian mission to create the most
-              efficient blood donation network.
-            </p>
-          </div>
-
-          <div className="w-full px-2 md:px-0">
-            <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto mb-8">
-              {features.map((feature, index) => (
-                <Card
-                  key={index}
-                  className={`cursor-pointer transition-all duration-300 h-full glass-morphism border shadow-lg hover:shadow-accent/50 hover:shadow-2xl hover:border-accent/60 card-hover ${
-                    activeFeature === index
-                      ? "border-primary shadow-lg bg-white/40 scale-105"
-                      : "border-mist-green/40"
-                  }`}
-                  onClick={() => setActiveFeature(index)}
-                >
-                  <CardContent className="p-4 h-full flex flex-col">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="w-6 h-6 md:w-10 md:h-10 rounded-lg flex items-center justify-center flex-shrink-0 gradient-oxygen text-white">
-                        <feature.icon className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-base font-outfit font-semibold mb-1 text-primary">
-                          {feature.title}
-                        </h3>
-                        <p className="text-xs leading-tight font-dm-sans text-text-dark/80">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section
-        id="how-it-works"
-        ref={stepsRef}
-        className="py-20 px-4 bg-transparent relative overflow-hidden z-10"
-      >
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-outfit font-bold mb-4 text-primary">
-              How It Works
-            </h2>
-            <p className="text-xl font-dm-sans text-text-dark">
-              Simple steps to save lives in critical moments.
-            </p>
-          </div>
-
-          <div className="relative max-w-6xl mx-auto">
-            <svg
-              className="absolute hidden md:block inset-0 w-full h-full pointer-events-none"
-              style={{ zIndex: 1 }}
-            >
-              <defs>
-                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#94D2BD" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#005F73" stopOpacity="0.6" />
-                </linearGradient>
-              </defs>
-              <path d="M 200 120 Q 300 80 400 120" stroke="url(#lineGradient)" strokeWidth="3" fill="none" className="animate-pulse" strokeDasharray="10,5" />
-              <path d="M 400 120 Q 500 160 600 120" stroke="url(#lineGradient)" strokeWidth="3" fill="none" className="animate-pulse" strokeDasharray="10,5" style={{ animationDelay: "0.5s" }} />
-              <path d="M 600 120 Q 700 80 800 120" stroke="url(#lineGradient)" strokeWidth="3" fill="none" className="animate-pulse" strokeDasharray="10,5" style={{ animationDelay: "1s" }} />
-              <path d="M 800 120 Q 900 160 1000 120" stroke="url(#lineGradient)" strokeWidth="3" fill="none" className="animate-pulse" strokeDasharray="10,5" style={{ animationDelay: "1.5s" }} />
-            </svg>
-
-            <div
-              className="grid grid-cols-1 md:grid-cols-5 gap-8 relative"
-              style={{ zIndex: 2 }}
-            >
-              {steps.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center text-center group"
-                  style={{
-                    animation: `fadeInUp 0.8s ease-out ${item.delay} both`,
-                  }}
-                >
-                  <div className="relative mb-6">
-                    <div className="w-24 h-24 rounded-full glass-morphism border-2 border-accent shadow-lg flex items-center justify-center text-3xl transition-all duration-300 group-hover:shadow-primary/50 group-hover:shadow-2xl group-hover:bg-mist-green/40 group-hover:scale-110 animate-float">
-                      <span className="filter drop-shadow-lg">{item.icon}</span>
-                    </div>
-                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full gradient-oxygen backdrop-blur-sm flex items-center justify-center text-white font-outfit font-bold text-sm border-2 border-secondary">
-                      {item.step}
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-outfit font-semibold text-primary mb-3 group-hover:text-secondary transition-colors duration-300">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm font-dm-sans text-text-dark leading-relaxed group-hover:text-text-dark/80 transition-colors duration-300">
-                    {item.description}
-                  </p>
+                <div className={styles.heroActions}>
+                  {signedInWithRole ? (
+                    <button
+                      type="button"
+                      onClick={() => handleClick(dashboardPath)}
+                      className={styles.primaryAction}
+                    >
+                      {dashboardMessage}
+                      <ArrowRight aria-hidden="true" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleClick("/donor/onboard")}
+                      className={styles.primaryAction}
+                    >
+                      Join as a donor
+                      <Droplet aria-hidden="true" />
+                    </button>
+                  )}
+                  <Link href="/pilot" className={styles.secondaryAction}>
+                    Run a hospital pilot
+                    <ArrowUpRight aria-hidden="true" />
+                  </Link>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <style jsx>{`
-          @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        `}</style>
-      </section>
 
-      {/* Partners & Community Section - UPDATED: STYLISH DOUBLE MARQUEE */}
-      <section className="py-24 bg-white/5 backdrop-blur-[2px] relative overflow-hidden z-10">
-        <div className="container mx-auto mb-16">
-          <div className="text-center">
-            <h2 className="text-4xl font-outfit font-bold mb-4 text-primary mt-11">
-              Our Community Impact
-            </h2>
-            <p className="text-xl font-dm-sans text-text-dark">
-              Trusted by hospitals, loved by donors, saving lives together.
-            </p>
-          </div>
-        </div>
+                <div className={styles.heroTrust}>
+                  <span><ShieldCheck aria-hidden="true" /> Verified network</span>
+                  <span><Smartphone aria-hidden="true" /> No app required</span>
+                  <span><Timer aria-hidden="true" /> Two-minute sign-up</span>
+                </div>
+              </motion.div>
 
-        {/* Marquee Wrapper with Tilt Effect */}
-        <div className="relative w-full overflow-hidden transform -rotate-1 scale-105">
-          {/* Gradient Masks */}
-          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white/10 to-transparent z-20 pointer-events-none blur-xl" />
-          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-white/10 to-transparent z-20 pointer-events-none blur-xl" />
-
-          {/* ROW 1: Moves Left */}
-          <div className="flex w-full mb-6">
-            <div className="flex animate-scroll-left hover:pause gap-6">
-              {[...firstRowData, ...firstRowData, ...firstRowData].map((item, index) => (
-                <div
-                  key={`row1-${index}`}
-                  className="flex-shrink-0 w-72 h-44 relative rounded-xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-primary/50 transition-all duration-500"
-                >
+              <motion.div
+                className={styles.networkStage}
+                style={shouldReduceMotion ? undefined : { y: heroLift, rotateZ: heroTurn }}
+                role="img"
+                aria-label="A blood request moving through the Haemologix network"
+              >
+                <div className={styles.networkHalo} aria-hidden="true" />
+                <div className={`${styles.orbit} ${styles.orbitOne}`} aria-hidden="true" />
+                <div className={`${styles.orbit} ${styles.orbitTwo}`} aria-hidden="true" />
+                <div className={styles.networkCore}>
+                  <span className={styles.corePulse} aria-hidden="true" />
                   <Image
-                    src={item.image || "/placeholder.svg"}
-                    alt={item.title}
-                    fill
-                    unoptimized
-                    sizes="288px"
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    src="/assets/Logos - transparent bg/icon 1.png"
+                    alt=""
+                    width={132}
+                    height={158}
+                    priority
                   />
-                  {/* Glass Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-                  
-                  {/* Content */}
-                  <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 block ${
-                          item.type === "hospital" ? "text-secondary" : item.type === "donors" ? "text-accent" : "text-primary"
-                        }`}>
-                          {item.type}
-                        </span>
-                        <h3 className="text-white font-outfit font-bold text-lg leading-tight">
-                          {item.title}
-                        </h3>
-                      </div>
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-                          <ArrowUp className="w-4 h-4 rotate-45" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <strong>LIVE</strong>
                 </div>
-              ))}
+
+                {signalNodes.map(({ label, time, Icon }, index) => (
+                  <motion.div
+                    key={label}
+                    className={`${styles.signalNode} ${styles[`signalNode${index + 1}`]} ${
+                      activeSignal === index ? styles.signalNodeActive : ""
+                    }`}
+                    animate={
+                      shouldReduceMotion
+                        ? undefined
+                        : { y: activeSignal === index ? -7 : 0, scale: activeSignal === index ? 1.05 : 1 }
+                    }
+                    transition={{ type: "spring", stiffness: 220, damping: 18 }}
+                  >
+                    <span><Icon aria-hidden="true" /></span>
+                    <div>
+                      <strong>{label}</strong>
+                      <small>{time}</small>
+                    </div>
+                  </motion.div>
+                ))}
+
+                <div className={styles.liveStatus}>
+                  <span />
+                  {signalNodes[activeSignal].label} in progress
+                </div>
+                <div className={styles.stageShadow} aria-hidden="true" />
+              </motion.div>
+            </div>
+
+            <a href="#journey" className={styles.scrollCue}>
+              Follow one request
+              <ArrowDown aria-hidden="true" />
+            </a>
+          </div>
+        </section>
+
+        <section className={styles.statsStream} aria-label="Haemologix network statistics">
+          <div className={editorial.frame}>
+            <header className={styles.statsHeading}>
+              <div>
+                <p>THE SIGNAL KEEPS TRAVELLING</p>
+                <h2>Proof measured in response.</h2>
+              </div>
+              <p>
+                Every number is another point where a request found reach, trust and a real
+                person ready to move.
+              </p>
+            </header>
+
+            <div className={styles.statsTrack}>
+              {stats.map((stat, index) => {
+                const StatIcon = stat.icon;
+                return (
+                  <motion.article
+                    className={styles.stat}
+                    key={stat.label}
+                    initial={shouldReduceMotion ? false : { opacity: 0, y: 34 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.45 }}
+                    transition={{ delay: index * 0.09, duration: 0.6 }}
+                  >
+                    <span className={styles.statIndex}>0{index + 1}</span>
+                    <div className={styles.statNode}><StatIcon aria-hidden="true" /></div>
+                    <div className={styles.statCopy}>
+                      <strong>{stat.value}</strong>
+                      <span>{stat.label}</span>
+                      <small>{statNotes[stat.label]}</small>
+                    </div>
+                  </motion.article>
+                );
+              })}
             </div>
           </div>
+        </section>
 
-          {/* ROW 2: Moves Right */}
-          <div className="flex w-full">
-            <div className="flex animate-scroll-right hover:pause gap-6">
-              {[...secondRowData, ...secondRowData, ...secondRowData].map((item, index) => (
-                <div
-                  key={`row2-${index}`}
-                  className="flex-shrink-0 w-72 h-44 relative rounded-xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-secondary/50 transition-all duration-500"
-                >
-                  <Image
-                    src={item.image || "/placeholder.svg"}
-                    alt={item.title}
-                    fill
-                    unoptimized
-                    sizes="288px"
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  {/* Glass Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-                  
-                  {/* Content */}
-                  <div className="absolute bottom-0 left-0 w-full p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                     <div className="flex justify-between items-end">
-                      <div>
-                        <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 block ${
-                          item.type === "hospital" ? "text-secondary" : item.type === "donors" ? "text-accent" : "text-primary"
-                        }`}>
-                          {item.type}
-                        </span>
-                        <h3 className="text-white font-outfit font-bold text-lg leading-tight">
-                          {item.title}
-                        </h3>
-                      </div>
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-                          <ArrowUp className="w-4 h-4 rotate-45" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <style jsx>{`
-          .hover\:pause:hover {
-            animation-play-state: paused;
-          }
-          
-          @keyframes scroll-left {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-          
-          @keyframes scroll-right {
-            0% { transform: translateX(-50%); }
-            100% { transform: translateX(0); }
-          }
-          
-          .animate-scroll-left {
-            animation: scroll-left 50s linear infinite;
-            display: flex;
-            width: max-content; 
-          }
-
-          .animate-scroll-right {
-            animation: scroll-right 50s linear infinite;
-            display: flex;
-            width: max-content; 
-          }
-        `}</style>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-white/5 backdrop-blur-[2px] relative overflow-hidden z-10">
-        <div className="absolute inset-0 oxygen-flow opacity-10"></div>
-        <div className="container mx-auto text-center relative z-10">
-          <h2 className="text-4xl font-outfit font-bold mb-4 text-primary animate-scale-in">
-            Ready to Save Lives?
-          </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto font-dm-sans text-text-dark">
-            Join thousands of donors and healthcare providers making a
-            difference every day.
-          </p>
-
-          <>
-            {(!isSignedIn || !role) && (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/donor/onboard">
-                  <Button
-                    size="lg"
-                    variant="secondary"
-                    className="text-lg px-8 py-3 gradient-ruby text-white hover:opacity-90 shadow-lg hover:shadow-primary/50 transition-all duration-300"
-                  >
-                    Register as Donor
-                  </Button>
-                </Link>
-                <Link href="/hospital/register">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="text-lg px-8 py-3 hover:bg-secondary/10 bg-transparent border-secondary border-2 text-secondary transition-all duration-300"
-                  >
-                    Register Hospital
-                  </Button>
-                </Link>
-              </div>
-            )}
-
-            {isSignedIn &&
-              role &&
-              dbUser &&
-              "status" in dbUser &&
-              dbUser.status === "APPROVED" && (
-              <div className="flex justify-center">
-                <Button
-                  size="lg"
-                  onClick={() => handleClick(dashboardPath)}
-                  className="gradient-oxygen text-lg px-8 py-3 text-white shadow-lg hover:shadow-secondary/50 hover:opacity-90 transition-all duration-300"
-                >
-                  {dashboardMessage}
-                </Button>
-              </div>
-            )}
-          </>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer
-        className="text-text-dark py-12 my-0 px-4 mx-0 bg-text-dark/95 backdrop-blur-md relative z-10"
-      >
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Heart className="w-6 h-6 text-primary" />
-                <span className="text-xl font-outfit font-bold text-background">
-                  Haemologix
-                </span>
-              </div>
-              <p className="text-background/80 font-dm-sans">
-                Connecting lives through technology and compassion.
+        <section id="journey" ref={journeySectionRef} className={styles.journey}>
+          <div className={editorial.frame}>
+            <div className={styles.journeyIntro}>
+              <p className={editorial.darkEyebrow}>ONE REQUEST / FIVE MOVES</p>
+              <h2>A blood drop with somewhere urgent to be.</h2>
+              <p>
+                It does not move in a straight line. It finds the right people, changes
+                direction, gathers confirmation and keeps going until the emergency is answered.
               </p>
             </div>
-            <div>
-              <h4 className="font-outfit font-semibold mb-4 text-background">Platform</h4>
-              <ul className="space-y-2 text-background/80 font-dm-sans">
-                <li>
-                  <Link href="/donor" className="hover:text-accent transition-colors">
-                    Donor Dashboard
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/hospital" className="hover:text-accent transition-colors">
-                    Hospital Portal
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/admin" className="hover:text-accent transition-colors">
-                    Admin Panel
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-outfit font-semibold mb-4 text-background">Support</h4>
-              <ul className="space-y-2 text-background/80 font-dm-sans">
-                <li>
-                  <Link href="/faq" className="hover:text-accent transition-colors">
-                    Help Center
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/about" className="hover:text-accent transition-colors">
-                    About Haemologix
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-accent transition-colors">
-                    Contact Us
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/emergency-blood" className="hover:text-accent transition-colors">
-                    Emergency Blood
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-outfit font-semibold mb-4 text-background">Legal</h4>
-              <ul className="space-y-2 text-background/80 font-dm-sans">
-                <li>
-                  <Link href="/privacy-policy" className="hover:text-accent transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms-and-conditions" className="hover:text-accent transition-colors">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/privacy-policy" className="hover:text-accent transition-colors">
-                    DPDPA Compliance
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-background/30 mt-8 pt-8 text-center text-background/70 font-dm-sans">
-            <p>
-              &copy; {new Date().getFullYear()} Haemologix Pvt. Ltd. All rights reserved. Built for saving
-              lives.
-            </p>
-          </div>
-          {/* Back to Top */}
-          <div className="flex justify-center mt-6">
-              <button
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="flex items-center gap-1 text-sm text-background/60 hover:text-white transition"
+
+            <div
+              key={journeyCycle}
+              className={`${styles.journeyMap} ${
+                journeyPhase === "playing"
+                  ? styles.journeyMapPlaying
+                  : journeyPhase === "complete"
+                    ? styles.journeyMapComplete
+                    : ""
+              }`}
+            >
+              <div className={styles.routeGrid} aria-hidden="true" />
+              <svg
+                className={styles.routePath}
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                aria-hidden="true"
               >
-                <ArrowUp className="w-4 h-4" />
-                        Back to Top
-              </button>
+                <path className={styles.routeEntry} d="M 6 2 C 6 5, 6 7, 6 10" />
+                <path className={styles.routeLegOne} d="M 6 10 C 6 20, 65 17, 65 27" />
+                <path className={styles.routeLegTwo} d="M 65 27 C 65 37, 15 34, 15 44" />
+                <path className={styles.routeLegThree} d="M 15 44 C 15 54, 63 51, 63 61" />
+                <path className={styles.routeLegFour} d="M 63 61 C 63 71, 8 68, 8 78" />
+                <path className={styles.routeExit} d="M 8 78 C 8 89, 50 86, 50 95" />
+              </svg>
+              <div className={styles.journeyRunner} aria-hidden="true">
+                <Image src="/blood-drop-exact.png" alt="" width={500} height={817} />
+              </div>
+
+              <ol className={styles.journeySteps}>
+                {steps.map((item, index) => {
+                  const Icon = journeyIcons[index] ?? Activity;
+                  return (
+                    <li
+                      className={`${styles.journeyStep} ${styles[`journeyStep${index + 1}`]}`}
+                      key={item.step}
+                    >
+                      <div className={styles.stepNode}>
+                        <span>0{item.step}</span>
+                        <Icon aria-hidden="true" />
+                      </div>
+                      <div className={styles.stepCopy}>
+                        <span>{item.step === "1" ? "THE NEED" : item.step === "5" ? "EMERGENCY ANSWERED" : "THE NETWORK"}</span>
+                        <h3>{item.title}</h3>
+                        <p>{item.description}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+
+              <div className={styles.journeyStart}>
+                <CircleAlert aria-hidden="true" />
+                <span>EMERGENCY</span>
+                <strong>REQUEST RAISED / T+0:00</strong>
+              </div>
+              <div className={styles.journeyFinish}>
+                <CheckCircle2 aria-hidden="true" />
+                <span>REQUEST ANSWERED</span>
+                <strong>DONOR CONFIRMED / T+12:00</strong>
+              </div>
+            </div>
           </div>
-        </div>
-      </footer>
+        </section>
+
+        <section className={styles.capabilities}>
+          <div className={styles.capabilityGlow} aria-hidden="true" />
+          <div className={editorial.frame}>
+            <div className={styles.capabilityHeading}>
+              <p className={editorial.darkEyebrow}>THE ENGINE UNDER THE FLOW</p>
+              <h2>Four quiet systems.<br />One fast answer.</h2>
+            </div>
+
+            <div className={styles.capabilityFlow}>
+              <div className={styles.flowLine} aria-hidden="true" />
+              {features.map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <motion.article
+                    className={styles.capability}
+                    key={feature.title}
+                    initial={shouldReduceMotion ? false : { opacity: 0, y: 38 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.45 }}
+                    transition={{ delay: index * 0.1, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <div className={styles.capabilityIcon}><Icon aria-hidden="true" /></div>
+                    <span>{featureMeta[index]?.code ?? "CORE"} / 0{index + 1}</span>
+                    <h3>{feature.title}</h3>
+                    <p>{feature.description}</p>
+                    <small>{featureMeta[index]?.detail}</small>
+                  </motion.article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.community}>
+          <div className={editorial.frame}>
+            <div className={styles.communityHeading}>
+              <div>
+                <p className={editorial.eyebrow}>THE PEOPLE INSIDE THE SYSTEM</p>
+                <h2>Not users.<br />A living network.</h2>
+              </div>
+              <p>
+                Hospitals raise the signal. Blood banks add reach. Donors turn a digital
+                match into a real arrival.
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.sheet}>
+            <div className={`${styles.sheetFade} ${styles.sheetFadeLeft}`} aria-hidden="true" />
+            <div className={`${styles.sheetFade} ${styles.sheetFadeRight}`} aria-hidden="true" />
+
+            <div className={`${styles.sheetRow} ${styles.scrollLeft}`}>
+              {[...firstRowData, ...firstRowData, ...firstRowData].map((item, index) => (
+                <figure className={styles.tile} key={`community-row-1-${index}`}>
+                  <Image
+                    src={item.image || "/placeholder.jpg"}
+                    alt={index >= firstRowData.length ? "" : item.title}
+                    fill
+                    unoptimized
+                    sizes="288px"
+                  />
+                  <figcaption className={styles.tileCaption}>
+                    <span>{item.type}</span>
+                    <strong>{item.title}</strong>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+
+            <div className={`${styles.sheetRow} ${styles.scrollRight}`}>
+              {[...secondRowData, ...secondRowData, ...secondRowData].map((item, index) => (
+                <figure className={styles.tile} key={`community-row-2-${index}`}>
+                  <Image
+                    src={item.image || "/placeholder.jpg"}
+                    alt={index >= secondRowData.length ? "" : item.title}
+                    fill
+                    unoptimized
+                    sizes="288px"
+                  />
+                  <figcaption className={styles.tileCaption}>
+                    <span>{item.type}</span>
+                    <strong>{item.title}</strong>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.closing}>
+          <div className={styles.closingOrbit} aria-hidden="true" />
+          <div className={styles.closingDrop} aria-hidden="true"><Droplet /></div>
+          <motion.div
+            className={styles.closingContent}
+            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.94 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.45 }}
+            transition={{ duration: 0.7 }}
+          >
+            <span>THE LAST MOVE IS YOURS</span>
+            <h2>Be the reason<br />it only took minutes.</h2>
+            <p>
+              Register once. Get alerted only when your blood group is needed near you.
+            </p>
+            {signedInWithRole ? (
+              <button
+                type="button"
+                onClick={() => handleClick(dashboardPath)}
+                className={styles.closingAction}
+              >
+                {dashboardMessage}
+                <ArrowRight aria-hidden="true" />
+              </button>
+            ) : (
+              <Link href="/donor/onboard" className={styles.closingAction}>
+                Register as a donor
+                <Users aria-hidden="true" />
+              </Link>
+            )}
+            {!signedInWithRole && (
+              <div className={styles.organisationLinks}>
+                <button type="button" onClick={() => handleClick("/hospital/register")}>
+                  Hospital registration <ArrowUpRight />
+                </button>
+                <button type="button" onClick={() => handleClick("/bloodbank/register")}>
+                  Blood bank registration <ArrowUpRight />
+                </button>
+              </div>
+            )}
+          </motion.div>
+        </section>
+      </main>
+
+      <EditorialFooter />
     </div>
   );
 };

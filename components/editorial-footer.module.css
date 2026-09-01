@@ -1,0 +1,189 @@
+.footer {
+  --ink-deep: #141722;
+  --mist: #94d2bd;
+  --ruby: #9b2226;
+  padding: 72px 0 28px;
+  color: white;
+  background: var(--ink-deep);
+}
+
+.frame {
+  width: min(1400px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.top {
+  display: grid;
+  grid-template-columns: 1.3fr repeat(3, 0.7fr);
+  gap: 56px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.brand a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.brand a svg {
+  width: 26px;
+  height: 26px;
+  color: var(--ruby);
+}
+
+.brand p {
+  max-width: 340px;
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.emergency {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 24px;
+  padding: 9px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: var(--mist);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.emergency:hover {
+  color: white;
+  border-color: var(--mist);
+}
+
+.emergency svg {
+  width: 14px;
+  height: 14px;
+}
+
+.column h2 {
+  margin: 0 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.5);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.column ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.column a {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 15px;
+  transition: color 150ms ease;
+}
+
+.column a:hover {
+  color: var(--mist);
+}
+
+.bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 24px;
+}
+
+.bottom p,
+.bottom span {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.toTop {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color 150ms ease;
+}
+
+.toTop:hover {
+  color: white;
+}
+
+.toTop svg {
+  width: 14px;
+  height: 14px;
+}
+
+.footer a:focus-visible,
+.footer button:focus-visible {
+  outline: 3px solid var(--mist);
+  outline-offset: 4px;
+}
+
+@media (max-width: 1000px) {
+  .top {
+    grid-template-columns: 1fr 1fr;
+    gap: 44px;
+  }
+
+  .brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .footer {
+    padding: 56px 0 24px;
+  }
+
+  .frame {
+    width: calc(100% - 32px);
+  }
+
+  .top {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emergency,
+  .column a,
+  .toTop {
+    transition: none;
+  }
+}

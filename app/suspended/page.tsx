@@ -10,6 +10,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getCurrentUser } from "@/lib/actions/user.actions";
 import GradientBackground from "@/components/GradientBackground";
+import styles from "@/styles/public-pages.module.css";
 
 export default function SuspendedPage() {
   const { user } = useUser();
@@ -99,14 +100,14 @@ export default function SuspendedPage() {
 
   if (loading) {
     return (
-      <GradientBackground className="flex items-center justify-center p-4">
+      <GradientBackground className={`${styles.statusPage} flex items-center justify-center p-4`}>
         <div className="text-text-dark text-xl">Loading...</div>
       </GradientBackground>
     );
   }
 
   return (
-    <GradientBackground className="flex items-center justify-center p-4">
+    <GradientBackground className={`${styles.statusPage} flex items-center justify-center p-4`}>
       <Image
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
         width={1200}
@@ -116,7 +117,7 @@ export default function SuspendedPage() {
         alt=""
       />
 
-      <Card className="w-full max-w-2xl glass-morphism border border-accent/30 text-text-dark relative z-10">
+      <Card className={`${styles.suspensionCard} w-full max-w-2xl glass-morphism border border-accent/30 text-text-dark relative z-10`}>
         <CardContent className="p-12 text-center">
           <div className="mb-8">
             <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">

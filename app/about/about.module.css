@@ -1,0 +1,271 @@
+/* About-specific structure. Shared primitives: styles/editorial.module.css */
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.62fr);
+  gap: 72px;
+  align-items: center;
+  padding-top: 64px;
+}
+
+/* The record card: the entity, stated once, in the form a registrar would. */
+.record {
+  display: grid;
+  margin: 0;
+  border-top: 1px solid rgba(32, 36, 53, 0.22);
+}
+
+.record > div {
+  display: grid;
+  grid-template-columns: 0.62fr 1fr;
+  gap: 16px;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(32, 36, 53, 0.14);
+}
+
+.record > div:last-child {
+  border-bottom: 0;
+}
+
+.record dt {
+  color: rgba(32, 36, 53, 0.55);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.record dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.record dd a {
+  border-bottom: 1px solid currentColor;
+}
+
+.record dd a:hover {
+  color: #9b2226;
+}
+
+/* ---------- explanation spread ---------- */
+
+.explain {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 56px;
+  margin-top: 44px;
+}
+
+.explain p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 17px;
+  line-height: 1.8;
+}
+
+.explain p + p {
+  margin-top: 20px;
+}
+
+.pull {
+  align-self: start;
+  padding: 26px 28px;
+  border-left: 8px solid #94d2bd;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.pull strong {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(28px, 2.6vw, 38px);
+  font-weight: 700;
+  line-height: 1.06;
+  text-transform: uppercase;
+}
+
+/* ---------- audience cards ---------- */
+
+.audience h3 {
+  margin: 0 0 12px;
+}
+
+.audience p {
+  margin: 0 0 20px;
+}
+
+.audience a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid currentColor;
+  color: #9b2226;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.audience a svg {
+  width: 14px;
+  height: 14px;
+}
+
+.audience a:hover {
+  color: #202435;
+}
+
+/* ---------- disambiguation ---------- */
+
+.split {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.splitSide {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  padding: 34px 32px 40px;
+}
+
+.splitSide:first-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(148, 210, 189, 0.1);
+}
+
+.splitTag {
+  width: fit-content;
+  padding: 6px 9px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.splitTagUs {
+  color: #005f73;
+  background: #94d2bd;
+}
+
+.splitTagThem {
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.splitSide h3 {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(30px, 3vw, 44px);
+  font-weight: 800;
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.splitSide dl {
+  display: grid;
+  gap: 0;
+  margin: 6px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.splitSide dl > div {
+  display: grid;
+  grid-template-columns: 0.55fr 1fr;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.splitSide dt {
+  color: rgba(255, 255, 255, 0.5);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.splitSide dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.splitNote {
+  margin: 34px 0 0;
+  max-width: 820px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* ---------- faq ---------- */
+
+.faqGrid {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.faqIntro p {
+  margin: 20px 0 0;
+  color: rgba(32, 36, 53, 0.65);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.faqIntro a {
+  color: #005f73;
+  border-bottom: 1px solid currentColor;
+}
+
+@media (max-width: 1100px) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 56px;
+  }
+
+  .explain,
+  .faqGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+  }
+}
+
+@media (max-width: 760px) {
+  .heroGrid {
+    padding-top: 40px;
+  }
+
+  /*
+   * "HAEMOLOGIX" is the longest word any page puts on the slab, and a slab word
+   * cannot break. At the shared mobile display size it is wider than the frame,
+   * so this hero steps down a size where the others do not need to.
+   */
+  .heroGrid h1 {
+    font-size: clamp(42px, 12.5vw, 70px);
+  }
+
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .splitSide:first-child {
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+  }
+
+  .splitSide {
+    padding: 28px 22px 32px;
+  }
+}

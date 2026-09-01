@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Shield } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
+import Header from "@/components/Header";
+import EditorialFooter from "@/components/EditorialFooter";
+import styles from "@/styles/public-pages.module.css";
 
 export const metadata: Metadata = {
   title: "Blood Donation | How to Donate Blood | Haemologix",
@@ -31,10 +34,12 @@ export const metadata: Metadata = {
 
 export default function BloodDonationPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20 py-20 px-4">
+    <>
+      <Header variant="editorial" />
+      <main className={styles.infoPage}>
       <div className="container mx-auto max-w-4xl">
         <ScrollReveal>
-          <div className="text-center mb-12">
+          <div className={`${styles.infoHero} text-center mb-12`}>
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-primary">
               Blood Donation - Save Lives, Make a Difference
             </h1>
@@ -135,6 +140,8 @@ export default function BloodDonationPage() {
           </div>
         </ScrollReveal>
       </div>
-    </div>
+      </main>
+      <EditorialFooter />
+    </>
   );
 }

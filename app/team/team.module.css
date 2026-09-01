@@ -1,0 +1,179 @@
+/* Team-specific structure. Shared primitives: styles/editorial.module.css */
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.6fr);
+  gap: 72px;
+  align-items: center;
+  padding-top: 64px;
+}
+
+.record {
+  display: grid;
+  margin: 0;
+  border-top: 1px solid rgba(32, 36, 53, 0.22);
+}
+
+.record > div {
+  display: grid;
+  grid-template-columns: 0.6fr 1fr;
+  gap: 16px;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(32, 36, 53, 0.14);
+}
+
+.record > div:last-child {
+  border-bottom: 0;
+}
+
+.record dt {
+  color: rgba(32, 36, 53, 0.55);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.record dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.record dd a {
+  border-bottom: 1px solid currentColor;
+}
+
+.record dd a:hover {
+  color: #9b2226;
+}
+
+/* ---------- discipline cards ---------- */
+
+.discipline h3 {
+  margin: 0 0 12px;
+}
+
+.discipline p {
+  margin: 0;
+}
+
+.disciplineScope {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(32, 36, 53, 0.18);
+  color: rgba(32, 36, 53, 0.55);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------- roster ---------- */
+
+.roster {
+  margin-top: 44px;
+  border-top: 1px solid #202435;
+  border-bottom: 1px solid #202435;
+}
+
+.rosterHead,
+.rosterRow {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.8fr 0.6fr;
+  gap: 26px;
+  align-items: center;
+}
+
+.rosterHead {
+  padding: 13px 0;
+  border-bottom: 1px solid rgba(32, 36, 53, 0.2);
+  color: rgba(32, 36, 53, 0.6);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rosterRow {
+  padding: 26px 0;
+  border-bottom: 1px solid rgba(32, 36, 53, 0.2);
+}
+
+.rosterRow:last-child {
+  border-bottom: 0;
+}
+
+.rosterRow strong {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.rosterRow p {
+  margin: 4px 0 0;
+  max-width: 420px;
+  color: rgba(32, 36, 53, 0.65);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.rosterRow span {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.status {
+  width: fit-content;
+  padding: 7px 9px;
+  color: white;
+  background: #005f73;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.statusSoon {
+  color: rgba(32, 36, 53, 0.7);
+  background: #dfe8e3;
+  border: 1px solid rgba(32, 36, 53, 0.25);
+}
+
+@media (max-width: 1100px) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 56px;
+  }
+}
+
+@media (max-width: 760px) {
+  .heroGrid {
+    padding-top: 40px;
+  }
+
+  .rosterHead {
+    display: none;
+  }
+
+  .rosterRow {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+
+  .rosterRow > span {
+    grid-column: 1;
+  }
+
+  .rosterRow > .status {
+    grid-row: 1;
+    grid-column: 2;
+  }
+}

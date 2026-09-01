@@ -318,8 +318,8 @@ export default function BloodBankRegistration() {
 
   if (isSubmitted) {
     return (
-      <GradientBackground className="flex items-center justify-center p-4">
-        <Card className="w-full max-w-2xl glass-morphism border border-accent/30 relative z-10">
+      <GradientBackground className="product-form-page bloodbank-registration flex items-center justify-center p-4">
+        <Card className="registration-card w-full max-w-2xl glass-morphism border border-accent/30 relative z-10">
           <CardContent className="p-12 text-center text-gray-900">
             <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
             <h1 className="text-3xl font-bold">Blood Bank Registration Successful!</h1>
@@ -332,15 +332,15 @@ export default function BloodBankRegistration() {
   }
 
   return (
-    <GradientBackground className="p-4">
-      <div className="container mx-auto max-w-4xl relative z-10">
-        <div className="text-center mb-8">
+    <GradientBackground className="product-form-page bloodbank-registration p-4">
+      <div className="registration-shell container mx-auto max-w-5xl relative z-10">
+        <div className="registration-hero text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900">Blood Bank Registration</h1>
           <p className="text-gray-700">Step {currentStep} of {totalSteps}</p>
           <Progress value={progress} className="h-2 mt-4" />
         </div>
 
-        <Card className="glass-morphism border border-accent/30 text-gray-900">
+        <Card className="registration-card glass-morphism border border-accent/30 text-gray-900">
           <CardHeader>
             <CardTitle>
               {currentStep === 1 && "Legal & Regulatory Requirements"}

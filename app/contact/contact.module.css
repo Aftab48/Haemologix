@@ -1,0 +1,309 @@
+/* Contact-specific structure. Shared primitives: styles/editorial.module.css */
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.58fr);
+  gap: 72px;
+  align-items: center;
+  padding-top: 64px;
+}
+
+/*
+ * The switchboard: every way to reach a person, listed as an operator would,
+ * with the line that is staffed around the clock marked as such.
+ */
+.switchboard {
+  display: grid;
+  margin: 0;
+  border-top: 1px solid rgba(32, 36, 53, 0.22);
+}
+
+.switchboard > div {
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(32, 36, 53, 0.14);
+}
+
+.switchboard > div:last-child {
+  border-bottom: 0;
+}
+
+.switchboard dt {
+  color: rgba(32, 36, 53, 0.55);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.switchboard dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.switchboard dd a {
+  border-bottom: 1px solid transparent;
+}
+
+.switchboard dd a:hover {
+  color: #9b2226;
+  border-bottom-color: currentColor;
+}
+
+.liveTag {
+  padding: 5px 7px;
+  color: white;
+  background: #005f73;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---------- form ---------- */
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.formIntro p {
+  margin: 22px 0 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.formIntro dl {
+  display: grid;
+  margin: 32px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.formIntro dl > div {
+  display: grid;
+  grid-template-columns: 0.72fr 1fr;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.formIntro dt {
+  color: rgba(255, 255, 255, 0.5);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.formIntro dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.form {
+  display: grid;
+  gap: 24px;
+  padding: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  /* The card is white but sits on the ink band, which sets color: white on the
+     section. Without this reset every label inherits white on white. */
+  color: #202435;
+  background: white;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.consent {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 13px;
+  align-items: start;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.consent input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.consentBox {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid #202435;
+  background: white;
+  color: transparent;
+}
+
+.consentBox svg {
+  width: 15px;
+  height: 15px;
+}
+
+.consentOn .consentBox {
+  color: white;
+  background: #9b2226;
+  border-color: #9b2226;
+}
+
+.consent:focus-within .consentBox {
+  outline: 3px solid #9b2226;
+  outline-offset: 3px;
+}
+
+.consent a {
+  color: #9b2226;
+  border-bottom: 1px solid currentColor;
+}
+
+/* ---------- channels ---------- */
+
+.channel h3 {
+  margin: 0 0 10px;
+}
+
+.channel > div > p {
+  margin: 0 0 18px;
+}
+
+.channelLinks {
+  display: grid;
+  gap: 9px;
+  border-top: 1px solid rgba(32, 36, 53, 0.18);
+  padding-top: 15px;
+}
+
+.channelLinks a {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.channelLinks a:hover {
+  color: #9b2226;
+}
+
+.channelLinks a svg {
+  width: 14px;
+  height: 14px;
+}
+
+.channelLinks span {
+  color: rgba(32, 36, 53, 0.5);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------- hours ---------- */
+
+.hours {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.hours > div {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 28px 26px 32px;
+  background: #005f73;
+}
+
+.hours dt {
+  color: #94d2bd;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hours dd {
+  margin: 0;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.hours p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (max-width: 1100px) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 56px;
+  }
+
+  .formGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  .hours {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .heroGrid {
+    padding-top: 40px;
+  }
+
+  .switchboard > div {
+    grid-template-columns: 1fr auto;
+    row-gap: 4px;
+  }
+
+  .switchboard dt {
+    grid-column: 1 / -1;
+  }
+
+  .form {
+    padding: 24px 20px;
+  }
+
+  .formRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

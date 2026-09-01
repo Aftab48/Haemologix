@@ -4,16 +4,17 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import GradientBackground from "@/components/GradientBackground";
+import styles from "@/styles/public-pages.module.css";
 
 const WaitlistPage = () => {
   const router = useRouter();
 
   return (
-    <GradientBackground className="flex items-center justify-center p-6">
-      <div className="max-w-lg w-full glass-morphism rounded-2xl shadow-lg p-8 text-center border border-accent/30">
+    <GradientBackground className={`${styles.statusPage} flex items-center justify-center p-6`}>
+      <div className={styles.statusCard}>
         {/* Success Icon */}
         <div className="flex justify-center mb-4">
-          <CheckCircle className="w-16 h-16 text-green-400" />
+          <CheckCircle className={`${styles.statusIcon} w-16 h-16`} />
         </div>
 
         {/* Heading */}

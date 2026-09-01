@@ -408,16 +408,16 @@ function AdminWebDashboard() {
   if (loading) return <p>Loading Data...</p>;
 
   return (
-    <GradientBackground className="flex flex-col">
+    <GradientBackground className="dashboard-surface flex flex-col">
       <div className="flex min-h-screen relative z-10">
 
         {/* === FULL-HEIGHT SIDEBAR === */}
-        <aside className="w-64 shrink-0 hidden md:flex flex-col glass-morphism border-r border-white/20 sticky top-0 h-screen z-20 overflow-hidden">
+        <aside className="w-64 shrink-0 hidden md:flex flex-col dash-sidebar sticky top-0 h-screen z-20 overflow-hidden">
           {/* Branding */}
           <div className="p-5 border-b border-white/20">
             <Link href="/">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-purple-600 rounded-lg flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 bg-primary rounded-sm flex items-center justify-center shrink-0">
                   <Shield className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -432,7 +432,7 @@ function AdminWebDashboard() {
           <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
             <Link
               href="/admin/careers"
-              className="flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-200 text-left text-text-dark/60 hover:bg-white/10 hover:text-text-dark"
+              className="dash-nav-item w-full text-sm text-left"
             >
               <BriefcaseBusiness className="w-4 h-4 shrink-0" />
               <span className="truncate">Careers publishing</span>
@@ -441,12 +441,8 @@ function AdminWebDashboard() {
               <button
                 key={value}
                 onClick={() => setActiveTab(value)}
-                className={cn(
-                  "flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-200 text-left",
-                  activeTab === value
-                    ? "bg-yellow-600 text-white shadow-sm"
-                    : "text-text-dark/60 hover:bg-white/10 hover:text-text-dark"
-                )}
+                className="dash-nav-item w-full text-sm text-left"
+                data-active={activeTab === value}
               >
                 <Icon className="w-4 h-4 shrink-0" />
                 <span className="truncate">{label}</span>
@@ -465,7 +461,7 @@ function AdminWebDashboard() {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
           {/* Mobile nav */}
-          <div className="md:hidden glass-morphism border-b border-white/20 p-3 flex overflow-x-auto gap-1 shrink-0">
+          <div className="md:hidden dash-topbar p-3 flex overflow-x-auto gap-1 shrink-0 dash-scroll">
             <Link
               href="/admin/careers"
               className="flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all whitespace-nowrap shrink-0 text-text-dark/60 hover:bg-white/10 hover:text-text-dark"
@@ -479,7 +475,7 @@ function AdminWebDashboard() {
                 onClick={() => setActiveTab(value)}
                 className={cn(
                   "flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all whitespace-nowrap shrink-0",
-                  activeTab === value ? "bg-yellow-600 text-white" : "text-text-dark/60 hover:bg-white/10 hover:text-text-dark"
+                  activeTab === value ? "bg-primary text-white" : "text-text-dark/60 hover:bg-accent/40 hover:text-text-dark"
                 )}
               >
                 <Icon className="w-3 h-3" />
@@ -489,9 +485,9 @@ function AdminWebDashboard() {
           </div>
 
           {/* Top bar */}
-          <div className="glass-morphism border-b border-white/20 px-6 py-3 flex items-center justify-between shrink-0">
+          <div className="dash-topbar px-6 py-3 flex items-center justify-between shrink-0">
             <div className="md:hidden flex items-center gap-2">
-              <div className="w-7 h-7 bg-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-7 h-7 bg-primary rounded-sm flex items-center justify-center">
                 <Shield className="w-4 h-4 text-white" />
               </div>
               <span className="text-text-dark font-semibold text-sm">Admin Dashboard</span>

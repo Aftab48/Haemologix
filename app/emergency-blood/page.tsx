@@ -3,6 +3,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle, Clock, MapPin, Heart } from "lucide-react";
+import Header from "@/components/Header";
+import EditorialFooter from "@/components/EditorialFooter";
+import styles from "@/styles/public-pages.module.css";
 
 export const metadata: Metadata = {
   title: "Emergency Blood | Emergency Blood Request | Haemologix",
@@ -30,9 +33,11 @@ export const metadata: Metadata = {
 
 export default function EmergencyBloodPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20 py-20 px-4">
+    <>
+      <Header variant="editorial" />
+      <main className={styles.infoPage}>
       <div className="container mx-auto max-w-4xl">
-        <div className="text-center mb-12">
+        <div className={`${styles.infoHero} text-center mb-12`}>
           <AlertTriangle className="w-16 h-16 text-red-600 mx-auto mb-4" />
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-primary">
             Emergency Blood Requests
@@ -148,7 +153,9 @@ export default function EmergencyBloodPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </main>
+      <EditorialFooter />
+    </>
   );
 }
 

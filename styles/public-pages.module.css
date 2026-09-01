@@ -1,0 +1,422 @@
+.infoPage,
+.supportPage,
+.statusPage {
+  --paper: #edf2ef;
+  --paper-deep: #dfe8e3;
+  --ink: #202435;
+  --ink-deep: #141722;
+  --ruby: #9b2226;
+  --oxygen: #005f73;
+  --mist: #94d2bd;
+  --sand: #e9d8a6;
+  color: var(--ink);
+}
+
+.infoPage {
+  position: relative;
+  min-height: 100vh;
+  padding: clamp(72px, 8vw, 116px) 16px;
+  overflow: hidden;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(rgba(32, 36, 53, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(32, 36, 53, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.infoPage::before {
+  position: absolute;
+  top: 0;
+  right: clamp(-90px, -5vw, -30px);
+  width: clamp(220px, 31vw, 480px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(0, 95, 115, 0.24);
+  border-radius: 50%;
+  content: "";
+  box-shadow:
+    0 0 0 32px rgba(148, 210, 189, 0.1),
+    0 0 0 64px rgba(233, 216, 166, 0.1);
+  pointer-events: none;
+}
+
+.infoPage > :global(.container) {
+  position: relative;
+  z-index: 1;
+  width: min(1040px, 100%);
+}
+
+.infoHero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(140px, 0.36fr) minmax(0, 1fr);
+  gap: clamp(24px, 6vw, 80px);
+  align-items: end;
+  padding: 0 0 clamp(38px, 5vw, 64px);
+  border-bottom: 1px solid var(--ink);
+  text-align: left;
+}
+
+.infoHero::before {
+  align-self: start;
+  color: var(--ruby);
+  content: "FIELD GUIDE / HAEMOLOGIX";
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.infoHero h1,
+.supportPage > :global(.relative) > section:first-of-type h1 {
+  grid-column: 2;
+  margin: 0;
+  color: var(--ink) !important;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(52px, 7vw, 86px) !important;
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+
+.infoHero p {
+  grid-column: 2;
+  max-width: 720px;
+  margin: 18px 0 0;
+  color: rgba(32, 36, 53, 0.7) !important;
+  font-size: clamp(17px, 1.8vw, 21px);
+  line-height: 1.6;
+}
+
+.infoPage :global(.rounded-lg),
+.infoPage :global(.rounded-xl) {
+  border-radius: 0 !important;
+}
+
+.infoPage :global([class*="border"]),
+.infoPage :global(.bg-card) {
+  border-color: rgba(32, 36, 53, 0.3);
+}
+
+.infoPage :global(.bg-card) {
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(148, 210, 189, 0.22), transparent 48%),
+    #f8faf8;
+  box-shadow: 10px 10px 0 rgba(233, 216, 166, 0.72);
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+.infoPage :global(.bg-card):hover {
+  box-shadow: 6px 6px 0 rgba(148, 210, 189, 0.82);
+  transform: translateY(-4px);
+}
+
+.infoPage :global(.bg-card) h2,
+.infoPage :global(.bg-card) h3,
+.infoPage > :global(.container) > :global(.text-center) h2 {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.infoPage :global(.text-blue-600),
+.infoPage :global(.text-green-600),
+.infoPage :global(.text-purple-600) {
+  color: var(--oxygen) !important;
+}
+
+.infoPage :global(.text-red-600) {
+  color: var(--ruby) !important;
+}
+
+.infoPage :global(.bg-blue-50\/50),
+.infoPage :global(.bg-green-50\/50),
+.infoPage :global(.bg-purple-50\/50) {
+  background: rgba(148, 210, 189, 0.14) !important;
+}
+
+.infoPage :global(.border-blue-200),
+.infoPage :global(.border-green-200),
+.infoPage :global(.border-purple-200) {
+  border-color: rgba(0, 95, 115, 0.3) !important;
+}
+
+.infoPage :global(button),
+.infoPage :global(a[class*="bg-red"]),
+.infoPage :global(button[class*="bg-red"]) {
+  border-radius: 0;
+}
+
+.supportPage {
+  background: var(--paper) !important;
+}
+
+.supportPage > :global(.fixed) {
+  opacity: 0.08 !important;
+  mix-blend-mode: multiply !important;
+}
+
+.supportPage > :global(.relative) {
+  background-image:
+    linear-gradient(rgba(32, 36, 53, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(32, 36, 53, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.supportPage > :global(.relative) > section:first-of-type {
+  position: relative;
+  overflow: hidden;
+  padding-top: clamp(72px, 9vw, 128px) !important;
+  padding-bottom: clamp(58px, 7vw, 96px) !important;
+  border-bottom: 1px solid var(--ink);
+  background:
+    linear-gradient(110deg, rgba(148, 210, 189, 0.48), transparent 50%),
+    var(--paper-deep) !important;
+  backdrop-filter: none !important;
+}
+
+.supportPage > :global(.relative) > section:first-of-type::after {
+  position: absolute;
+  right: -4vw;
+  bottom: -45%;
+  width: min(420px, 44vw);
+  aspect-ratio: 1;
+  border: 1px solid rgba(155, 34, 38, 0.45);
+  border-radius: 50%;
+  content: "";
+  box-shadow: 0 0 0 38px rgba(233, 216, 166, 0.28);
+}
+
+.supportPage > :global(.relative) > section:first-of-type :global(.text-center) {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 0;
+  text-align: left;
+}
+
+.supportPage > :global(.relative) > section:first-of-type h1 {
+  max-width: 900px;
+}
+
+.supportPage > :global(.relative) > section:first-of-type p {
+  max-width: 680px;
+  margin: 22px 0 0;
+  color: rgba(32, 36, 53, 0.72) !important;
+}
+
+.supportPage :global(.glass-morphism) {
+  border: 1px solid rgba(32, 36, 53, 0.28) !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(135deg, rgba(148, 210, 189, 0.16), transparent 42%),
+    rgba(248, 250, 248, 0.96) !important;
+  box-shadow: 12px 12px 0 rgba(233, 216, 166, 0.68);
+  backdrop-filter: none !important;
+}
+
+.supportPage :global(.glass-morphism) h2,
+.supportPage :global(.glass-morphism) h3 {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.supportPage :global(.glass-morphism[class*="cursor-pointer"]) {
+  box-shadow: 7px 7px 0 rgba(148, 210, 189, 0.64);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.supportPage :global(.glass-morphism[class*="cursor-pointer"]):hover {
+  box-shadow: 4px 4px 0 rgba(155, 34, 38, 0.72);
+  transform: translateX(4px);
+}
+
+.supportPage :global(input),
+.supportPage :global(textarea) {
+  border-radius: 0 !important;
+  border-color: rgba(32, 36, 53, 0.5) !important;
+  background: white !important;
+}
+
+.supportPage :global(input):focus,
+.supportPage :global(textarea):focus {
+  border-color: var(--ruby) !important;
+  box-shadow: 4px 4px 0 var(--mist) !important;
+}
+
+.statusPage {
+  min-height: 100vh;
+  background: var(--paper) !important;
+}
+
+.notFoundPage {
+  min-height: 100vh;
+  padding: clamp(68px, 9vw, 120px) 16px;
+  color: var(--ink);
+  background:
+    linear-gradient(rgba(32, 36, 53, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(32, 36, 53, 0.035) 1px, transparent 1px),
+    var(--paper);
+  background-size: 32px 32px;
+}
+
+.notFoundCard {
+  position: relative;
+  width: min(720px, 100%);
+  margin: 0 auto;
+  padding: clamp(28px, 5vw, 52px);
+  border: 1px solid var(--ink);
+  background: #f8faf8;
+  box-shadow: 14px 14px 0 var(--mist);
+  text-align: left;
+}
+
+.notFoundCard h1 {
+  margin: 0 0 22px;
+  color: var(--ruby) !important;
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(112px, 22vw, 210px) !important;
+  line-height: 0.65;
+  letter-spacing: -0.06em;
+}
+
+.notFoundCard :global(.bg-card) {
+  border-radius: 0;
+  border-color: rgba(32, 36, 53, 0.28);
+  background: linear-gradient(135deg, rgba(233, 216, 166, 0.42), #f8faf8 60%);
+  box-shadow: none;
+}
+
+.notFoundCard :global(button) {
+  border-radius: 0;
+}
+
+.statusPage > :global(.fixed) {
+  opacity: 0.1 !important;
+  mix-blend-mode: multiply !important;
+}
+
+.statusCard {
+  position: relative;
+  width: min(560px, 100%);
+  padding: clamp(34px, 6vw, 60px);
+  overflow: hidden;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  background:
+    linear-gradient(145deg, rgba(148, 210, 189, 0.3), transparent 50%),
+    #f8faf8;
+  box-shadow: 16px 16px 0 var(--sand);
+  text-align: left;
+}
+
+.statusCard::before {
+  display: block;
+  margin-bottom: 30px;
+  color: var(--ruby);
+  content: "APPLICATION / RECEIVED";
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.statusCard h1 {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  font-size: clamp(42px, 7vw, 64px);
+  line-height: 0.94;
+  text-transform: uppercase;
+}
+
+.statusIcon {
+  color: var(--oxygen) !important;
+}
+
+.statusCard button {
+  border-radius: 0;
+  background: var(--ruby) !important;
+  box-shadow: none;
+}
+
+.suspensionCard {
+  overflow: hidden;
+  border: 1px solid var(--ink) !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(145deg, rgba(148, 210, 189, 0.22), transparent 52%),
+    #f8faf8 !important;
+  box-shadow: 14px 14px 0 var(--sand) !important;
+  backdrop-filter: none !important;
+}
+
+.suspensionCard h1,
+.suspensionCard h3 {
+  font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+  text-transform: uppercase;
+}
+
+.statusPage :global(.text-yellow-400),
+.statusPage :global(.text-green-400) {
+  color: var(--oxygen) !important;
+}
+
+.statusPage :global(.bg-white\/5) {
+  background: rgba(148, 210, 189, 0.1) !important;
+}
+
+.statusPage :global(.rounded-lg),
+.statusPage :global(.rounded-full) {
+  border-radius: 0 !important;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .infoPage :global(.bg-card),
+    .supportPage :global(.glass-morphism) {
+      animation: public-card-in 1ms both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 26%;
+    }
+  }
+}
+
+@keyframes public-card-in {
+  from {
+    opacity: 0.3;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 720px) {
+  .infoHero {
+    grid-template-columns: 1fr;
+  }
+
+  .infoHero h1,
+  .infoHero p {
+    grid-column: 1;
+  }
+
+  .infoPage :global(.bg-card),
+  .supportPage :global(.glass-morphism),
+  .statusCard {
+    box-shadow: 7px 7px 0 rgba(233, 216, 166, 0.78);
+  }
+
+  .supportPage > :global(.relative) > section:first-of-type::after {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .infoPage :global(.bg-card),
+  .supportPage :global(.glass-morphism) {
+    animation: none;
+    transition: none;
+  }
+}

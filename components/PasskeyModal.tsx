@@ -64,7 +64,7 @@ const PasskeyModal = () => {
       <AlertDialogContent
         className="
     shad-alert-dialog 
-    bg-gradient-to-br from-red-900 via-red-900 to-yellow-600
+    bg-gradient-to-br from-ruby via-ruby to-oxygen-blue
     w-[92%] max-w-sm           /* narrower on mobile */
     max-h-[85vh] overflow-y-auto
     rounded-lg p-3 sm:p-5      /* tighter padding on mobile */

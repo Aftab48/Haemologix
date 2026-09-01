@@ -131,7 +131,7 @@ function FallbackTracker({ tracks, now }: { tracks: DemoDeliveryTrack[]; now: Da
               <div className="mb-2 flex flex-wrap justify-between gap-2 text-sm text-white"><span>{track.sourceName} → Demo Medical Centre</span><Badge className={status === "DELIVERED" ? "bg-green-600" : "bg-blue-600"}>{status.replaceAll("_", " ")}</Badge></div>
               <div className="relative h-10 rounded-full bg-white/10">
                 <div className="absolute left-4 right-4 top-1/2 h-1 -translate-y-1/2 rounded bg-white/20" />
-                <div className="absolute left-4 top-1/2 h-1 -translate-y-1/2 rounded bg-gradient-to-r from-emerald-500 to-yellow-500" style={{ width: `calc((100% - 2rem) * ${progress})` }} />
+                <div className="absolute left-4 top-1/2 h-1 -translate-y-1/2 bg-gradient-to-r from-mist-green via-bone-white to-ruby" style={{ width: `calc((100% - 2rem) * ${progress})` }} />
                 <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-yellow-500 p-2 text-slate-950 shadow-lg transition-[left] duration-200" style={{ left: `calc(1rem + (100% - 2rem) * ${progress})` }}><Icon className="h-4 w-4" /></div>
                 <Building2 className="absolute right-2 top-1/2 h-5 w-5 -translate-y-1/2 text-white" />
               </div>

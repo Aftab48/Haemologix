@@ -6,12 +6,13 @@ import GradientBackground from "@/components/GradientBackground";
 import Header from "@/components/Header";
 import { ArrowUp } from "lucide-react";
 import { Heart } from "lucide-react";
+import styles from "@/styles/public-pages.module.css";
 
 export default function PrivacyPolicyPage() {
   return (
-    <GradientBackground>
+    <GradientBackground className={styles.supportPage}>
       {/* Header */}
-      <Header />
+      <Header variant="editorial" />
 
       {/* Hero Section */}
       <section className="py-20 px-4 bg-white/5 backdrop-blur-[2px]">
