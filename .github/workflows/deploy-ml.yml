@@ -82,7 +82,7 @@ jobs:
 
       - name: Build and push
         if: env.HAS_AWS == 'true'
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ml/Dockerfile
