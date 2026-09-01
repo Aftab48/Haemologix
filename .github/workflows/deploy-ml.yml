@@ -67,7 +67,7 @@ jobs:
 
       - name: Assume the deploy role
         if: env.HAS_AWS == 'true'
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ secrets.AWS_ML_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
