@@ -27,7 +27,7 @@ const agentConfigs = {
   HOSPITAL: {
     name: "Hospital Agent",
     icon: Building2,
-    color: "from-blue-500 to-blue-700",
+    color: "from-oxygen-blue to-mist-green",
     bgColor: "bg-blue-500/10",
     borderColor: "border-blue-500/30",
     textColor: "text-blue-400",
@@ -43,7 +43,7 @@ const agentConfigs = {
   COORDINATOR: {
     name: "Coordinator Agent",
     icon: Activity,
-    color: "from-purple-500 to-purple-700",
+    color: "from-ruby to-bone-white",
     bgColor: "bg-purple-500/10",
     borderColor: "border-purple-500/30",
     textColor: "text-purple-400",
@@ -51,7 +51,7 @@ const agentConfigs = {
   INVENTORY: {
     name: "Inventory Agent",
     icon: PackageSearch,
-    color: "from-orange-500 to-orange-700",
+    color: "from-bone-white to-ruby",
     bgColor: "bg-orange-500/10",
     borderColor: "border-orange-500/30",
     textColor: "text-orange-400",
@@ -59,7 +59,7 @@ const agentConfigs = {
   LOGISTICS: {
     name: "Logistics Agent",
     icon: Truck,
-    color: "from-yellow-500 to-yellow-700",
+    color: "from-mist-green to-oxygen-blue",
     bgColor: "bg-yellow-500/10",
     borderColor: "border-yellow-500/30",
     textColor: "text-yellow-400",

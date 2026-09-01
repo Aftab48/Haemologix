@@ -33,7 +33,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
     <div className="w-full ">
       {/* Verification Summary Banner */}
       {(userData.verificationAttempts !== undefined || userData.suspendedUntil) && (
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div className="border border-oxygen-blue/35 bg-gradient-to-r from-mist-green/30 to-bone-white/45 p-4 mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h3 className="text-lg font-semibold text-text-dark mb-2">Verification Status</h3>
@@ -66,7 +66,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
             onClick={() => setActiveTab(index)}
             className={`px-4 py-2 text-sm font-medium transition whitespace-nowrap ${
               activeTab === index
-                ? "border-b-2 border-blue-600 text-blue-600"
+                ? "border-b-2 border-ruby text-ruby"
                 : "text-text-dark/70 hover:text-text-dark"
             }`}
           >
@@ -138,7 +138,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
                       href={userData.bloodTestReport}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 underline text-sm"
+                      className="text-oxygen-blue hover:text-ruby underline text-sm"
                     >
                       View Document
                     </a>
@@ -153,7 +153,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
                       href={userData.idProof}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 underline text-sm"
+                      className="text-oxygen-blue hover:text-ruby underline text-sm"
                     >
                       View Document
                     </a>
@@ -168,7 +168,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
                       href={userData.medicalCertificate}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 underline text-sm"
+                      className="text-oxygen-blue hover:text-ruby underline text-sm"
                     >
                       View Document
                     </a>
@@ -195,7 +195,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
                   Reject User
                 </button>
                 {userData.suspendedUntil && new Date() < new Date(userData.suspendedUntil) && (
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                  <button className="border border-text-dark bg-oxygen-blue px-4 py-2 text-white transition hover:bg-ruby">
                     Lift Suspension
                   </button>
                 )}
@@ -270,7 +270,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
                     href={fileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm font-semibold text-blue-500 underline mt-1 block"
+                    className="mt-1 block text-sm font-semibold text-oxygen-blue underline"
                   >
                     View PDF
                   </a>
@@ -283,7 +283,7 @@ export default function ProfileTabs({ userType, userData }: ProfileTabsProps) {
             return (
               <div
                 key={field.key}
-                className="bg-white rounded-xl shadow p-4 border transition-shadow duration-300 hover:shadow-xl hover:shadow-blue-400/70"
+                className="border bg-white p-4 shadow-[7px_7px_0_rgba(148,210,189,0.3)] transition duration-300 hover:-translate-y-1 hover:shadow-[5px_5px_0_rgba(155,34,38,0.28)]"
               >
                 <p className="text-xs text-text-dark/70">{field.label}</p>
                 {field.type === "file" ? (

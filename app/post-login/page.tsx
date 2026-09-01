@@ -12,13 +12,16 @@ export default function PostLogin() {
   ];
 
   return (
-    <GradientBackground className="flex flex-col py-20 px-4 items-center justify-center">
-      <h1 className="text-xl font-outfit font-bold text-text-dark mb-4">Choose your role</h1>
-      <div className="grid grid-cols-1 gap-x-16 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+    <GradientBackground className="role-picker flex flex-col py-20 px-4 items-center justify-center">
+      <div className="role-picker-heading">
+        <p>Access / Select workspace</p>
+        <h1>Choose your role</h1>
+      </div>
+      <div className="role-picker-grid grid w-full max-w-5xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Menudata.map((data, i) => (
           <Card
             key={i}
-            className="glass-morphism border border-accent/30 card-hover text-text-dark placeholder:text-gray-400 flex flex-col justify-between items-center h-full p-4 shadow-lg hover:shadow-primary/50"
+            className="role-picker-card glass-morphism border border-accent/30 text-text-dark flex min-h-48 flex-col justify-between items-center h-full p-4"
           >
             <Link
               href={i === 0 ? "/donor" : i === 1 ? "/hospital" : "/admin"}

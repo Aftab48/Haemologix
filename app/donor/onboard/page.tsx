@@ -188,14 +188,14 @@ export default function DonorOnboardPage() {
 
   if (submitStatus?.success) {
     return (
-      <GradientBackground>
+      <GradientBackground className="product-form-page donor-registration">
         <main className="flex min-h-screen w-full items-center justify-center relative z-10 p-4">
-          <Card className="glass-morphism border-white/20 w-full max-w-2xl">
-            <CardHeader className="text-center">
+          <Card className="registration-card glass-morphism border-white/20 w-full max-w-2xl">
+            <CardHeader className="registration-hero text-center">
               <div className="flex justify-center mb-4">
                 <CheckCircle className="h-16 w-16 text-green-500" />
               </div>
-              <CardTitle className="text-3xl text-text-dark">Registration Successful!</CardTitle>
+              <CardTitle className="registration-title text-3xl text-text-dark">Registration Successful!</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-center text-text-dark/80 text-lg">
@@ -219,11 +219,11 @@ export default function DonorOnboardPage() {
   }
 
   return (
-    <GradientBackground>
-      <main className="flex min-h-screen w-full items-center justify-center relative z-10 p-4 py-8">
-        <Card className="glass-morphism border-white/20 w-full max-w-3xl">
-          <CardHeader>
-            <CardTitle className="text-3xl text-text-dark text-center">
+    <GradientBackground className="product-form-page donor-registration">
+      <main className="registration-shell flex min-h-screen w-full items-center justify-center relative z-10 py-8">
+        <Card className="registration-card glass-morphism border-white/20 w-full max-w-4xl">
+          <CardHeader className="registration-hero">
+            <CardTitle className="registration-title text-3xl text-text-dark text-center">
               Donor Onboarding Registration
             </CardTitle>
             <p className="text-center text-text-dark/70 mt-2">
@@ -522,7 +522,7 @@ export default function DonorOnboardPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-red-700 to-yellow-600 hover:from-red-800 hover:to-yellow-700 text-white"
+                className="w-full bg-primary text-white hover:bg-primary/90"
                 size="lg"
               >
                 {isSubmitting ? (

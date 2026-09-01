@@ -27,7 +27,11 @@ export default async function DonorResetPasswordPage({
   const { id } = await params;
   const { token } = await searchParams;
 
-  const donor = token
+  const tokenIsWellFormed = Boolean(
+    token && /^\d+\.[a-f0-9]{64}$/i.test(token)
+  );
+
+  const donor = tokenIsWellFormed
     ? await db.donor.findUnique({
         where: { id },
         select: { id: true, name: true, password: true },
@@ -35,7 +39,7 @@ export default async function DonorResetPasswordPage({
     : null;
 
   const check =
-    token && donor
+    tokenIsWellFormed && token && donor
       ? verifyPasswordResetToken(token, donor.id, donor.password)
       : ({ valid: false, reason: "invalid" } as const);
 
@@ -63,7 +67,7 @@ export default async function DonorResetPasswordPage({
               </p>
               <Link href="/donor/forgot-password">
                 <Button
-                  className="w-full bg-gradient-to-r from-red-700 to-yellow-600 hover:from-red-800 hover:to-yellow-700 text-white"
+                  className="w-full bg-primary text-white hover:bg-primary/90"
                   size="lg"
                 >
                   Request a New Link

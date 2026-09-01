@@ -965,7 +965,7 @@ export default function HospitalDashboard() {
   ];
 
   return (
-    <GradientBackground>
+    <GradientBackground className="dashboard-surface">
       <Image
         src="https://fbe.unimelb.edu.au/__data/assets/image/0006/3322347/varieties/medium.jpg"
         alt=""
@@ -977,18 +977,18 @@ export default function HospitalDashboard() {
 
       <div className="flex min-h-screen relative z-10">
         {/* === FULL-HEIGHT SIDEBAR === */}
-        <aside className="w-64 shrink-0 hidden md:flex flex-col glass-morphism border-r border-white/10 sticky top-0 h-screen z-20 overflow-hidden">
+        <aside className="w-64 shrink-0 hidden md:flex flex-col dash-sidebar sticky top-0 h-screen z-20 overflow-hidden">
           <div className="p-5 border-b border-white/10">
             <Link href="/">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-red-800 rounded-lg flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 bg-primary rounded-sm flex items-center justify-center shrink-0">
                   <Building className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-white text-sm truncate">
+                  <p className="font-bold text-text-dark text-sm truncate">
                     Hospital Dashboard
                   </p>
-                  <p className="text-xs text-white/50 truncate">
+                  <p className="text-xs text-muted-foreground truncate">
                     {user?.hospitalName || "Hospital"}
                   </p>
                 </div>
@@ -1001,12 +1001,8 @@ export default function HospitalDashboard() {
               <button
                 key={value}
                 onClick={() => setActiveTab(value)}
-                className={cn(
-                  "flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-200 text-left",
-                  activeTab === value
-                    ? "bg-yellow-600 text-white shadow-sm"
-                    : "text-white/60 hover:bg-white/10 hover:text-white"
-                )}
+                className="dash-nav-item w-full text-sm text-left"
+                data-active={activeTab === value}
               >
                 <Icon className="w-4 h-4 shrink-0" />
                 <span className="truncate">{label}</span>
@@ -1016,14 +1012,14 @@ export default function HospitalDashboard() {
 
           <div className="p-4 border-t border-white/10 flex items-center gap-3">
             <UserButton />
-            <span className="text-xs text-white/50">Account</span>
+            <span className="text-xs text-muted-foreground">Account</span>
           </div>
         </aside>
 
         {/* === MAIN CONTENT AREA === */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Mobile nav bar */}
-          <div className="md:hidden glass-morphism border-b border-white/10 p-3 flex overflow-x-auto gap-1 shrink-0">
+          <div className="md:hidden dash-topbar p-3 flex overflow-x-auto gap-1 shrink-0 dash-scroll">
             {navItems.map(({ value, short, Icon }) => (
               <button
                 key={value}
@@ -1031,8 +1027,8 @@ export default function HospitalDashboard() {
                 className={cn(
                   "flex items-center gap-2 px-3 py-2 text-xs rounded-md transition-all whitespace-nowrap shrink-0",
                   activeTab === value
-                    ? "bg-yellow-600 text-white"
-                    : "text-white/60 hover:bg-white/10 hover:text-white"
+                    ? "bg-primary text-white"
+                    : "text-muted-foreground hover:bg-accent/40 hover:text-text-dark"
                 )}
               >
                 <Icon className="w-3 h-3" />
@@ -1042,12 +1038,12 @@ export default function HospitalDashboard() {
           </div>
 
           {/* Top action bar */}
-          <div className="glass-morphism border-b border-white/10 px-6 py-3 flex items-center justify-between shrink-0">
+          <div className="dash-topbar px-6 py-3 flex items-center justify-between shrink-0">
             <div className="md:hidden flex items-center gap-2">
-              <div className="w-7 h-7 bg-red-800 rounded-lg flex items-center justify-center">
+              <div className="w-7 h-7 bg-primary rounded-sm flex items-center justify-center">
                 <Building className="w-4 h-4 text-white" />
               </div>
-              <span className="text-white font-semibold text-sm">
+              <span className="text-text-dark font-semibold text-sm">
                 Hospital Dashboard
               </span>
             </div>

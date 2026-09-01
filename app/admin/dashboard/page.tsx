@@ -1,5 +1,6 @@
+import { ShieldCheck } from "lucide-react";
 import { redirect } from "next/navigation";
-import { checkRole } from "../../../utils/roles"; 
+import { checkRole } from "../../../utils/roles";
 
 export default async function AdminDashboard() {
   const isAdmin = await checkRole("admin");
@@ -9,19 +10,22 @@ export default async function AdminDashboard() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
-      <div className="bg-white shadow-lg rounded-xl p-8 max-w-md w-full border border-gray-200">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-4xl">🛡️</span>
-          <h1 className="text-2xl font-bold text-red-600">Admin Panel</h1>
+    <div className="dashboard-surface admin-gate flex min-h-screen flex-col items-center justify-center p-6">
+      <div className="dash-card w-full max-w-md p-8">
+        <div className="mb-4 flex items-center gap-3">
+          <span className="chip-ruby flex h-12 w-12 items-center justify-center rounded-sm">
+            <ShieldCheck aria-hidden="true" />
+          </span>
+          <h1 className="text-3xl font-bold text-primary">Admin Panel</h1>
         </div>
-        
-        <p className="text-gray-700 mb-6">
-          Authorization Successful! You are viewing this page because your role is set to <strong>'admin'</strong>.
+
+        <p className="mb-6 text-gray-700">
+          Authorization successful. You are viewing this page because your role is set to{" "}
+          <strong>admin</strong>.
         </p>
 
-        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg text-sm font-medium">
-          ✅ AuthGuard is Active
+        <div className="rounded-sm border border-secondary/30 bg-accent/25 px-4 py-3 text-sm font-medium text-secondary">
+          AuthGuard is active
         </div>
       </div>
     </div>

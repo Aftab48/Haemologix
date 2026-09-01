@@ -3,6 +3,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Home, Search, Heart, ArrowLeft } from "lucide-react";
+import Header from "@/components/Header";
+import EditorialFooter from "@/components/EditorialFooter";
+import styles from "@/styles/public-pages.module.css";
 
 export const metadata: Metadata = {
   title: "404 - Page Not Found | Haemologix",
@@ -16,8 +19,10 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20 flex items-center justify-center px-4">
-      <div className="container mx-auto max-w-2xl text-center">
+    <>
+      <Header variant="editorial" />
+      <main className={styles.notFoundPage}>
+      <div className={styles.notFoundCard}>
         <div className="mb-8">
           <h1 className="text-9xl font-bold text-primary mb-4">404</h1>
           <h2 className="text-4xl font-bold text-text-dark mb-4">
@@ -79,7 +84,9 @@ export default function NotFound() {
           </div>
         </div>
       </div>
-    </div>
+      </main>
+      <EditorialFooter />
+    </>
   );
 }
 

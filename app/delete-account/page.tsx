@@ -11,6 +11,7 @@ import { Trash2, ShieldCheck, Clock, Mail, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import GradientBackground from "@/components/GradientBackground";
 import Header from "@/components/Header";
+import styles from "@/styles/public-pages.module.css";
 
 export default function DeleteAccountPage() {
   const [formData, setFormData] = useState({
@@ -65,8 +66,8 @@ export default function DeleteAccountPage() {
   };
 
   return (
-    <GradientBackground>
-      <Header />
+    <GradientBackground className={styles.supportPage}>
+      <Header variant="editorial" />
 
       {/* Hero Section */}
       <section className="py-20 px-4 bg-white/5 backdrop-blur-[2px]">

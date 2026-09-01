@@ -3,6 +3,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Phone, Clock, Users } from "lucide-react";
+import Header from "@/components/Header";
+import EditorialFooter from "@/components/EditorialFooter";
+import styles from "@/styles/public-pages.module.css";
 
 export const metadata: Metadata = {
   title: "Find Blood Donor | Locate Blood Donors Near You | Haemologix",
@@ -30,9 +33,11 @@ export const metadata: Metadata = {
 
 export default function FindBloodDonorPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20 py-20 px-4">
+    <>
+      <Header variant="editorial" />
+      <main className={styles.infoPage}>
       <div className="container mx-auto max-w-4xl">
-        <div className="text-center mb-12">
+        <div className={`${styles.infoHero} text-center mb-12`}>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-primary">
             Find Blood Donors Near You
           </h1>
@@ -125,7 +130,9 @@ export default function FindBloodDonorPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </main>
+      <EditorialFooter />
+    </>
   );
 }
 
