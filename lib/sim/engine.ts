@@ -71,7 +71,7 @@ import type {
   TrainingRowDraft,
   Urgency,
 } from "./types";
-import { generateWorld, shapeWorldForAlert, type SimWorld } from "./world";
+import { drawPastReleases, generateWorld, shapeWorldForAlert, type SimWorld } from "./world";
 
 const MIN = 60_000;
 
@@ -85,6 +85,18 @@ export interface RunOptions {
    * pre-ladder sim-v2 behaviour bit-for-bit (see __fixtures__/sim-v2-hashes.json).
    */
   ladder?: boolean;
+  /**
+   * Score donors against their own donation interval and haemoglobin cutoff, as
+   * production does. `false` scores everyone on the male bands — what sim-v2
+   * (and every model up to 1.2) was trained on — so the frozen fixture still
+   * reproduces.
+   */
+  fairScoring?: boolean;
+  /**
+   * Draw each donor's past releases (priors-v4). `false` leaves them at 0, as in
+   * every dataset up to sim-v3.
+   */
+  releases?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -133,6 +145,7 @@ class Simulation {
   /** production's escalation ladder on/off (off ⇒ sim-v2 behaviour) */
   readonly ladder: boolean;
   readonly ladderOptions: LadderOptions = { ...PRIORS.ladder };
+  readonly fairScoring: boolean;
   readonly queue = new EventQueue();
   readonly events: SimEvent[] = [];
   readonly rows: TrainingRowDraft[] = [];
@@ -152,7 +165,9 @@ class Simulation {
     this.policy = opts.policy ?? deterministicPolicy;
     this.emitRows = opts.emitRows ?? true;
     this.ladder = opts.ladder ?? true;
+    this.fairScoring = opts.fairScoring ?? true;
     this.world = generateWorld(spec, this.rng.fork("world"));
+    if (opts.releases ?? true) drawPastReleases(this.world.donors, this.rng.fork("releases"));
     this.now = this.world.startAt;
     for (const h of this.world.hospitals) this.hospitalsById.set(h.id, h);
     for (const d of this.world.donors) this.donorsById.set(d.id, d);
@@ -351,6 +366,7 @@ class Simulation {
       const scores = scoreDonor(
         {
           lastDonation: donor.lastDonationDate ? new Date(donor.lastDonationDate) : null,
+          sexForInterval: this.fairScoring ? donor.sexForInterval : "MALE",
           hemoglobin: donor.profile?.hemoglobin ?? null,
           bmi: donor.bmi,
           recentVaccinations: donor.profile?.recentVaccinations ?? null,
@@ -380,6 +396,7 @@ class Simulation {
       donorBloodType: d.bloodGroup,
       distanceKm: r.distanceKm,
       daysSinceLastDonation: daysSince === null ? null : Math.round(daysSince),
+      sexForInterval: d.sexForInterval,
       priorAlerts: d.history.totalAlerts,
       priorAccepted: d.history.accepted,
       priorArrived: d.history.arrived,

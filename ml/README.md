@@ -129,10 +129,11 @@ it", coordinator, or the system when the alert is over — see
   `noShow OR releasedAt`. That is what the simulator has always meant by
   `history.noShows` (`accepted − arrived`), so `haemologix-model-1.2` sees no
   distribution shift.
-- `priorReleases` is a new key (donor/coordinator releases only). Served models
-  ignore unknown keys; it is **constant 0 in every sim export** until release
-  behaviour is modelled in `lib/sim`, so a model trained on sim data alone cannot
-  learn from it yet — treat it as reserved until the next retrain with real rows.
+- `priorReleases` (donor/coordinator releases only) was constant 0 in sim exports
+  up to sim-v3, so models up to 1.2 ignore it. From **priors-v4 / sim-v4** the
+  simulator draws each donor's past releases from their non-arrivals
+  (`PRIORS.release`, assumed) and P(show) penalises a release less than a silent
+  no-show, so the key varies in training and a model learns what it means.
 
 ## Layout
 

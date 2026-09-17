@@ -67,6 +67,7 @@ function scoresForDonor(donor: DemoDonor, alert: DemoAlert, hospital: DemoHospit
   const scores = scoreDonor(
     {
       lastDonation: donor.lastDonationAt ? new Date(donor.lastDonationAt) : null,
+      sexForInterval: "UNKNOWN",
       hemoglobin: String(donor.hemoglobin),
       bmi: String(donor.bmi),
       recentVaccinations: donor.recentVaccinations,

@@ -36,6 +36,7 @@ Correct spelling: "Haemologix" (h-a-e-m-o-l-o-g-i-x). Domain: haemologix.in.
 - Emergency blood requests: ${SITE_URL}/emergency-blood
 - Find a blood donor: ${SITE_URL}/find-blood-donor
 - Blood donation guide: ${SITE_URL}/blood-donation
+- Blood donation articles: ${SITE_URL}/learn
 - Blood bank near me: ${SITE_URL}/blood-bank-near-me
 - Pricing: ${SITE_URL}/pricing
 - Contact: ${SITE_URL}/contact (${ORG.email})

@@ -29,7 +29,7 @@ import numpy as np
 from .data import TabularPreprocessor, describe, group_split, inverse_label, labels_for, load_manifest, load_task_rows
 from .metrics import compute_metrics, is_better, permutation_importance, primary
 from .models import GbdtPredictor, MlpPredictor, RulesPredictor
-from .registry import ModelCard, now_iso, resolve_model_dir
+from .registry import LoadedModel, LoadedTask, ModelCard, get_active_version, now_iso, resolve_model_dir
 from .tasks import TASK_NAMES, get_task
 
 
@@ -49,17 +49,14 @@ def train_task(
     epochs: int = 40,
     seed: int = 7,
     quick: bool = False,
+    incumbent: LoadedTask | None = None,
 ) -> dict[str, Any]:
     spec = get_task(task)
     t0 = time.time()
-    rows = load_task_rows(data_dirs, task)
+    rows = load_task_rows(data_dirs, task, sample=max_rows, seed=seed)
     if not rows:
         _log(f"{task}: no rows found in {[str(d) for d in data_dirs]} — skipping")
         return {"task": task, "skipped": True}
-    if max_rows and len(rows) > max_rows:
-        rng = np.random.default_rng(seed)
-        idx = rng.choice(len(rows), max_rows, replace=False)
-        rows = [rows[i] for i in sorted(idx)]
     train, val, test = group_split(rows, seed=seed)
     _log(f"{task}: rows={len(rows)} train={len(train)} val={len(val)} test={len(test)}  {describe(rows, task)}")
 
@@ -101,6 +98,14 @@ def train_task(
     beats_rules = is_better(spec, winner_metrics, m_rules)
     _log(f"{task}: winner={winner_name} beats_rules={beats_rules}")
 
+    # --- the active version on these same test rows ----------------------------
+    # Its card metrics come from a different dataset, so only this is a fair
+    # comparison for the approval gate (retrain.compare_to_active).
+    m_active = None
+    if incumbent is not None:
+        m_active = compute_metrics(spec, yte, incumbent.predictor.predict(incumbent.pre.transform(test)), yte_nat)
+        _log(f"{task}: active  {spec.primary_metric}={primary(spec, m_active)} (same test rows)")
+
     # --- importance -----------------------------------------------------------
     names = pre.feature_names
     importance: dict[str, float] | None = None
@@ -128,6 +133,7 @@ def train_task(
         "metrics": winner_metrics,
         "candidates": {k: v[1] for k, v in candidates.items()},
         "baseline_metrics": m_rules,
+        "active_metrics_same_test": m_active,
         "primary_metric": spec.primary_metric,
         "beats_baseline": bool(beats_rules),
         "feature_importance": importance,
@@ -167,9 +173,17 @@ def train_version(
     card["seed"] = seed
     card.save(version_dir)
 
+    active_version = get_active_version(model_dir)
+    active = None
+    if active_version and active_version != version and (root / active_version / "model_card.json").exists():
+        active = LoadedModel.load(root / active_version)
+
     for task in tasks or TASK_NAMES:
         try:
-            res = train_task(task, data_dirs, version_dir, backend=backend, max_rows=max_rows, epochs=epochs, seed=seed, quick=quick)
+            res = train_task(
+                task, data_dirs, version_dir, backend=backend, max_rows=max_rows, epochs=epochs, seed=seed, quick=quick,
+                incumbent=active.tasks.get(task) if active else None,
+            )
         except Exception as e:  # keep going; the card records the failure
             _log(f"{task}: FAILED {e!r}")
             res = {"task": task, "error": repr(e)}

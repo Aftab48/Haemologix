@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Blood Donation Impact | Lives Saved | Haemologix",
+  title: "Impact and Pilot Progress",
   description:
-    "See the impact of blood donation through Haemologix. Discover how many lives have been saved, blood units donated, and the positive change in communities across India.",
+    "Where the Haemologix pilot stands: donor profiles, document verification, and how the platform changes emergency blood requests for hospitals and donors.",
   keywords: [
     "blood donation impact",
-    "lives saved",
+    "blood donation pilot",
     "blood donation statistics",
     "blood donation impact India",
   ],
   openGraph: {
-    title: "Blood Donation Impact | Lives Saved | Haemologix",
-    description: "See the impact of blood donation and lives saved through Haemologix platform.",
+    title: "Impact and Pilot Progress | Haemologix",
+    description: "Where the Haemologix pilot stands today, from our own data.",
     url: "https://www.haemologix.in/impact",
   },
   alternates: {

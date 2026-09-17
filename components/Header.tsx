@@ -14,7 +14,7 @@ import {
 } from "@clerk/nextjs";
 
 interface HeaderProps {
-  activePage?: "about" | "team" | "careers" | "pricing" | "impact" | "contact" | "pilot";
+  activePage?: "about" | "team" | "careers" | "pricing" | "impact" | "learn" | "contact" | "pilot";
   variant?: "default" | "editorial";
 }
 
@@ -28,6 +28,7 @@ const Header = ({ activePage, variant = "default" }: HeaderProps) => {
     { href: "/careers", label: "Careers", key: "careers" },
     { href: "/pricing", label: "Pricing", key: "pricing" },
     { href: "/impact", label: "Impact", key: "impact" },
+    { href: "/learn", label: "Learn", key: "learn" },
     { href: "/contact", label: "Contact", key: "contact" },
     { href: "/pilot", label: "Pilot", key: "pilot" },
   ];

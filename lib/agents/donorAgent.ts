@@ -7,7 +7,7 @@ import { db } from "@/db";
 import { AgentType } from "@prisma/client";
 import type { Donor, DonorProfile } from "@prisma/client";
 import { parseShortageRequestEvent, publishEvent } from "./eventBus";
-import { scoreDonor, DonorScores } from "./donorScoring";
+import { scoreDonor, DonorScores, donationIntervalDays, minHemoglobin } from "./donorScoring";
 import { sendDonorBloodRequestEmail } from "../actions/mails.actions";
 import { sendUrgentBloodRequestSMS } from "../actions/sms.actions";
 import { calculateDonorEta } from "@/lib/distanceEta";
@@ -17,7 +17,7 @@ import { explainNotification } from "@/lib/ml/explain";
 import { alertWindowFeatures, donorNotificationFeatures, donorShowFeatures, type DonorFeatureInput } from "@/lib/ml/features";
 import { getAlertWindowHours } from "@/lib/ml/flags";
 import { chooseNotificationBatch, deterministicNotifyDecision } from "@/lib/ml/policy/donorNotifyPolicy";
-import { COMMITTED_WHERE } from "./commitment";
+import { COMMITTED_WHERE, didArrive, didNotArrive, toldUsNotComing } from "./commitment";
 
 /**
  * A donor with the detail collected after onboarding joined on. `profile` is null
@@ -54,6 +54,7 @@ export interface RankedDonor {
     alertsLast7Days: number;
   };
   daysSinceLastDonation: number | null;
+  sexForInterval: Donor["sexForInterval"];
 }
 
 /** `Donor.name` is a single column; downstream email and SMS want the parts. */
@@ -141,7 +142,7 @@ export function calculateDistance(
  * The subset of donor fields the eligibility rules read. Production passes a full
  * `DonorWithProfile`; the simulator passes a synthetic donor with the same shape.
  */
-export type EligibilityDonorInput = Pick<DonorWithProfile, "status" | "weight" | "gender"> & {
+export type EligibilityDonorInput = Pick<DonorWithProfile, "status" | "weight" | "sexForInterval"> & {
   dateOfBirth: Date | string;
   lastDonationDate: Date | string | null;
   profile: Pick<
@@ -193,7 +194,7 @@ export function isDonorEligible(
     const daysSinceLastDonation =
       (now - new Date(donor.lastDonationDate).getTime()) /
       (1000 * 60 * 60 * 24);
-    const minDays = donor.gender.toLowerCase() === "male" ? 90 : 120;
+    const minDays = donationIntervalDays(donor.sexForInterval);
 
     if (daysSinceLastDonation < minDays) {
       return ineligible(`Last donation too recent (need ${minDays} days)`);
@@ -212,7 +213,7 @@ export function isDonorEligible(
 
   const hbRaw = profile?.hemoglobin;
   const hb = hbRaw ? parseFloat(hbRaw) : NaN;
-  const minHb = donor.gender.toLowerCase() === "male" ? 13.0 : 12.5;
+  const minHb = minHemoglobin(donor.sexForInterval);
 
   if (!Number.isFinite(hb)) {
     // Previously this passed silently, because NaN < 13.0 is false.
@@ -277,6 +278,14 @@ export async function findAndRankDonors(
       // committedToAlertId. (Their own alert never re-notifies them: the
       // per-alert dedup below filters anyone already in its history.)
       responseHistory: { none: COMMITTED_WHERE },
+      // Turned away at screening: not alerted again until the re-check date
+      // (never, for a permanent deferral) unless the deferral is cleared.
+      deferrals: {
+        none: {
+          clearedAt: null,
+          OR: [{ category: "PERMANENT" }, { recheckDate: { gt: new Date() } }],
+        },
+      },
     },
     include: { profile: true },
   });
@@ -296,6 +305,7 @@ export async function findAndRankDonors(
     unscreened: boolean;
     history: RankedDonor["history"];
     daysSinceLastDonation: number | null;
+    sexForInterval: RankedDonor["sexForInterval"];
   }> = [];
 
   const now = Date.now();
@@ -351,11 +361,11 @@ export async function findAndRankDonors(
     const accepted = responseHistory.filter(
       (r) => r.status === "accepted"
     ).length;
-    const arrived = responseHistory.filter((r) => r.confirmed).length;
+    const arrived = responseHistory.filter(didArrive).length;
     // "accepted and did not arrive": silent no-shows plus donors who released
     // (told us they were not coming). Same meaning as the sim's noShows.
-    const noShows = responseHistory.filter((r) => r.noShow || r.releasedAt).length;
-    const releases = responseHistory.filter((r) => r.releasedAt && r.releasedBy !== "system").length;
+    const noShows = responseHistory.filter(didNotArrive).length;
+    const releases = responseHistory.filter(toldUsNotComing).length;
     const responded = responseHistory.filter((r) => r.responseTime != null);
     const avgResponseTime =
       responded.length > 0
@@ -372,6 +382,7 @@ export async function findAndRankDonors(
     const scores = scoreDonor(
       {
         lastDonation: donor.lastDonationDate,
+        sexForInterval: donor.sexForInterval,
         hemoglobin: donor.profile?.hemoglobin ?? null,
         bmi: donor.bmi,
         recentVaccinations: donor.profile?.recentVaccinations ?? null,
@@ -403,6 +414,7 @@ export async function findAndRankDonors(
         alertsLast7Days,
       },
       daysSinceLastDonation,
+      sexForInterval: donor.sexForInterval,
     });
   }
 
@@ -433,6 +445,7 @@ export async function findAndRankDonors(
       unscreened: item.unscreened,
       history: item.history,
       daysSinceLastDonation: item.daysSinceLastDonation,
+      sexForInterval: item.sexForInterval,
     };
   });
 
@@ -451,6 +464,7 @@ export function rankedDonorFeatureInput(
     donorBloodType: d.bloodGroup,
     distanceKm: d.distanceKm,
     daysSinceLastDonation: d.daysSinceLastDonation,
+    sexForInterval: d.sexForInterval,
     priorAlerts: d.history.totalAlerts,
     priorAccepted: d.history.accepted,
     priorArrived: d.history.arrived,

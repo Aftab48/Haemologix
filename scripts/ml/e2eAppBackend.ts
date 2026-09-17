@@ -25,6 +25,13 @@
  *      /alerts/A myResponse=released; /history "Released"; second release → 409 NO_ACTIVE_COMMITMENT;
  *      D1 releasing A → 409 COMMITTED_ELSEWHERE (B).
  *   5. D1 releases B (donated_recently, yesterday): lastDonationDate moved; toggle on → 409 DONATION_COOLDOWN.
+ *   6. Alert C: D2 (app) accepts, the hospital defers D2 at screening (low Hb, re-check in 30 days):
+ *      /alerts/C myResponse=released + releaseReason=deferred; /history "Deferred";
+ *      toggle on → 409 DEFERRED until the re-check date; D2 not notified for alert D.
+ *   7. sexForInterval: D3's gender typed " M " with a donation 100 days ago → MALE, toggle on allowed;
+ *      a permanent deferral → 409 DEFERRED (until null); cleared → allowed again.
+ *
+ * Needs prisma/sql/0004_donation_history.sql on the ML DB.
  */
 import "./loadEnv";
 process.env.SANDBOX_NOTIFICATIONS = "1";
@@ -39,6 +46,7 @@ import { db } from "@/db";
 import { AgentType } from "@prisma/client";
 import { publishEvent, type ShortageRequestEvent } from "@/lib/agents/eventBus";
 import { processShortageEvent } from "@/lib/agents/donorAgent";
+import { deferDonorAtScreening } from "@/lib/agents/commitment";
 
 const APP = process.env.APP_BACKEND_URL ?? "http://localhost:4000";
 const APP_BACKEND_DIR = path.resolve(process.cwd(), "..", "app-backend");
@@ -190,10 +198,12 @@ async function main() {
   assert.equal(health, 200, `app-backend not reachable at ${APP}`);
 
   const { hospital, donors } = await seed();
-  const [D0, D1] = donors;
+  const [D0, D1, D2, D3] = donors;
   const created: string[] = [];
   const t0 = mintToken(D0);
   const t1 = mintToken(D1);
+  const t2 = mintToken(D2);
+  const t3 = mintToken(D3);
   console.log(`[e2e] ${TAG} seeded; tokens minted`);
 
   try {
@@ -298,6 +308,51 @@ async function main() {
     assert.equal(cooldown.status, 409, JSON.stringify(cooldown.json));
     assert.equal(cooldown.json.error.details?.reason, "DONATION_COOLDOWN");
     console.log("[e2e] 5. donated_recently moved lastDonationDate; toggle on → 409 DONATION_COOLDOWN");
+
+    // ---- 6. D2 accepts C in the app; the hospital defers D2 at screening ----
+    const C = await raiseAlert(hospital.id, "C");
+    created.push(C.id);
+    assert.ok((await notifiedIds(C.id)).has(D2.id), "D2 notified for C");
+    const acceptC = await api(t2, "POST", "/donor/respond", { requestId: C.id, status: "accept", etaMinutes: 20 });
+    assert.equal(acceptC.status, 200, JSON.stringify(acceptC.json));
+    const recheck = new Date(Date.now() + 30 * 86_400_000);
+    const deferred = await deferDonorAtScreening(C.id, D2.id, { category: "LOW_HB", recheckDate: recheck });
+    assert.equal(deferred.released, true, deferred.error ?? deferred.message);
+    const detailC = await api(t2, "GET", `/donor/alerts/${C.id}`);
+    assert.equal(detailC.json.data.myResponse, "released");
+    assert.equal(detailC.json.data.releaseReason, "deferred");
+    const histC = (await api(t2, "GET", "/donor/history")).json.data.items.find((i: any) => i.requestId === C.id);
+    assert.equal(histC?.status, "Deferred");
+    assert.equal((await api(t2, "GET", "/donor/donor-details")).json.data.donor.commitment, null);
+    let deferredToggle = await api(t2, "PATCH", "/donor/donor-details", { isAvailable: false });
+    assert.equal(deferredToggle.status, 200, "switching off is always allowed");
+    deferredToggle = await api(t2, "PATCH", "/donor/donor-details", { isAvailable: true });
+    assert.equal(deferredToggle.status, 409, JSON.stringify(deferredToggle.json));
+    assert.equal(deferredToggle.json.error.details?.reason, "DEFERRED");
+    assert.equal(deferredToggle.json.error.details?.until, recheck.toISOString());
+    await db.donor.update({ where: { id: D2.id }, data: { isAvailable: true } }); // matcher must skip them anyway
+    const D = await raiseAlert(hospital.id, "D");
+    created.push(D.id);
+    assert.equal((await notifiedIds(D.id)).has(D2.id), false, "deferred D2 not notified for D");
+    console.log("[e2e] 6. deferral: myResponse released/deferred, history Deferred, toggle on → 409 DEFERRED, matcher skips D2");
+
+    // ---- 7. sexForInterval from a messy gender; permanent deferral ---------
+    await db.donor.update({ where: { id: D3.id }, data: { gender: " M ", lastDonationDate: new Date(Date.now() - 100 * 86_400_000) } });
+    const d3 = await db.donor.findUnique({ where: { id: D3.id }, select: { sexForInterval: true } });
+    assert.equal(d3?.sexForInterval, "MALE", "trigger normalised ' M '");
+    let d3Toggle = await api(t3, "PATCH", "/donor/donor-details", { isAvailable: false });
+    d3Toggle = await api(t3, "PATCH", "/donor/donor-details", { isAvailable: true });
+    assert.equal(d3Toggle.status, 200, `100 days after donating a man is past his 90-day gap: ${JSON.stringify(d3Toggle.json)}`);
+    const permanent = await db.deferralEvent.create({ data: { donorId: D3.id, category: "PERMANENT", source: "hospital" } });
+    await api(t3, "PATCH", "/donor/donor-details", { isAvailable: false });
+    d3Toggle = await api(t3, "PATCH", "/donor/donor-details", { isAvailable: true });
+    assert.equal(d3Toggle.status, 409, JSON.stringify(d3Toggle.json));
+    assert.equal(d3Toggle.json.error.details?.reason, "DEFERRED");
+    assert.equal(d3Toggle.json.error.details?.until, null);
+    await db.deferralEvent.update({ where: { id: permanent.id }, data: { clearedAt: new Date() } });
+    d3Toggle = await api(t3, "PATCH", "/donor/donor-details", { isAvailable: true });
+    assert.equal(d3Toggle.status, 200, "cleared deferral no longer locks");
+    console.log("[e2e] 7. ' M ' → MALE 90-day gap; permanent deferral → 409 DEFERRED (until null); cleared → allowed");
 
     console.log("\n[e2e] ALL PASSED");
   } finally {

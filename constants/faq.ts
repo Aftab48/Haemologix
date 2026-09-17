@@ -7,6 +7,8 @@ import { ORG } from "@/lib/seo";
 export interface FaqItem {
   question: string;
   answer: string;
+  /** Article that covers the topic in depth. */
+  link?: { href: string; label: string };
 }
 
 export interface FaqCategory {
@@ -90,7 +92,11 @@ export const faqCategories: FaqCategory[] = [
       {
         question: "How often can I donate blood?",
         answer:
-          "Whole blood can generally be donated once every 90 days (three months). Haemologix records your last donation date and will not alert you for whole-blood requests until you are eligible again. Platelet donations have shorter intervals; follow the guidance of the collecting blood bank.",
+          "Whole blood can be donated again after 90 days for men and 120 days for women. Haemologix records your last donation date and will not alert you for whole-blood requests until you are eligible again. Platelet donations have shorter intervals; follow the guidance of the collecting blood bank.",
+        link: {
+          href: "/learn/blood-donation-gap-90-120-days",
+          label: "Why women wait 120 days, and why it matters",
+        },
       },
       {
         question: "Will I be paid for donating?",

@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { AgentType } from "@prisma/client";
 import { publishEvent } from "./eventBus";
+import { didArrive, didNotArrive, toldUsNotComing } from "./commitmentRules";
 import { calculateDistance } from "./donorAgent";
 import { consultModel, decisionBasis, nowTimeContext } from "@/lib/ml/agentBridge";
 import { explainTransport } from "@/lib/ml/explain";
@@ -575,19 +576,20 @@ export async function calculateDonorETA(
     // Rule ETA stays the floor/ceiling: with authority the prediction is used but
     // clamped to [0.7, 1.6] × rule so a bad prediction cannot mislead the hospital.
     const alert = await db.alert.findUnique({ where: { id: requestId }, select: { bloodType: true, urgency: true, unitsNeeded: true, searchRadius: true } });
-    const history = await db.donorResponseHistory.findMany({ where: { donorId }, select: { status: true, confirmed: true, noShow: true, releasedAt: true, releasedBy: true, responseTime: true, notifiedAt: true } });
+    const history = await db.donorResponseHistory.findMany({ where: { donorId }, select: { status: true, confirmed: true, noShow: true, releasedAt: true, releasedBy: true, releaseReason: true, responseTime: true, notifiedAt: true } });
     const responded = history.filter((h) => h.responseTime != null);
     const time = nowTimeContext();
     const showFeatures = donorShowFeatures({
       donorBloodType: donor.bloodGroup,
       distanceKm,
       daysSinceLastDonation: donor.lastDonationDate ? Math.round((Date.now() - new Date(donor.lastDonationDate).getTime()) / 86_400_000) : null,
+      sexForInterval: donor.sexForInterval,
       priorAlerts: history.length,
       priorAccepted: history.filter((h) => h.status === "accepted").length,
-      priorArrived: history.filter((h) => h.confirmed).length,
+      priorArrived: history.filter(didArrive).length,
       // same definitions as donorAgent.findAndRankDonors
-      priorNoShows: history.filter((h) => h.noShow || h.releasedAt).length,
-      priorReleases: history.filter((h) => h.releasedAt && h.releasedBy !== "system").length,
+      priorNoShows: history.filter(didNotArrive).length,
+      priorReleases: history.filter(toldUsNotComing).length,
       avgResponseMinutes: responded.length ? responded.reduce((s, h) => s + (h.responseTime ?? 600), 0) / responded.length / 60 : null,
       alertsLast7Days: history.filter((h) => h.notifiedAt >= new Date(Date.now() - 7 * 86_400_000)).length,
       unscreened: false,

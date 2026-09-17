@@ -12,18 +12,21 @@
  *   • hospital confirms arrival        → confirmed = true   (coordinatorAgent.confirmDonorArrival)
  *   • no-show timer                    → noShow = true      (scheduler.markNoShows)
  *   • release                          → releasedAt set     (this module)
+ *   • deferred at screening            → releasedAt set, releaseReason "deferred", arrivedAt set
+ *                                        (deferDonorAtScreening — arrived, but no unit)
  * Release and no-show stay distinguishable forever: noShow means "accepted, did
  * not arrive, did not tell us"; releasedAt means somebody said they are not
  * coming — the donor, a coordinator, or the system once the alert is over.
  */
 
 import { db } from "@/db";
-import { AgentType, Prisma } from "@prisma/client";
+import { AgentType, Prisma, type DeferralCategory } from "@prisma/client";
 import { decisionBasis } from "@/lib/ml/agentBridge";
 import { recordOutcome } from "@/lib/ml/record";
 import { checkFulfillmentProgress } from "./coordinatorAgent";
 import {
   COMMITTED_WHERE,
+  DEFERRED_RELEASE_REASON,
   RELEASE_REASON_LABELS,
   nextLastDonationDate,
   parseDonatedOn,
@@ -104,10 +107,12 @@ export async function findActiveCommitment(donorId: string): Promise<ActiveCommi
 
 export interface ReleaseOptions {
   by: ReleasedBy;
-  reason?: ReleaseReason | SystemReleaseReason | null;
+  reason?: ReleaseReason | SystemReleaseReason | typeof DEFERRED_RELEASE_REASON | null;
   note?: string | null;
   /** self-reported donation date, honoured only with reason "donated_recently" */
   donatedOn?: Date | string | null;
+  /** the donor did turn up (deferred at screening): stamp arrivedAt and label donor_show = 1 */
+  arrived?: boolean;
   /** skip the coordinator re-plan (used by bulk/system paths that handle it themselves) */
   skipProgressCheck?: boolean;
 }
@@ -144,14 +149,26 @@ export async function releaseDonorCommitment(requestId: string, donorId: string,
 
     await db.donorResponseHistory.updateMany({
       where: { donorId, requestId, ...COMMITTED_WHERE },
-      data: { releasedAt: now, releasedBy: opts.by, releaseReason: reason, releaseNote: note },
+      data: {
+        releasedAt: now,
+        releasedBy: opts.by,
+        releaseReason: reason,
+        releaseNote: note,
+        ...(opts.arrived ? { arrivedAt: now } : {}),
+      },
     });
 
     // Hospital dashboard row: CONFIRMED (= accepted) → RELEASED
     await db.alertResponse.updateMany({ where: { alertId: requestId, donorId }, data: { status: "RELEASED" } });
 
-    // Learning loop: they did not arrive. Human releases only (see doc comment).
-    if (opts.by !== "system") {
+    // Learning loop: human releases only (see doc comment).
+    if (opts.arrived) {
+      await recordOutcome({ requestId, task: "donor_show", subjectId: donorId, actual: 1, outcomeAt: now });
+      if (open.respondedAt) {
+        const minutes = Math.max(1, (now.getTime() - open.respondedAt.getTime()) / 60_000);
+        await recordOutcome({ requestId, task: "donor_eta", subjectId: donorId, actual: Math.round(minutes), outcomeAt: now });
+      }
+    } else if (opts.by !== "system") {
       await recordOutcome({ requestId, task: "donor_show", subjectId: donorId, actual: 0, outcomeAt: now });
     }
 
@@ -186,6 +203,8 @@ export async function releaseDonorCommitment(requestId: string, donorId: string,
           reasoning:
             opts.by === "system"
               ? `Commitment released by the system${why} — the alert is over; the donor is available for other alerts again.`
+              : opts.arrived
+              ? `${who} released this commitment${why} — the donor arrived but could not donate, so another donor is needed.`
               : `${who} released this commitment${why}${minutesSinceAccept !== null ? ` ${minutesSinceAccept} min after accepting` : ""} — the donor is not coming and is available for other alerts again.`,
           ...decisionBasis(),
         } as Prisma.InputJsonObject,
@@ -207,6 +226,40 @@ export async function releaseDonorCommitment(requestId: string, donorId: string,
     console.error("[Commitment] Release failed:", error);
     return { success: false, released: false, error: String(error) };
   }
+}
+
+export interface DeferralInput {
+  category: DeferralCategory;
+  /** Required unless PERMANENT: the donor is not alerted again before it. */
+  recheckDate: Date | null;
+  note?: string | null;
+}
+
+/**
+ * The hospital turned an accepted donor away at screening. Ends the commitment
+ * (the unit is still needed, so the coordinator re-plans) and records the
+ * deferral, which keeps the donor out of matching until the re-check date.
+ */
+export async function deferDonorAtScreening(requestId: string, donorId: string, deferral: DeferralInput): Promise<ReleaseResult> {
+  const open = await db.donorResponseHistory.findFirst({ where: { donorId, requestId, ...COMMITTED_WHERE }, select: { id: true } });
+  if (!open) return { success: true, released: false, message: "No open commitment for this donor on this alert" };
+  // Deferral first: if the release below fails, the donor is still kept out of
+  // matching, which is the part that protects them.
+  await db.deferralEvent.create({
+    data: {
+      donorId,
+      requestId,
+      category: deferral.category,
+      recheckDate: deferral.category === "PERMANENT" ? null : deferral.recheckDate,
+      source: "hospital",
+    },
+  });
+  return releaseDonorCommitment(requestId, donorId, {
+    by: "coordinator",
+    reason: DEFERRED_RELEASE_REASON,
+    note: deferral.note,
+    arrived: true,
+  });
 }
 
 /**

@@ -103,7 +103,7 @@ export default function EmergencyBloodPage() {
               <Clock className="w-12 h-12 text-red-600 mx-auto mb-4" />
               <h3 className="font-semibold text-lg mb-2">Fast Response</h3>
               <p className="text-text-dark/80 text-sm">
-                Average response time of 12 minutes from alert to donor confirmation
+                Matched donors are alerted the moment a hospital raises a request
               </p>
             </CardContent>
           </Card>
@@ -119,9 +119,9 @@ export default function EmergencyBloodPage() {
           <Card>
             <CardContent className="p-6 text-center">
               <Heart className="w-12 h-12 text-green-600 mx-auto mb-4" />
-              <h3 className="font-semibold text-lg mb-2">High Success Rate</h3>
+              <h3 className="font-semibold text-lg mb-2">Automatic Escalation</h3>
               <p className="text-text-dark/80 text-sm">
-                89% success rate in fulfilling emergency blood requests
+                If nearby donors don't respond, the search widens and nearby blood banks are checked automatically
               </p>
             </CardContent>
           </Card>

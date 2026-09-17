@@ -35,10 +35,18 @@ def compare_to_active(card: ModelCard, model_dir: Path | None = None) -> dict:
         if not res.get("metrics"):
             continue
         spec = get_task(task)
-        inc = active_card.get("tasks", {}).get(task, {}).get("metrics")
-        better = is_better(spec, res["metrics"], inc, min_delta=0.0) if inc else True
-        out["perTask"][task] = {"candidate": res["metrics"].get(spec.primary_metric), "active": (inc or {}).get(spec.primary_metric), "betterOrEqual": better}
-        if inc and not better:
+        # Prefer the active version scored on this candidate's own test rows; its
+        # card metrics come from another dataset and are only a rough guide.
+        same_test = res.get("active_metrics_same_test")
+        inc = same_test or active_card.get("tasks", {}).get(task, {}).get("metrics")
+        not_worse = not is_better(spec, inc, res["metrics"]) if inc else True
+        out["perTask"][task] = {
+            "candidate": res["metrics"].get(spec.primary_metric),
+            "active": (inc or {}).get(spec.primary_metric),
+            "sameTestRows": bool(same_test),
+            "betterOrEqual": not_worse,
+        }
+        if inc and not not_worse:
             out["regressions"].append(task)
     return out
 

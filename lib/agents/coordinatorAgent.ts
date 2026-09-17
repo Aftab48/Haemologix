@@ -17,7 +17,7 @@ import { trackDecisionOutcome } from "./outcomeTracking";
 import { advanceEscalation } from "./escalation";
 import { computeShortfall } from "./shortfall";
 import { readEscalationMeta } from "./workflowSteps";
-import { findActiveCommitment, releaseCommitmentsForClosedAlert } from "./commitment";
+import { didArrive, didNotArrive, findActiveCommitment, releaseCommitmentsForClosedAlert, toldUsNotComing } from "./commitment";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -258,7 +258,7 @@ export async function processDonorResponse(
         try {
           const history = await db.donorResponseHistory.findMany({
             where: { donorId: donor.id },
-            select: { status: true, confirmed: true, noShow: true, releasedAt: true, releasedBy: true, responseTime: true, notifiedAt: true },
+            select: { status: true, confirmed: true, noShow: true, releasedAt: true, releasedBy: true, releaseReason: true, responseTime: true, notifiedAt: true },
           });
           const responded = history.filter((h) => h.responseTime != null);
           const time = nowTimeContext();
@@ -267,12 +267,13 @@ export async function processDonorResponse(
             donorBloodType: donor.bloodGroup,
             distanceKm: distance_km,
             daysSinceLastDonation: donor.lastDonationDate ? Math.round((Date.now() - new Date(donor.lastDonationDate).getTime()) / 86_400_000) : null,
+            sexForInterval: donor.sexForInterval,
             priorAlerts: history.length,
             priorAccepted: history.filter((h) => h.status === "accepted").length,
-            priorArrived: history.filter((h) => h.confirmed).length,
+            priorArrived: history.filter(didArrive).length,
             // same definitions as donorAgent.findAndRankDonors
-            priorNoShows: history.filter((h) => h.noShow || h.releasedAt).length,
-            priorReleases: history.filter((h) => h.releasedAt && h.releasedBy !== "system").length,
+            priorNoShows: history.filter(didNotArrive).length,
+            priorReleases: history.filter(toldUsNotComing).length,
             avgResponseMinutes: responded.length ? responded.reduce((s, h) => s + (h.responseTime ?? 600), 0) / responded.length / 60_000 : null,
             alertsLast7Days: history.filter((h) => h.notifiedAt >= new Date(Date.now() - 7 * 86_400_000)).length,
             unscreened: !donor.profile?.hemoglobin,
@@ -565,9 +566,7 @@ export async function selectOptimalMatch(requestId: string): Promise<{
         : NaN;
       let health_score = 100;
       if (isNaN(hemoglobin)) health_score = 70;
-      else if (donor.gender === "male" && hemoglobin < 14.0) health_score = 80;
-      else if (donor.gender === "female" && hemoglobin < 13.0)
-        health_score = 80;
+      else if (hemoglobin < (donor.sexForInterval === "MALE" ? 14.0 : 13.0)) health_score = 80;
 
       const match_score = calculateMatchScore(
         eta_minutes,

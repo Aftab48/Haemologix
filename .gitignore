@@ -105,3 +105,5 @@ ml/DEPLOY_RUNBOOK.local.md
 .agents/
 .claude/
 .codex/
+brag-output/
+marketing-plan/

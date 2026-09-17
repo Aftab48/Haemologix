@@ -3,6 +3,18 @@
  * 5-factor algorithm for optimal donor matching
  */
 
+/** Mirrors the Prisma `SexForInterval` enum; kept local so the simulator needs no Prisma. */
+export type SexForInterval = "MALE" | "FEMALE" | "UNKNOWN";
+
+/** Whole-blood donation interval. Anyone not recorded as male gets the longer, safer gap. */
+export function donationIntervalDays(sex: SexForInterval): number {
+  return sex === "MALE" ? 90 : 120;
+}
+
+/** Minimum haemoglobin (g/dL) to donate. Same fallback as the interval. */
+export function minHemoglobin(sex: SexForInterval): number {
+  return sex === "MALE" ? 13.0 : 12.5;
+}
 
 export interface DonorScores {
   distance: number;
@@ -26,19 +38,29 @@ export function calculateDistanceScore(
 
 /**
  * Calculate donation history score (25% weight)
- * Optimal: 90-180 days since last donation
+ * Optimal: the first 90 days after the donor became eligible again.
+ *
+ * The bands are measured from the donor's own eligibility date (last donation +
+ * 90 days for men, 120 otherwise), so a man and a woman who have been eligible
+ * for the same time score the same. Thresholds are written as `interval + n`
+ * so the male bands stay exactly the old 90/180/365/730-day ones.
  */
-export function calculateHistoryScore(daysSinceLastDonation: number): number {
-  if (daysSinceLastDonation >= 90 && daysSinceLastDonation <= 180) {
+export function calculateHistoryScore(
+  daysSinceLastDonation: number,
+  intervalDays: number
+): number {
+  const d = daysSinceLastDonation;
+  const e = intervalDays;
+  if (d >= e && d <= e + 90) {
     return 100; // Optimal range
-  } else if (daysSinceLastDonation > 180 && daysSinceLastDonation <= 365) {
+  } else if (d > e + 90 && d <= e + 275) {
     return 80; // Good
-  } else if (daysSinceLastDonation > 365 && daysSinceLastDonation <= 730) {
+  } else if (d > e + 275 && d <= e + 640) {
     return 60; // Acceptable
-  } else if (daysSinceLastDonation > 730) {
+  } else if (d > e + 640) {
     return 40; // Long time ago
   } else {
-    return 0; // Too recent (< 90 days)
+    return 0; // Not eligible yet
   }
 }
 
@@ -103,18 +125,22 @@ export function calculateHealthScore(donor: {
   bmi: string | null;
   recentVaccinations: boolean | null;
   medications: string | null;
+  sexForInterval: SexForInterval;
 }): number {
   let score = 0;
 
   // Hemoglobin (40 points). Health detail is collected after onboarding, so a
   // missing value is normal — it scores as the lowest band rather than being
-  // treated as a good result.
+  // treated as a good result. Bands sit above the donor's own cutoff (13.0 men,
+  // 12.5 otherwise): women's levels run lower, and a flat scale ranked eligible
+  // women below comparable men.
   const hb = donor.hemoglobin ? parseFloat(donor.hemoglobin) : NaN;
+  const minHb = minHemoglobin(donor.sexForInterval);
   if (!Number.isFinite(hb)) {
     score += 24;
-  } else if (hb > 14) {
+  } else if (hb > minHb + 1) {
     score += 40;
-  } else if (hb >= 13 && hb <= 14) {
+  } else if (hb >= minHb && hb <= minHb + 1) {
     score += 32;
   } else {
     score += 24;
@@ -175,6 +201,7 @@ export function calculateCompositeScore(
  */
 export interface DonorScoringInput {
   lastDonation: Date | null;
+  sexForInterval: SexForInterval;
   hemoglobin: string | null;
   bmi: string | null;
   recentVaccinations: boolean | null;
@@ -218,7 +245,10 @@ export function scoreDonor(
 
   // Calculate individual scores
   const distance = calculateDistanceScore(distanceKm, maxRadiusKm);
-  const history = calculateHistoryScore(daysSinceLastDonation);
+  const history = calculateHistoryScore(
+    daysSinceLastDonation,
+    donationIntervalDays(donor.sexForInterval)
+  );
   const responsiveness = calculateResponsivenessScore(
     responseHistory?.totalAlerts || 0,
     responseHistory?.accepted || 0,
@@ -230,6 +260,7 @@ export function scoreDonor(
     bmi: donor.bmi,
     recentVaccinations: donor.recentVaccinations,
     medications: donor.medications,
+    sexForInterval: donor.sexForInterval,
   });
 
   // Calculate final composite score

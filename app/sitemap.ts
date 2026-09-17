@@ -1,4 +1,5 @@
 import { MetadataRoute } from "next";
+import { learnArticles } from "@/constants/learn";
 import { SITE_URL } from "@/lib/seo";
 
 // `lastModified` is intentionally omitted: the previous version stamped
@@ -20,6 +21,12 @@ const routes: Array<{
   { path: "/find-blood-donor", changeFrequency: "weekly", priority: 0.9 },
   { path: "/emergency-blood", changeFrequency: "weekly", priority: 0.9 },
   { path: "/blood-bank-near-me", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/learn", changeFrequency: "weekly", priority: 0.8 },
+  ...learnArticles.map((a) => ({
+    path: `/learn/${a.slug}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  })),
   { path: "/contact", changeFrequency: "monthly", priority: 0.8 },
   { path: "/impact", changeFrequency: "weekly", priority: 0.8 },
   { path: "/demo/bloodbank", changeFrequency: "monthly", priority: 0.7 },

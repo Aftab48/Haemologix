@@ -26,7 +26,14 @@ export type ReleaseReason = (typeof RELEASE_REASONS)[number];
 export const SYSTEM_RELEASE_REASONS = ["alert_closed", "alert_expired", "backfill"] as const;
 export type SystemReleaseReason = (typeof SYSTEM_RELEASE_REASONS)[number];
 
-export const RELEASE_REASON_LABELS: Record<ReleaseReason | SystemReleaseReason, string> = {
+/**
+ * The hospital turned the donor away at screening. They *arrived*, so it is not
+ * a no-show; the commitment still ends because no unit was collected. Recorded
+ * only by deferDonorAtScreening, never accepted from a donor or the release API.
+ */
+export const DEFERRED_RELEASE_REASON = "deferred" as const;
+
+export const RELEASE_REASON_LABELS: Record<ReleaseReason | SystemReleaseReason | typeof DEFERRED_RELEASE_REASON, string> = {
   cant_make_it: "Can't make it",
   unwell: "Unwell",
   donated_recently: "Donated recently elsewhere",
@@ -34,7 +41,36 @@ export const RELEASE_REASON_LABELS: Record<ReleaseReason | SystemReleaseReason, 
   alert_closed: "Alert closed",
   alert_expired: "Alert window expired",
   backfill: "Backfill",
+  deferred: "Deferred at screening",
 };
+
+/** The response-history fields the arrival predicates below read. */
+type HistoryOutcome = {
+  confirmed: boolean;
+  noShow: boolean;
+  releasedAt: Date | null;
+  releasedBy: string | null;
+  releaseReason: string | null;
+};
+
+/**
+ * Model features count these, in the sim's terms: arrived, and accepted −
+ * arrived. Shared so every feature builder (donor, coordinator, logistics)
+ * agrees; a donor deferred at screening counts as arrived.
+ */
+export function didArrive(h: HistoryOutcome): boolean {
+  return h.confirmed || h.releaseReason === DEFERRED_RELEASE_REASON;
+}
+
+/** Accepted and did not arrive: silent no-shows plus releases. */
+export function didNotArrive(h: HistoryOutcome): boolean {
+  return h.noShow || (h.releasedAt !== null && h.releaseReason !== DEFERRED_RELEASE_REASON);
+}
+
+/** Of those, the ones a person (donor or coordinator) told us about. */
+export function toldUsNotComing(h: HistoryOutcome): boolean {
+  return h.releasedAt !== null && h.releasedBy !== "system" && h.releaseReason !== DEFERRED_RELEASE_REASON;
+}
 
 export function isReleaseReason(v: unknown): v is ReleaseReason {
   return typeof v === "string" && (RELEASE_REASONS as readonly string[]).includes(v);

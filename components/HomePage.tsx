@@ -251,7 +251,7 @@ const HomePage = () => {
           </div>
 
           {/* Stats */}
-          <div ref={statsRef} className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto relative z-20">
+          <div ref={statsRef} className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto relative z-20">
             {stats.map((stat, index) => (
               <Card
                 key={index}
@@ -535,8 +535,8 @@ const HomePage = () => {
             Ready to Save Lives?
           </h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto font-dm-sans text-text-dark">
-            Join thousands of donors and healthcare providers making a
-            difference every day.
+            Join the donors and hospitals using Haemologix to answer
+            emergency blood requests faster.
           </p>
 
           <>

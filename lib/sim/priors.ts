@@ -24,8 +24,16 @@ export const PRIORS = {
    * (`broadcast`, assumed — no production observations yet). All v2 behaviour
    * blocks are unchanged, so `runScenario(spec, { ladder: false })` reproduces
    * sim-v2 rows bit-for-bit.
+   *
+   * priors-v4 (2026-09-17): donors carry past *releases* (accepted, didn't come,
+   * told us) drawn from their past non-arrivals (`release`), and P(show)
+   * penalises a release less than a silent no-shows (`show.priorReleasePenalty`).
+   * Both assumed — production has too few releases to fit. Until now the
+   * `priorReleases` feature was a constant 0 in every sim row, so a model could
+   * not learn what a non-zero value means. With no releases drawn
+   * (`runScenario(spec, { releases: false })`) every v3 block behaves as before.
    */
-  version: "priors-v3",
+  version: "priors-v4",
 
   /** Real-world blood-group prevalence (approx. India). Used to build donor pools. */
   bloodTypePrevalence: {
@@ -69,10 +77,16 @@ export const PRIORS = {
     per10MinEta: -0.05,
     nightPenalty: -0.5,
     criticalBonus: 0.3,
-    priorNoShowPenalty: -0.3, // per prior no-show, capped at 3
+    priorNoShowPenalty: -0.3, // per prior silent no-show, capped at 3
+    priorReleasePenalty: -0.1, // per prior release, capped at 3: they told us, so a smaller signal
     priorShowRateWeight: 1.0,
     slowResponsePenalty: -0.35, // took > 20 min to accept
     latentSd: 0.8,
+  },
+
+  /** Past non-arrivals where the donor (or a coordinator) let us know. */
+  release: {
+    toldUsShare: 0.35,
   },
 
   // ---------------------------------------------------------------------------

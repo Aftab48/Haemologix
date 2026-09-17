@@ -7,6 +7,7 @@
 import { db } from "@/db";
 import { AgentType, Prisma } from "@prisma/client";
 import type { DonorWithProfile } from "./donorAgent";
+import { donationIntervalDays } from "./donorScoring";
 import { publishEvent } from "./eventBus";
 import { consultModel, decisionBasis } from "@/lib/ml/agentBridge";
 import { explainEligibility } from "@/lib/ml/explain";
@@ -129,18 +130,15 @@ export function checkDonorEligibility(
   // 6. Donation Interval Check (if not first-time donor)
   if (donor.hasDonatedBefore && donor.lastDonationDate) {
     const lastDonation = new Date(donor.lastDonationDate);
-    const monthsDiff =
-      (today.getTime() - lastDonation.getTime()) / (1000 * 60 * 60 * 24 * 30);
-    const requiredGap = donor.gender === "male" ? 3 : 4;
+    const daysSince = (today.getTime() - lastDonation.getTime()) / 86_400_000;
+    const requiredDays = donationIntervalDays(donor.sexForInterval);
 
     const intervalCheck: EligibilityCriterion = {
       criterion: "Donation Interval",
-      value: `${monthsDiff.toFixed(1)} months since last donation`,
-      required: `Minimum ${requiredGap} months`,
-      reason: `You must wait at least ${requiredGap} months since your last donation (${
-        requiredGap === 3 ? "male" : "female"
-      } donor)`,
-      passed: monthsDiff >= requiredGap,
+      value: `${Math.floor(daysSince)} days since last donation`,
+      required: `Minimum ${requiredDays} days`,
+      reason: `You must wait at least ${requiredDays} days since your last donation (90 days for men, 120 for women)`,
+      passed: daysSince >= requiredDays,
     };
     allCriteria.push(intervalCheck);
     if (!intervalCheck.passed) failedCriteria.push(intervalCheck);

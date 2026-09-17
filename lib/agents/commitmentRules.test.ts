@@ -2,12 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   COMMITTED_WHERE,
+  DEFERRED_RELEASE_REASON,
   RELEASE_REASONS,
   SYSTEM_RELEASE_REASONS,
   alertIsOver,
+  didArrive,
+  didNotArrive,
   isReleaseReason,
   nextLastDonationDate,
   parseDonatedOn,
+  toldUsNotComing,
 } from "./commitmentRules";
 
 const NOW = new Date("2026-08-17T10:00:00Z");
@@ -19,6 +23,7 @@ test("the committed predicate is exactly accepted / not confirmed / not no-show 
 test("release reasons: donor/coordinator taxonomy is closed, system reasons are separate", () => {
   for (const r of RELEASE_REASONS) assert.equal(isReleaseReason(r), true);
   for (const r of SYSTEM_RELEASE_REASONS) assert.equal(isReleaseReason(r), false, `${r} is system-only`);
+  assert.equal(isReleaseReason(DEFERRED_RELEASE_REASON), false, "deferral is recorded by the hospital path only");
   assert.equal(isReleaseReason("banana"), false);
   assert.equal(isReleaseReason(undefined), false);
   assert.equal(isReleaseReason(42), false);
@@ -53,4 +58,22 @@ test("alertIsOver mirrors the SQL backfill condition", () => {
   assert.deepEqual(alertIsOver({ status: "MATCHED", outcome: "ESCALATED", createdAt: fresh }, NOW, 6), { over: true, reason: "alert_expired" });
   assert.deepEqual(alertIsOver({ status: "PENDING", outcome: null, createdAt: stale }, NOW, 6), { over: true, reason: "alert_expired" });
   assert.deepEqual(alertIsOver(null, NOW, 6), { over: true, reason: "alert_closed" }, "orphan row");
+});
+
+test("a donor deferred at screening arrived; everyone else released did not", () => {
+  const row = { confirmed: false, noShow: false, releasedAt: null, releasedBy: null, releaseReason: null };
+  const at = new Date("2026-08-17T09:00:00Z");
+  const cases = [
+    { name: "confirmed", h: { ...row, confirmed: true }, arrived: true, missed: false, told: false },
+    { name: "no-show", h: { ...row, noShow: true }, arrived: false, missed: true, told: false },
+    { name: "donor release", h: { ...row, releasedAt: at, releasedBy: "donor", releaseReason: "cant_make_it" }, arrived: false, missed: true, told: true },
+    { name: "system release", h: { ...row, releasedAt: at, releasedBy: "system", releaseReason: "alert_closed" }, arrived: false, missed: true, told: false },
+    { name: "deferred", h: { ...row, releasedAt: at, releasedBy: "coordinator", releaseReason: DEFERRED_RELEASE_REASON }, arrived: true, missed: false, told: false },
+    { name: "open", h: row, arrived: false, missed: false, told: false },
+  ];
+  for (const c of cases) {
+    assert.equal(didArrive(c.h), c.arrived, `${c.name}: arrived`);
+    assert.equal(didNotArrive(c.h), c.missed, `${c.name}: did not arrive`);
+    assert.equal(toldUsNotComing(c.h), c.told, `${c.name}: told us`);
+  }
 });

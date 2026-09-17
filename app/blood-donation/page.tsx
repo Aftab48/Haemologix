@@ -39,7 +39,7 @@ export default function BloodDonationPage() {
               Blood Donation - Save Lives, Make a Difference
             </h1>
             <p className="text-xl text-text-dark/80 max-w-2xl mx-auto">
-              Blood donation is one of the most selfless acts you can perform. Every donation can save up to three lives. Learn how you can become a blood donor and help those in need.
+              Blood donation is one of the most selfless acts you can perform. A single donation can be separated into red cells, plasma and platelets, so it can help more than one patient. Learn how you can become a blood donor and help those in need.
             </p>
           </div>
         </ScrollReveal>
@@ -51,7 +51,7 @@ export default function BloodDonationPage() {
                 <Heart className="w-8 h-8 text-red-600 mb-4" />
                 <h2 className="text-2xl font-semibold mb-3">Why Donate Blood?</h2>
                 <ul className="space-y-2 text-text-dark/80">
-                  <li>• Save up to 3 lives with each donation</li>
+                  <li>• One donation can help more than one patient</li>
                   <li>• Help patients in emergency situations</li>
                   <li>• Support cancer patients and surgery cases</li>
                   <li>• Contribute to your community's health</li>
@@ -67,12 +67,27 @@ export default function BloodDonationPage() {
                 <Shield className="w-8 h-8 text-blue-600 mb-4" />
                 <h2 className="text-2xl font-semibold mb-3">Blood Donation Requirements</h2>
                 <ul className="space-y-2 text-text-dark/80">
-                  <li>• Age: 18-65 years</li>
-                  <li>• Weight: Minimum 50 kg</li>
-                  <li>• Good health and no illness</li>
-                  <li>• Hemoglobin: 12.5 g/dL minimum</li>
-                  <li>• 3-month gap between donations</li>
+                  <li>• Adult, in good health, and above the minimum weight and haemoglobin level</li>
+                  <li>
+                    • Gap between whole-blood donations: 90 days (men), 120 days (women).{" "}
+                    <Link href="/learn/blood-donation-gap-90-120-days" className="underline">
+                      Why the gap differs
+                    </Link>
+                  </li>
+                  <li>• The blood bank checks everything again before you donate</li>
                 </ul>
+                <p className="mt-4 text-sm text-text-dark/70">
+                  Exact age, weight and haemoglobin cutoffs are set by the{" "}
+                  <a
+                    href="http://nbtc.naco.gov.in/page/policies_guidelines/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    National Blood Transfusion Council (NBTC) guidelines
+                  </a>{" "}
+                  and can change. Ask your blood bank if you are unsure.
+                </p>
               </CardContent>
             </Card>
           </ScrollReveal>
@@ -125,7 +140,7 @@ export default function BloodDonationPage() {
           <div className="text-center">
             <h2 className="text-3xl font-bold mb-4">Ready to Become a Blood Donor?</h2>
             <p className="text-lg text-text-dark/80 mb-8">
-              Join thousands of donors saving lives across India. Register now and start making a difference.
+              Register now and we will alert you when a hospital near you needs your blood type.
             </p>
             <Link href="/donor/onboard">
               <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white">

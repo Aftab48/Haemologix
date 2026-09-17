@@ -36,7 +36,12 @@ model Donor {
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
   bloodGroup           String
+  /// Identity, as the donor typed or picked it. Never used for medical rules.
   gender               String
+  /// Decides the whole-blood interval (90 days MALE, 120 otherwise) and the
+  /// haemoglobin cutoff. Set from `gender` by a database trigger
+  /// (prisma/sql/0004_donation_history.sql); an explicit write wins.
+  sexForInterval       SexForInterval @default(UNKNOWN)
   isAvailable          Boolean        @default(true)
   /// Geocoded from the address at onboarding, or replaced by a device GPS fix
   /// from the mobile app. The matching agent discards donors outside an alert's
@@ -54,6 +59,8 @@ model Donor {
   responseHistory DonorResponseHistory[] @relation("DonorHistory")
   verifications   DonorVerification[]
   approvals       Approval[]             @relation("DonorApprovals")
+  donations       BloodDonationEvent[]
+  deferrals       DeferralEvent[]
 
   @@index([email])
   @@index([status])
@@ -408,6 +415,43 @@ model DonorResponseHistory {
   @@index([donorId, requestId])
 }
 
+/// One whole-blood donation. `Donor.lastDonationDate` stays the fast "latest"
+/// value; this is the history return rates are measured from.
+///
+/// Written only by database triggers (prisma/sql/0004_donation_history.sql): a
+/// hospital-confirmed response logs HOSPITAL_CONFIRMED, any other change to
+/// `Donor.lastDonationDate` logs SELF_REPORT. A unique index on
+/// (donorId, donatedAt::date) — not expressible here — allows one per day.
+model BloodDonationEvent {
+  id        String         @id @default(dbgenerated("(gen_random_uuid())::text"))
+  donorId   String
+  donatedAt DateTime
+  source    DonationSource
+  /// Alert the donation answered, for hospital-confirmed donations.
+  requestId String?
+  createdAt DateTime       @default(now())
+  donor     Donor          @relation(fields: [donorId], references: [id], onDelete: Cascade)
+}
+
+/// A donor turned away at screening. Category and re-check date only — no
+/// haemoglobin values or diagnoses. While `clearedAt` is null the donor is not
+/// alerted until `recheckDate` (never, for PERMANENT); see donorAgent.
+model DeferralEvent {
+  id          String           @id @default(uuid())
+  donorId     String
+  deferredAt  DateTime         @default(now())
+  category    DeferralCategory
+  recheckDate DateTime?
+  clearedAt   DateTime?
+  /// hospital | donor
+  source      String
+  requestId   String?
+  createdAt   DateTime         @default(now())
+  donor       Donor            @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@index([donorId])
+}
+
 model PilotRequest {
   id            String   @id @default(uuid())
   hospitalName  String
@@ -690,6 +734,24 @@ model AppJobCheckpoint {
   job       String   @id
   position  DateTime
   updatedAt DateTime @updatedAt
+}
+
+enum SexForInterval {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum DonationSource {
+  SELF_REPORT
+  HOSPITAL_CONFIRMED
+}
+
+enum DeferralCategory {
+  LOW_HB
+  OTHER_TEMPORARY
+  PERMANENT
+  UNKNOWN
 }
 
 enum ApprovalStatus {

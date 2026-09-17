@@ -69,6 +69,15 @@ export default function FaqPage() {
                         <p className="text-text-dark/80 font-dm-sans leading-relaxed">
                           {faq.answer}
                         </p>
+                        {faq.link && (
+                          <Link
+                            href={faq.link.href}
+                            onClick={(e) => e.stopPropagation()}
+                            className="mt-3 inline-block text-primary hover:underline font-dm-sans"
+                          >
+                            {faq.link.label} →
+                          </Link>
+                        )}
                       </CardContent>
                     </Card>
                   );
@@ -83,7 +92,12 @@ export default function FaqPage() {
                 Still have questions?
               </h2>
               <p className="text-text-dark/80 font-dm-sans leading-relaxed">
-                Reach out to our team and we&apos;ll get back to you.
+                Reach out to our team and we&apos;ll get back to you, or read
+                our{" "}
+                <Link href="/learn" className="text-primary hover:underline">
+                  blood donation guides
+                </Link>
+                .
               </p>
               <div className="bg-text-dark/5 p-4 rounded-lg text-text-dark/80 font-dm-sans">
                 <p>Email: founders@haemologix.in</p>

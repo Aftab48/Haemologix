@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Heart,
@@ -18,16 +17,12 @@ import {
   Globe,
   Users,
   Clock,
-  Target,
   Shield,
   Brain,
   ArrowRight,
   CheckCircle,
-  Star,
   Award,
   BarChart3,
-  MapPin,
-  Lightbulb,
   Rocket,
   Building,
   Network,
@@ -57,16 +52,13 @@ export default function ImpactAndProspects() {
     { value: "challenges", label: "Challenges & Solutions" },
   ];
 
-  const currentImpact = {
-    livesSaved: 12456,
-    donationsEnabled: 18234,
-    responseTimeReduction: 75,
-    hospitalsCovered: 156,
-    citiesActive: 52,
-    averageResponseTime: 8.5,
-    successRate: 89,
-    costSavings: 2.4,
-  };
+  // Pilot figures only. Every number on this page must trace to real data —
+  // add outcome metrics (donations, response times) once real alerts back them.
+  const pilotFigures = [
+    { value: "200+", label: "Donor profiles created", icon: Users },
+    { value: "500+", label: "Documents uploaded", icon: BarChart3 },
+    { value: "~70%", label: "Documents verified automatically", icon: CheckCircle },
+  ];
 
   const futureGoals = [
     {
@@ -76,7 +68,6 @@ export default function ImpactAndProspects() {
         "Expand to all major cities and rural areas across the country",
       target: "500+ hospitals, 100+ cities",
       timeline: "2025-2026",
-      progress: 35,
       icon: Globe,
     },
     {
@@ -85,7 +76,6 @@ export default function ImpactAndProspects() {
       description: "Advanced ML algorithms for optimal donor-hospital matching",
       target: "95% match accuracy",
       timeline: "2024-2025",
-      progress: 60,
       icon: Brain,
     },
     {
@@ -94,7 +84,6 @@ export default function ImpactAndProspects() {
       description: "Direct integration with hospital management systems",
       target: "80% of partner hospitals",
       timeline: "2025",
-      progress: 25,
       icon: Network,
     },
     {
@@ -103,39 +92,38 @@ export default function ImpactAndProspects() {
       description: "Forecast blood demand and prevent shortages proactively",
       target: "70% shortage prevention",
       timeline: "2026",
-      progress: 15,
       icon: TrendingUp,
     },
   ];
 
   const socialImpact = [
     {
-      metric: "Emergency Response Time",
-      before: "45-60 minutes",
-      after: "8-12 minutes",
-      improvement: "80% faster",
-      icon: Clock,
-    },
-    {
-      metric: "Donor Mobilization",
-      before: "Manual calls, 2-3 hours",
-      after: "Instant alerts, 15 minutes",
-      improvement: "90% faster",
+      metric: "Finding donors",
+      before: "Phone lists and forwarded messages",
+      after: "Nearby compatible donors alerted at once",
+      improvement: "Automatic",
       icon: Users,
     },
     {
-      metric: "Geographic Coverage",
-      before: "Urban centers only",
-      after: "Urban + rural areas",
-      improvement: "300% expansion",
-      icon: MapPin,
+      metric: "Checking eligibility",
+      before: "Asked over the phone",
+      after: "Donation gap checked before anyone is alerted",
+      improvement: "Before the alert",
+      icon: Shield,
     },
     {
-      metric: "Cost Efficiency",
-      before: "$500 per donation",
-      after: "$125 per donation",
-      improvement: "75% reduction",
-      icon: Target,
+      metric: "When nobody responds",
+      before: "Start calling again",
+      after: "Search widens, blood banks are checked, then staff step in",
+      improvement: "Escalates itself",
+      icon: Clock,
+    },
+    {
+      metric: "Donor verification",
+      before: "Documents checked by hand",
+      after: "Uploaded documents read automatically",
+      improvement: "~70% automated",
+      icon: CheckCircle,
     },
   ];
 
@@ -188,36 +176,16 @@ export default function ImpactAndProspects() {
 
   const partnerships = [
     {
-      type: "Healthcare",
-      partners: ["WHO", "Red Cross", "National Blood Banks"],
-      impact: "Global standards compliance and best practices",
-      icon: Heart,
-    },
-    {
-      type: "Technology",
-      partners: ["Google Health", "Microsoft Healthcare", "AWS"],
-      impact: "Advanced AI capabilities and cloud infrastructure",
-      icon: Brain,
-    },
-    {
-      type: "Government",
-      partners: [
-        "Ministry of Health",
-        "Emergency Services",
-        "Public Health Agencies",
-      ],
-      impact: "Policy support and regulatory compliance",
-      icon: Shield,
-    },
-    {
-      type: "Academic",
-      partners: [
-        "Medical Universities",
-        "Research Institutes",
-        "Innovation Labs",
-      ],
-      impact: "Research collaboration and evidence-based improvements",
+      type: "Research",
+      partners: ["FBDOI", "West Bengal Voluntary Blood Donors' Forum"],
+      impact: "Research on why donors stop donating and how to bring them back",
       icon: Award,
+    },
+    {
+      type: "Pilot",
+      partners: ["Hospitals", "Blood banks"],
+      impact: "We are onboarding pilot hospitals and blood banks. Get in touch to join.",
+      icon: Heart,
     },
   ];
 
@@ -227,7 +195,7 @@ export default function ImpactAndProspects() {
       description:
         "Protecting sensitive health information while enabling real-time sharing",
       solution:
-        "End-to-end encryption, DPDPA compliance, blockchain verification",
+        "Role-based access, consent-based data sharing, DPDP Act compliance",
       priority: "Critical",
     },
     {
@@ -280,7 +248,7 @@ export default function ImpactAndProspects() {
               <span className="text-primary block">Prospects</span>
             </h1>
             <p className="text-xl text-text-dark mb-8 max-w-3xl mx-auto leading-relaxed">
-              Discover how ect is revolutionizing emergency blood donation and our
+              Discover how Haemologix is changing emergency blood donation and our
               vision for the future of healthcare technology.
             </p>
           </ScrollReveal>
@@ -342,172 +310,34 @@ export default function ImpactAndProspects() {
             <ScrollReveal>
               <div className="text-center mt-10 mb-12">
                 <h2 className="text-4xl font-bold text-text-dark mb-4">
-                  Measurable Impact Today
+                  Where the Pilot Stands
                 </h2>
                 <p className="text-xl text-text-dark max-w-2xl mx-auto">
-                  Real numbers showing how Haemologix is already saving lives and
-                  transforming emergency healthcare
+                  What we can count today, from our own data
                 </p>
               </div>
             </ScrollReveal>
 
-            {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-              <ScrollReveal delay={0.1}>
-                <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
-                  <CardContent className="p-8">
-                    <Heart className="w-12 h-12 text-red-600 mx-auto mb-4" />
-                    <div className="text-4xl font-bold text-text-dark mb-2">
-                      {currentImpact.livesSaved.toLocaleString()}
-                    </div>
-                    <div className="text-text-dark">Lives Saved</div>
-                    <div className="text-sm text-green-600 mt-2">
-                      ↑ 23% this month
-                    </div>
-                  </CardContent>
-                </Card>
-              </ScrollReveal>
-
-              <ScrollReveal delay={0.2}>
-                <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
-                  <CardContent className="p-8">
-                    <Users className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                    <div className="text-4xl font-bold text-text-dark mb-2">
-                      {currentImpact.donationsEnabled.toLocaleString()}
-                    </div>
-                    <div className="text-text-dark">Donations Enabled</div>
-                    <div className="text-sm text-green-600 mt-2">
-                      ↑ 18% this month
-                    </div>
-                  </CardContent>
-                </Card>
-              </ScrollReveal>
-
-              <ScrollReveal delay={0.3}>
-                <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
-                  <CardContent className="p-8">
-                    <Clock className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                    <div className="text-4xl font-bold text-text-dark mb-2">
-                      {currentImpact.averageResponseTime}m
-                    </div>
-                    <div className="text-text-dark">Avg Response Time</div>
-                    <div className="text-sm text-green-600 mt-2">
-                      ↓ 75% improvement
-                    </div>
-                  </CardContent>
-                </Card>
-              </ScrollReveal>
-
-              <ScrollReveal delay={0.4}>
-                <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
-                  <CardContent className="p-8">
-                    <Target className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-                    <div className="text-4xl font-bold text-text-dark mb-2">
-                      {currentImpact.successRate}%
-                    </div>
-                    <div className="text-text-dark">Success Rate</div>
-                    <div className="text-sm text-green-600 mt-2">
-                      ↑ 12% this quarter
-                    </div>
-                  </CardContent>
-                </Card>
-              </ScrollReveal>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {pilotFigures.map((figure, index) => (
+                <ScrollReveal key={figure.label} delay={0.1 * (index + 1)}>
+                  <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 text-center">
+                    <CardContent className="p-8">
+                      <figure.icon className="w-12 h-12 text-primary mx-auto mb-4" />
+                      <div className="text-4xl font-bold text-text-dark mb-2">
+                        {figure.value}
+                      </div>
+                      <div className="text-text-dark">{figure.label}</div>
+                    </CardContent>
+                  </Card>
+                </ScrollReveal>
+              ))}
             </div>
-
-            {/* Geographic Impact */}
-            <div className="grid md:grid-cols-2 gap-8">
-              <ScrollReveal delay={0.5} direction="left">
-                <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 ">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-text-dark">
-                      <Globe className="w-5 h-5" />
-                      Geographic Reach
-                    </CardTitle>
-                    <CardDescription className="text-text-dark/80">
-                      Platform coverage and expansion metrics
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex justify-between items-center">
-                      <span>Active Cities</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold">
-                          {currentImpact.citiesActive}
-                        </span>
-                        <Badge className="bg-green-100 text-green-800">
-                          +8 this quarter
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Partner Hospitals</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold">
-                          {currentImpact.hospitalsCovered}
-                        </span>
-                        <Badge className="bg-blue-100 text-blue-800">
-                          +23 this quarter
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Rural Coverage</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold">35%</span>
-                        <Badge className="bg-orange-100 text-orange-800">
-                          Growing
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </ScrollReveal>
-
-              <ScrollReveal delay={0.5} direction="right">
-                <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-text-dark">
-                      <BarChart3 className="w-5 h-5" />
-                      Economic Impact
-                    </CardTitle>
-                    <CardDescription className="text-text-dark/80">
-                      Cost savings and efficiency improvements
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex justify-between items-center">
-                      <span>Healthcare Cost Savings</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold">
-                          ${currentImpact.costSavings}M
-                        </span>
-                        <Badge className="bg-green-100 text-green-800">
-                          Annual
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Operational Efficiency</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold">75%</span>
-                        <Badge className="bg-blue-100 text-blue-800">
-                          Improvement
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Resource Optimization</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold">60%</span>
-                        <Badge className="bg-purple-100 text-purple-800">
-                          Better allocation
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </ScrollReveal>
-            </div>
+            <p className="text-center text-sm text-text-dark/70 max-w-2xl mx-auto">
+              Pilot figures, 2026. We will publish outcome numbers such as
+              donations and response times once enough real emergency requests
+              have gone through the platform to report them honestly.
+            </p>
           </TabsContent>
 
           {/* Social Transformation Tab */}
@@ -576,60 +406,6 @@ export default function ImpactAndProspects() {
                 </ScrollReveal>
               ))}
             </div>
-
-            {/* Success Stories */}
-            <ScrollReveal delay={0.4}>
-              <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
-                <CardHeader>
-                  <CardTitle className="text-center text-2xl text-text-dark">
-                    Success Stories
-                  </CardTitle>
-                  <CardDescription className="text-center text-text-dark/80">
-                    Real impact on communities and individuals
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div className="text-center">
-                      <Star className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-                      <h4 className="font-semibold mb-2 text-text-dark">
-                        Emergency Surgery Success
-                      </h4>
-                      <p className="text-sm text-text-dark/80">
-                        "Haemologix helped us find 3 O- donors in 12 minutes for a
-                        critical surgery. The patient made a full recovery."
-                      </p>
-                      <p className="text-xs text-text-dark/60 mt-2">
-                        - Dr. Sarah Chen, City General Hospital
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <Heart className="w-8 h-8 text-red-500 mx-auto mb-3" />
-                      <h4 className="font-semibold mb-2 text-text-dark">Rural Area Coverage</h4>
-                      <p className="text-sm text-text-dark/80">
-                        "For the first time, our rural hospital can quickly
-                        mobilize donors from nearby towns. It's been
-                        life-changing."
-                      </p>
-                      <p className="text-xs text-text-dark/60 mt-2">
-                        - Nurse Manager, Rural Health Center
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <Users className="w-8 h-8 text-blue-500 mx-auto mb-3" />
-                      <h4 className="font-semibold mb-2 text-text-dark">Community Engagement</h4>
-                      <p className="text-sm text-text-dark/80">
-                        "I've donated 8 times this year through Haemologix alerts.
-                        It feels great to help save lives in my community."
-                      </p>
-                      <p className="text-xs text-text-dark/60 mt-2">
-                        - John M., Regular Donor
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
           </TabsContent>
 
           {/* Technology Roadmap Tab */}
@@ -669,13 +445,7 @@ export default function ImpactAndProspects() {
                             {goal.title}
                           </h3>
                           <p className="text-text-dark/80 mb-4">{goal.description}</p>
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span>Target: {goal.target}</span>
-                              <span>{goal.progress}% complete</span>
-                            </div>
-                            <Progress value={goal.progress} className="h-2" />
-                          </div>
+                          <p className="text-sm">Target: {goal.target}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -765,11 +535,10 @@ export default function ImpactAndProspects() {
             <ScrollReveal>
               <div className="text-center mt-10 mb-12">
                 <h2 className="text-4xl font-bold text-text-dark mb-4">
-                  Strategic Partnerships
+                  Who We Work With
                 </h2>
                 <p className="text-xl text-text-dark max-w-2xl mx-auto">
-                  Collaborating with leading organizations to maximize impact and
-                  drive innovation
+                  Organisations helping us build and test Haemologix
                 </p>
               </div>
             </ScrollReveal>
@@ -808,48 +577,6 @@ export default function ImpactAndProspects() {
                 </ScrollReveal>
               ))}
             </div>
-
-            {/* Partnership Benefits */}
-            <ScrollReveal delay={0.4}>
-              <Card className="glass-morphism border border-white/20 text-text-dark transition-all duration-300 hover:shadow-lg hover:shadow-primary/50/50 flex flex-col">
-                <CardHeader>
-                  <CardTitle className="text-center text-text-dark">
-                    Partnership Benefits
-                  </CardTitle>
-                  <CardDescription className="text-center text-text-dark/80">
-                    How strategic alliances amplify our impact
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div className="text-center">
-                      <Network className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-                      <h4 className="font-semibold mb-2 text-text-dark">Global Reach</h4>
-                      <p className="text-sm text-text-dark/80">
-                        Access to international networks and best practices from
-                        leading healthcare organizations
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <Lightbulb className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
-                      <h4 className="font-semibold mb-2 text-text-dark">Innovation</h4>
-                      <p className="text-sm text-text-dark/80">
-                        Cutting-edge technology and research capabilities through
-                        academic and tech partnerships
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <Shield className="w-8 h-8 text-green-600 mx-auto mb-3" />
-                      <h4 className="font-semibold mb-2 text-text-dark">Trust & Credibility</h4>
-                      <p className="text-sm text-text-dark/80">
-                        Enhanced credibility and trust through associations with
-                        respected healthcare institutions
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </ScrollReveal>
           </TabsContent>
 
           {/* Challenges & Solutions Tab */}
@@ -929,7 +656,7 @@ export default function ImpactAndProspects() {
                       <ul className="space-y-2 text-text-dark">
                         <li className="flex items-center gap-2">
                           <CheckCircle className="w-4 h-4 text-green-500" />
-                          Global platform covering 50+ countries
+                          Coverage beyond India
                         </li>
                         <li className="flex items-center gap-2">
                           <CheckCircle className="w-4 h-4 text-green-500" />

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Become a Blood Donor | Blood Donor Registration | Haemologix",
   description:
-    "Register as a blood donor on Haemologix. Join thousands of donors saving lives through emergency blood donations. Quick and easy blood donor registration process.",
+    "Register as a blood donor on Haemologix. Get alerted when a hospital near you needs your blood type. Quick and easy blood donor registration process.",
   keywords: [
     "become a blood donor",
     "blood donor registration",

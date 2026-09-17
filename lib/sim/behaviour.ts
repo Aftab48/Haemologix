@@ -74,7 +74,8 @@ export function donorShowProbability(c: DonorContext & { responseMinutes: number
     p.per10MinEta * (c.etaMinutes / 10) +
     (isNight(c.hour) ? p.nightPenalty : 0) +
     (c.alert.urgency === "critical" ? p.criticalBonus : 0) +
-    p.priorNoShowPenalty * Math.min(3, h.noShows) +
+    p.priorNoShowPenalty * Math.min(3, h.noShows - h.releases) +
+    p.priorReleasePenalty * Math.min(3, h.releases) +
     p.priorShowRateWeight * (priorShowRate - 0.75) +
     (c.responseMinutes > 20 ? p.slowResponsePenalty : 0) +
     c.donor.latent.showPropensity +

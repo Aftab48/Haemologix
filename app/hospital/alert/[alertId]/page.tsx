@@ -182,6 +182,12 @@ export default function AlertDetailsPage() {
   const [releaseTarget, setReleaseTarget] = useState<DonorResponse | null>(null);
   const [releaseNote, setReleaseNote] = useState("");
   const [isReleasing, setIsReleasing] = useState(false);
+  // "Turned away at screening" — records a deferral and frees the slot
+  const [deferTarget, setDeferTarget] = useState<DonorResponse | null>(null);
+  const [deferCategory, setDeferCategory] = useState("LOW_HB");
+  const [deferRecheck, setDeferRecheck] = useState("");
+  const [deferNote, setDeferNote] = useState("");
+  const [isDeferring, setIsDeferring] = useState(false);
 
   const fetchAlertDetails = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -382,6 +388,39 @@ export default function AlertDetailsPage() {
     }
   };
 
+  const handleDeferDonor = async () => {
+    if (!deferTarget) return;
+    if (deferCategory !== "PERMANENT" && !deferRecheck) {
+      alert("Please enter the re-check date the donor was given");
+      return;
+    }
+    setIsDeferring(true);
+    try {
+      const response = await fetch(`/api/alerts/${alertId}/deferral`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          donorId: deferTarget.donorId,
+          category: deferCategory,
+          recheckDate: deferCategory === "PERMANENT" ? undefined : deferRecheck,
+          note: deferNote.trim() || undefined,
+        }),
+      });
+      const result = await response.json();
+      if (!result.success) {
+        alert(`Could not record deferral: ${result.error ?? "unknown error"}`);
+        return;
+      }
+      setDeferTarget(null);
+      fetchAlertDetails(true);
+    } catch (error) {
+      console.error("Error recording deferral:", error);
+      alert("Failed to record deferral. Please try again.");
+    } finally {
+      setIsDeferring(false);
+    }
+  };
+
   /** Donor rows come with a single `name`; older shapes had firstName/lastName. */
   const donorName = (d: DonorResponse["donor"]) =>
     d.name?.trim() || `${d.firstName ?? ""} ${d.lastName ?? ""}`.trim() || "Donor";
@@ -390,6 +429,7 @@ export default function AlertDetailsPage() {
   const donorRowBadge = (response: DonorResponse): { label: string; className: string } => {
     const c = response.commitment;
     if (c?.confirmed) return { label: "Arrived", className: "bg-emerald-600 text-white" };
+    if (c?.releaseReason === "deferred") return { label: "Deferred at screening", className: "bg-amber-700 text-white" };
     if (c?.releasedAt) {
       const who = c.releasedBy === "donor" ? "by donor" : c.releasedBy === "coordinator" ? "by coordinator" : "";
       return { label: `Released${who ? ` ${who}` : ""}`, className: "bg-slate-600 text-white" };
@@ -1151,6 +1191,21 @@ export default function AlertDetailsPage() {
                             Mark as can&apos;t come
                           </Button>
                         )}
+                        {c?.committed && alertOpen && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2 text-xs border-amber-400/50 text-text-dark hover:bg-white/10"
+                            onClick={() => {
+                              setDeferCategory("LOW_HB");
+                              setDeferRecheck("");
+                              setDeferNote("");
+                              setDeferTarget(response);
+                            }}
+                          >
+                            Turned away at screening
+                          </Button>
+                        )}
                       </div>
                     </div>
                   );
@@ -1188,6 +1243,78 @@ export default function AlertDetailsPage() {
               </Button>
               <Button onClick={handleReleaseDonor} disabled={isReleasing} className="bg-slate-600 hover:bg-slate-700 text-white">
                 {isReleasing ? "Releasing…" : "Release donor"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Deferral (donor arrived but could not donate) */}
+        <Dialog open={deferTarget !== null} onOpenChange={(open) => { if (!open && !isDeferring) setDeferTarget(null); }}>
+          <DialogContent className="glass-morphism border border-accent/30 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-text-dark">Turned away at screening</DialogTitle>
+              <DialogDescription className="text-text-dark/70">
+                {deferTarget
+                  ? `${donorName(deferTarget.donor)} arrived but could not donate. The coordinator will look for another donor right away.`
+                  : ""}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-text-dark">Reason</Label>
+                <Select value={deferCategory} onValueChange={setDeferCategory}>
+                  <SelectTrigger className="bg-white/10 border-white/20 text-text-dark">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LOW_HB">Low haemoglobin</SelectItem>
+                    <SelectItem value="OTHER_TEMPORARY">Other temporary reason</SelectItem>
+                    <SelectItem value="UNKNOWN">Not recorded</SelectItem>
+                    <SelectItem value="PERMANENT">Permanent deferral</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-text-dark/60">
+                  Only the category is stored, not test results or diagnoses.
+                </p>
+              </div>
+              {deferCategory === "PERMANENT" ? (
+                <p className="text-sm text-amber-700">
+                  This donor will never be alerted for donation again.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="defer-recheck" className="text-text-dark">Re-check date given to the donor</Label>
+                  <Input
+                    id="defer-recheck"
+                    type="date"
+                    value={deferRecheck}
+                    min={new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)}
+                    onChange={(e) => setDeferRecheck(e.target.value)}
+                    className="bg-white/10 border-white/20 text-text-dark"
+                  />
+                  <p className="text-xs text-text-dark/60">
+                    The donor won&apos;t be alerted again before this date.
+                  </p>
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="defer-note" className="text-text-dark">Note (optional)</Label>
+                <Textarea
+                  id="defer-note"
+                  value={deferNote}
+                  onChange={(e) => setDeferNote(e.target.value)}
+                  placeholder="No medical details, please"
+                  className="bg-white/10 border-white/20 text-text-dark"
+                  rows={2}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setDeferTarget(null)} disabled={isDeferring}>
+                Cancel
+              </Button>
+              <Button onClick={handleDeferDonor} disabled={isDeferring} className="bg-amber-700 hover:bg-amber-800 text-white">
+                {isDeferring ? "Saving…" : "Record deferral"}
               </Button>
             </div>
           </DialogContent>

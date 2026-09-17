@@ -4,6 +4,9 @@
  *
  *   npx tsx scripts/ml/e2eCommitment.ts
  *
+ * Email templates are fetched over HTTP, so run the ML-DB dev server
+ * (launch.json `haemologix-dev-mldb`) and set NEXT_PUBLIC_BASE_URL=http://localhost:3100.
+ *
  * Requires the release columns (prisma/sql/0003_donor_release.sql) on the ML DB.
  * Notifications are sandboxed for the run. The model service is optional —
  * everything asserted here is deterministic. Test rows are tagged and removed
@@ -22,6 +25,11 @@
  *   7. D2 accepts A; A is closed via the sweep condition (status CLOSED) → sweep
  *      releases D2 with releasedBy=system, no donor_show label written
  *   8. History features: D0.priorNoShows counts the release; priorReleases = 1
+ *   9. D1 accepts alert D, the hospital defers D1 at screening (low Hb) → released
+ *      as "deferred" with arrivedAt, DeferralEvent written, D1 out of matching until
+ *      the re-check date; once cleared, the deferral counts as arrived, not a no-show
+ *
+ * Also needs prisma/sql/0004_donation_history.sql (DeferralEvent).
  */
 import "./loadEnv";
 process.env.SANDBOX_NOTIFICATIONS = "1";
@@ -34,7 +42,7 @@ import { AgentType } from "@prisma/client";
 import { publishEvent, type ShortageRequestEvent } from "@/lib/agents/eventBus";
 import { processShortageEvent, findAndRankDonors } from "@/lib/agents/donorAgent";
 import { processDonorResponse } from "@/lib/agents/coordinatorAgent";
-import { COMMITTED_WHERE, findActiveCommitment, releaseDonorCommitment } from "@/lib/agents/commitment";
+import { COMMITTED_WHERE, deferDonorAtScreening, findActiveCommitment, releaseDonorCommitment } from "@/lib/agents/commitment";
 import { computeShortfall } from "@/lib/agents/shortfall";
 import { releaseStaleCommitments } from "@/lib/agents/scheduler";
 
@@ -291,6 +299,35 @@ async function main() {
     assert.equal(rd0.history.noShows, 1);
     assert.equal(rd0.history.releases, 1);
     log("history features: priorNoShows=1, priorReleases=1 for D0");
+
+    // 9. D1 accepts D; the hospital turns D1 away at screening
+    const D = await raiseAlert(hospital.id, "alert D");
+    created.push(D.alert.id);
+    if (!(await notifiedIds(D.alert.id)).has(D1.id)) {
+      await db.donorResponseHistory.create({ data: { donorId: D1.id, requestId: D.alert.id, notifiedAt: new Date(), status: "notified" } });
+    }
+    const accD = await processDonorResponse({ donor_id: D1.id, request_id: D.alert.id, status: "accepted", eta_minutes: 45, response_time: 5_000 });
+    assert.equal(accD.success, true, accD.error);
+    const recheck = new Date(Date.now() + 30 * 86_400_000);
+    const def = await deferDonorAtScreening(D.alert.id, D1.id, { category: "LOW_HB", recheckDate: recheck, note: "come back in a month" });
+    assert.equal(def.released, true, def.error ?? def.message);
+    const rowD = await db.donorResponseHistory.findFirst({ where: { donorId: D1.id, requestId: D.alert.id, status: "accepted" } });
+    assert.ok(rowD?.releasedAt && rowD.arrivedAt, "released and arrived");
+    assert.equal(rowD.releaseReason, "deferred");
+    assert.equal(rowD.confirmed, false, "not a donation");
+    const ev = await db.deferralEvent.findFirst({ where: { donorId: D1.id, requestId: D.alert.id } });
+    assert.equal(ev?.category, "LOW_HB");
+    assert.equal(ev?.recheckDate?.getTime(), recheck.getTime());
+    assert.equal(await db.bloodDonationEvent.count({ where: { donorId: D1.id, requestId: D.alert.id } }), 0, "no donation logged");
+    const rankedDeferred = await findAndRankDonors("O-", "high", 10, CENTRE.lat, CENTRE.lng);
+    assert.equal(rankedDeferred.some((d) => d.id === D1.id), false, "deferred donor not matchable before re-check");
+    await db.deferralEvent.update({ where: { id: ev.id }, data: { clearedAt: new Date() } });
+    const rd1 = (await findAndRankDonors("O-", "high", 10, CENTRE.lat, CENTRE.lng)).find((d) => d.id === D1.id);
+    assert.ok(rd1, "cleared deferral → matchable again");
+    assert.equal(rd1.history.arrived, 1, "deferral counts as arrived");
+    assert.equal(rd1.history.noShows, 1, "only the C release is a did-not-arrive");
+    assert.equal(rd1.history.releases, 1);
+    log("deferral: released as deferred, DeferralEvent written, excluded until cleared, counted as arrived");
 
     // COMMITTED_WHERE sanity: no open commitments remain for our donors
     const openLeft = await db.donorResponseHistory.count({ where: { donorId: { in: donors.map((d) => d.id) }, ...COMMITTED_WHERE } });

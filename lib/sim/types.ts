@@ -56,6 +56,8 @@ export interface SimDonor extends GeoPoint {
   dateOfBirth: string; // ISO
   weight: string; // kg as string, mirrors Donor.weight
   gender: "male" | "female";
+  /** Derived from gender (no RNG draw); what the eligibility and scoring rules read. */
+  sexForInterval: "MALE" | "FEMALE";
   lastDonationDate: string | null; // ISO
   bmi: string | null;
   profile: {
@@ -76,7 +78,7 @@ export interface SimDonor extends GeoPoint {
     arrived: number;
     /** accepted and did not arrive (production: noShow OR released) */
     noShows: number;
-    /** production-only for now: releases the donor/coordinator told us about. Always 0 here until release behaviour is modelled. */
+    /** Of `noShows`, the ones the donor/coordinator told us about. Drawn by drawPastReleases (priors-v4); 0 with `releases: false`. */
     releases: number;
     avgResponseMinutes: number | null;
     alertsLast7Days: number;

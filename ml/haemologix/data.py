@@ -39,17 +39,41 @@ def iter_jsonl(path: Path) -> Iterator[Row]:
                 yield json.loads(line)
 
 
-def load_task_rows(data_dirs: Iterable[Path], task: str, limit: int | None = None) -> list[Row]:
-    """Load rows for one task from one or more dataset directories (sim + real)."""
+def _count_rows(path: Path) -> int:
+    with path.open("r", encoding="utf-8") as fh:
+        return sum(1 for line in fh if line.strip())
+
+
+def load_task_rows(
+    data_dirs: Iterable[Path], task: str, limit: int | None = None, sample: int | None = None, seed: int = 7
+) -> list[Row]:
+    """Load rows for one task from one or more dataset directories (sim + real).
+
+    `sample` keeps a uniform random subset of that many rows: exactly the rows
+    `rng.choice(total, sample)` would pick from a full load, in file order, but
+    only the kept lines are parsed, so memory is bounded by `sample` however big
+    the dataset grows.
+    """
+    paths = [Path(d) / f"{task}.jsonl" for d in data_dirs]
+    paths = [p for p in paths if p.exists()]
+    keep: set[int] | None = None
+    if sample:
+        total = sum(_count_rows(p) for p in paths)
+        if total > sample:
+            keep = set(np.random.default_rng(seed).choice(total, sample, replace=False).tolist())
     rows: list[Row] = []
-    for d in data_dirs:
-        p = Path(d) / f"{task}.jsonl"
-        if not p.exists():
-            continue
-        for r in iter_jsonl(p):
-            rows.append(r)
-            if limit and len(rows) >= limit:
-                return rows
+    i = 0
+    for p in paths:
+        with p.open("r", encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                if keep is None or i in keep:
+                    rows.append(json.loads(line))
+                    if limit and len(rows) >= limit:
+                        return rows
+                i += 1
     return rows
 
 

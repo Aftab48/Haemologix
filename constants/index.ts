@@ -1,11 +1,9 @@
 import {
-  Heart,
   MapPin,
   Users,
   Bell,
   Shield,
   Activity,
-  Globe,
 } from "lucide-react";
 
 export const features = [
@@ -35,11 +33,12 @@ export const features = [
   },
 ];
 
+// Pilot figures, not live counts. Update them (and the date) from the database;
+// never put a number here that can't be traced to real data.
 export const stats = [
-  { label: "Lives Saved", value: "10,000+", icon: Heart },
-  { label: "Active Donors", value: "25,000+", icon: Users },
-  { label: "Partner Hospitals", value: "150+", icon: Activity },
-  { label: "Cities Covered", value: "50+", icon: Globe },
+  { label: "Donor profiles (pilot, 2026)", value: "200+", icon: Users },
+  { label: "Documents uploaded", value: "500+", icon: Activity },
+  { label: "Documents verified automatically", value: "~70%", icon: Shield },
 ];
 
 export const steps = [

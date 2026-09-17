@@ -12,6 +12,7 @@
  *    dataset manifest, but keeping the list here documents the contract.
  */
 
+import { donationIntervalDays, type SexForInterval } from "@/lib/agents/donorScoring";
 import { getTrafficMultiplier } from "@/lib/agents/logisticsAgent";
 import type { FeatureVector, PredictionTask } from "./types";
 
@@ -80,6 +81,8 @@ export interface DonorFeatureInput {
   donorBloodType: string;
   distanceKm: number;
   daysSinceLastDonation: number | null; // null = never donated
+  /** Only used to derive daysSinceEligible; sex itself is not a model feature. */
+  sexForInterval: SexForInterval;
   priorAlerts: number;
   priorAccepted: number;
   priorArrived: number;
@@ -131,6 +134,10 @@ export function donorNotificationFeatures(i: DonorFeatureInput): FeatureVector {
     eligibleCount: i.eligibleCount,
     rank: i.rank,
     daysSinceLastDonation: i.daysSinceLastDonation ?? 365,
+    // Days since the donor could donate again (negative = not yet). Unlike
+    // daysSinceLastDonation, day 100 means the same thing for men and women.
+    daysSinceEligible:
+      i.daysSinceLastDonation === null ? 365 : i.daysSinceLastDonation - donationIntervalDays(i.sexForInterval),
     neverDonated: i.daysSinceLastDonation === null,
     priorAlerts: i.priorAlerts,
     priorAcceptRate: round(priorAcceptRate),

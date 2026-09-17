@@ -7,10 +7,11 @@ import pytest
 from fastapi.testclient import TestClient
 
 from haemologix import api as api_module
-from haemologix.data import TabularPreprocessor, group_split, labels_for
+from haemologix.data import TabularPreprocessor, group_split, labels_for, load_task_rows
 from haemologix.metrics import compute_metrics, expected_calibration_error
 from haemologix.models import GbdtPredictor, MlpPredictor, RulesPredictor
 from haemologix.registry import LoadedModel, ModelCard, get_active_version, list_versions, set_active_version
+from haemologix.retrain import compare_to_active
 from haemologix.tasks import TASKS, get_task
 from haemologix.train import train_version
 
@@ -123,3 +124,27 @@ def test_task_registry_matches_ts_contract():
     text = ts.read_text(encoding="utf-8")
     for t in TASKS:
         assert f'"{t}"' in text, f"{t} missing from lib/ml/types.ts"
+
+
+def test_sampled_loading_matches_full_load(tmp_path: Path):
+    d = tmp_path / "ds"
+    d.mkdir()
+    rows = [{"task": "t", "features": {"i": i}, "label": i % 2, "groupId": f"g{i}"} for i in range(1000)]
+    (d / "t.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+    full = load_task_rows([d], "t")
+    idx = np.random.default_rng(7).choice(len(full), 100, replace=False)
+    assert load_task_rows([d], "t", sample=100, seed=7) == [full[i] for i in sorted(idx)]
+    assert load_task_rows([d], "t", sample=5000) == full
+
+
+def test_compare_to_active_uses_same_test_rows_and_allows_ties(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv("ML_ACTIVE_VERSION", raising=False)
+    ModelCard(version="old", tasks={"donor_accept": {"metrics": {"auroc": 0.9}}, "donor_show": {"metrics": {"auroc": 0.6}}}).save(tmp_path / "old")
+    (tmp_path / "active").write_text("old", encoding="utf-8")
+    card = ModelCard(version="new", tasks={
+        # a tie on the same rows is fine, even though the old card (other data) says 0.9
+        "donor_accept": {"metrics": {"auroc": 0.8}, "active_metrics_same_test": {"auroc": 0.8}},
+        # worse on the same rows is a regression, even though the old card says 0.6
+        "donor_show": {"metrics": {"auroc": 0.7}, "active_metrics_same_test": {"auroc": 0.71}},
+    })
+    assert compare_to_active(card, tmp_path)["regressions"] == ["donor_show"]

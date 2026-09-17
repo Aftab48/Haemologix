@@ -47,7 +47,7 @@ test("ladder off reproduces the frozen sim-v2 rows and events bit-for-bit", () =
     "G-3": scenarioG(3),
   };
   for (const [key, expected] of Object.entries(fixture.hashes)) {
-    const r = runScenario(specs[key], { ladder: false });
+    const r = runScenario(specs[key], { ladder: false, fairScoring: false, releases: false });
     assert.equal(hashRows(r, { omitFeatureKeys: POST_V2_FEATURE_KEYS }), expected.rows, `${key}: training rows changed`);
     assert.equal(hashEvents(r), expected.events, `${key}: events changed`);
   }
@@ -95,12 +95,15 @@ test("every run emits well-formed rows for known tasks with finite features", ()
       else assert.ok(typeof v === "string" || typeof v === "boolean", `${row.task}.${k}`);
     }
     // donor tasks carry the commitment-release feature (train/serve parity with
-    // production; the sim does not model release yet so it is always 0 here)
+    // production): releases are the told-us subset of past non-arrivals
     if (row.task === "donor_accept" || row.task === "donor_show" || row.task === "donor_response_time" || row.task === "donor_eta") {
-      assert.equal(row.features.priorReleases, 0, `${row.task}.priorReleases`);
-      assert.ok(typeof row.features.priorNoShows === "number", `${row.task}.priorNoShows`);
+      const { priorReleases, priorNoShows } = row.features as { priorReleases: number; priorNoShows: number };
+      assert.ok(Number.isInteger(priorReleases) && priorReleases >= 0 && priorReleases <= priorNoShows, `${row.task}.priorReleases`);
     }
   }
+  const donorRows = (res: typeof r) => res.rows.filter((x) => x.task === "donor_accept");
+  assert.ok(donorRows(r).some((x) => Number(x.features.priorReleases) > 0), "releases are drawn (priors-v4)");
+  assert.ok(donorRows(runScenario(randomScenario(99), { releases: false })).every((x) => x.features.priorReleases === 0));
   // window rows: once per alert at the first wave plus one per ladder expansion;
   // urgency rows once per alert plus monitoring samples
   const alerts = r.alerts.length;

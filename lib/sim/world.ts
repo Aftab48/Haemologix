@@ -116,6 +116,7 @@ function makeDonor(rng: Rng, idx: number, spec: ScenarioSpec, startAt: number): 
     dateOfBirth: dob.toISOString(),
     weight: weight.toFixed(1),
     gender,
+    sexForInterval: gender === "male" ? "MALE" : "FEMALE",
     lastDonationDate: daysSince === null ? null : new Date(startAt - daysSince * 86_400_000).toISOString(),
     bmi: rng.bernoulli(0.85) ? bmi.toFixed(1) : null,
     profile: screened
@@ -145,7 +146,7 @@ function makeDonor(rng: Rng, idx: number, spec: ScenarioSpec, startAt: number): 
       accepted,
       arrived,
       noShows: Math.max(0, accepted - arrived),
-      releases: 0, // literal, not a draw — keeps the frozen sim-v2 RNG stream intact
+      releases: 0, // literal, not a draw — keeps the world RNG stream intact; see drawPastReleases
       avgResponseMinutes: totalAlerts > 0 ? Math.round(rng.lognormal(10, 0.6)) : null,
       alertsLast7Days: rng.bernoulli(0.25) ? rng.int(1, 3) : 0,
     },
@@ -158,6 +159,21 @@ function makeDonor(rng: Rng, idx: number, spec: ScenarioSpec, startAt: number): 
     },
     committedToAlertId: null,
   };
+}
+
+/**
+ * Split each donor's past non-arrivals into silent no-shows and releases (they
+ * told us). Runs on its own RNG stream after the world is built, so every other
+ * draw is unchanged whether or not it runs.
+ */
+export function drawPastReleases(donors: SimDonor[], rng: Rng): void {
+  for (const d of donors) {
+    let releases = 0;
+    for (let i = 0; i < d.history.noShows; i++) {
+      if (rng.bernoulli(PRIORS.release.toldUsShare)) releases++;
+    }
+    d.history.releases = releases;
+  }
 }
 
 export function generateWorld(spec: ScenarioSpec, rng: Rng): SimWorld {

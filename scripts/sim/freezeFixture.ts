@@ -30,7 +30,7 @@ export const FIXTURE_SPECS: Array<{ key: string; spec: ScenarioSpec }> = [
 function main() {
   const out: Record<string, { rows: string; events: string }> = {};
   for (const { key, spec } of FIXTURE_SPECS) {
-    const r = runScenario(spec, { ladder: false });
+    const r = runScenario(spec, { ladder: false, fairScoring: false, releases: false });
     out[key] = { rows: hashRows(r), events: hashEvents(r) };
     console.log(`${key}: rows ${out[key].rows.slice(0, 12)}… events ${out[key].events.slice(0, 12)}…`);
   }
