@@ -1152,7 +1152,7 @@
     "Trained on simulator data (priors 1c83a85e); calibrate against real outcomes before authority mode."
   ],
   "notes": "priors-v3: escalation ladder in sim + cascading families H-K; per-rung alert_resolves_in_window rows; new expansion_yield task; trained on sim-v3",
-  "status": "active",
+  "status": "retired",
   "dataDirs": [
     "data\\sim\\v3"
   ],

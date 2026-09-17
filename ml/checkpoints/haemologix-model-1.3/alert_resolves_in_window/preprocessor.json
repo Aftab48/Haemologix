@@ -1,0 +1,90 @@
+{
+  "task": "alert_resolves_in_window",
+  "numeric_cols": [
+    "activeAlertsSameType",
+    "bloodBanksInRange",
+    "dayOfWeek",
+    "donorsPerUnit",
+    "eligibleDonors",
+    "escalationRung",
+    "hour",
+    "minutesSinceAlert",
+    "nearestInventoryKm",
+    "networkUnitsAvailable",
+    "notifiedDonors",
+    "previouslyNotified",
+    "rarity",
+    "searchRadiusKm",
+    "sumScoreFinal",
+    "trafficMultiplier",
+    "unitsNeeded",
+    "windowHours"
+  ],
+  "bool_cols": [
+    "hasInventoryOption",
+    "isNight",
+    "isWeekend"
+  ],
+  "cat_cols": [
+    "bloodType",
+    "urgency"
+  ],
+  "cat_vocab": {
+    "bloodType": [
+      "A+",
+      "A-",
+      "AB+",
+      "AB-",
+      "B+",
+      "B-",
+      "O+",
+      "O-"
+    ],
+    "urgency": [
+      "critical",
+      "high",
+      "low",
+      "medium"
+    ]
+  },
+  "num_mean": {
+    "activeAlertsSameType": 0.41742174917722846,
+    "bloodBanksInRange": 0.7573659307571499,
+    "dayOfWeek": 3.0039272960076824,
+    "donorsPerUnit": 1.293394150069523,
+    "eligibleDonors": 20.232368681664948,
+    "escalationRung": 0.8296617883901688,
+    "hour": 13.46845058869427,
+    "minutesSinceAlert": 47.214866906079,
+    "nearestInventoryKm": 293.78716376404213,
+    "networkUnitsAvailable": 37.318349055188214,
+    "notifiedDonors": 5.758732381685957,
+    "previouslyNotified": 3.317428751487991,
+    "rarity": 7.117748857122851,
+    "searchRadiusKm": 50.25297348124881,
+    "sumScoreFinal": 376.940330309002,
+    "trafficMultiplier": 1.005845929156622,
+    "unitsNeeded": 6.099258755389278,
+    "windowHours": 6.016173337201276
+  },
+  "num_std": {
+    "activeAlertsSameType": 1.0348961378426578,
+    "bloodBanksInRange": 0.9100766203946875,
+    "dayOfWeek": 1.9976134343382808,
+    "donorsPerUnit": 1.8070792702912615,
+    "eligibleDonors": 32.37822005343039,
+    "escalationRung": 1.0334219350034384,
+    "hour": 6.404717885965972,
+    "minutesSinceAlert": 77.14071043804506,
+    "nearestInventoryKm": 442.6819690748438,
+    "networkUnitsAvailable": 68.86515468993252,
+    "notifiedDonors": 5.7957154821987045,
+    "previouslyNotified": 7.323661934225575,
+    "rarity": 2.831908240823126,
+    "searchRadiusKm": 31.107164800379348,
+    "sumScoreFinal": 393.97449926474474,
+    "trafficMultiplier": 0.253464863549638,
+    "unitsNeeded": 2.698539614130933,
+    "windowHours": 0.9461003617107921
+  }
+}

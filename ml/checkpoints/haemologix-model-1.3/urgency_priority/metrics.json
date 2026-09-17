@@ -1,0 +1,93 @@
+{
+  "task": "urgency_priority",
+  "kind": "multiclass",
+  "backend": "mlp",
+  "rows": {
+    "total": 1200000,
+    "train": 840154,
+    "val": 179848,
+    "test": 179998
+  },
+  "features": [
+    "activeAlertsSameType",
+    "currentUnits",
+    "dailyUsage",
+    "dayOfWeek",
+    "daysRemaining",
+    "hour",
+    "minimumRequired",
+    "rarity",
+    "stockRatio",
+    "trafficMultiplier",
+    "hospitalIsBloodBank",
+    "isNight",
+    "isWeekend",
+    "bloodType=A+",
+    "bloodType=A-",
+    "bloodType=AB+",
+    "bloodType=AB-",
+    "bloodType=B+",
+    "bloodType=B-",
+    "bloodType=O+",
+    "bloodType=O-"
+  ],
+  "n_features": 21,
+  "metrics": {
+    "n": 179998,
+    "accuracy": 0.8533983710930122,
+    "macro_f1": 0.5568887445311049,
+    "within_one": 0.9267325192502139,
+    "log_loss": 0.32285210490226746
+  },
+  "candidates": {
+    "gbdt": {
+      "n": 179998,
+      "accuracy": 0.8537594862165135,
+      "macro_f1": 0.5560096319123629,
+      "within_one": 0.92671585239836,
+      "log_loss": 0.32319408655166626
+    },
+    "mlp": {
+      "n": 179998,
+      "accuracy": 0.8533983710930122,
+      "macro_f1": 0.5568887445311049,
+      "within_one": 0.9267325192502139,
+      "log_loss": 0.32285210490226746
+    }
+  },
+  "baseline_metrics": {
+    "n": 179998,
+    "accuracy": 0.6907354526161402,
+    "macro_f1": 0.20427070703087777,
+    "within_one": 0.8173035255947289,
+    "log_loss": 0.9154019951820374
+  },
+  "active_metrics_same_test": {
+    "n": 179998,
+    "accuracy": 0.8536261514016822,
+    "macro_f1": 0.5575285324912433,
+    "within_one": 0.9268158535094835,
+    "log_loss": 0.3237245976924896
+  },
+  "primary_metric": "macro_f1",
+  "beats_baseline": true,
+  "feature_importance": {
+    "hospitalIsBloodBank": 0.18069858849048615,
+    "stockRatio": 0.08823754638433456,
+    "daysRemaining": 0.07707572728395462,
+    "currentUnits": 0.07399582862854004,
+    "bloodType=A-": 0.06423211097717285,
+    "bloodType=AB+": 0.056889858096838,
+    "bloodType=B+": 0.04858100414276123,
+    "bloodType=B-": 0.045622777193784714,
+    "bloodType=AB-": 0.04174264147877693,
+    "bloodType=O-": 0.038712501525878906,
+    "bloodType=O+": 0.03854604810476303,
+    "bloodType=A+": 0.037569645792245865,
+    "rarity": 0.03645455837249756,
+    "minimumRequired": 0.036132633686065674,
+    "isNight": 0.025270333513617516
+  },
+  "trained_at": "2026-09-17T01:00:49.478533+00:00",
+  "seconds": 253.1
+}

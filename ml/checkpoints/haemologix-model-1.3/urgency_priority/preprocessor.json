@@ -1,0 +1,59 @@
+{
+  "task": "urgency_priority",
+  "numeric_cols": [
+    "activeAlertsSameType",
+    "currentUnits",
+    "dailyUsage",
+    "dayOfWeek",
+    "daysRemaining",
+    "hour",
+    "minimumRequired",
+    "rarity",
+    "stockRatio",
+    "trafficMultiplier"
+  ],
+  "bool_cols": [
+    "hospitalIsBloodBank",
+    "isNight",
+    "isWeekend"
+  ],
+  "cat_cols": [
+    "bloodType"
+  ],
+  "cat_vocab": {
+    "bloodType": [
+      "A+",
+      "A-",
+      "AB+",
+      "AB-",
+      "B+",
+      "B-",
+      "O+",
+      "O-"
+    ]
+  },
+  "num_mean": {
+    "activeAlertsSameType": 0.03673017089724027,
+    "currentUnits": 3.289762353092409,
+    "dailyUsage": 2.0,
+    "dayOfWeek": 2.9953032420246766,
+    "daysRemaining": 1.6448811765462046,
+    "hour": 13.53777521740062,
+    "minimumRequired": 7.274240198820692,
+    "rarity": 6.912773134449161,
+    "stockRatio": 0.41939080811375057,
+    "trafficMultiplier": 1.0251743132806606
+  },
+  "num_std": {
+    "activeAlertsSameType": 0.29004635942077805,
+    "currentUnits": 6.652862226433216,
+    "dailyUsage": 1.0,
+    "dayOfWeek": 2.0012063990155635,
+    "daysRemaining": 3.326431113216608,
+    "hour": 6.068448300719984,
+    "minimumRequired": 2.7558142877341845,
+    "rarity": 2.5924172140488175,
+    "stockRatio": 0.7288809684810533,
+    "trafficMultiplier": 0.2617852897595619
+  }
+}

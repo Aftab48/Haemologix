@@ -73,11 +73,22 @@ bit-for-bit — guarded by `lib/sim/__fixtures__/sim-v2-hashes.json`
 (`scripts/sim/freezeFixture.ts`). Old checkpoints ignore the new feature columns until
 retrained.
 
+**sim-v4 / priors-v4 — fair ranking and releases.** The sim scores donors on their
+own donation interval and haemoglobin cutoff (`fairScoring`, as production now
+does), donors carry past releases (`releases`, see below), and donor rows gain
+`daysSinceEligible`. `runScenario(spec, { ladder: false, fairScoring: false,
+releases: false })` still reproduces sim-v2. **Use master seeds no earlier dataset
+used** (v3 was 42; v4 is 43/44/45 in `data/sim/v4`, `v4-2`, `v4-3`): training now
+scores the active version on the candidate's own test rows, which is only fair when
+the active version never trained on those scenarios, so a shared seed switches that
+comparison off.
+
 ### 2. Train / evaluate (Python)
 
 ```bash
 cd ml && ./setup.sh   # or setup.bat  → .venv
 python -m haemologix.train --version haemologix-model-1.2 --data data/sim/v3 --max-rows 400000
+# 1.3: python -m haemologix.retrain --version haemologix-model-1.3 --sim data/sim/v4 --sim data/sim/v4-2 --sim data/sim/v4-3 --max-rows 1200000 --epochs 40
 ```
 
 Per task: rules baseline (what agents assume today) vs GBDT vs PyTorch MLP on a

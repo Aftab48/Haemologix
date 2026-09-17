@@ -1,0 +1,111 @@
+{
+  "task": "delivery_time",
+  "numeric_cols": [
+    "candidateCount",
+    "coverageRatio",
+    "dayOfWeek",
+    "daysToExpiry",
+    "distanceKm",
+    "etaMinutes",
+    "hour",
+    "rank",
+    "scoreExpiry",
+    "scoreFeasibility",
+    "scoreFinal",
+    "scoreProximity",
+    "scoreQuantity",
+    "trafficMultiplier",
+    "unitsAvailable",
+    "unitsNeeded",
+    "unitsRequested"
+  ],
+  "bool_cols": [
+    "coldStorage",
+    "exactMatch",
+    "isNight",
+    "isWeekend",
+    "networkAgreement"
+  ],
+  "cat_cols": [
+    "alertBloodType",
+    "sourceType",
+    "transportMethod",
+    "unitBloodType",
+    "urgency"
+  ],
+  "cat_vocab": {
+    "sourceType": [
+      "blood_bank",
+      "hospital"
+    ],
+    "unitBloodType": [
+      "A+",
+      "A-",
+      "AB+",
+      "AB-",
+      "B+",
+      "B-",
+      "O+",
+      "O-"
+    ],
+    "alertBloodType": [
+      "A+",
+      "A-",
+      "AB+",
+      "AB-",
+      "B+",
+      "B-",
+      "O+",
+      "O-"
+    ],
+    "urgency": [
+      "critical",
+      "high",
+      "low",
+      "medium"
+    ],
+    "transportMethod": [
+      "ambulance",
+      "courier",
+      "scheduled"
+    ]
+  },
+  "num_mean": {
+    "candidateCount": 10.72126171017283,
+    "coverageRatio": 0.5655280603738447,
+    "dayOfWeek": 2.9999056265453654,
+    "daysToExpiry": 18.734253789094204,
+    "distanceKm": 21.909267787823307,
+    "etaMinutes": 41.32728714067307,
+    "hour": 13.381410316906061,
+    "rank": 1.0,
+    "scoreExpiry": 86.58084973858553,
+    "scoreFeasibility": 87.68165317126265,
+    "scoreFinal": 79.11097786627911,
+    "scoreProximity": 89.04536610608835,
+    "scoreQuantity": 43.75205472777008,
+    "trafficMultiplier": 0.9931745971826379,
+    "unitsAvailable": 6.420169494724524,
+    "unitsNeeded": 6.511560748192748,
+    "unitsRequested": 3.3389988863932354
+  },
+  "num_std": {
+    "candidateCount": 11.25396130452179,
+    "coverageRatio": 0.3393307060724939,
+    "dayOfWeek": 1.999013551902518,
+    "daysToExpiry": 9.13485383361516,
+    "distanceKm": 13.763054893181753,
+    "etaMinutes": 39.54246702941222,
+    "hour": 6.655593655340765,
+    "rank": 1.0,
+    "scoreExpiry": 13.540578098632933,
+    "scoreFeasibility": 19.483231131696577,
+    "scoreFinal": 10.98939118177399,
+    "scoreProximity": 6.8815274465908765,
+    "scoreQuantity": 44.44108095580722,
+    "trafficMultiplier": 0.2472792305730143,
+    "unitsAvailable": 6.927354014881518,
+    "unitsNeeded": 2.7332915483519136,
+    "unitsRequested": 2.433920922232088
+  }
+}

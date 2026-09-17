@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Model `haemologix-model-1.3` (sim-v4, priors-v4, 300k scenarios, up to 1.2M rows per task): beats 1.2 on 9 of
+  10 tasks when both are scored on the same unseen test rows (urgency_priority −0.0006 macro-F1, noise). The
+  simulator scores donors fairly (own interval and Hb cutoff), draws past releases so `priorReleases` is learnable,
+  and donor rows add `daysSinceEligible`. Training samples rows while reading (memory bounded by `--max-rows`) and
+  records the active version's metrics on the candidate's test rows (`active_metrics_same_test`), which the approval
+  gate now prefers; ties no longer count as regressions.
+- `/learn` article section (first article: the 90 vs 120-day donation gap), donation history
+  (`BloodDonationEvent`, `DeferralEvent`, `Donor.sexForInterval`), hospital "turned away at screening" deferrals,
+  and the eligibility-adjusted return-rate metric (`haemologix_return_rate(N)`).
 - Simulator (sim-v3): the sim's coordinator now runs production's escalation ladder (imports
   `decideNextRung`; radius expansion → network broadcast → human hand-off) with a broadcast-response
   behaviour model (`PRIORS.broadcast`, assumed). New cascading-failure scenario families H (empty local

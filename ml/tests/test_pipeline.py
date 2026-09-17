@@ -13,7 +13,7 @@ from haemologix.models import GbdtPredictor, MlpPredictor, RulesPredictor
 from haemologix.registry import LoadedModel, ModelCard, get_active_version, list_versions, set_active_version
 from haemologix.retrain import compare_to_active
 from haemologix.tasks import TASKS, get_task
-from haemologix.train import train_version
+from haemologix.train import shared_sim_seeds, train_version
 
 
 def test_preprocessor_roundtrip(tmp_path: Path):
@@ -148,3 +148,12 @@ def test_compare_to_active_uses_same_test_rows_and_allows_ties(tmp_path: Path, m
         "donor_show": {"metrics": {"auroc": 0.7}, "active_metrics_same_test": {"auroc": 0.71}},
     })
     assert compare_to_active(card, tmp_path)["regressions"] == ["donor_show"]
+
+
+def test_shared_sim_seeds_flags_reused_scenarios(tmp_path: Path):
+    for name, seed in (("old", 42), ("fresh", 43)):
+        (tmp_path / name).mkdir()
+        (tmp_path / name / "manifest.json").write_text(json.dumps({"seed": seed}), encoding="utf-8")
+    active = ModelCard(version="a", dataDirs=[str(tmp_path / "old")])
+    assert shared_sim_seeds([tmp_path / "fresh"], active) == set()
+    assert shared_sim_seeds([tmp_path / "fresh", tmp_path / "old"], active) == {42}

@@ -40,6 +40,28 @@ def _log(msg: str) -> None:
         print(f"[train] {msg}".encode("ascii", "replace").decode(), flush=True)
 
 
+def shared_sim_seeds(data_dirs: list[Path], active_card: ModelCard) -> set[int]:
+    """Simulator master seeds the candidate data shares with the active version's.
+
+    Same seed ⇒ same scenarios, so the active version trained on (near-)copies of
+    the candidate's test rows and would score inflated on them.
+    """
+    ml_root = Path(__file__).resolve().parents[1]
+
+    def seeds(dirs) -> set[int]:
+        out = set()
+        for d in dirs:
+            p = Path(d)
+            if not p.is_absolute() and not p.exists():
+                p = ml_root / p
+            s = load_manifest(p).get("seed")
+            if s is not None:
+                out.add(int(s))
+        return out
+
+    return seeds(data_dirs) & seeds(active_card.get("dataDirs") or [])
+
+
 def train_task(
     task: str,
     data_dirs: list[Path],
@@ -177,6 +199,10 @@ def train_version(
     active = None
     if active_version and active_version != version and (root / active_version / "model_card.json").exists():
         active = LoadedModel.load(root / active_version)
+        shared = shared_sim_seeds(data_dirs, active.card)
+        if shared:
+            _log(f"{active_version} was trained on sim seed(s) {sorted(shared)} too; not scoring it on this test split (use fresh seeds)")
+            active = None
 
     for task in tasks or TASK_NAMES:
         try:
